@@ -16,7 +16,8 @@ import { ProductDetails } from '../features/products/pages/ProductDetails';
 import { Categories } from '../features/products/pages/Categories';
 import { Brands } from '../features/products/pages/Brands'; 
 import { MediaLibrary } from '../features/products/pages/MediaLibrary'; 
-import { InventoryDashboard } from '../features/inventory/pages/InventoryDashboard'; // New Import
+import { InventoryDashboard } from '../features/inventory/pages/InventoryDashboard'; 
+import { StockOverview } from '../features/inventory/pages/StockOverview'; // New Import
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
 import { Reports } from '../pages/Reports';
@@ -139,7 +140,11 @@ const router = createHashRouter([
       },
       {
         path: paths.inventory, 
-        element: <InventoryDashboard /> // Updated
+        element: <InventoryDashboard />
+      },
+      {
+        path: paths.stockOverview, // New Route
+        element: <StockOverview />
       },
       {
         path: '/catalog/new',

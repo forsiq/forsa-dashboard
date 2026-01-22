@@ -5,8 +5,9 @@ export const paths = {
   catalog: '/catalog',
   catalogDashboard: '/catalog/dashboard', 
   productDetails: '/catalog/product/:id', 
-  mediaLibrary: '/catalog/media', // New Route
+  mediaLibrary: '/catalog/media', 
   inventory: '/inventory',
+  stockOverview: '/inventory/stock', // New Route
   orders: '/orders',
   projects: '/projects',
   records: '/records',
