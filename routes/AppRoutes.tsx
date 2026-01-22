@@ -10,12 +10,15 @@ import { OrdersPage } from '../pages/OrdersPage';
 import { LoginPage } from '../pages/LoginPage';
 import { PortalHome } from '../features/portal/pages/PortalHome'; 
 import { PortalSettings } from '../features/portal/pages/PortalSettings'; 
-import { WorkspaceProjects } from '../features/project/pages/WorkspaceProjects'; // Imported
+import { WorkspaceProjects } from '../features/project/pages/WorkspaceProjects';
 import { AddProduct } from '../pages/AddProduct';
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
 import { Reports } from '../pages/Reports';
 import { Settings } from '../pages/Settings';
+import { ServiceSettings } from '../pages/ServiceSettings'; 
+import { Billing } from '../pages/Billing'; 
+import { Support } from '../pages/Support'; 
 import { Compute } from '../pages/Compute';
 import { Profile } from '../pages/Profile';
 import { SignUp } from '../pages/auth/SignUp';
@@ -66,7 +69,7 @@ const router = createHashRouter([
     path: '/maintenance',
     element: <Maintenance />
   },
-  // Portal Routes (Separate Layout)
+  // Portal Routes (Separate Layout - Full Page)
   {
     element: <PortalLayout />,
     children: [
@@ -79,12 +82,33 @@ const router = createHashRouter([
         element: <PortalSettings />
       },
       {
-        path: paths.workspaceDirectory, // Added
-        element: <WorkspaceProjects /> // Added
+        path: paths.workspaceDirectory,
+        element: <WorkspaceProjects />
+      },
+      // Full Page Views (No Sidebar)
+      {
+        path: paths.settings,
+        element: <Settings />
+      },
+      {
+        path: paths.billing, 
+        element: <Billing />
+      },
+      {
+        path: paths.support, 
+        element: <Support />
+      },
+      {
+        path: paths.profile,
+        element: <Profile />
+      },
+      {
+        path: '/help',
+        element: <Help />
       }
     ]
   },
-  // Admin Dashboard Routes
+  // Admin Dashboard Routes (With Sidebar)
   {
     element: <AmberDashboardLayout />,
     children: [
@@ -121,16 +145,8 @@ const router = createHashRouter([
         element: <Compute />
       },
       {
-        path: paths.settings,
-        element: <Settings />
-      },
-      {
-        path: paths.profile,
-        element: <Profile />
-      },
-      {
-        path: '/help',
-        element: <Help />
+        path: paths.serviceSettings, 
+        element: <ServiceSettings />
       },
       {
         path: '/audit-logs',

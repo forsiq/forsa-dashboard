@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, ChevronDown, User, LogOut, Moon, Sun, Laptop, Languages, HelpCircle, Settings } from 'lucide-react';
+import { Search, Bell, Menu, ChevronDown, User, LogOut, Moon, Sun, Laptop, Languages, HelpCircle, Settings, CreditCard, LifeBuoy } from 'lucide-react';
 import { AmberLogo } from '../../components/AmberLogo';
 import { Link, useNavigate } from 'react-router-dom';
 import { paths } from '../../../routes/paths';
@@ -41,7 +41,7 @@ export const AmberTopbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) =>
   ];
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-obsidian-panel border-b border-border px-6 flex items-center justify-between shadow-lg">
+    <header className="sticky top-0 z-[100] h-16 bg-obsidian-panel border-b border-border px-6 flex items-center justify-between shadow-lg">
       <div className="flex items-center gap-6">
         <button 
           onClick={onOpenSidebar} 
@@ -207,6 +207,22 @@ export const AmberTopbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) =>
                 >
                   <Settings className="w-4 h-4" />
                   {t('nav.settings')}
+                </Link>
+                <Link 
+                  to={paths.billing} 
+                  onClick={() => setActiveDropdown(null)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Billing
+                </Link>
+                <Link 
+                  to={paths.support}
+                  onClick={() => setActiveDropdown(null)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                >
+                  <LifeBuoy className="w-4 h-4" />
+                  Support
                 </Link>
                 <Link 
                   to="/help" 

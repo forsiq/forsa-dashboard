@@ -13,8 +13,9 @@ import {
   ChevronRight,
   Package,
   X,
-  LogOut, // Used for the "Back to Portal" semantic
-  Tags
+  LogOut, 
+  Tags,
+  Sliders
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -35,10 +36,10 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
 
   // Map internal mode IDs to display labels
   const getModeLabel = (mode: string | null) => {
-    if (mode === 'generic') return 'Enterprise';
+    if (mode === 'generic') return 'Product Suite';
     if (mode === 'admin') return 'Administration';
     if (mode === 'portal') return 'Service Portal';
-    return 'Enterprise';
+    return 'Product Suite';
   };
 
   const handleExitToPortal = () => {
@@ -67,7 +68,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
     {
       title: t('sidebar.general'),
       items: [
-        { label: t('nav.settings'), path: paths.settings, icon: Settings },
+        { label: 'Service Settings', path: paths.serviceSettings, icon: Sliders }, // New Link
         { label: t('nav.about'), path: '/about', icon: Info },
       ]
     }
@@ -76,7 +77,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
   return (
     <aside 
       className={`
-        fixed inset-y-0 z-50 bg-obsidian-panel border-e border-border
+        fixed inset-y-0 z-[110] bg-obsidian-panel border-e border-border
         transform transition-all duration-300 ease-in-out
         ${isCollapsed ? 'w-20' : 'w-64'}
         ${isOpen 
@@ -97,7 +98,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
                   <AmberLogo className="w-8 h-8" />
                 </div>
                 <div>
-                  <span className="text-lg font-bold text-zinc-text leading-none block">ZoneVast</span>
+                  <span className="text-lg font-bold text-zinc-text leading-none block">Product Suite</span>
                   <span className="text-[9px] font-black text-brand uppercase tracking-widest block">
                     {getModeLabel(activeMode)}
                   </span>

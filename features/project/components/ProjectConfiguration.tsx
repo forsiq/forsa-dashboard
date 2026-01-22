@@ -10,7 +10,7 @@ import {
   Settings as SettingsIcon, Search, 
   ArrowLeft, ToggleLeft, ToggleRight,
   Database, Globe, Server, Activity, ShieldCheck, 
-  MessageSquare, Box, Cloud, Lock
+  MessageSquare, Box, Cloud, Lock, FileText, CheckCircle2, Circle
 } from 'lucide-react';
 import { cn } from '../../../lib/cn';
 import { useNavigate } from 'react-router-dom';
@@ -22,20 +22,30 @@ export const ProjectConfiguration: React.FC = () => {
   const navigate = useNavigate();
   
   // State for the View
-  const [selectedSection, setSelectedSection] = useState<string>('enableInventory'); // Default to inventory
+  const [selectedSection, setSelectedSection] = useState<string>('billing'); // Default to billing
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'enabled' | 'disabled'>('all');
   
-  // Project General State
-  const [projectName, setProjectName] = useState(activeProject?.name || '');
-  const [projectDesc, setProjectDesc] = useState(activeProject?.description || '');
+  // Mock State for Sub-features
+  const [enabledSubFeatures, setEnabledSubFeatures] = useState<Record<string, boolean>>({});
+
+  const toggleSubFeature = (featureName: string) => {
+    setEnabledSubFeatures(prev => ({
+      ...prev,
+      [featureName]: !prev[featureName]
+    }));
+  };
 
   useEffect(() => {
-    if (activeProject) {
-      setProjectName(activeProject.name);
-      setProjectDesc(activeProject.description);
-    }
-  }, [activeProject]);
+    // Initialize all subfeatures to true for demo
+    const initial: Record<string, boolean> = {};
+    SERVICE_REGISTRY.forEach(svc => {
+        svc.features?.forEach(f => {
+            initial[f] = true;
+        });
+    });
+    setEnabledSubFeatures(initial);
+  }, []);
 
   if (!activeProject) return null;
 
@@ -47,10 +57,6 @@ export const ProjectConfiguration: React.FC = () => {
 
   const handleToggleService = (id: string) => {
     toggleProjectFeature(activeProject.id, id);
-  };
-
-  const handleGeneralSave = () => {
-    updateProject(activeProject.id, { name: projectName, description: projectDesc });
   };
 
   const filteredServices = useMemo(() => {
@@ -100,16 +106,6 @@ export const ProjectConfiguration: React.FC = () => {
            
            {/* Core Navigation */}
            <div className="flex gap-2">
-              <button 
-                onClick={() => setSelectedSection('general')}
-                className={cn(
-                  "flex-1 py-3 px-4 rounded-sm border transition-all text-left flex items-center gap-3",
-                  selectedSection === 'general' ? "bg-brand/10 border-brand/30 text-brand" : "bg-obsidian-panel border-white/5 text-zinc-muted hover:text-zinc-text"
-                )}
-              >
-                 <SettingsIcon className="w-4 h-4" />
-                 <span className="text-[10px] font-black uppercase tracking-widest">General</span>
-              </button>
               <button 
                 onClick={() => setSelectedSection('billing')}
                 className={cn(
@@ -195,38 +191,6 @@ export const ProjectConfiguration: React.FC = () => {
         {/* RIGHT CONTENT: Details & Config */}
         <div className="lg:col-span-8 flex flex-col h-full overflow-y-auto custom-scrollbar">
            
-           {/* GENERAL SETTINGS VIEW */}
-           {selectedSection === 'general' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                 <Card className="p-8">
-                    <h2 className="text-xl font-black text-zinc-text uppercase italic tracking-tighter mb-6">General Settings</h2>
-                    <div className="space-y-6 max-w-2xl">
-                      <div>
-                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">Project Name</label>
-                        <input 
-                          type="text" 
-                          value={projectName}
-                          onChange={(e) => setProjectName(e.target.value)}
-                          className="w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm px-4 text-sm font-bold text-zinc-text outline-none focus:border-brand/30 transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">Description</label>
-                        <textarea 
-                          rows={4}
-                          value={projectDesc}
-                          onChange={(e) => setProjectDesc(e.target.value)}
-                          className="w-full bg-obsidian-outer border border-white/5 rounded-sm p-4 text-sm font-medium text-zinc-text outline-none focus:border-brand/30 transition-all resize-none"
-                        />
-                      </div>
-                      <div className="pt-2">
-                        <Button onClick={handleGeneralSave}>Save Changes</Button>
-                      </div>
-                    </div>
-                 </Card>
-              </div>
-           )}
-
            {/* BILLING VIEW */}
            {selectedSection === 'billing' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -298,45 +262,64 @@ export const ProjectConfiguration: React.FC = () => {
                     </div>
                  </Card>
 
-                 {/* Configuration Panel */}
+                 {/* Service Details Layout */}
                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div className="xl:col-span-2 space-y-6">
-                       <Card className="p-6">
-                          <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-6 border-b border-white/5 pb-2">Configuration</h3>
-                          {/* Mock Forms based on Service */}
-                          <div className="space-y-5">
-                             <div className="space-y-1.5">
-                                <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">API Endpoint URL</label>
-                                <input type="text" disabled={!isServiceEnabled(activeServiceData.id)} defaultValue={`https://api.zonevast.com/v1/${activeServiceData.id.toLowerCase()}`} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-mono text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50" />
+                       <Card className="p-0 overflow-hidden flex flex-col h-full min-h-[500px]">
+                          {/* File Header */}
+                          <div className="px-6 py-4 border-b border-white/5 bg-obsidian-outer/50 flex items-center justify-between">
+                             <div className="flex items-center gap-3">
+                                <FileText className="w-4 h-4 text-brand" />
+                                <span className="text-xs font-bold text-zinc-text font-mono">Service_Overview.md</span>
                              </div>
-                             
-                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                   <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Max Throughput</label>
-                                   <select disabled={!isServiceEnabled(activeServiceData.id)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50">
-                                      <option>Standard (1k req/s)</option>
-                                      <option>High (10k req/s)</option>
-                                      <option>Ultra (Unlimited)</option>
-                                   </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                   <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Region</label>
-                                   <select disabled={!isServiceEnabled(activeServiceData.id)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50">
-                                      <option>Global (Auto)</option>
-                                      <option>US-East</option>
-                                      <option>EU-West</option>
-                                   </select>
-                                </div>
-                             </div>
-
-                             <div className="flex items-center gap-2 pt-2">
-                                <input type="checkbox" className="accent-brand" id="logs" disabled={!isServiceEnabled(activeServiceData.id)} defaultChecked />
-                                <label htmlFor="logs" className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest cursor-pointer select-none">Enable Verbose Logging</label>
+                             <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">2.1 KB</span>
                              </div>
                           </div>
                           
-                          <div className="mt-8 pt-4 border-t border-white/5 flex justify-end">
-                             <Button size="sm" disabled={!isServiceEnabled(activeServiceData.id)}>Save Configuration</Button>
+                          {/* File Content */}
+                          <div className="flex-1 p-8 bg-obsidian-panel/50 font-mono text-sm leading-relaxed text-zinc-secondary overflow-y-auto">
+                             <div className="space-y-8">
+                                <div>
+                                   <h1 className="text-xl font-bold text-zinc-text mb-2"># {activeServiceData.name}</h1>
+                                   <p className="text-zinc-muted italic border-l-2 border-brand/50 pl-3 py-1">
+                                      {activeServiceData.desc}
+                                   </p>
+                                </div>
+
+                                <div>
+                                   <h2 className="text-sm font-bold text-zinc-text uppercase tracking-widest mb-4 border-b border-white/5 pb-1">## Feature Configuration</h2>
+                                   <p className="mb-3 text-[10px] font-sans text-zinc-muted">Enable specific sub-capabilities for this service node.</p>
+                                   
+                                   <div className="space-y-2">
+                                      {activeServiceData.features?.map((feature, i) => (
+                                         <div key={i} className="flex items-center justify-between p-3 bg-obsidian-outer border border-white/5 rounded-sm hover:border-white/10 transition-colors">
+                                            <span className="text-xs font-bold text-zinc-text">{feature}</span>
+                                            <button 
+                                              onClick={() => toggleSubFeature(feature)}
+                                              className="flex items-center gap-2"
+                                            >
+                                               <span className={cn("text-[9px] font-black uppercase tracking-widest", enabledSubFeatures[feature] ? "text-brand" : "text-zinc-muted")}>
+                                                  {enabledSubFeatures[feature] ? 'Enabled' : 'Disabled'}
+                                               </span>
+                                               {enabledSubFeatures[feature] 
+                                                  ? <CheckCircle2 className="w-4 h-4 text-brand" />
+                                                  : <Circle className="w-4 h-4 text-zinc-muted" />
+                                               }
+                                            </button>
+                                         </div>
+                                      ))}
+                                   </div>
+                                </div>
+
+                                <div>
+                                   <h2 className="text-sm font-bold text-zinc-text uppercase tracking-widest mb-3 border-b border-white/5 pb-1">## Integration Snippet</h2>
+                                   <div className="bg-obsidian-outer p-4 rounded-sm border border-white/5 text-xs font-mono">
+                                      <span className="text-brand">const</span> <span className="text-info">serviceId</span> = <span className="text-success">"{activeServiceData.id}"</span>;<br/>
+                                      <span className="text-brand">await</span> system.<span className="text-warning">connect</span>(serviceId);
+                                   </div>
+                                </div>
+                             </div>
                           </div>
                        </Card>
                     </div>

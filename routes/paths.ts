@@ -10,8 +10,11 @@ export const paths = {
   actions: '/actions',
   analytics: '/analytics',
   settings: '/settings',
+  serviceSettings: '/service-settings', // New Route
+  billing: '/billing',
+  support: '/support', 
   projectSettings: '/project/configuration',
-  workspaceDirectory: '/portal/workspaces', // New Route
+  workspaceDirectory: '/portal/workspaces', 
   profile: '/profile',
   login: '/login',
   // Admin

@@ -21,7 +21,8 @@ import {
   Circle,
   Database,
   Search,
-  Users
+  Users,
+  CreditCard
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -64,6 +65,7 @@ const AVAILABLE_ACTIONS: ActionItem[] = [
   { id: 'view_reports', label: 'View Reports', path: paths.analytics, icon: Activity, category: 'Analytics', color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' },
   
   // System
+  { id: 'billing', label: 'Billing & Plan', path: '/billing', icon: CreditCard, category: 'System', color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
   { id: 'view_logs', label: 'Audit Logs', path: '/audit-logs', icon: ShieldCheck, category: 'System', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
   { id: 'db_records', label: 'Database Records', path: paths.records, icon: Database, category: 'System', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
 
@@ -90,7 +92,7 @@ export const DashboardOverview = () => {
   // --- State for Custom Actions ---
   const [activeActionIds, setActiveActionIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('dashboard_actions');
-    return saved ? JSON.parse(saved) : ['add_sku', 'new_order', 'view_reports', 'view_logs'];
+    return saved ? JSON.parse(saved) : ['add_sku', 'new_order', 'view_reports', 'billing'];
   });
   
   const [isConfiguring, setIsConfiguring] = useState(false);
