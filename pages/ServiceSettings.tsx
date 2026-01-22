@@ -8,10 +8,12 @@ import {
   ShieldCheck, 
   Zap,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  LayoutTemplate
 } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { Button } from '../components/ui/Button';
+import { useProjects } from '../contexts/ProjectContext';
 
 // Reusable Toggle Component
 const ServiceToggle = ({ 
@@ -64,21 +66,18 @@ const ServiceToggle = ({
 );
 
 export const ServiceSettings = () => {
-  const [features, setFeatures] = useState({
-    calcEngine: true,
-    publicApi: false,
-    autoScaling: true,
-    debugMode: false,
-    auditLog: true
-  });
-
+  const { activeProject, toggleProjectFeature } = useProjects();
   const [saving, setSaving] = useState(false);
 
+  // Mock save function since context updates immediately
   const handleSave = () => {
     setSaving(true);
-    // Simulate API call
-    setTimeout(() => setSaving(false), 1000);
+    setTimeout(() => setSaving(false), 800);
   };
+
+  if (!activeProject) return (
+    <div className="p-8 text-center text-zinc-muted">Please select a project to configure services.</div>
+  );
 
   return (
     <div className="animate-fade-up max-w-5xl mx-auto py-6 space-y-8">
@@ -89,7 +88,7 @@ export const ServiceSettings = () => {
             <Settings2 className="w-6 h-6 text-brand" /> Service Configuration
           </h1>
           <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">
-            Control active features for <span className="text-brand">Product Suite</span>
+            Control active features for <span className="text-brand">{activeProject.name}</span>
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving}>
@@ -111,27 +110,27 @@ export const ServiceSettings = () => {
             </div>
             
             <ServiceToggle 
-              label="Calculation Engine"
-              description="Enable the advanced mathematical processing node for real-time inventory velocity."
-              icon={Cpu}
-              enabled={features.calcEngine}
-              onChange={(val) => setFeatures({...features, calcEngine: val})}
-            />
-
-            <ServiceToggle 
-              label="External API Access"
-              description="Allow third-party integrations to query data from this service via REST endpoints."
-              icon={Globe}
-              enabled={features.publicApi}
-              onChange={(val) => setFeatures({...features, publicApi: val})}
-            />
-
-            <ServiceToggle 
-              label="Auto-Scaling Cluster"
-              description="Automatically provision new compute nodes when load exceeds 80% capacity."
+              label="Inventory Management"
+              description="Enable stock tracking, low stock alerts, and warehouse management."
               icon={Zap}
-              enabled={features.autoScaling}
-              onChange={(val) => setFeatures({...features, autoScaling: val})}
+              enabled={activeProject.features.enableInventory}
+              onChange={() => toggleProjectFeature(activeProject.id, 'enableInventory')}
+            />
+
+            <ServiceToggle 
+              label="Analytics Engine"
+              description="Enable advanced reporting, sales velocity tracking, and visual dashboards."
+              icon={Globe}
+              enabled={activeProject.features.enableAnalytics}
+              onChange={() => toggleProjectFeature(activeProject.id, 'enableAnalytics')}
+            />
+
+            <ServiceToggle 
+              label="Product Wizard Mode"
+              description="Use the step-by-step wizard for adding new products instead of the single-page form."
+              icon={LayoutTemplate}
+              enabled={activeProject.features.useProductWizard || false}
+              onChange={() => toggleProjectFeature(activeProject.id, 'useProductWizard')}
             />
           </Card>
 
@@ -145,16 +144,16 @@ export const ServiceSettings = () => {
               label="Detailed Audit Logging"
               description="Record every read/write operation to the immutable ledger. Increases storage usage."
               icon={ShieldCheck}
-              enabled={features.auditLog}
-              onChange={(val) => setFeatures({...features, auditLog: val})}
+              enabled={true} // Mock read-only for now
+              onChange={() => {}}
             />
 
             <ServiceToggle 
               label="Verbose Debug Mode"
               description="Output raw stack traces to the console. Not recommended for production."
               icon={Settings2}
-              enabled={features.debugMode}
-              onChange={(val) => setFeatures({...features, debugMode: val})}
+              enabled={false}
+              onChange={() => {}}
             />
           </Card>
         </div>
@@ -189,7 +188,7 @@ export const ServiceSettings = () => {
                  <h3 className="text-[10px] font-black text-zinc-text uppercase tracking-widest">Last Sync</h3>
               </div>
               <p className="text-[9px] font-bold text-zinc-muted leading-relaxed">
-                 Configuration was last synchronized with the master node 2 minutes ago by <strong>Alex Morgan</strong>.
+                 Configuration was last synchronized with the master node just now by <strong>System Admin</strong>.
               </p>
            </Card>
         </div>

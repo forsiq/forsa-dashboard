@@ -3,6 +3,9 @@ export const paths = {
   root: '/',
   dashboard: '/dashboard',
   catalog: '/catalog',
+  catalogDashboard: '/catalog/dashboard', 
+  productDetails: '/catalog/product/:id', 
+  mediaLibrary: '/catalog/media', // New Route
   inventory: '/inventory',
   orders: '/orders',
   projects: '/projects',
@@ -10,7 +13,7 @@ export const paths = {
   actions: '/actions',
   analytics: '/analytics',
   settings: '/settings',
-  serviceSettings: '/service-settings', // New Route
+  serviceSettings: '/service-settings',
   billing: '/billing',
   support: '/support', 
   projectSettings: '/project/configuration',
@@ -22,6 +25,7 @@ export const paths = {
   adminRoles: '/admin/roles',
   adminStores: '/admin/stores',
   adminCategories: '/admin/categories',
+  adminBrands: '/admin/brands',
   adminIntegrations: '/admin/integrations',
   // Blueprints / Templates
   serviceHub: '/templates/service-hub',

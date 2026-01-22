@@ -15,7 +15,11 @@ import {
   X,
   LogOut, 
   Tags,
-  Sliders
+  Sliders,
+  PieChart,
+  Briefcase,
+  Image,
+  Box
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -52,23 +56,27 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
       title: t('sidebar.main_menu'),
       items: [
         { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutGrid },
-        { label: t('nav.catalog'), path: paths.catalog, icon: Package }, // Stock
-        { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, // Categories
-        { label: t('nav.admin.stores'), path: paths.adminStores, icon: Store }, // Warehouses
+        { label: 'Catalog Dash', path: paths.catalogDashboard, icon: PieChart }, 
+        { label: t('nav.catalog'), path: paths.catalog, icon: Package }, 
+        { label: t('nav.inventory'), path: paths.inventory, icon: Box },
+        { label: 'Media Library', path: paths.mediaLibrary, icon: Image }, 
+        { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, 
+        { label: 'Brands', path: paths.adminBrands, icon: Briefcase },
+        { label: t('nav.admin.stores'), path: paths.adminStores, icon: Store }, 
       ]
     },
     {
       title: t('sidebar.operations'),
       items: [
         { label: t('nav.orders'), path: paths.orders, icon: ShoppingCart },
-        { label: t('form.init_resource'), path: paths.templateForm, icon: FilePlus }, // Add Stock/Item
+        { label: t('form.init_resource'), path: paths.templateForm, icon: FilePlus }, 
         { label: t('nav.analytics'), path: paths.analytics, icon: BarChart3 },
       ]
     },
     {
       title: t('sidebar.general'),
       items: [
-        { label: 'Service Settings', path: paths.serviceSettings, icon: Sliders }, // New Link
+        { label: 'Service Settings', path: paths.serviceSettings, icon: Sliders }, 
         { label: t('nav.about'), path: '/about', icon: Info },
       ]
     }

@@ -5,6 +5,7 @@ export interface ProjectFeatures {
   enableInventory: boolean;
   enableAnalytics: boolean;
   enableAutomation: boolean;
+  useProductWizard: boolean;
   [key: string]: boolean | undefined;
 }
 
@@ -40,7 +41,7 @@ const defaultProjects: Project[] = [
     plan: 'Enterprise',
     status: 'Active',
     billing: { amount: '$2,499/mo', nextDue: 'Jun 1, 2025', method: 'Corp Invoice' },
-    features: { enableInventory: true, enableAnalytics: true, enableAutomation: true }
+    features: { enableInventory: true, enableAnalytics: true, enableAutomation: true, useProductWizard: true }
   },
   {
     id: 'proj_beta',
@@ -49,7 +50,7 @@ const defaultProjects: Project[] = [
     plan: 'Starter',
     status: 'Active',
     billing: { amount: '$49/mo', nextDue: 'Jun 15, 2025', method: 'Visa ••4242' },
-    features: { enableInventory: false, enableAnalytics: true, enableAutomation: false }
+    features: { enableInventory: false, enableAnalytics: true, enableAutomation: false, useProductWizard: false }
   },
   {
     id: 'proj_gamma',
@@ -58,7 +59,7 @@ const defaultProjects: Project[] = [
     plan: 'Pro',
     status: 'Active',
     billing: { amount: '$299/mo', nextDue: 'May 30, 2025', method: 'Mastercard ••8821' },
-    features: { enableInventory: true, enableAnalytics: false, enableAutomation: true }
+    features: { enableInventory: true, enableAnalytics: false, enableAutomation: true, useProductWizard: true }
   }
 ];
 
@@ -121,7 +122,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     const newProject: Project = {
       ...data,
       id: data.id || `proj_${Date.now()}`,
-      features: { enableInventory: true, enableAnalytics: true, enableAutomation: false }
+      features: { enableInventory: true, enableAnalytics: true, enableAutomation: false, useProductWizard: true }
     };
     setProjects([...projects, newProject]);
   };
@@ -153,7 +154,7 @@ export const useProjects = () => {
 export const useFeatures = () => {
   const { activeProject } = useProjects();
   return {
-    features: activeProject?.features || { enableInventory: false, enableAnalytics: false, enableAutomation: false },
+    features: activeProject?.features || { enableInventory: false, enableAnalytics: false, enableAutomation: false, useProductWizard: false },
     toggleFeature: (key: keyof ProjectFeatures) => {
       throw new Error("Use useProjects().toggleProjectFeature instead");
     }

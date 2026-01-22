@@ -12,6 +12,11 @@ import { PortalHome } from '../features/portal/pages/PortalHome';
 import { PortalSettings } from '../features/portal/pages/PortalSettings'; 
 import { WorkspaceProjects } from '../features/project/pages/WorkspaceProjects';
 import { AddProduct } from '../pages/AddProduct';
+import { ProductDetails } from '../features/products/pages/ProductDetails'; 
+import { Categories } from '../features/products/pages/Categories';
+import { Brands } from '../features/products/pages/Brands'; 
+import { MediaLibrary } from '../features/products/pages/MediaLibrary'; 
+import { InventoryDashboard } from '../features/inventory/pages/InventoryDashboard'; // New Import
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
 import { Reports } from '../pages/Reports';
@@ -40,8 +45,8 @@ import { About } from '../pages/About';
 import { Users } from '../pages/Users';
 import { RolesPermissions } from '../pages/admin/RolesPermissions';
 import { StoresBranches } from '../pages/admin/StoresBranches';
-import { Categories } from '../pages/admin/Categories';
 import { Integrations } from '../pages/admin/Integrations';
+import { ProductsDashboard } from '../features/products/pages/ProductsDashboard';
 import { paths } from './paths';
 
 const router = createHashRouter([
@@ -121,6 +126,22 @@ const router = createHashRouter([
         element: <ProductsPage />
       },
       {
+        path: paths.catalogDashboard,
+        element: <ProductsDashboard />
+      },
+      {
+        path: paths.productDetails, 
+        element: <ProductDetails />
+      },
+      {
+        path: paths.mediaLibrary, 
+        element: <MediaLibrary />
+      },
+      {
+        path: paths.inventory, 
+        element: <InventoryDashboard /> // Updated
+      },
+      {
         path: '/catalog/new',
         element: <AddProduct />
       },
@@ -178,7 +199,11 @@ const router = createHashRouter([
       },
       {
         path: paths.adminCategories,
-        element: <Categories />
+        element: <Categories /> 
+      },
+      {
+        path: paths.adminBrands,
+        element: <Brands /> 
       },
       {
         path: paths.adminIntegrations,
