@@ -51,6 +51,7 @@ export const translations = {
     'nav.admin.users': 'Users',
     'nav.admin.roles': 'Roles & Permissions',
     'nav.admin.stores': 'Locations',
+    'nav.admin.categories': 'Categories',
     'nav.admin.integrations': 'Integrations',
     
     // Sidebar Legacy (kept for safety)
@@ -163,6 +164,15 @@ export const translations = {
     'stores.label.connectivity': 'Status',
     'stores.label.throughput': 'Traffic',
     'stores.label.uptime_pulse': 'Uptime',
+
+    // Categories
+    'cats.title': 'Categories',
+    'cats.subtitle': 'Manage product taxonomy and groups.',
+    'cats.add': 'Add Category',
+    'cats.table.name': 'Name',
+    'cats.table.slug': 'Slug',
+    'cats.table.count': 'Products',
+    'cats.table.status': 'Status',
 
     // Integrations
     'integ.title': 'Integrations',
@@ -407,6 +417,7 @@ export const translations = {
     'nav.admin.users': 'المستخدمين',
     'nav.admin.roles': 'الأدوار والصلاحيات',
     'nav.admin.stores': 'المواقع',
+    'nav.admin.categories': 'الفئات',
     'nav.admin.integrations': 'التكاملات',
     
     // Sidebar Legacy
@@ -519,6 +530,15 @@ export const translations = {
     'stores.label.connectivity': 'الحالة',
     'stores.label.throughput': 'الزيارات',
     'stores.label.uptime_pulse': 'وقت التشغيل',
+
+    // Categories
+    'cats.title': 'الفئات',
+    'cats.subtitle': 'إدارة تصنيفات المنتجات والمجموعات.',
+    'cats.add': 'إضافة فئة',
+    'cats.table.name': 'الاسم',
+    'cats.table.slug': 'المعرف',
+    'cats.table.count': 'المنتجات',
+    'cats.table.status': 'الحالة',
 
     // Integrations
     'integ.title': 'التكاملات',

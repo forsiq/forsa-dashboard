@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Dropdown } from '../components/ui/Dropdown';
@@ -22,7 +22,8 @@ import {
   User,
   CreditCard,
   MapPin,
-  Calendar
+  Calendar,
+  ArrowUpDown
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/cn';
@@ -31,6 +32,8 @@ export const Orders = () => {
   const { t } = useLanguage();
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterFulfillment, setFilterFulfillment] = useState('all');
+  const [sortConfig, setSortConfig] = useState('date_desc');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Form State
@@ -41,7 +44,7 @@ export const Orders = () => {
     priority: 'Standard'
   });
 
-  const orders = [
+  const ordersData = [
     { id: 'ORD-2025-001', customer: 'Acme Corp', date: '2025-05-20', total: '$4,290.00', status: 'Paid', fulfillment: 'Fulfilled' },
     { id: 'ORD-2025-002', customer: 'Globex Inc', date: '2025-05-19', total: '$1,150.00', status: 'Pending', fulfillment: 'Processing' },
     { id: 'ORD-2025-003', customer: 'Soylent Corp', date: '2025-05-19', total: '$890.50', status: 'Paid', fulfillment: 'Shipped' },
@@ -49,6 +52,35 @@ export const Orders = () => {
     { id: 'ORD-2025-005', customer: 'Umbrella Corp', date: '2025-05-18', total: '$3,200.00', status: 'Failed', fulfillment: 'Cancelled' },
     { id: 'ORD-2025-006', customer: 'Stark Ind', date: '2025-05-17', total: '$55,000.00', status: 'Paid', fulfillment: 'Processing' },
   ];
+
+  // Logic: Filter & Sort
+  const processedOrders = useMemo(() => {
+    let result = ordersData.filter(order => {
+        const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              order.customer.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = filterStatus === 'all' || order.status.toLowerCase() === filterStatus.toLowerCase();
+        const matchesFulfillment = filterFulfillment === 'all' || order.fulfillment.toLowerCase() === filterFulfillment.toLowerCase();
+    
+        return matchesSearch && matchesStatus && matchesFulfillment;
+    });
+
+    return result.sort((a, b) => {
+        switch (sortConfig) {
+            case 'date_desc':
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+            case 'date_asc':
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
+            case 'total_high':
+                return parseFloat(b.total.replace(/[^0-9.-]+/g,"")) - parseFloat(a.total.replace(/[^0-9.-]+/g,""));
+            case 'total_low':
+                return parseFloat(a.total.replace(/[^0-9.-]+/g,"")) - parseFloat(b.total.replace(/[^0-9.-]+/g,""));
+            case 'cust_az':
+                return a.customer.localeCompare(b.customer);
+            default:
+                return 0;
+        }
+    });
+  }, [ordersData, searchQuery, filterStatus, filterFulfillment, sortConfig]);
 
   // Mock Data for Autocomplete
   const customers = [
@@ -70,6 +102,14 @@ export const Orders = () => {
     { label: 'Individual Units', value: 'units' },
     { label: 'Digital Key Transfer', value: 'digital' },
     { label: 'Dropship Direct', value: 'dropship' },
+  ];
+
+  const sortOptions = [
+    { label: 'Date: Newest', value: 'date_desc' },
+    { label: 'Date: Oldest', value: 'date_asc' },
+    { label: 'Total: High to Low', value: 'total_high' },
+    { label: 'Total: Low to High', value: 'total_low' },
+    { label: 'Customer: A-Z', value: 'cust_az' },
   ];
 
   return (
@@ -116,7 +156,7 @@ export const Orders = () => {
         ))}
       </div>
 
-      {/* 3. Filters Section */}
+      {/* 3. Filters & Sort Section */}
       <div className="bg-obsidian-panel border border-white/10 rounded-sm p-4 flex flex-col lg:flex-row gap-4 items-end relative z-10">
         <div className="flex-1 w-full">
           <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">
@@ -127,11 +167,23 @@ export const Orders = () => {
             <input 
               type="text" 
               placeholder={t('orders.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 rtl:pr-10 rtl:pl-4 text-sm outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/50"
             />
           </div>
         </div>
         
+        <div className="w-full lg:w-48">
+            <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">Sort Order</label>
+            <Dropdown 
+                options={sortOptions} 
+                value={sortConfig} 
+                onChange={setSortConfig} 
+                className="w-full"
+            />
+        </div>
+
         <Dropdown 
           label={t('orders.filter.status')} 
           options={[
@@ -180,53 +232,61 @@ export const Orders = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
-              {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-6 py-3">
-                     <span className="font-mono text-xs font-bold text-zinc-muted group-hover:text-brand transition-colors">{order.id}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-sm font-bold text-zinc-text">{order.customer}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-[11px] font-bold text-zinc-muted">{order.date}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-sm font-bold text-zinc-text">{order.total}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <div className="flex items-center gap-2">
-                        {order.status === 'Paid' && <CheckCircle className="w-3.5 h-3.5 text-success" />}
-                        {order.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-warning" />}
-                        {order.status === 'Failed' && <XCircle className="w-3.5 h-3.5 text-danger" />}
-                        <span className={cn(
-                          "text-[10px] font-black uppercase tracking-tight",
-                          order.status === 'Paid' ? 'text-success' : order.status === 'Pending' ? 'text-warning' : 'text-danger'
-                        )}>{order.status}</span>
-                     </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className={cn(
-                      "text-[9px] font-black px-2.5 py-1 rounded-sm border uppercase tracking-[0.15em] inline-flex items-center gap-1.5",
-                      order.fulfillment === 'Fulfilled' || order.fulfillment === 'Shipped' ? 'bg-success/5 text-success border-success/20' : 
-                      order.fulfillment === 'Cancelled' ? 'bg-zinc-muted/5 text-zinc-muted border-white/10' : 
-                      'bg-info/5 text-info border-info/20'
-                    )}>
-                      {order.fulfillment === 'Shipped' && <Truck className="w-3 h-3" />}
-                      {order.fulfillment}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-end">
-                     <button className="p-2 text-zinc-muted hover:text-zinc-text transition-colors"><MoreVertical className="w-4 h-4" /></button>
+              {processedOrders.length > 0 ? (
+                processedOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-3">
+                       <span className="font-mono text-xs font-bold text-zinc-muted group-hover:text-brand transition-colors">{order.id}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-sm font-bold text-zinc-text">{order.customer}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-[11px] font-bold text-zinc-muted">{order.date}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-sm font-bold text-zinc-text">{order.total}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <div className="flex items-center gap-2">
+                          {order.status === 'Paid' && <CheckCircle className="w-3.5 h-3.5 text-success" />}
+                          {order.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-warning" />}
+                          {order.status === 'Failed' && <XCircle className="w-3.5 h-3.5 text-danger" />}
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-tight",
+                            order.status === 'Paid' ? 'text-success' : order.status === 'Pending' ? 'text-warning' : 'text-danger'
+                          )}>{order.status}</span>
+                       </div>
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className={cn(
+                        "text-[9px] font-black px-2.5 py-1 rounded-sm border uppercase tracking-[0.15em] inline-flex items-center gap-1.5",
+                        order.fulfillment === 'Fulfilled' || order.fulfillment === 'Shipped' ? 'bg-success/5 text-success border-success/20' : 
+                        order.fulfillment === 'Cancelled' ? 'bg-zinc-muted/5 text-zinc-muted border-white/10' : 
+                        'bg-info/5 text-info border-info/20'
+                      )}>
+                        {order.fulfillment === 'Shipped' && <Truck className="w-3 h-3" />}
+                        {order.fulfillment}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-end">
+                       <button className="p-2 text-zinc-muted hover:text-zinc-text transition-colors"><MoreVertical className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-zinc-muted text-xs italic">
+                    No orders found matching your filters.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        {/* Pagination Footer matches Catalog */}
+        {/* Pagination Footer */}
         <div className="bg-obsidian-outer/30 px-6 py-4 border-t border-white/5 flex items-center justify-between">
-           <p className="text-[10px] text-zinc-muted font-black uppercase tracking-[0.2em]">Showing 1-10 of 2,451 Orders</p>
+           <p className="text-[10px] text-zinc-muted font-black uppercase tracking-[0.2em]">Showing {processedOrders.length} Records</p>
            <div className="flex gap-2">
              <button disabled className="px-4 py-1.5 text-[10px] font-black text-zinc-muted bg-obsidian-card border border-white/5 rounded-sm opacity-50 uppercase tracking-widest">Previous</button>
              <button className="px-4 py-1.5 text-[10px] font-black text-zinc-text bg-obsidian-card border border-white/5 rounded-sm hover:bg-obsidian-hover hover:border-brand/30 transition-all uppercase tracking-widest">Next</button>
@@ -234,7 +294,7 @@ export const Orders = () => {
         </div>
       </Card>
 
-      {/* Create Order SlideOver */}
+      {/* Create Order SlideOver - Content Remains Same */}
       <SlideOver
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -248,13 +308,11 @@ export const Orders = () => {
         }
       >
         <div className="space-y-8">
-            {/* Customer Section */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <User className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Customer Information</h3>
                 </div>
-                
                 <Autocomplete 
                     label="Select Account"
                     placeholder="Search customers..."
@@ -262,7 +320,6 @@ export const Orders = () => {
                     value={formData.customer}
                     onChange={(val) => setFormData({...formData, customer: val})}
                 />
-                
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Contact Email</label>
@@ -276,14 +333,11 @@ export const Orders = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Product Section */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <Package className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Line Items</h3>
                 </div>
-
                 <div className="p-4 bg-obsidian-outer/30 rounded-sm border border-white/5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <Autocomplete 
@@ -301,7 +355,6 @@ export const Orders = () => {
                             onChange={(val) => setFormData({...formData, style: val})}
                         />
                     </div>
-                    
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">SKU Search</label>
                         <div className="relative">
@@ -310,19 +363,15 @@ export const Orders = () => {
                         </div>
                     </div>
                 </div>
-                
                 <Button variant="secondary" size="sm" className="w-full border-dashed border-white/10 hover:border-brand/30 hover:bg-brand/5 hover:text-brand">
                     <Plus className="w-4 h-4 mr-2" /> Add Line Item
                 </Button>
             </section>
-
-            {/* Payment & Logistics */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <CreditCard className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Payment & Logistics</h3>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Payment Method</label>
@@ -345,7 +394,6 @@ export const Orders = () => {
                         </select>
                     </div>
                 </div>
-                
                 <div className="space-y-1.5">
                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Shipping Address</label>
                     <div className="flex gap-2">

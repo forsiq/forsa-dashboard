@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Package,
   X,
-  LogOut // Used for the "Back to Portal" semantic
+  LogOut, // Used for the "Back to Portal" semantic
+  Tags
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -51,6 +52,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
       items: [
         { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutGrid },
         { label: t('nav.catalog'), path: paths.catalog, icon: Package }, // Stock
+        { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, // Categories
         { label: t('nav.admin.stores'), path: paths.adminStores, icon: Store }, // Warehouses
       ]
     },

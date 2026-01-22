@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../components/Card';
 import { Dropdown } from '../components/ui/Dropdown';
 import { Link } from 'react-router-dom';
@@ -20,7 +20,7 @@ import {
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/cn';
 
-const products = [
+const productsData = [
   { id: 'SKU-8821', name: 'Premium Wireless Headphones v2', category: 'cat.luxury', price: '$299.00', stock: 482, variants: 4, status: 'status.validated', isPrivate: true },
   { id: 'SKU-1022', name: 'Minimalist Leather Desk Pad', category: 'cat.home_office', price: '$45.00', stock: 1205, variants: 2, status: 'status.validated', isPrivate: false },
   { id: 'SKU-0092', name: 'Ergonomic Standing Desk Frame', category: 'cat.home_office', price: '$399.00', stock: 12, variants: 1, status: 'status.draft', isPrivate: true },
@@ -32,41 +32,53 @@ export const Catalog: React.FC = () => {
   const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [quickViewId, setQuickViewId] = useState<string | null>(null);
 
   const categories = [
     { label: t('label.all'), value: 'all' },
-    { label: t('cat.electronics'), value: 'electronics' },
-    { label: t('cat.luxury'), value: 'luxury' },
-    { label: t('cat.home_office'), value: 'home_office' },
-    { label: t('cat.boutique'), value: 'boutique' },
+    { label: t('cat.electronics'), value: 'cat.electronics' },
+    { label: t('cat.luxury'), value: 'cat.luxury' },
+    { label: t('cat.home_office'), value: 'cat.home_office' },
+    { label: t('cat.boutique'), value: 'cat.boutique' },
   ];
 
   const statuses = [
     { label: t('label.all'), value: 'all' },
-    { label: t('status.validated'), value: 'validated' },
-    { label: t('status.draft'), value: 'draft' },
-    { label: t('status.low_stock'), value: 'low_stock' },
+    { label: t('status.validated'), value: 'status.validated' },
+    { label: t('status.draft'), value: 'status.draft' },
+    { label: t('status.low_stock'), value: 'status.low_stock' },
   ];
 
-  // Close all menus when clicking outside
-  const closeAllMenus = () => {
-    setOpenMenuId(null);
-    setQuickViewId(null);
-  };
+  // Handle click outside to close menus
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-dropdown-trigger]') && !target.closest('[data-dropdown-content]')) {
+        setOpenMenuId(null);
+        setQuickViewId(null);
+      }
+    };
+
+    if (openMenuId || quickViewId) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId, quickViewId]);
+
+  const filteredProducts = productsData.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          product.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   return (
     <div className="space-y-10 animate-fade-up relative">
-      {/* Click outside handler for dropdowns */}
-      {(openMenuId || quickViewId) && (
-        <div 
-            className="fixed inset-0 z-30" 
-            onClick={closeAllMenus} 
-        />
-      )}
-
-      {/* Page Header - Unified Naming */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
         <div>
           <h1 className="text-2xl font-black text-zinc-text uppercase tracking-tighter italic">{t('prod.title')}</h1>
@@ -93,6 +105,8 @@ export const Catalog: React.FC = () => {
             <input 
               type="text" 
               placeholder={t('prod.search_placeholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 rtl:pr-10 rtl:pl-4 py-2.5 text-sm focus:border-brand/30 outline-none transition-all placeholder-zinc-muted h-[40px]"
             />
           </div>
@@ -129,7 +143,7 @@ export const Catalog: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
                   <td className="px-6 py-3">
                     <div className="w-10 h-10 bg-obsidian-outer rounded-sm border border-white/5 flex items-center justify-center group-hover:border-brand/20 transition-colors">
@@ -177,9 +191,10 @@ export const Catalog: React.FC = () => {
                        {/* Quick View Dropdown Trigger */}
                        <div className="relative">
                           <button 
+                            data-dropdown-trigger
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setOpenMenuId(null); // Close other menu
+                                setOpenMenuId(null); 
                                 setQuickViewId(quickViewId === p.id ? null : p.id);
                             }}
                             className={cn(
@@ -191,7 +206,7 @@ export const Catalog: React.FC = () => {
                           </button>
 
                           {quickViewId === p.id && (
-                              <div className="absolute right-0 top-full mt-1 w-56 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-2 animate-in fade-in zoom-in-95 duration-200 text-left">
+                              <div data-dropdown-content className="absolute right-0 top-full mt-1 w-56 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-2 animate-in fade-in zoom-in-95 duration-200 text-left">
                                   <div className="px-4 py-2 border-b border-white/5 mb-1">
                                       <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Quick Snapshot</p>
                                       <p className="text-xs font-bold text-zinc-text mt-1 truncate">{p.name}</p>
@@ -209,9 +224,10 @@ export const Catalog: React.FC = () => {
                        {/* More Actions Dropdown */}
                        <div className="relative">
                            <button 
+                                data-dropdown-trigger
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setQuickViewId(null); // Close quick view
+                                    setQuickViewId(null); 
                                     setOpenMenuId(openMenuId === p.id ? null : p.id);
                                 }}
                                 className={cn(
@@ -223,7 +239,7 @@ export const Catalog: React.FC = () => {
                            </button>
 
                            {openMenuId === p.id && (
-                                <div className="absolute right-0 top-full mt-1 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
+                                <div data-dropdown-content className="absolute right-0 top-full mt-1 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
                                     <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors">
                                         <Edit className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand" /> Edit SKU
                                     </button>

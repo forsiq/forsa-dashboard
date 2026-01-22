@@ -1,11 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Store, MapPin, Activity, TrendingUp, MoreVertical, Globe, Layers, Plus } from 'lucide-react';
+import { AmberSlideOver } from '../../amber-ui/components/AmberSlideOver';
+import { AmberInput } from '../../amber-ui/components/AmberInput';
+import { AmberDropdown } from '../../amber-ui/components/AmberDropdown';
+import { Store, MapPin, Activity, TrendingUp, MoreVertical, Globe, Layers, Plus, Save } from 'lucide-react';
 import { useLanguage } from '../../amber-ui/contexts/LanguageContext';
 
-const branches = [
+const branchesData = [
   { id: 'BR-NYC-01', name: 'Global Hub - NY', location: 'New York, USA', status: 'Online', traffic: 'Heavy', uptime: '99.9%' },
   { id: 'BR-LDN-02', name: 'European Node - London', location: 'London, UK', status: 'Online', traffic: 'Moderate', uptime: '99.8%' },
   { id: 'BR-TKO-03', name: 'APAC Cluster - Tokyo', location: 'Tokyo, JP', status: 'Online', traffic: 'Light', uptime: '100%' },
@@ -14,6 +17,24 @@ const branches = [
 
 export const StoresBranches = () => {
   const { t } = useLanguage();
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [branches, setBranches] = useState(branchesData);
+  const [newBranch, setNewBranch] = useState({
+    name: '',
+    location: '',
+    status: 'Online',
+    id: `BR-${Math.floor(Math.random() * 1000)}`
+  });
+
+  const handleSave = () => {
+    setBranches([...branches, { 
+      ...newBranch, 
+      traffic: 'Zero', 
+      uptime: '100%' 
+    }]);
+    setIsAddOpen(false);
+    setNewBranch({ name: '', location: '', status: 'Online', id: `BR-${Math.floor(Math.random() * 1000)}` });
+  };
 
   return (
     <div className="animate-fade-up space-y-8">
@@ -22,14 +43,14 @@ export const StoresBranches = () => {
           <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">{t('stores.title')}</h1>
           <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1 italic">{t('stores.subtitle')}</p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setIsAddOpen(true)}>
           <Plus className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" /> {t('stores.add')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: t('stores.kpi.nodes'), val: '14', icon: Globe, color: 'text-brand' },
+          { label: t('stores.kpi.nodes'), val: branches.length.toString(), icon: Globe, color: 'text-brand' },
           { label: t('stores.kpi.footfall'), val: '124K', icon: Activity, color: 'text-success' },
           { label: t('stores.kpi.uptime'), val: '99.92%', icon: TrendingUp, color: 'text-info' },
           { label: t('stores.kpi.latency'), val: '24ms', icon: Layers, color: 'text-warning' },
@@ -90,6 +111,50 @@ export const StoresBranches = () => {
           </Card>
         ))}
       </div>
+
+      <AmberSlideOver
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title={t('stores.add')}
+        description="Initialize a new physical or digital node endpoint."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" /> Initialize Node
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <AmberInput 
+            label="Node Name"
+            placeholder="e.g. West Coast Distribution"
+            value={newBranch.name}
+            onChange={(e) => setNewBranch({...newBranch, name: e.target.value})}
+          />
+          <AmberInput 
+            label="Geo Location"
+            placeholder="e.g. San Francisco, USA"
+            icon={<MapPin className="w-4 h-4" />}
+            value={newBranch.location}
+            onChange={(e) => setNewBranch({...newBranch, location: e.target.value})}
+          />
+          <div>
+            <label className="text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 block">Initial Status</label>
+            <AmberDropdown 
+              options={[
+                { label: 'Online', value: 'Online' },
+                { label: 'Maintenance', value: 'Maintenance' },
+                { label: 'Offline', value: 'Offline' }
+              ]}
+              value={newBranch.status}
+              onChange={(val) => setNewBranch({...newBranch, status: val})}
+              className="w-full"
+            />
+          </div>
+        </div>
+      </AmberSlideOver>
     </div>
   );
 };

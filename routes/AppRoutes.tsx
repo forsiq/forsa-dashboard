@@ -36,6 +36,7 @@ import { About } from '../pages/About';
 import { Users } from '../pages/Users';
 import { RolesPermissions } from '../pages/admin/RolesPermissions';
 import { StoresBranches } from '../pages/admin/StoresBranches';
+import { Categories } from '../pages/admin/Categories';
 import { Integrations } from '../pages/admin/Integrations';
 import { paths } from './paths';
 
@@ -153,6 +154,10 @@ const router = createHashRouter([
       {
         path: paths.adminStores,
         element: <StoresBranches />
+      },
+      {
+        path: paths.adminCategories,
+        element: <Categories />
       },
       {
         path: paths.adminIntegrations,

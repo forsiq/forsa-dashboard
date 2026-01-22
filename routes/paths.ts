@@ -17,6 +17,7 @@ export const paths = {
   adminUsers: '/admin/users',
   adminRoles: '/admin/roles',
   adminStores: '/admin/stores',
+  adminCategories: '/admin/categories', // New Route
   adminIntegrations: '/admin/integrations',
   // Blueprints / Templates
   serviceHub: '/templates/service-hub',
