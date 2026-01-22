@@ -10,14 +10,15 @@ export const paths = {
   actions: '/actions',
   analytics: '/analytics',
   settings: '/settings',
-  projectSettings: '/project/configuration', // New Route
+  projectSettings: '/project/configuration',
+  workspaceDirectory: '/portal/workspaces', // New Route
   profile: '/profile',
   login: '/login',
   // Admin
   adminUsers: '/admin/users',
   adminRoles: '/admin/roles',
   adminStores: '/admin/stores',
-  adminCategories: '/admin/categories', // New Route
+  adminCategories: '/admin/categories',
   adminIntegrations: '/admin/integrations',
   // Blueprints / Templates
   serviceHub: '/templates/service-hub',

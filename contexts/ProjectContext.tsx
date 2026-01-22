@@ -28,7 +28,7 @@ interface ProjectContextType {
   activeProject: Project | null;
   selectProject: (id: string | null) => void;
   toggleProjectFeature: (projectId: string, feature: string) => void;
-  createProject: (project: Omit<Project, 'id' | 'features'>) => void;
+  createProject: (project: Omit<Project, 'id' | 'features'> & { id?: string }) => void;
   updateProject: (id: string, updates: Partial<Project>) => void;
 }
 
@@ -117,10 +117,10 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }));
   };
 
-  const createProject = (data: Omit<Project, 'id' | 'features'>) => {
+  const createProject = (data: Omit<Project, 'id' | 'features'> & { id?: string }) => {
     const newProject: Project = {
       ...data,
-      id: `proj_${Date.now()}`,
+      id: data.id || `proj_${Date.now()}`,
       features: { enableInventory: true, enableAnalytics: true, enableAutomation: false }
     };
     setProjects([...projects, newProject]);

@@ -2,14 +2,15 @@
 import React from 'react';
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { AmberDashboardLayout } from '../amber-ui/layout/AmberDashboardLayout';
-import { PortalLayout } from '../features/portal/layouts/PortalLayout'; // New Layout
+import { PortalLayout } from '../features/portal/layouts/PortalLayout'; 
 import { LandingSelection } from '../pages/LandingSelection';
 import { DashboardPage } from '../pages/DashboardPage';
 import { ProductsPage } from '../pages/ProductsPage';
 import { OrdersPage } from '../pages/OrdersPage';
 import { LoginPage } from '../pages/LoginPage';
-import { PortalHome } from '../features/portal/pages/PortalHome'; // New Location
-import { PortalSettings } from '../features/portal/pages/PortalSettings'; // New Location
+import { PortalHome } from '../features/portal/pages/PortalHome'; 
+import { PortalSettings } from '../features/portal/pages/PortalSettings'; 
+import { WorkspaceProjects } from '../features/project/pages/WorkspaceProjects'; // Imported
 import { AddProduct } from '../pages/AddProduct';
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
@@ -76,6 +77,10 @@ const router = createHashRouter([
       {
         path: paths.projectSettings,
         element: <PortalSettings />
+      },
+      {
+        path: paths.workspaceDirectory, // Added
+        element: <WorkspaceProjects /> // Added
       }
     ]
   },

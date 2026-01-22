@@ -9,7 +9,8 @@ import {
   Check, 
   Plus, 
   LogOut, 
-  Settings 
+  Settings,
+  LayoutGrid
 } from 'lucide-react';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { useProjects } from '../../../contexts/ProjectContext';
@@ -38,6 +39,12 @@ export const PortalHeader = () => {
     selectProject(id);
     setIsProjectMenuOpen(false);
     navigate('/portal'); // Redirect to portal home on switch
+  };
+
+  const handleNewProject = () => {
+    setIsProjectMenuOpen(false);
+    // Navigate to workspace directory with a state flag to open the creation modal
+    navigate(paths.workspaceDirectory, { state: { openCreate: true } });
   };
 
   return (
@@ -95,7 +102,17 @@ export const PortalHeader = () => {
                   ))}
                </div>
                <div className="border-t border-white/5 p-1">
-                  <button className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black text-zinc-muted hover:text-brand hover:bg-white/5 uppercase tracking-widest transition-colors rounded-sm">
+                  <Link 
+                    to={paths.workspaceDirectory}
+                    onClick={() => setIsProjectMenuOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black text-zinc-muted hover:text-zinc-text hover:bg-white/5 uppercase tracking-widest transition-colors rounded-sm"
+                  >
+                     <LayoutGrid className="w-3.5 h-3.5" /> Manage Workspaces
+                  </Link>
+                  <button 
+                    onClick={handleNewProject}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black text-brand hover:bg-brand/5 uppercase tracking-widest transition-colors rounded-sm mt-1"
+                  >
                      <Plus className="w-3.5 h-3.5" /> New Project
                   </button>
                </div>

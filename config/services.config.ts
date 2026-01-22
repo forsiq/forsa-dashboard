@@ -23,6 +23,7 @@ export interface ServiceModule {
   icon: any;
   description: string;
   color: string;
+  bg: string;
   category: 'core' | 'intelligence' | 'admin' | 'infrastructure';
 }
 
@@ -34,7 +35,8 @@ export const services: ServiceModule[] = [
     path: paths.catalog,
     icon: Database,
     description: 'Central SKU authority and metadata management.',
-    color: '#F5C451',
+    color: 'text-brand',
+    bg: 'bg-brand/10',
     category: 'core'
   },
   {
@@ -43,7 +45,8 @@ export const services: ServiceModule[] = [
     path: paths.inventory,
     icon: Package,
     description: 'Global stock levels and fulfillment tracking.',
-    color: '#4EA1FF',
+    color: 'text-info',
+    bg: 'bg-info/10',
     category: 'core'
   },
   {
@@ -52,7 +55,8 @@ export const services: ServiceModule[] = [
     path: paths.orders,
     icon: ShoppingCart,
     description: 'End-to-end B2B and D2C transaction flow.',
-    color: '#45C490',
+    color: 'text-success',
+    bg: 'bg-success/10',
     category: 'core'
   },
   {
@@ -61,7 +65,8 @@ export const services: ServiceModule[] = [
     path: paths.adminStores,
     icon: Store,
     description: 'Manage physical branches and edge nodes.',
-    color: '#EC4899',
+    color: 'text-pink-500',
+    bg: 'bg-pink-500/10',
     category: 'core'
   },
 
@@ -72,7 +77,8 @@ export const services: ServiceModule[] = [
     path: paths.analytics,
     icon: BarChart3,
     description: 'Real-time performance metrics and forecasting.',
-    color: '#EC4899',
+    color: 'text-pink-500',
+    bg: 'bg-pink-500/10',
     category: 'intelligence'
   },
   {
@@ -81,7 +87,8 @@ export const services: ServiceModule[] = [
     path: paths.templateAutomation,
     icon: Zap,
     description: 'Intelligent logic enrichment pipelines.',
-    color: '#8C5CFF',
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10',
     category: 'intelligence'
   },
   {
@@ -90,7 +97,8 @@ export const services: ServiceModule[] = [
     path: '/audit-logs',
     icon: ShieldAlert,
     description: 'Immutable system-wide activity logs.',
-    color: '#E06C75',
+    color: 'text-danger',
+    bg: 'bg-danger/10',
     category: 'intelligence'
   },
 
@@ -101,7 +109,8 @@ export const services: ServiceModule[] = [
     path: '/compute',
     icon: Cpu,
     description: 'Cloud resource allocation and health.',
-    color: '#4EA1FF',
+    color: 'text-info',
+    bg: 'bg-info/10',
     category: 'infrastructure'
   },
   {
@@ -110,7 +119,8 @@ export const services: ServiceModule[] = [
     path: '/audit-logs',
     icon: Terminal,
     description: 'Direct low-level system command access.',
-    color: '#AFB5C0',
+    color: 'text-zinc-400',
+    bg: 'bg-white/5',
     category: 'infrastructure'
   },
 
@@ -121,7 +131,8 @@ export const services: ServiceModule[] = [
     path: paths.adminUsers,
     icon: Users,
     description: 'Manage staff accounts and permissions.',
-    color: '#45C490',
+    color: 'text-success',
+    bg: 'bg-success/10',
     category: 'admin'
   },
   {
@@ -130,7 +141,8 @@ export const services: ServiceModule[] = [
     path: paths.settings,
     icon: Settings,
     description: 'Configure global system preferences.',
-    color: '#AFB5C0',
+    color: 'text-zinc-400',
+    bg: 'bg-white/5',
     category: 'admin'
   }
 ];

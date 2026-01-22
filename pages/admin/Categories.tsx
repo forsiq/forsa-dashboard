@@ -13,7 +13,8 @@ import {
   Hash, 
   Save,
   Search,
-  Filter
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import { useLanguage } from '../../amber-ui/contexts/LanguageContext';
 import { cn } from '../../lib/cn';
@@ -29,14 +30,18 @@ const initialCategories = [
 export const Categories = () => {
   const { t } = useLanguage();
   const [categories, setCategories] = useState(initialCategories);
-  const [isAddOpen, setIsAddOpen] = useState(false);
   
-  // View State
+  // -- View State --
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState('name_asc');
   
-  // Add State
+  // -- Advanced Filter State --
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [productRange, setProductRange] = useState({ min: '', max: '' });
+
+  // -- Add State --
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({
     name: '',
     slug: '',
@@ -60,7 +65,12 @@ export const Categories = () => {
         const matchesSearch = cat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                               cat.slug.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'All' || cat.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        
+        // Advanced Filters
+        const matchesMinProducts = productRange.min ? cat.products >= parseInt(productRange.min) : true;
+        const matchesMaxProducts = productRange.max ? cat.products <= parseInt(productRange.max) : true;
+
+        return matchesSearch && matchesStatus && matchesMinProducts && matchesMaxProducts;
     });
 
     return result.sort((a, b) => {
@@ -77,7 +87,13 @@ export const Categories = () => {
                 return 0;
         }
     });
-  }, [categories, searchQuery, statusFilter, sortConfig]);
+  }, [categories, searchQuery, statusFilter, sortConfig, productRange]);
+
+  const resetFilters = () => {
+      setProductRange({ min: '', max: '' });
+      setStatusFilter('All');
+      setSearchQuery('');
+  };
 
   const sortOptions = [
     { label: 'Name (A-Z)', value: 'name_asc' },
@@ -167,7 +183,11 @@ export const Categories = () => {
                 className="w-full lg:w-48"
            />
 
-           <button className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5">
+           <button 
+             onClick={() => setIsFilterOpen(true)}
+             className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5"
+             title="Advanced Filters"
+           >
               <Filter className="w-4 h-4" />
            </button>
         </div>
@@ -229,7 +249,50 @@ export const Categories = () => {
         </div>
       </Card>
 
-      {/* Add SlideOver */}
+      {/* Advanced Filter SlideOver */}
+      <AmberSlideOver
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title="Filter Categories"
+        description="Filter taxonomy by product count and metadata."
+        footer={
+            <>
+                <Button variant="ghost" onClick={resetFilters}>
+                    <RotateCcw className="w-3.5 h-3.5 mr-2" /> Reset
+                </Button>
+                <Button onClick={() => setIsFilterOpen(false)}>
+                    Show {processedCategories.length} Categories
+                </Button>
+            </>
+        }
+      >
+        <div className="space-y-6">
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Hash className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Product Count Range</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <AmberInput 
+                        label="Min Items"
+                        type="number"
+                        placeholder="0"
+                        value={productRange.min}
+                        onChange={(e) => setProductRange({...productRange, min: e.target.value})}
+                    />
+                    <AmberInput 
+                        label="Max Items"
+                        type="number"
+                        placeholder="Any"
+                        value={productRange.max}
+                        onChange={(e) => setProductRange({...productRange, max: e.target.value})}
+                    />
+                </div>
+            </section>
+        </div>
+      </AmberSlideOver>
+
+      {/* Add Category SlideOver */}
       <AmberSlideOver
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}

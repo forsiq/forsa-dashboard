@@ -23,18 +23,28 @@ import {
   CreditCard,
   MapPin,
   Calendar,
-  ArrowUpDown
+  ArrowUpDown,
+  RotateCcw
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/cn';
 
 export const Orders = () => {
   const { t } = useLanguage();
+  
+  // -- View State --
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterFulfillment, setFilterFulfillment] = useState('all');
   const [sortConfig, setSortConfig] = useState('date_desc');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // -- Modal State --
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // -- Advanced Filter State --
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -53,15 +63,31 @@ export const Orders = () => {
     { id: 'ORD-2025-006', customer: 'Stark Ind', date: '2025-05-17', total: '$55,000.00', status: 'Paid', fulfillment: 'Processing' },
   ];
 
+  // Helper to parse currency string
+  const parsePrice = (priceStr: string) => parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
+
   // Logic: Filter & Sort
   const processedOrders = useMemo(() => {
     let result = ordersData.filter(order => {
+        // 1. Basic Search
         const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
                               order.customer.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // 2. Dropdown Filters
         const matchesStatus = filterStatus === 'all' || order.status.toLowerCase() === filterStatus.toLowerCase();
         const matchesFulfillment = filterFulfillment === 'all' || order.fulfillment.toLowerCase() === filterFulfillment.toLowerCase();
     
-        return matchesSearch && matchesStatus && matchesFulfillment;
+        // 3. Advanced Filters (Date)
+        const orderDate = new Date(order.date).getTime();
+        const matchesDateStart = dateRange.start ? orderDate >= new Date(dateRange.start).getTime() : true;
+        const matchesDateEnd = dateRange.end ? orderDate <= new Date(dateRange.end).getTime() : true;
+
+        // 4. Advanced Filters (Price)
+        const orderPrice = parsePrice(order.total);
+        const matchesPriceMin = priceRange.min ? orderPrice >= parseFloat(priceRange.min) : true;
+        const matchesPriceMax = priceRange.max ? orderPrice <= parseFloat(priceRange.max) : true;
+
+        return matchesSearch && matchesStatus && matchesFulfillment && matchesDateStart && matchesDateEnd && matchesPriceMin && matchesPriceMax;
     });
 
     return result.sort((a, b) => {
@@ -71,16 +97,24 @@ export const Orders = () => {
             case 'date_asc':
                 return new Date(a.date).getTime() - new Date(b.date).getTime();
             case 'total_high':
-                return parseFloat(b.total.replace(/[^0-9.-]+/g,"")) - parseFloat(a.total.replace(/[^0-9.-]+/g,""));
+                return parsePrice(b.total) - parsePrice(a.total);
             case 'total_low':
-                return parseFloat(a.total.replace(/[^0-9.-]+/g,"")) - parseFloat(b.total.replace(/[^0-9.-]+/g,""));
+                return parsePrice(a.total) - parsePrice(b.total);
             case 'cust_az':
                 return a.customer.localeCompare(b.customer);
             default:
                 return 0;
         }
     });
-  }, [ordersData, searchQuery, filterStatus, filterFulfillment, sortConfig]);
+  }, [ordersData, searchQuery, filterStatus, filterFulfillment, sortConfig, dateRange, priceRange]);
+
+  const resetFilters = () => {
+    setFilterStatus('all');
+    setFilterFulfillment('all');
+    setDateRange({ start: '', end: '' });
+    setPriceRange({ min: '', max: '' });
+    setSearchQuery('');
+  };
 
   // Mock Data for Autocomplete
   const customers = [
@@ -211,7 +245,11 @@ export const Orders = () => {
           className="w-full lg:w-48"
         />
         
-        <button className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5">
+        <button 
+          onClick={() => setIsFilterOpen(true)}
+          className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5"
+          title="Advanced Filters"
+        >
           <Filter className="w-4 h-4" />
         </button>
       </div>
@@ -293,6 +331,82 @@ export const Orders = () => {
            </div>
         </div>
       </Card>
+
+      {/* Advanced Filters SlideOver */}
+      <SlideOver
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title="Advanced Filters"
+        description="Refine your search with granular constraints."
+        footer={
+            <>
+                <Button variant="ghost" onClick={resetFilters}>
+                    <RotateCcw className="w-3.5 h-3.5 mr-2" /> Reset
+                </Button>
+                <Button onClick={() => setIsFilterOpen(false)}>
+                    View {processedOrders.length} Results
+                </Button>
+            </>
+        }
+      >
+        <div className="space-y-6">
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Calendar className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Date Range</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Start Date</label>
+                        <input 
+                            type="date" 
+                            value={dateRange.start}
+                            onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">End Date</label>
+                        <input 
+                            type="date" 
+                            value={dateRange.end}
+                            onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <DollarSign className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Price Range</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Min Amount ($)</label>
+                        <input 
+                            type="number" 
+                            placeholder="0.00"
+                            value={priceRange.min}
+                            onChange={(e) => setPriceRange({...priceRange, min: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Max Amount ($)</label>
+                        <input 
+                            type="number" 
+                            placeholder="Max"
+                            value={priceRange.max}
+                            onChange={(e) => setPriceRange({...priceRange, max: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                </div>
+            </section>
+        </div>
+      </SlideOver>
 
       {/* Create Order SlideOver - Content Remains Same */}
       <SlideOver

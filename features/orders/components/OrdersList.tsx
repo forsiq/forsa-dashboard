@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AmberCard } from '../../../amber-ui/components/AmberCard';
 import { AmberButton } from '../../../amber-ui/components/AmberButton';
 import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
@@ -21,7 +21,14 @@ import {
   Package,
   User,
   CreditCard,
-  MapPin
+  MapPin,
+  Eye,
+  Edit,
+  Trash2,
+  FileText,
+  Calendar,
+  RotateCcw,
+  ArrowUpDown
 } from 'lucide-react';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { cn } from '../../../lib/cn';
@@ -30,7 +37,18 @@ export const OrdersList = () => {
   const { t } = useLanguage();
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterFulfillment, setFilterFulfillment] = useState('all');
+  const [sortConfig, setSortConfig] = useState('date_desc');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Menu State
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+
+  // Advanced Filter State
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -40,7 +58,7 @@ export const OrdersList = () => {
     priority: 'Standard'
   });
 
-  const orders = [
+  const ordersData = [
     { id: 'ORD-2025-001', customer: 'Acme Corp', date: '2025-05-20', total: '$4,290.00', status: 'Paid', fulfillment: 'Fulfilled' },
     { id: 'ORD-2025-002', customer: 'Globex Inc', date: '2025-05-19', total: '$1,150.00', status: 'Pending', fulfillment: 'Processing' },
     { id: 'ORD-2025-003', customer: 'Soylent Corp', date: '2025-05-19', total: '$890.50', status: 'Paid', fulfillment: 'Shipped' },
@@ -49,7 +67,98 @@ export const OrdersList = () => {
     { id: 'ORD-2025-006', customer: 'Stark Ind', date: '2025-05-17', total: '$55,000.00', status: 'Paid', fulfillment: 'Processing' },
   ];
 
-  // Mock Data for Autocomplete
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // If clicking inside the menu or the trigger button, don't close
+      if ((event.target as Element).closest('.action-menu-content') || (event.target as Element).closest('.action-menu-trigger')) {
+        return;
+      }
+      setOpenMenuId(null);
+    };
+    
+    // Add listener to window to catch all clicks including those outside the component
+    window.addEventListener('click', handleClickOutside);
+    
+    // Handle scroll to close menu (optional but good for fixed positioning)
+    const handleScroll = () => {
+        if(openMenuId) setOpenMenuId(null);
+    };
+    window.addEventListener('scroll', handleScroll, true);
+
+    return () => {
+        window.removeEventListener('click', handleClickOutside);
+        window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [openMenuId]);
+
+  // Handle menu open
+  const handleMenuClick = (e: React.MouseEvent<HTMLButtonElement>, id: string) => {
+      e.stopPropagation();
+      if (openMenuId === id) {
+          setOpenMenuId(null);
+      } else {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setMenuPos({ 
+              top: rect.bottom + 6, 
+              right: window.innerWidth - rect.right 
+          });
+          setOpenMenuId(id);
+      }
+  };
+
+  // Filter Logic
+  const processedOrders = useMemo(() => {
+    let result = ordersData.filter(order => {
+        // 1. Text Search
+        const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              order.customer.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // 2. Dropdowns
+        const matchesStatus = filterStatus === 'all' || order.status.toLowerCase() === filterStatus.toLowerCase();
+        const matchesFulfillment = filterFulfillment === 'all' || order.fulfillment.toLowerCase() === filterFulfillment.toLowerCase();
+
+        // 3. Date Range
+        const orderDate = new Date(order.date).getTime();
+        const matchesDateStart = dateRange.start ? orderDate >= new Date(dateRange.start).getTime() : true;
+        const matchesDateEnd = dateRange.end ? orderDate <= new Date(dateRange.end).getTime() : true;
+
+        // 4. Price Range
+        const price = parseFloat(order.total.replace(/[^0-9.-]+/g,""));
+        const matchesPriceMin = priceRange.min ? price >= parseFloat(priceRange.min) : true;
+        const matchesPriceMax = priceRange.max ? price <= parseFloat(priceRange.max) : true;
+
+        return matchesSearch && matchesStatus && matchesFulfillment && matchesDateStart && matchesDateEnd && matchesPriceMin && matchesPriceMax;
+    });
+
+    return result.sort((a, b) => {
+        switch (sortConfig) {
+            case 'date_desc':
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+            case 'date_asc':
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
+            case 'total_high':
+                return parseFloat(b.total.replace(/[^0-9.-]+/g,"")) - parseFloat(a.total.replace(/[^0-9.-]+/g,""));
+            case 'total_low':
+                return parseFloat(a.total.replace(/[^0-9.-]+/g,"")) - parseFloat(b.total.replace(/[^0-9.-]+/g,""));
+            case 'cust_az':
+                return a.customer.localeCompare(b.customer);
+            default:
+                return 0;
+        }
+    });
+  }, [ordersData, searchQuery, filterStatus, filterFulfillment, dateRange, priceRange, sortConfig]);
+
+  const resetFilters = () => {
+    setFilterStatus('all');
+    setFilterFulfillment('all');
+    setDateRange({ start: '', end: '' });
+    setPriceRange({ min: '', max: '' });
+    setSearchQuery('');
+    setSortConfig('date_desc');
+  };
+
+  // Autocomplete Options
   const customers = [
     { label: 'Acme Corporation', value: 'acme', subtext: 'Enterprise - Tier 1' },
     { label: 'Wayne Enterprises', value: 'wayne', subtext: 'Enterprise - Tier 1' },
@@ -71,8 +180,16 @@ export const OrdersList = () => {
     { label: 'Dropship Direct', value: 'dropship' },
   ];
 
+  const sortOptions = [
+    { label: 'Date: Newest First', value: 'date_desc' },
+    { label: 'Date: Oldest First', value: 'date_asc' },
+    { label: 'Total: High to Low', value: 'total_high' },
+    { label: 'Total: Low to High', value: 'total_low' },
+    { label: 'Customer: A-Z', value: 'cust_az' },
+  ];
+
   return (
-    <div className="animate-fade-up space-y-8">
+    <div className="animate-fade-up space-y-8 relative">
       {/* 1. Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -102,7 +219,10 @@ export const OrdersList = () => {
               <div>
                 <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-wider mb-1 group-hover:text-brand transition-colors">{stat.label}</p>
                 <p className="text-xl font-black text-zinc-text tracking-tighter">{stat.value}</p>
-                <span className="text-[10px] font-bold uppercase tracking-tight">{stat.trend}</span>
+                <span className={cn(
+                  "text-[10px] font-bold uppercase tracking-tight",
+                  stat.color.replace('text-', 'text-')
+                )}>{stat.trend}</span>
               </div>
               <div className={cn("p-2 rounded-sm bg-obsidian-outer border border-white/5", stat.color)}>
                 <stat.icon className="w-4 h-4" />
@@ -123,11 +243,14 @@ export const OrdersList = () => {
             <input 
               type="text" 
               placeholder={t('orders.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 rtl:pr-10 rtl:pl-4 text-sm outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/50"
             />
           </div>
         </div>
         
+        {/* Sort is now mainly in the modal, but kept brief here if needed or removed to declutter */}
         <AmberDropdown 
           label={t('orders.filter.status')} 
           options={[
@@ -155,7 +278,11 @@ export const OrdersList = () => {
           className="w-full lg:w-48"
         />
         
-        <button className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5">
+        <button 
+          onClick={() => setIsFilterOpen(true)}
+          className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5"
+          title="Advanced Filters & Sorting"
+        >
           <Filter className="w-4 h-4" />
         </button>
       </div>
@@ -176,59 +303,206 @@ export const OrdersList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
-              {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-6 py-3">
-                     <span className="font-mono text-xs font-bold text-zinc-muted group-hover:text-brand transition-colors">{order.id}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-sm font-bold text-zinc-text">{order.customer}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-[11px] font-bold text-zinc-muted">{order.date}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <span className="text-sm font-bold text-zinc-text">{order.total}</span>
-                  </td>
-                  <td className="px-6 py-3">
-                     <div className="flex items-center gap-2">
-                        {order.status === 'Paid' && <CheckCircle className="w-3.5 h-3.5 text-success" />}
-                        {order.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-warning" />}
-                        {order.status === 'Failed' && <XCircle className="w-3.5 h-3.5 text-danger" />}
-                        <span className={cn(
-                          "text-[10px] font-black uppercase tracking-tight",
-                          order.status === 'Paid' ? 'text-success' : order.status === 'Pending' ? 'text-warning' : 'text-danger'
-                        )}>{order.status}</span>
-                     </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className={cn(
-                      "text-[9px] font-black px-2.5 py-1 rounded-sm border uppercase tracking-[0.15em] inline-flex items-center gap-1.5",
-                      order.fulfillment === 'Fulfilled' || order.fulfillment === 'Shipped' ? 'bg-success/5 text-success border-success/20' : 
-                      order.fulfillment === 'Cancelled' ? 'bg-zinc-muted/5 text-zinc-muted border-white/10' : 
-                      'bg-info/5 text-info border-info/20'
-                    )}>
-                      {order.fulfillment === 'Shipped' && <Truck className="w-3 h-3" />}
-                      {order.fulfillment}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-end">
-                     <button className="p-2 text-zinc-muted hover:text-zinc-text transition-colors"><MoreVertical className="w-4 h-4" /></button>
+              {processedOrders.length > 0 ? (
+                processedOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-3">
+                       <span className="font-mono text-xs font-bold text-zinc-muted group-hover:text-brand transition-colors">{order.id}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-sm font-bold text-zinc-text">{order.customer}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-[11px] font-bold text-zinc-muted">{order.date}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <span className="text-sm font-bold text-zinc-text">{order.total}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                       <div className="flex items-center gap-2">
+                          {order.status === 'Paid' && <CheckCircle className="w-3.5 h-3.5 text-success" />}
+                          {order.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-warning" />}
+                          {order.status === 'Failed' && <XCircle className="w-3.5 h-3.5 text-danger" />}
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-tight",
+                            order.status === 'Paid' ? 'text-success' : order.status === 'Pending' ? 'text-warning' : 'text-danger'
+                          )}>{order.status}</span>
+                       </div>
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className={cn(
+                        "text-[9px] font-black px-2.5 py-1 rounded-sm border uppercase tracking-[0.15em] inline-flex items-center gap-1.5",
+                        order.fulfillment === 'Fulfilled' || order.fulfillment === 'Shipped' ? 'bg-success/5 text-success border-success/20' : 
+                        order.fulfillment === 'Cancelled' ? 'bg-zinc-muted/5 text-zinc-muted border-white/10' : 
+                        'bg-info/5 text-info border-info/20'
+                      )}>
+                        {order.fulfillment === 'Shipped' && <Truck className="w-3 h-3" />}
+                        {order.fulfillment}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-end">
+                       <button 
+                         className={cn(
+                           "p-2 rounded-sm transition-all relative z-10 action-menu-trigger",
+                           openMenuId === order.id ? "bg-white/10 text-brand" : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
+                         )}
+                         onClick={(e) => handleMenuClick(e, order.id)}
+                       >
+                         <MoreVertical className="w-4 h-4" />
+                       </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-zinc-muted text-xs italic">
+                    No orders found matching your filters.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        {/* Pagination Footer matches Catalog */}
+        
         <div className="bg-obsidian-outer/30 px-6 py-4 border-t border-white/5 flex items-center justify-between">
-           <p className="text-[10px] text-zinc-muted font-black uppercase tracking-[0.2em]">Showing 1-10 of 2,451 Orders</p>
+           <p className="text-[10px] text-zinc-muted font-black uppercase tracking-[0.2em]">Showing {processedOrders.length} Records</p>
            <div className="flex gap-2">
              <button disabled className="px-4 py-1.5 text-[10px] font-black text-zinc-muted bg-obsidian-card border border-white/5 rounded-sm opacity-50 uppercase tracking-widest">Previous</button>
              <button className="px-4 py-1.5 text-[10px] font-black text-zinc-text bg-obsidian-card border border-white/5 rounded-sm hover:bg-obsidian-hover hover:border-brand/30 transition-all uppercase tracking-widest">Next</button>
            </div>
         </div>
       </AmberCard>
+
+      {/* Floating Menu - Rendered at root level with fixed positioning to escape overflow */}
+      {openMenuId && (
+          <div 
+            className="fixed w-48 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] z-[100] py-1 animate-in fade-in zoom-in-95 duration-100 origin-top-right action-menu-content"
+            style={{ top: menuPos.top, right: menuPos.right }}
+          >
+              <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors">
+                  <Eye className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand" /> View Details
+              </button>
+              <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors">
+                  <Edit className="w-3.5 h-3.5 text-zinc-muted group-hover:text-info" /> Edit Order
+              </button>
+              <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors">
+                  <FileText className="w-3.5 h-3.5 text-zinc-muted group-hover:text-success" /> Invoice
+              </button>
+              <div className="h-px bg-white/5 my-1" />
+              <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-danger hover:bg-danger/10 uppercase tracking-widest flex items-center gap-2 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" /> Archive
+              </button>
+          </div>
+      )}
+
+      {/* Advanced Filters SlideOver */}
+      <AmberSlideOver
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title="Advanced Filters"
+        description="Refine your search with granular constraints."
+        footer={
+            <>
+                <AmberButton variant="ghost" onClick={resetFilters}>
+                    <RotateCcw className="w-3.5 h-3.5 mr-2" /> Reset
+                </AmberButton>
+                <AmberButton onClick={() => setIsFilterOpen(false)}>
+                    View {processedOrders.length} Results
+                </AmberButton>
+            </>
+        }
+      >
+        <div className="space-y-8">
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <ArrowUpDown className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Sort Order</h3>
+                </div>
+                <div className="space-y-2">
+                    {sortOptions.map((opt) => (
+                        <label key={opt.value} className={cn(
+                            "flex items-center justify-between p-3 border border-white/5 rounded-sm cursor-pointer hover:bg-white/5 transition-all group",
+                            sortConfig === opt.value ? "bg-brand/5 border-brand/20" : ""
+                        )}>
+                            <span className={cn(
+                                "text-[10px] font-bold uppercase tracking-widest",
+                                sortConfig === opt.value ? "text-brand" : "text-zinc-text group-hover:text-white"
+                            )}>{opt.label}</span>
+                            <div className={cn(
+                                "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                                sortConfig === opt.value ? "border-brand" : "border-white/20"
+                            )}>
+                                {sortConfig === opt.value && <div className="w-2 h-2 rounded-full bg-brand" />}
+                            </div>
+                            <input 
+                                type="radio" 
+                                name="sortOrder"
+                                checked={sortConfig === opt.value}
+                                onChange={() => setSortConfig(opt.value)}
+                                className="hidden"
+                            />
+                        </label>
+                    ))}
+                </div>
+            </section>
+
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Calendar className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Date Range</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Start Date</label>
+                        <input 
+                            type="date" 
+                            value={dateRange.start}
+                            onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">End Date</label>
+                        <input 
+                            type="date" 
+                            value={dateRange.end}
+                            onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <DollarSign className="w-4 h-4 text-brand" />
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Price Range</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Min Amount ($)</label>
+                        <input 
+                            type="number" 
+                            placeholder="0.00"
+                            value={priceRange.min}
+                            onChange={(e) => setPriceRange({...priceRange, min: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Max Amount ($)</label>
+                        <input 
+                            type="number" 
+                            placeholder="Max"
+                            value={priceRange.max}
+                            onChange={(e) => setPriceRange({...priceRange, max: e.target.value})}
+                            className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30" 
+                        />
+                    </div>
+                </div>
+            </section>
+        </div>
+      </AmberSlideOver>
 
       {/* Create Order SlideOver */}
       <AmberSlideOver
@@ -244,13 +518,11 @@ export const OrdersList = () => {
         }
       >
         <div className="space-y-8">
-            {/* Customer Section */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <User className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Customer Information</h3>
                 </div>
-                
                 <AmberAutocomplete 
                     label="Select Account"
                     placeholder="Search customers..."
@@ -258,7 +530,6 @@ export const OrdersList = () => {
                     value={formData.customer}
                     onChange={(val) => setFormData({...formData, customer: val})}
                 />
-                
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Contact Email</label>
@@ -272,14 +543,13 @@ export const OrdersList = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Product Section */}
+            
+            {/* Additional Form Sections ... */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <Package className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Line Items</h3>
                 </div>
-
                 <div className="p-4 bg-obsidian-outer/30 rounded-sm border border-white/5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <AmberAutocomplete 
@@ -297,7 +567,6 @@ export const OrdersList = () => {
                             onChange={(val) => setFormData({...formData, style: val})}
                         />
                     </div>
-                    
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">SKU Search</label>
                         <div className="relative">
@@ -306,19 +575,16 @@ export const OrdersList = () => {
                         </div>
                     </div>
                 </div>
-                
                 <AmberButton variant="secondary" size="sm" className="w-full border-dashed border-white/10 hover:border-brand/30 hover:bg-brand/5 hover:text-brand">
                     <Plus className="w-4 h-4 mr-2" /> Add Line Item
                 </AmberButton>
             </section>
 
-            {/* Payment & Logistics */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                     <CreditCard className="w-4 h-4 text-brand" />
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Payment & Logistics</h3>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Payment Method</label>
@@ -341,7 +607,6 @@ export const OrdersList = () => {
                         </select>
                     </div>
                 </div>
-                
                 <div className="space-y-1.5">
                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Shipping Address</label>
                     <div className="flex gap-2">

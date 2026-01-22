@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, ChevronDown, User, LogOut, Moon, Sun, Laptop, Languages, HelpCircle, Check, Settings, Briefcase, Plus } from 'lucide-react';
+import { Search, Bell, Menu, ChevronDown, User, LogOut, Moon, Sun, Laptop, Languages, HelpCircle, Check, Settings, Briefcase, Plus, Grip } from 'lucide-react';
 import { AmberLogo } from '../../amber-ui/components/AmberLogo';
 import { Link, useNavigate } from 'react-router-dom';
 import { paths } from '../../routes/paths';
@@ -9,6 +9,7 @@ import { useTheme } from '../../amber-ui/contexts/ThemeContext';
 import { useProjects } from '../../contexts/ProjectContext';
 import { SearchModal } from '../../components/SearchModal';
 import { cn } from '../../lib/cn';
+import { services } from '../../config/services.config';
 
 export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
   const { language, setLanguage, t, dir } = useLanguage();
@@ -16,7 +17,7 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
   const { projects, activeProject, selectProject } = useProjects();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<'notif' | 'profile' | 'project' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'notif' | 'profile' | 'project' | 'apps' | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,7 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleDropdown = (name: 'notif' | 'profile' | 'project') => {
+  const toggleDropdown = (name: 'notif' | 'profile' | 'project' | 'apps') => {
     setActiveDropdown(prev => prev === name ? null : name);
   };
 
@@ -132,6 +133,48 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
            </button>
         </div>
 
+        {/* Service Switcher (App Launcher) */}
+        <div className="relative">
+          <button 
+            onClick={() => toggleDropdown('apps')}
+            className={cn(
+              "w-10 h-10 flex items-center justify-center text-zinc-muted hover:text-zinc-text relative transition-all rounded-sm",
+              activeDropdown === 'apps' && "bg-obsidian-card text-brand border border-border"
+            )}
+            title="Switch Service"
+          >
+            <Grip className="w-5 h-5" />
+          </button>
+
+          {activeDropdown === 'apps' && (
+            <div className={cn(
+              "absolute top-full mt-2 w-[320px] bg-obsidian-card border border-border rounded-sm shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-100 grid grid-cols-3 gap-1 z-50",
+              dir === 'rtl' ? "left-0" : "right-0"
+            )}>
+               {services.map((service) => (
+                 <Link 
+                   key={service.id} 
+                   to={service.path}
+                   onClick={() => setActiveDropdown(null)}
+                   className="flex flex-col items-center justify-center p-3 hover:bg-white/5 rounded-sm transition-all group text-center gap-2"
+                 >
+                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center border border-white/5 bg-obsidian-outer group-hover:scale-110 transition-transform", service.bg)}>
+                       <service.icon className={cn("w-5 h-5", service.color)} strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[10px] font-bold text-zinc-muted group-hover:text-zinc-text leading-tight">{service.label}</span>
+                 </Link>
+               ))}
+               <Link 
+                 to="/portal"
+                 onClick={() => setActiveDropdown(null)}
+                 className="col-span-3 mt-2 border-t border-white/5 pt-2 text-center text-[10px] font-black text-brand hover:underline uppercase tracking-widest py-2"
+               >
+                 View Service Directory
+               </Link>
+            </div>
+          )}
+        </div>
+
         {/* Notifications */}
         <div className="relative">
           <button 
@@ -148,7 +191,7 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
 
           {activeDropdown === 'notif' && (
             <div className={cn(
-              "absolute top-full mt-2 w-80 bg-obsidian-card border border-border rounded-sm shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100",
+              "absolute top-full mt-2 w-80 bg-obsidian-card border border-border rounded-sm shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100 z-50",
               dir === 'rtl' ? "left-0" : "right-0"
             )}>
               <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-white/[0.02]">
@@ -192,7 +235,7 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
 
           {activeDropdown === 'profile' && (
             <div className={cn(
-              "absolute top-full mt-2 w-72 bg-obsidian-card border border-border rounded-sm shadow-2xl animate-in fade-in zoom-in-95 duration-100 overflow-hidden",
+              "absolute top-full mt-2 w-72 bg-obsidian-card border border-border rounded-sm shadow-2xl animate-in fade-in zoom-in-95 duration-100 overflow-hidden z-50",
               dir === 'rtl' ? "left-0" : "right-0"
             )}>
               <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">

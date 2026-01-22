@@ -85,7 +85,7 @@ export const ProductCatalog: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-obsidian-panel border border-white/10 rounded-sm p-4 flex flex-col lg:flex-row gap-4 items-end relative z-10">
+      <div className="bg-obsidian-panel border border-white/10 rounded-sm p-4 flex flex-col lg:flex-row gap-4 items-end relative z-50">
         <div className="flex-1 w-full self-stretch">
           <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">
             Global SKU Query

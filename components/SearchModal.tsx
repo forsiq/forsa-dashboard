@@ -119,7 +119,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                       onClick={onClose}
                       className="flex items-center gap-3 p-3 bg-white/[0.02] hover:bg-white/5 border border-transparent hover:border-brand/20 rounded-sm group transition-all"
                     >
-                      <service.icon className="w-4 h-4" style={{ color: service.color }} />
+                      <service.icon className={cn("w-4 h-4", service.color)} />
                       <span className="text-[11px] font-black text-zinc-text uppercase tracking-widest">{t(`nav.${service.id}`)}</span>
                     </Link>
                   ))}
