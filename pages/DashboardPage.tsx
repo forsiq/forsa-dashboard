@@ -1,0 +1,7 @@
+
+import React from 'react';
+import { DashboardOverview } from '../features/dashboard/components/DashboardOverview';
+
+export const DashboardPage = () => {
+  return <DashboardOverview />;
+};
