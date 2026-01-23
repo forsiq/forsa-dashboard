@@ -17,7 +17,7 @@ import { Categories } from '../features/products/pages/Categories';
 import { Brands } from '../features/products/pages/Brands'; 
 import { MediaLibrary } from '../features/products/pages/MediaLibrary'; 
 import { InventoryDashboard } from '../features/inventory/pages/InventoryDashboard'; 
-import { StockOverview } from '../features/inventory/pages/StockOverview'; // New Import
+import { StockOverview } from '../features/inventory/pages/StockOverview'; 
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
 import { Reports } from '../pages/Reports';

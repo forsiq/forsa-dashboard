@@ -96,7 +96,7 @@ export const MediaLibrary = () => {
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Mock upload
     if (e.target.files && e.target.files.length > 0) {
-      const newItems: MediaItem[] = Array.from(e.target.files).map((file, i) => ({
+      const newItems: MediaItem[] = Array.from(e.target.files).map((file: any, i) => ({
         id: `new_${Date.now()}_${i}`,
         name: file.name,
         url: 'hsl(200, 50%, 20%)',

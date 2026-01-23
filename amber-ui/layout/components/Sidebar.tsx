@@ -19,7 +19,8 @@ import {
   PieChart,
   Briefcase,
   Image,
-  Box
+  Box,
+  ClipboardList
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -59,6 +60,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
         { label: 'Catalog Dash', path: paths.catalogDashboard, icon: PieChart }, 
         { label: t('nav.catalog'), path: paths.catalog, icon: Package }, 
         { label: t('nav.inventory'), path: paths.inventory, icon: Box },
+        { label: 'Stock Overview', path: paths.stockOverview, icon: ClipboardList },
         { label: 'Media Library', path: paths.mediaLibrary, icon: Image }, 
         { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, 
         { label: 'Brands', path: paths.adminBrands, icon: Briefcase },
