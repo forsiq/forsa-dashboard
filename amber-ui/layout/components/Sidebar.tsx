@@ -20,7 +20,31 @@ import {
   Briefcase,
   Image,
   Box,
-  ClipboardList
+  ClipboardList,
+  MapPin,
+  ArrowRightLeft,
+  ClipboardCheck,
+  Truck,
+  ScanBarcode,
+  LayoutDashboard,
+  Calculator,
+  RotateCcw,
+  Users,
+  Contact,
+  Kanban,
+  Target,
+  ListTodo,
+  Megaphone,
+  Wallet,
+  UserMinus,
+  CreditCard,
+  CalendarClock,
+  FileText,
+  Wrench,
+  PlusCircle,
+  Calendar,
+  UserCog,
+  BookOpen
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -54,23 +78,71 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
 
   const menuSections = [
     {
-      title: t('sidebar.main_menu'),
+      title: "Dashboards",
       items: [
         { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutGrid },
-        { label: 'Catalog Dash', path: paths.catalogDashboard, icon: PieChart }, 
+        { label: 'Catalog Analytics', path: paths.catalogDashboard, icon: PieChart }, 
+      ]
+    },
+    {
+      title: "Service & Repairs",
+      items: [
+        { label: 'Repair Center', path: paths.repairDashboard, icon: Wrench },
+        { label: 'Schedule', path: paths.repairCalendar, icon: Calendar },
+        { label: 'Service Catalog', path: paths.serviceCatalog, icon: BookOpen },
+        { label: 'Technicians', path: paths.repairTechnicians, icon: UserCog },
+        { label: 'New Ticket', path: paths.newRepair, icon: PlusCircle },
+      ]
+    },
+    {
+      title: "Finance",
+      items: [
+        { label: 'Debt Control', path: paths.debtDashboard, icon: Wallet },
+        { label: 'Debtors', path: paths.debtors, icon: UserMinus },
+        { label: 'Invoices', path: paths.invoices, icon: FileText },
+        { label: 'Payment Schedule', path: paths.paymentSchedule, icon: CalendarClock },
+        { label: 'Record Payment', path: paths.recordPayment, icon: CreditCard },
+      ]
+    },
+    {
+      title: "CRM",
+      items: [
+        { label: 'CRM Command', path: paths.crm, icon: Users },
+        { label: 'Leads Pipeline', path: paths.crmPipeline, icon: Kanban },
+        { label: 'Deals', path: paths.crmDeals, icon: Target },
+        { label: 'Campaigns', path: paths.crmCampaigns, icon: Megaphone },
+        { label: 'Tasks', path: paths.crmTasks, icon: ListTodo },
+        { label: 'Customers', path: paths.crmCustomers, icon: Contact },
+      ]
+    },
+    {
+      title: "Catalog",
+      items: [
         { label: t('nav.catalog'), path: paths.catalog, icon: Package }, 
-        { label: t('nav.inventory'), path: paths.inventory, icon: Box },
-        { label: 'Stock Overview', path: paths.stockOverview, icon: ClipboardList },
-        { label: 'Media Library', path: paths.mediaLibrary, icon: Image }, 
         { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, 
         { label: 'Brands', path: paths.adminBrands, icon: Briefcase },
-        { label: t('nav.admin.stores'), path: paths.adminStores, icon: Store }, 
+        { label: 'Media Library', path: paths.mediaLibrary, icon: Image }, 
+      ]
+    },
+    {
+      title: t('nav.inventory'),
+      items: [
+        { label: 'Command Center', path: paths.inventory, icon: Box },
+        { label: 'Stock Overview', path: paths.stockOverview, icon: ClipboardList },
+        { label: 'Stock Movements', path: paths.movements, icon: ArrowRightLeft },
+        { label: 'Stock Take', path: paths.stockTake, icon: ClipboardCheck },
+        { label: 'Barcoding', path: paths.barcoding, icon: ScanBarcode },
+        { label: 'Warehouses', path: paths.warehouses, icon: MapPin },
+        { label: 'Vendors', path: paths.vendors, icon: Truck },
       ]
     },
     {
       title: t('sidebar.operations'),
       items: [
+        { label: 'Point of Sale', path: paths.pos, icon: Calculator },
+        { label: 'Orders Dashboard', path: paths.ordersDashboard, icon: LayoutDashboard },
         { label: t('nav.orders'), path: paths.orders, icon: ShoppingCart },
+        { label: 'Returns', path: paths.returns, icon: RotateCcw },
         { label: t('form.init_resource'), path: paths.templateForm, icon: FilePlus }, 
         { label: t('nav.analytics'), path: paths.analytics, icon: BarChart3 },
       ]
