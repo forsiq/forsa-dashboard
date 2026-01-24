@@ -28,15 +28,15 @@ import {
   Bar 
 } from 'recharts';
 import { cn } from '../../../lib/cn';
+import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 
-// --- Mock Data ---
 const COLLECTION_DATA = [
   { month: 'Jan', collected: 24000, outstanding: 120000 },
   { month: 'Feb', collected: 45000, outstanding: 110000 },
   { month: 'Mar', collected: 32000, outstanding: 105000 },
   { month: 'Apr', collected: 68000, outstanding: 85000 },
   { month: 'May', collected: 52000, outstanding: 92000 },
-  { month: 'Jun', collected: 12000, outstanding: 125000 }, // Current month partial
+  { month: 'Jun', collected: 12000, outstanding: 125000 }, 
 ];
 
 const OVERDUE_ALERTS = [
@@ -59,35 +59,35 @@ const RECENT_PAYMENTS = [
 ];
 
 export const DebtDashboard = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-8 animate-fade-up">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
              <Wallet className="w-5 h-5 text-brand" />
-             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">Debt Command Center</h1>
+             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">{t('fin.title')}</h1>
           </div>
-          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">Receivables & Collection Analytics</p>
+          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">{t('fin.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <AmberButton variant="ghost" size="sm">
-             <Download className="w-3.5 h-3.5 mr-2" /> Export Report
+             <Download className="w-3.5 h-3.5 mr-2" /> {t('prod.export')}
           </AmberButton>
           <AmberButton size="sm">
-             <Plus className="w-3.5 h-3.5 mr-2" /> Record Payment
+             <Plus className="w-3.5 h-3.5 mr-2" /> {t('nav.record_payment')}
           </AmberButton>
         </div>
       </div>
 
-      {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Outstanding Debt', value: '$1.25M', sub: '+8% vs last month', icon: AlertTriangle, color: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/20' },
-          { label: 'Collected (MTD)', value: '$64K', sub: 'Target: $120K', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
-          { label: 'Pending Processing', value: '$12.5K', sub: 'In Clearing', icon: Clock, color: 'text-info', bg: 'bg-info/10', border: 'border-info/20' },
-          { label: 'At Risk (>90 Days)', value: '14', sub: 'Accounts Critical', icon: TrendingUp, color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20' },
+          { label: t('fin.outstanding'), value: '$1.25M', sub: '+8% vs last month', icon: AlertTriangle, color: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/20' },
+          { label: t('fin.collected'), value: '$64K', sub: 'Target: $120K', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
+          { label: t('fin.processing'), value: '$12.5K', sub: 'In Clearing', icon: Clock, color: 'text-info', bg: 'bg-info/10', border: 'border-info/20' },
+          { label: t('fin.at_risk'), value: '14', sub: 'Accounts Critical', icon: TrendingUp, color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20' },
         ].map((stat, i) => (
           <AmberCard key={i} className={cn("p-5 flex flex-col justify-between hover:border-white/20 transition-all cursor-default group", stat.border)}>
              <div className="flex justify-between items-start">
@@ -106,20 +106,17 @@ export const DebtDashboard = () => {
         ))}
       </div>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
          
-         {/* Left Column (2/3) */}
          <div className="xl:col-span-2 space-y-6">
             
-            {/* Collection Chart */}
             <AmberCard className="p-6 h-[350px] flex flex-col" glass>
                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                     <TrendingUp className="w-4 h-4 text-brand" /> Collection Velocity (6 Months)
+                     <TrendingUp className="w-4 h-4 text-brand" /> {t('fin.collection_velocity')} (6 Months)
                   </h3>
                </div>
-               <div className="flex-1 w-full text-xs">
+               <div className="flex-1 w-full text-xs" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
                      <AreaChart data={COLLECTION_DATA}>
                         <defs>
@@ -146,11 +143,10 @@ export const DebtDashboard = () => {
             </AmberCard>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {/* Overdue Alerts */}
                <AmberCard className="flex flex-col h-[350px] p-0 overflow-hidden bg-obsidian-panel/50">
                   <div className="p-5 border-b border-white/5 bg-danger/5 flex justify-between items-center">
                      <h3 className="text-xs font-black text-danger uppercase tracking-widest flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4" /> Priority Alerts
+                        <AlertTriangle className="w-4 h-4" /> {t('fin.priority_alerts')}
                      </h3>
                      <span className="bg-danger/20 text-danger text-[9px] font-bold px-1.5 py-0.5 rounded-sm">{OVERDUE_ALERTS.length}</span>
                   </div>
@@ -172,11 +168,10 @@ export const DebtDashboard = () => {
                   </div>
                </AmberCard>
 
-               {/* Recent Payments */}
                <AmberCard className="flex flex-col h-[350px] p-0 overflow-hidden bg-obsidian-panel/50">
                   <div className="p-5 border-b border-white/5 bg-success/5 flex justify-between items-center">
                      <h3 className="text-xs font-black text-success uppercase tracking-widest flex items-center gap-2">
-                        <DollarSign className="w-4 h-4" /> Recent Payments
+                        <DollarSign className="w-4 h-4" /> {t('fin.recent_payments')}
                      </h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-0">
@@ -198,19 +193,17 @@ export const DebtDashboard = () => {
                      </table>
                   </div>
                   <div className="p-3 border-t border-white/5 bg-obsidian-outer/30 text-center">
-                     <button className="text-[9px] font-bold text-zinc-muted hover:text-brand uppercase tracking-widest">View All Transactions</button>
+                     <button className="text-[9px] font-bold text-zinc-muted hover:text-brand uppercase tracking-widest">{t('common.view_all')}</button>
                   </div>
                </AmberCard>
             </div>
          </div>
 
-         {/* Right Column (1/3) */}
          <div className="xl:col-span-1 space-y-6">
             
-            {/* Top Debtors */}
             <AmberCard className="p-0 overflow-hidden flex flex-col h-full max-h-[400px]">
                <div className="p-5 border-b border-white/5">
-                  <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">Top Debtors</h3>
+                  <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('fin.top_debtors')}</h3>
                </div>
                <div className="flex-1 overflow-y-auto p-0">
                   <table className="w-full text-left">
@@ -241,14 +234,13 @@ export const DebtDashboard = () => {
                   </table>
                </div>
                <div className="p-4 border-t border-white/5 bg-obsidian-outer/30">
-                  <AmberButton variant="secondary" size="sm" className="w-full justify-center">View All Debtors</AmberButton>
+                  <AmberButton variant="secondary" size="sm" className="w-full justify-center">{t('common.view_all')}</AmberButton>
                </div>
             </AmberCard>
 
-            {/* Payment Schedule */}
             <AmberCard className="p-5 bg-obsidian-panel/40 border-brand/10">
                <h3 className="text-xs font-black text-brand uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> Expected Payments
+                  <Calendar className="w-4 h-4" /> {t('fin.expected_payments')}
                </h3>
                <div className="space-y-4 relative pl-3 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-px before:bg-white/10">
                   <div className="relative pl-8">
@@ -262,27 +254,8 @@ export const DebtDashboard = () => {
                      </div>
                      <span className="text-[9px] font-mono text-zinc-muted uppercase mt-1 block">Due Tomorrow</span>
                   </div>
-                  <div className="relative pl-8">
-                     <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-obsidian-outer border border-white/10 flex items-center justify-center text-[9px] font-bold text-zinc-muted">2</div>
-                     <div className="flex justify-between items-start">
-                        <div>
-                           <p className="text-[10px] font-bold text-zinc-text">Cyberdyne Systems</p>
-                           <p className="text-[9px] text-zinc-muted">Retainer Fee</p>
-                        </div>
-                        <span className="text-[10px] font-bold text-zinc-text">$1,500</span>
-                     </div>
-                     <span className="text-[9px] font-mono text-zinc-muted uppercase mt-1 block">Due in 3 Days</span>
-                  </div>
                </div>
             </AmberCard>
-
-            {/* Quick Actions */}
-            <div className="space-y-2">
-               <AmberButton className="w-full justify-between group">
-                  <span className="flex items-center gap-2"><Mail className="w-4 h-4" /> Send Bulk Reminders</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-               </AmberButton>
-            </div>
          </div>
       </div>
     </div>

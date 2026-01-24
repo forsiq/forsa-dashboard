@@ -8,15 +8,13 @@ import {
   Briefcase, 
   DollarSign, 
   TrendingUp, 
-  ArrowRight,
   Plus, 
-  MoreVertical,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Phone,
-  Mail,
-  MessageSquare
+  Calendar, 
+  Clock, 
+  Phone, 
+  Mail, 
+  MessageSquare,
+  CheckCircle2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -30,8 +28,8 @@ import {
   Area
 } from 'recharts';
 import { cn } from '../../../lib/cn';
+import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 
-// Mock Data
 const pipelineData = [
   { stage: 'Lead', count: 45, value: 45000 },
   { stage: 'Qualified', count: 28, value: 84000 },
@@ -50,20 +48,21 @@ const leadGrowthData = [
   { name: 'Sun', leads: 2 },
 ];
 
-const activities = [
-  { id: 1, user: 'Sarah Chen', action: 'emailed', target: 'Acme Corp', desc: 'Sent proposal v2.1', time: '10m ago', icon: Mail, color: 'text-info' },
-  { id: 2, user: 'Alex Morgan', action: 'called', target: 'John Doe', desc: 'Discussed renewal terms', time: '1h ago', icon: Phone, color: 'text-success' },
-  { id: 3, user: 'System', action: 'created deal', target: 'Big Tech Merger', desc: '$1.2M potential value', time: '3h ago', icon: Briefcase, color: 'text-brand' },
-  { id: 4, user: 'James Wilson', action: 'noted', target: 'Stark Ind', desc: 'Meeting scheduled for Friday', time: '5h ago', icon: MessageSquare, color: 'text-warning' },
-];
-
-const tasks = [
-  { id: 1, title: 'Follow up with Wayne Ent.', due: 'Today', priority: 'High', color: 'text-danger' },
-  { id: 2, title: 'Prepare Q3 Report', due: 'Tomorrow', priority: 'Medium', color: 'text-warning' },
-  { id: 3, title: 'Update Client Database', due: 'May 28', priority: 'Low', color: 'text-info' },
-];
-
 export const CRMDashboard = () => {
+  const { t } = useLanguage();
+
+  const activities = [
+    { id: 1, user: 'Sarah Chen', action: 'emailed', target: 'Acme Corp', desc: 'Sent proposal v2.1', time: '10m ago', icon: Mail, color: 'text-info' },
+    { id: 2, user: 'Alex Morgan', action: 'called', target: 'John Doe', desc: 'Discussed renewal terms', time: '1h ago', icon: Phone, color: 'text-success' },
+    { id: 3, user: 'System', action: 'created deal', target: 'Big Tech Merger', desc: '$1.2M potential value', time: '3h ago', icon: Briefcase, color: 'text-brand' },
+  ];
+
+  const tasks = [
+    { id: 1, title: 'Follow up with Wayne Ent.', due: 'Today', priority: 'High', color: 'text-danger' },
+    { id: 2, title: 'Prepare Q3 Report', due: 'Tomorrow', priority: 'Medium', color: 'text-warning' },
+    { id: 3, title: 'Update Client Database', due: 'May 28', priority: 'Low', color: 'text-info' },
+  ];
+
   return (
     <div className="space-y-8 animate-fade-up">
       {/* Header */}
@@ -71,16 +70,16 @@ export const CRMDashboard = () => {
         <div>
           <div className="flex items-center gap-2 mb-1">
              <Users className="w-5 h-5 text-brand" />
-             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">CRM Command</h1>
+             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">{t('crm.title')}</h1>
           </div>
-          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">Customer Relationships & Pipeline</p>
+          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">{t('crm.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <AmberButton variant="secondary" size="sm">
-            <Plus className="w-3.5 h-3.5 mr-2" /> Add Lead
+            <Plus className="w-3.5 h-3.5 mr-2" /> {t('common.add')} Lead
           </AmberButton>
           <AmberButton size="sm">
-            <Briefcase className="w-3.5 h-3.5 mr-2" /> Create Deal
+            <Briefcase className="w-3.5 h-3.5 mr-2" /> {t('common.create')} Deal
           </AmberButton>
         </div>
       </div>
@@ -88,10 +87,10 @@ export const CRMDashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Customers', value: '1,842', sub: '+12% vs last mo', icon: Users, color: 'text-brand', bg: 'bg-brand/10' },
-          { label: 'New Leads', value: '145', sub: 'This Month', icon: UserPlus, color: 'text-info', bg: 'bg-info/10' },
-          { label: 'Open Deals', value: '34', sub: '$4.2M Pipeline', icon: Briefcase, color: 'text-warning', bg: 'bg-warning/10' },
-          { label: 'Conversion Rate', value: '24%', sub: '+2.4% Increase', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+          { label: t('crm.total_customers'), value: '1,842', sub: '+12% vs last mo', icon: Users, color: 'text-brand', bg: 'bg-brand/10' },
+          { label: t('crm.new_leads'), value: '145', sub: 'This Month', icon: UserPlus, color: 'text-info', bg: 'bg-info/10' },
+          { label: t('crm.open_deals'), value: '34', sub: '$4.2M Pipeline', icon: Briefcase, color: 'text-warning', bg: 'bg-warning/10' },
+          { label: t('crm.conversion_rate'), value: '24%', sub: '+2.4% Increase', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
         ].map((stat, i) => (
           <AmberCard key={i} className="p-5 flex items-center justify-between hover:border-brand/20 transition-all cursor-default">
             <div>
@@ -113,10 +112,10 @@ export const CRMDashboard = () => {
         <AmberCard className="lg:col-span-2 p-6 flex flex-col h-[400px]" glass>
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                 <DollarSign className="w-4 h-4 text-brand" /> Sales Pipeline Value
+                 <DollarSign className="w-4 h-4 text-brand" /> {t('crm.pipeline_value')}
               </h3>
            </div>
-           <div className="flex-1 w-full text-xs">
+           <div className="flex-1 w-full text-xs" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
                  <BarChart data={pipelineData} barSize={40}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -137,10 +136,10 @@ export const CRMDashboard = () => {
         <AmberCard className="lg:col-span-1 p-6 flex flex-col h-[400px]" glass>
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                 <TrendingUp className="w-4 h-4 text-success" /> Lead Acquisition
+                 <TrendingUp className="w-4 h-4 text-success" /> {t('crm.lead_acquisition')}
               </h3>
            </div>
-           <div className="flex-1 w-full text-xs">
+           <div className="flex-1 w-full text-xs" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
                  <AreaChart data={leadGrowthData}>
                     <defs>
@@ -173,9 +172,9 @@ export const CRMDashboard = () => {
          <AmberCard noPadding className="flex flex-col h-full bg-obsidian-panel border-white/5">
             <div className="p-5 border-b border-white/5 flex items-center justify-between">
                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-zinc-muted" /> Recent Activity
+                  <Clock className="w-4 h-4 text-zinc-muted" /> {t('crm.recent_activity')}
                </h3>
-               <button className="text-[9px] font-bold text-brand hover:underline uppercase tracking-widest">View All</button>
+               <button className="text-[9px] font-bold text-brand hover:underline uppercase tracking-widest">{t('common.view_all')}</button>
             </div>
             <div className="flex-1 p-0">
                {activities.map((act, i) => (
@@ -199,11 +198,8 @@ export const CRMDashboard = () => {
          <AmberCard noPadding className="flex flex-col h-full bg-obsidian-panel border-white/5">
             <div className="p-5 border-b border-white/5 flex items-center justify-between bg-obsidian-outer/30">
                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-zinc-muted" /> Tasks Due Soon
+                  <CheckCircle2 className="w-4 h-4 text-zinc-muted" /> {t('crm.tasks_due')}
                </h3>
-               <button className="p-1.5 rounded-sm hover:bg-white/5 text-zinc-muted hover:text-zinc-text transition-colors">
-                  <MoreVertical className="w-4 h-4" />
-               </button>
             </div>
             <div className="flex-1 p-4 space-y-3">
                {tasks.map((task) => (
@@ -221,7 +217,7 @@ export const CRMDashboard = () => {
                   </div>
                ))}
                <button className="w-full py-2 border border-dashed border-white/10 rounded-sm text-[10px] font-bold text-zinc-muted hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center gap-2">
-                  <Plus className="w-3 h-3" /> Add Task
+                  <Plus className="w-3 h-3" /> {t('common.add')} Task
                </button>
             </div>
          </AmberCard>

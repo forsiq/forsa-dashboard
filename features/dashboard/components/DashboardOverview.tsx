@@ -39,39 +39,19 @@ import { cn } from '../../../lib/cn';
 import { useNavigate } from 'react-router-dom';
 import { paths } from '../../../routes/paths';
 
-// --- Configuration Data ---
+// ... (Existing Imports) ...
 
+// We will construct the Actions array inside the component to use `t`
 interface ActionItem {
   id: string;
   label: string;
   path: string;
   icon: any;
-  category: 'Catalog' | 'Orders' | 'Analytics' | 'System' | 'Admin';
+  category: string;
   color: string;
   bg: string;
   border: string;
 }
-
-const AVAILABLE_ACTIONS: ActionItem[] = [
-  // Catalog
-  { id: 'add_sku', label: 'Add SKU', path: '/catalog/new', icon: Plus, category: 'Catalog', color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
-  { id: 'view_products', label: 'Browse Catalog', path: paths.catalog, icon: Package, category: 'Catalog', color: 'text-brand', bg: 'bg-brand/5', border: 'border-brand/20' },
-  
-  // Orders
-  { id: 'new_order', label: 'New Order', path: paths.orders, icon: ShoppingCart, category: 'Orders', color: 'text-info', bg: 'bg-info/10', border: 'border-info/30' },
-  { id: 'view_orders', label: 'Order History', path: paths.orders, icon: FileText, category: 'Orders', color: 'text-info', bg: 'bg-info/5', border: 'border-info/20' },
-  
-  // Analytics
-  { id: 'view_reports', label: 'View Reports', path: paths.analytics, icon: Activity, category: 'Analytics', color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' },
-  
-  // System
-  { id: 'billing', label: 'Billing & Plan', path: '/billing', icon: CreditCard, category: 'System', color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
-  { id: 'view_logs', label: 'Audit Logs', path: '/audit-logs', icon: ShieldCheck, category: 'System', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-  { id: 'db_records', label: 'Database Records', path: paths.records, icon: Database, category: 'System', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-
-  // Admin
-  { id: 'manage_users', label: 'Manage Users', path: paths.adminUsers, icon: Users, category: 'Admin', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-];
 
 const timelineData = [
   { name: 'Mon', enriched: 120, pending: 45 },
@@ -89,7 +69,19 @@ export const DashboardOverview = () => {
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  // --- State for Custom Actions ---
+  // Construct available actions with translations
+  const AVAILABLE_ACTIONS: ActionItem[] = [
+    { id: 'add_sku', label: t('prod.add_sku'), path: '/catalog/new', icon: Plus, category: t('sidebar.catalog'), color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
+    { id: 'view_products', label: t('nav.catalog'), path: paths.catalog, icon: Package, category: t('sidebar.catalog'), color: 'text-brand', bg: 'bg-brand/5', border: 'border-brand/20' },
+    { id: 'new_order', label: t('orders.create'), path: paths.orders, icon: ShoppingCart, category: t('sidebar.operations'), color: 'text-info', bg: 'bg-info/10', border: 'border-info/30' },
+    { id: 'view_orders', label: t('nav.orders'), path: paths.orders, icon: FileText, category: t('sidebar.operations'), color: 'text-info', bg: 'bg-info/5', border: 'border-info/20' },
+    { id: 'view_reports', label: t('nav.analytics'), path: paths.analytics, icon: Activity, category: t('sidebar.operations'), color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' },
+    { id: 'billing', label: 'Billing & Plan', path: '/billing', icon: CreditCard, category: t('sidebar.general'), color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
+    { id: 'view_logs', label: t('nav.audit_logs'), path: '/audit-logs', icon: ShieldCheck, category: t('sidebar.general'), color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
+    { id: 'db_records', label: t('nav.records'), path: paths.records, icon: Database, category: t('sidebar.general'), color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
+    { id: 'manage_users', label: t('nav.admin.users'), path: paths.adminUsers, icon: Users, category: 'Admin', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
+  ];
+
   const [activeActionIds, setActiveActionIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('dashboard_actions');
     return saved ? JSON.parse(saved) : ['add_sku', 'new_order', 'view_reports', 'billing'];
@@ -98,7 +90,6 @@ export const DashboardOverview = () => {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [timeRange, setTimeRange] = useState('7d');
 
-  // Save to local storage whenever actions change
   useEffect(() => {
     localStorage.setItem('dashboard_actions', JSON.stringify(activeActionIds));
   }, [activeActionIds]);
@@ -111,14 +102,12 @@ export const DashboardOverview = () => {
     );
   };
 
-  // Get the full action objects for the selected IDs
   const displayActions = useMemo(() => {
     return activeActionIds
       .map(id => AVAILABLE_ACTIONS.find(a => a.id === id))
       .filter(Boolean) as ActionItem[];
-  }, [activeActionIds]);
+  }, [activeActionIds, AVAILABLE_ACTIONS]);
 
-  // Group actions for the configuration modal
   const groupedActions = useMemo(() => {
     const groups: Record<string, ActionItem[]> = {};
     AVAILABLE_ACTIONS.forEach(action => {
@@ -126,7 +115,7 @@ export const DashboardOverview = () => {
       groups[action.category].push(action);
     });
     return groups;
-  }, []);
+  }, [AVAILABLE_ACTIONS]);
 
   const timeOptions = [
     { label: language === 'ar' ? 'آخر 7 أيام' : 'Last 7 Days', value: '7d' },
@@ -136,7 +125,6 @@ export const DashboardOverview = () => {
   return (
     <div className="page-transition w-full space-y-8 relative">
       
-      {/* Header Section */}
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
@@ -144,13 +132,12 @@ export const DashboardOverview = () => {
           </div>
           <div>
             <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase leading-none flex items-center gap-2">
-              {t('dash.title').split(' ')[0]} <span className="text-brand/90">{t('dash.title').split(' ')[1]}</span>
+              {t('dash.title')}
             </h1>
           </div>
         </div>
       </section>
 
-      {/* KPI Section */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { title: t('dash.total_skus'), value: '12,842', icon: Package, trend: '+42 Today', status: 'text-brand', bg: 'bg-brand/10' },
@@ -173,9 +160,7 @@ export const DashboardOverview = () => {
         ))}
       </section>
 
-      {/* Charts & Actions Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart */}
         <div className="lg:col-span-2 min-w-0">
           <AmberCard className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-8">
@@ -231,11 +216,10 @@ export const DashboardOverview = () => {
           </AmberCard>
         </div>
 
-        {/* Quick Actions Panel */}
         <div className="lg:col-span-1 min-w-0">
           <AmberCard className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
-              <h3 className="text-lg font-bold text-zinc-text">{t('label.actions') || 'Quick Actions'}</h3>
+              <h3 className="text-lg font-bold text-zinc-text">{t('dash.quick_actions')}</h3>
               <button 
                 onClick={() => setIsConfiguring(true)}
                 className="p-1.5 rounded-sm hover:bg-obsidian-outer text-zinc-muted hover:text-brand transition-all"
@@ -271,12 +255,12 @@ export const DashboardOverview = () => {
 
             <div className="flex-1 border-t border-border pt-6">
                <div className="flex items-center justify-between text-xs font-bold text-zinc-muted mb-4 uppercase tracking-wider">
-                 <span>Recent Signals</span>
+                 <span>{t('dash.recent_signals')}</span>
                  <button 
                     onClick={() => navigate('/notifications')}
                     className="text-brand hover:text-brand/80 flex items-center gap-1 transition-colors text-[10px]"
                  >
-                    View All <ArrowRight className="w-3 h-3" />
+                    {t('common.view_all')} <ArrowRight className="w-3 h-3" />
                  </button>
                </div>
                <div className="space-y-3">
@@ -287,28 +271,17 @@ export const DashboardOverview = () => {
                         <p className="text-[9px] text-zinc-muted mt-1 font-mono uppercase">2 minutes ago</p>
                      </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-white/[0.02] border border-border rounded-sm hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                     <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                     <div>
-                        <p className="text-[11px] font-bold text-zinc-text leading-tight group-hover:text-brand transition-colors">Automated Backup Complete</p>
-                        <p className="text-[9px] text-zinc-muted mt-1 font-mono uppercase">1 hour ago</p>
-                     </div>
-                  </div>
                </div>
             </div>
           </AmberCard>
         </div>
       </div>
 
-      {/* --- CONFIGURATION MODAL --- */}
       {isConfiguring && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           {/* Backdrop */}
            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsConfiguring(false)} />
            
-           {/* Modal Content */}
            <div className="relative w-full max-w-2xl bg-obsidian-panel border border-white/10 rounded-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
-              {/* Modal Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-obsidian-outer/50">
                  <div>
                     <h2 className="text-lg font-black text-zinc-text uppercase italic tracking-tighter">Configure Actions</h2>
@@ -319,7 +292,6 @@ export const DashboardOverview = () => {
                  </button>
               </div>
 
-              {/* Modal Body (Scrollable) */}
               <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
                  {Object.entries(groupedActions).map(([category, actions]: [string, ActionItem[]]) => (
                     <div key={category} className="space-y-3">
@@ -359,14 +331,13 @@ export const DashboardOverview = () => {
                  ))}
               </div>
 
-              {/* Modal Footer */}
               <div className="px-6 py-4 border-t border-white/5 bg-obsidian-outer/30 flex justify-between items-center">
                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{activeActionIds.length} Actions Pinned</p>
                  <button 
                     onClick={() => setIsConfiguring(false)}
                     className="px-6 py-2 bg-brand text-obsidian-outer text-[10px] font-black uppercase tracking-widest rounded-sm hover:opacity-90 transition-opacity"
                  >
-                    Save Changes
+                    {t('common.save')}
                  </button>
               </div>
            </div>

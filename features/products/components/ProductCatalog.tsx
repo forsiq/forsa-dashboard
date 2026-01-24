@@ -8,14 +8,14 @@ import {
   Search, 
   MoreHorizontal, 
   Package,
-  Eye,
   Lock,
   Download,
   Edit,
   Trash2,
   TrendingUp,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Eye
 } from 'lucide-react';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { useFeatures } from '../../../contexts/ProjectContext';
@@ -52,7 +52,6 @@ export const ProductCatalog: React.FC = () => {
     { label: t('status.low_stock'), value: 'low_stock' },
   ];
 
-  // Close all menus when clicking outside
   const closeAllMenus = () => {
     setOpenMenuId(null);
     setQuickViewId(null);
@@ -60,7 +59,6 @@ export const ProductCatalog: React.FC = () => {
 
   return (
     <div className="space-y-10 animate-fade-up relative">
-      {/* Click outside handler for dropdowns */}
       {(openMenuId || quickViewId) && (
         <div 
             className="fixed inset-0 z-30" 
@@ -68,7 +66,6 @@ export const ProductCatalog: React.FC = () => {
         />
       )}
 
-      {/* Page Header - Unified Naming */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
         <div>
           <h1 className="text-2xl font-black text-zinc-text uppercase tracking-tighter italic">{t('prod.title')}</h1>
@@ -84,11 +81,10 @@ export const ProductCatalog: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div className="bg-obsidian-panel border border-white/10 rounded-sm p-4 flex flex-col lg:flex-row gap-4 items-end relative z-50">
         <div className="flex-1 w-full self-stretch">
           <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">
-            Global SKU Query
+            {t('common.search')}
           </label>
           <div className="relative">
             <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted" />
@@ -116,7 +112,6 @@ export const ProductCatalog: React.FC = () => {
         />
       </div>
 
-      {/* Main Table Content */}
       <AmberCard noPadding className="border-white/10 shadow-2xl bg-obsidian-panel">
         <div className="overflow-x-auto">
           <table className="w-full text-start border-collapse min-w-[800px]">
@@ -185,7 +180,7 @@ export const ProductCatalog: React.FC = () => {
                           <button 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setOpenMenuId(null); // Close other menu
+                                setOpenMenuId(null);
                                 setQuickViewId(quickViewId === p.id ? null : p.id);
                             }}
                             className={cn(
@@ -199,11 +194,11 @@ export const ProductCatalog: React.FC = () => {
                           {quickViewId === p.id && (
                               <div className="absolute right-0 top-full mt-1 w-56 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-2 animate-in fade-in zoom-in-95 duration-200 text-left">
                                   <div className="px-4 py-2 border-b border-white/5 mb-1">
-                                      <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Quick Snapshot</p>
+                                      <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Snapshot</p>
                                       <p className="text-xs font-bold text-zinc-text mt-1 truncate">{p.name}</p>
                                   </div>
                                   <Link to="/templates/details" className="w-full text-left px-4 py-2 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center justify-between group transition-colors outline-none">
-                                      View Full Details <ArrowRight className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand rtl:rotate-180" />
+                                      {t('common.view_all')} <ArrowRight className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand rtl:rotate-180" />
                                   </Link>
                                   <button className="w-full text-left px-4 py-2 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center justify-between group transition-colors outline-none">
                                       Preview Storefront <ExternalLink className="w-3.5 h-3.5 text-zinc-muted group-hover:text-info" />
@@ -212,12 +207,11 @@ export const ProductCatalog: React.FC = () => {
                           )}
                        </div>
 
-                       {/* More Actions Dropdown */}
                        <div className="relative">
                            <button 
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setQuickViewId(null); // Close quick view
+                                    setQuickViewId(null);
                                     setOpenMenuId(openMenuId === p.id ? null : p.id);
                                 }}
                                 className={cn(
@@ -231,14 +225,14 @@ export const ProductCatalog: React.FC = () => {
                            {openMenuId === p.id && (
                                 <div className="absolute right-0 top-full mt-1 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
                                     <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors outline-none">
-                                        <Edit className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand" /> Edit SKU
+                                        <Edit className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand" /> {t('common.edit')}
                                     </button>
                                     <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-zinc-text hover:bg-white/5 uppercase tracking-widest flex items-center gap-2 group transition-colors outline-none">
                                         <TrendingUp className="w-3.5 h-3.5 text-zinc-muted group-hover:text-info" /> Analytics
                                     </button>
                                     <div className="h-px bg-white/5 my-1" />
                                     <button className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-danger hover:bg-danger/10 uppercase tracking-widest flex items-center gap-2 transition-colors outline-none">
-                                        <Trash2 className="w-3.5 h-3.5" /> Archive
+                                        <Trash2 className="w-3.5 h-3.5" /> {t('common.delete')}
                                     </button>
                                 </div>
                            )}
@@ -251,7 +245,6 @@ export const ProductCatalog: React.FC = () => {
           </table>
         </div>
         
-        {/* Pagination Footer */}
         <div className="bg-obsidian-outer/30 px-6 py-4 border-t border-white/5 flex items-center justify-between">
            <p className="text-[10px] text-zinc-muted font-black uppercase tracking-[0.2em]">{t('prod.page_info')}</p>
            <div className="flex gap-2">

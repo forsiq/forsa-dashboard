@@ -31,8 +31,7 @@ import {
   Legend
 } from 'recharts';
 import { cn } from '../../../lib/cn';
-
-// --- Mock Data ---
+import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 
 const REVENUE_DATA = [
   { name: 'Mon', revenue: 1200 },
@@ -66,16 +65,17 @@ const PENDING_APPROVALS = [
 ];
 
 export const RepairDashboard = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-8 animate-fade-up">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
              <Wrench className="w-5 h-5 text-brand" />
-             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">Repair Center</h1>
+             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">{t('repair.title')}</h1>
           </div>
-          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">Service operations & workflow</p>
+          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">{t('repair.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <AmberButton variant="secondary" size="sm">
@@ -90,13 +90,12 @@ export const RepairDashboard = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Open Repairs', value: '18', sub: 'In Queue', icon: AlertCircle, color: 'text-brand', bg: 'bg-brand/10' },
-          { label: 'In Progress', value: '8', sub: 'On Bench', icon: Wrench, color: 'text-info', bg: 'bg-info/10' },
-          { label: 'Completed Today', value: '12', sub: '+3 vs yesterday', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-          { label: 'Pending Approval', value: '5', sub: 'Waiting on Customer', icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
+          { label: t('repair.open'), value: '18', sub: 'In Queue', icon: AlertCircle, color: 'text-brand', bg: 'bg-brand/10' },
+          { label: t('repair.in_progress'), value: '8', sub: 'On Bench', icon: Wrench, color: 'text-info', bg: 'bg-info/10' },
+          { label: t('repair.completed_today'), value: '12', sub: '+3 vs yesterday', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+          { label: t('repair.pending_approval'), value: '5', sub: 'Waiting on Customer', icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
         ].map((stat, i) => (
           <AmberCard key={i} className="p-5 flex items-center justify-between hover:border-brand/20 transition-all cursor-default">
             <div>
@@ -111,24 +110,20 @@ export const RepairDashboard = () => {
         ))}
       </div>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
          
-         {/* Left Column (2/3) */}
          <div className="xl:col-span-2 space-y-6">
-            
-            {/* Revenue Chart */}
             <AmberCard className="p-6 h-[350px] flex flex-col" glass>
                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                     <DollarSign className="w-4 h-4 text-brand" /> Service Revenue (Week)
+                     <DollarSign className="w-4 h-4 text-brand" /> {t('repair.revenue_week')}
                   </h3>
                   <div className="text-right">
                      <p className="text-lg font-black text-zinc-text">$14,300</p>
                      <p className="text-[9px] font-bold text-success uppercase tracking-wide">+12% Growth</p>
                   </div>
                </div>
-               <div className="flex-1 w-full text-xs">
+               <div className="flex-1 w-full text-xs" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
                      <AreaChart data={REVENUE_DATA}>
                         <defs>
@@ -150,13 +145,12 @@ export const RepairDashboard = () => {
                </div>
             </AmberCard>
 
-            {/* Pending Approvals */}
             <AmberCard noPadding className="flex flex-col bg-obsidian-panel/50">
                <div className="p-5 border-b border-white/5 flex items-center justify-between bg-warning/5">
                   <h3 className="text-xs font-black text-warning uppercase tracking-widest flex items-center gap-2">
-                     <AlertCircle className="w-4 h-4" /> Pending Approvals
+                     <AlertCircle className="w-4 h-4" /> {t('repair.pending_approvals')}
                   </h3>
-                  <button className="text-[9px] font-bold text-warning hover:text-warning/80 uppercase tracking-widest">View All</button>
+                  <button className="text-[9px] font-bold text-warning hover:text-warning/80 uppercase tracking-widest">{t('common.view_all')}</button>
                </div>
                <div className="divide-y divide-white/5">
                   {PENDING_APPROVALS.map((item) => (
@@ -180,10 +174,6 @@ export const RepairDashboard = () => {
                         <div className="text-right flex flex-col items-end gap-1">
                            <p className="text-sm font-black text-zinc-text">{item.estimate}</p>
                            <p className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{item.time}</p>
-                           <div className="flex gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="text-[9px] font-bold text-success hover:underline">Approve</button>
-                              <button className="text-[9px] font-bold text-zinc-muted hover:text-zinc-text hover:underline">Contact</button>
-                           </div>
                         </div>
                      </div>
                   ))}
@@ -191,13 +181,10 @@ export const RepairDashboard = () => {
             </AmberCard>
          </div>
 
-         {/* Right Column (1/3) */}
          <div className="xl:col-span-1 space-y-6">
-            
-            {/* Technician Status */}
             <AmberCard className="p-5 bg-obsidian-panel/40">
                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <User className="w-4 h-4 text-zinc-muted" /> Technician Status
+                  <User className="w-4 h-4 text-zinc-muted" /> {t('repair.tech_status')}
                </h3>
                <div className="space-y-4">
                   {TECHNICIANS.map(tech => (
@@ -234,9 +221,8 @@ export const RepairDashboard = () => {
                </div>
             </AmberCard>
 
-            {/* Repairs by Category */}
             <AmberCard className="p-6 h-[300px] flex flex-col" glass>
-               <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-2">Repair Distribution</h3>
+               <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-2">{t('repair.distribution')}</h3>
                <div className="flex-1 w-full relative">
                   <ResponsiveContainer width="100%" height="100%">
                      <PieChart>
@@ -264,7 +250,6 @@ export const RepairDashboard = () => {
                   </div>
                </div>
             </AmberCard>
-
          </div>
       </div>
     </div>

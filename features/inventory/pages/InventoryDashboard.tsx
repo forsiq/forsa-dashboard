@@ -33,8 +33,6 @@ import {
 import { cn } from '../../../lib/cn';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 
-// --- Mock Data ---
-
 const WAREHOUSE_DATA = [
   { name: 'US-East', stock: 12500, capacity: 15000 },
   { name: 'EU-Central', stock: 8200, capacity: 12000 },
@@ -71,14 +69,13 @@ export const InventoryDashboard = () => {
   return (
     <div className="animate-fade-up space-y-8">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
              <Box className="w-5 h-5 text-brand" />
-             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">Inventory Command</h1>
+             <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">{t('inv.title')}</h1>
           </div>
-          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">Real-time stock levels and logistics tracking</p>
+          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">{t('inv.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <AmberButton variant="secondary" size="sm">
@@ -88,18 +85,17 @@ export const InventoryDashboard = () => {
             <ArrowRightLeft className="w-3.5 h-3.5 mr-2" /> Transfer
           </AmberButton>
           <AmberButton size="sm">
-            <Plus className="w-3.5 h-3.5 mr-2" /> Add Stock
+            <Plus className="w-3.5 h-3.5 mr-2" /> {t('common.add')} Stock
           </AmberButton>
         </div>
       </div>
 
-      {/* KPI Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Valuation', value: '$4.2M', sub: '+12% vs last mo', icon: DollarSign, color: 'text-brand', bg: 'bg-brand/10' },
-          { label: 'Low Stock Items', value: '15', sub: 'Action Required', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
-          { label: 'Total Units', value: '35,240', sub: 'Across 4 Nodes', icon: Package, color: 'text-info', bg: 'bg-info/10' },
-          { label: 'Pending Transfers', value: '8', sub: 'In Transit', icon: Truck, color: 'text-success', bg: 'bg-success/10' },
+          { label: t('inv.total_valuation'), value: '$4.2M', sub: '+12% vs last mo', icon: DollarSign, color: 'text-brand', bg: 'bg-brand/10' },
+          { label: t('inv.low_stock'), value: '15', sub: 'Action Required', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
+          { label: t('inv.total_units'), value: '35,240', sub: 'Across 4 Nodes', icon: Package, color: 'text-info', bg: 'bg-info/10' },
+          { label: t('inv.pending_transfers'), value: '8', sub: 'In Transit', icon: Truck, color: 'text-success', bg: 'bg-success/10' },
         ].map((stat, i) => (
           <AmberCard key={i} className="p-5 flex items-center justify-between hover:border-brand/20 transition-all cursor-default">
             <div>
@@ -114,14 +110,12 @@ export const InventoryDashboard = () => {
         ))}
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Warehouse Distribution */}
         <AmberCard className="p-6 h-[350px] flex flex-col" glass>
           <div className="flex items-center justify-between mb-6">
              <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-info" /> Stock by Warehouse
+                <MapPin className="w-4 h-4 text-info" /> {t('inv.stock_warehouse')}
              </h3>
           </div>
           <div className="flex-1 w-full text-xs">
@@ -140,14 +134,13 @@ export const InventoryDashboard = () => {
           </div>
         </AmberCard>
 
-        {/* Movement Trends */}
         <AmberCard className="p-6 h-[350px] flex flex-col" glass>
           <div className="flex items-center justify-between mb-6">
              <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-success" /> Movement Velocity (30d)
+                <TrendingUp className="w-4 h-4 text-success" /> {t('inv.movement_velocity')} (30d)
              </h3>
           </div>
-          <div className="flex-1 w-full text-xs">
+          <div className="flex-1 w-full text-xs" dir="ltr">
              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={MOVEMENT_DATA}>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -165,14 +158,12 @@ export const InventoryDashboard = () => {
         </AmberCard>
       </div>
 
-      {/* Operational Layer */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          
-         {/* Low Stock Alerts */}
          <AmberCard noPadding className="lg:col-span-1 overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-white/5 flex items-center justify-between bg-warning/5">
+            <div className="p-5 border-b border-white/5 bg-warning/5">
                <h3 className="text-xs font-black text-warning uppercase tracking-widest flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" /> Critical Levels
+                  <AlertTriangle className="w-4 h-4" /> {t('inv.critical_levels')}
                </h3>
                <span className="text-[9px] font-bold bg-warning/20 text-warning px-1.5 py-0.5 rounded-sm">{LOW_STOCK_ALERTS.length}</span>
             </div>
@@ -199,13 +190,12 @@ export const InventoryDashboard = () => {
             </div>
          </AmberCard>
 
-         {/* Recent Movements */}
          <AmberCard noPadding className="lg:col-span-2 overflow-hidden flex flex-col">
             <div className="p-5 border-b border-white/5 flex items-center justify-between">
                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest flex items-center gap-2">
-                  <History className="w-4 h-4 text-brand" /> Recent Movements
+                  <History className="w-4 h-4 text-brand" /> {t('inv.recent_movements')}
                </h3>
-               <button className="text-[9px] font-bold text-brand hover:underline uppercase tracking-widest">View All</button>
+               <button className="text-[9px] font-bold text-brand hover:underline uppercase tracking-widest">{t('common.view_all')}</button>
             </div>
             <div className="overflow-x-auto">
                <table className="w-full text-left">

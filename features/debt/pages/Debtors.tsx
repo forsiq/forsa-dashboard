@@ -29,7 +29,8 @@ import {
   User,
   Send,
   ArrowRight,
-  FileText
+  FileText,
+  History
 } from 'lucide-react';
 import { cn } from '../../../lib/cn';
 

@@ -63,12 +63,11 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
   const { activeMode, switchMode } = useNavigation();
   const navigate = useNavigate();
 
-  // Map internal mode IDs to display labels
   const getModeLabel = (mode: string | null) => {
-    if (mode === 'generic') return 'Product Suite';
+    if (mode === 'generic') return t('app.suite');
     if (mode === 'admin') return 'Administration';
     if (mode === 'portal') return 'Service Portal';
-    return 'Product Suite';
+    return t('app.suite');
   };
 
   const handleExitToPortal = () => {
@@ -78,79 +77,78 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
 
   const menuSections = [
     {
-      title: "Dashboards",
+      title: t('sidebar.dashboards'),
       items: [
         { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutGrid },
-        { label: 'Catalog Analytics', path: paths.catalogDashboard, icon: PieChart }, 
+        { label: t('nav.catalog_analytics'), path: paths.catalogDashboard, icon: PieChart }, 
       ]
     },
     {
-      title: "Service & Repairs",
+      title: t('sidebar.service_repairs'),
       items: [
-        { label: 'Repair Center', path: paths.repairDashboard, icon: Wrench },
-        { label: 'Schedule', path: paths.repairCalendar, icon: Calendar },
-        { label: 'Service Catalog', path: paths.serviceCatalog, icon: BookOpen },
-        { label: 'Technicians', path: paths.repairTechnicians, icon: UserCog },
-        { label: 'New Ticket', path: paths.newRepair, icon: PlusCircle },
+        { label: t('nav.repair_center'), path: paths.repairDashboard, icon: Wrench },
+        { label: t('nav.schedule'), path: paths.repairCalendar, icon: Calendar },
+        { label: t('nav.service_catalog'), path: paths.serviceCatalog, icon: BookOpen },
+        { label: t('nav.technicians'), path: paths.repairTechnicians, icon: UserCog },
+        { label: t('nav.new_ticket'), path: paths.newRepair, icon: PlusCircle },
       ]
     },
     {
-      title: "Finance",
+      title: t('sidebar.finance'),
       items: [
-        { label: 'Debt Control', path: paths.debtDashboard, icon: Wallet },
-        { label: 'Debtors', path: paths.debtors, icon: UserMinus },
-        { label: 'Invoices', path: paths.invoices, icon: FileText },
-        { label: 'Payment Schedule', path: paths.paymentSchedule, icon: CalendarClock },
-        { label: 'Record Payment', path: paths.recordPayment, icon: CreditCard },
+        { label: t('nav.debt_control'), path: paths.debtDashboard, icon: Wallet },
+        { label: t('nav.debtors'), path: paths.debtors, icon: UserMinus },
+        { label: t('nav.invoices'), path: paths.invoices, icon: FileText },
+        { label: t('nav.payment_schedule'), path: paths.paymentSchedule, icon: CalendarClock },
+        { label: t('nav.record_payment'), path: paths.recordPayment, icon: CreditCard },
       ]
     },
     {
-      title: "CRM",
+      title: t('sidebar.crm'),
       items: [
-        { label: 'CRM Command', path: paths.crm, icon: Users },
-        { label: 'Leads Pipeline', path: paths.crmPipeline, icon: Kanban },
-        { label: 'Deals', path: paths.crmDeals, icon: Target },
-        { label: 'Campaigns', path: paths.crmCampaigns, icon: Megaphone },
-        { label: 'Tasks', path: paths.crmTasks, icon: ListTodo },
-        { label: 'Customers', path: paths.crmCustomers, icon: Contact },
+        { label: t('nav.crm_command'), path: paths.crm, icon: Users },
+        { label: t('nav.leads'), path: paths.crmPipeline, icon: Kanban },
+        { label: t('nav.deals'), path: paths.crmDeals, icon: Target },
+        { label: t('nav.campaigns'), path: paths.crmCampaigns, icon: Megaphone },
+        { label: t('nav.tasks'), path: paths.crmTasks, icon: ListTodo },
+        { label: t('nav.customers'), path: paths.crmCustomers, icon: Contact },
       ]
     },
     {
-      title: "Catalog",
+      title: t('sidebar.catalog'),
       items: [
         { label: t('nav.catalog'), path: paths.catalog, icon: Package }, 
-        { label: t('nav.admin.categories'), path: paths.adminCategories, icon: Tags }, 
-        { label: 'Brands', path: paths.adminBrands, icon: Briefcase },
-        { label: 'Media Library', path: paths.mediaLibrary, icon: Image }, 
+        { label: t('nav.categories'), path: paths.adminCategories, icon: Tags }, 
+        { label: t('nav.brands'), path: paths.adminBrands, icon: Briefcase },
+        { label: t('nav.media'), path: paths.mediaLibrary, icon: Image }, 
       ]
     },
     {
-      title: t('nav.inventory'),
+      title: t('sidebar.inventory'),
       items: [
-        { label: 'Command Center', path: paths.inventory, icon: Box },
-        { label: 'Stock Overview', path: paths.stockOverview, icon: ClipboardList },
-        { label: 'Stock Movements', path: paths.movements, icon: ArrowRightLeft },
-        { label: 'Stock Take', path: paths.stockTake, icon: ClipboardCheck },
-        { label: 'Barcoding', path: paths.barcoding, icon: ScanBarcode },
-        { label: 'Warehouses', path: paths.warehouses, icon: MapPin },
-        { label: 'Vendors', path: paths.vendors, icon: Truck },
+        { label: t('nav.inv_command'), path: paths.inventory, icon: Box },
+        { label: t('nav.stock_overview'), path: paths.stockOverview, icon: ClipboardList },
+        { label: t('nav.movements'), path: paths.movements, icon: ArrowRightLeft },
+        { label: t('nav.stock_take'), path: paths.stockTake, icon: ClipboardCheck },
+        { label: t('nav.barcoding'), path: paths.barcoding, icon: ScanBarcode },
+        { label: t('nav.warehouses'), path: paths.warehouses, icon: MapPin },
+        { label: t('nav.vendors'), path: paths.vendors, icon: Truck },
       ]
     },
     {
       title: t('sidebar.operations'),
       items: [
-        { label: 'Point of Sale', path: paths.pos, icon: Calculator },
-        { label: 'Orders Dashboard', path: paths.ordersDashboard, icon: LayoutDashboard },
+        { label: t('nav.pos'), path: paths.pos, icon: Calculator },
+        { label: t('nav.orders_dash'), path: paths.ordersDashboard, icon: LayoutDashboard },
         { label: t('nav.orders'), path: paths.orders, icon: ShoppingCart },
-        { label: 'Returns', path: paths.returns, icon: RotateCcw },
-        { label: t('form.init_resource'), path: paths.templateForm, icon: FilePlus }, 
+        { label: t('nav.returns'), path: paths.returns, icon: RotateCcw },
         { label: t('nav.analytics'), path: paths.analytics, icon: BarChart3 },
       ]
     },
     {
       title: t('sidebar.general'),
       items: [
-        { label: 'Service Settings', path: paths.serviceSettings, icon: Sliders }, 
+        { label: t('nav.settings'), path: paths.serviceSettings, icon: Sliders }, 
         { label: t('nav.about'), path: '/about', icon: Info },
       ]
     }
@@ -171,7 +169,6 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
       `}
     >
       <div className="flex flex-col h-full">
-        {/* Sidebar Header with Toggle */}
         <div className={`h-16 flex items-center border-b border-border transition-all ${isCollapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
           {!isCollapsed ? (
             <>
@@ -180,7 +177,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
                   <AmberLogo className="w-8 h-8" />
                 </div>
                 <div>
-                  <span className="text-lg font-bold text-zinc-text leading-none block">Product Suite</span>
+                  <span className="text-lg font-bold text-zinc-text leading-none block">{t('app.name')}</span>
                   <span className="text-[9px] font-black text-brand uppercase tracking-widest block">
                     {getModeLabel(activeMode)}
                   </span>
@@ -251,7 +248,6 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
           ))}
         </div>
 
-        {/* Exit to Portal Footer */}
         <div className="p-4 border-t border-border mt-auto">
           <button 
             onClick={handleExitToPortal}
@@ -260,15 +256,15 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
               border border-transparent hover:border-brand/30 hover:bg-white/5
               ${isCollapsed ? 'justify-center' : ''}
             `}
-            title="Back to Portal"
+            title={t('sidebar.back_portal')}
           >
             <div className={`p-1 bg-white/5 rounded-sm text-zinc-muted group-hover:text-brand transition-colors ${!isCollapsed ? (dir === 'rtl' ? 'ml-3' : 'mr-3') : ''}`}>
                <LogOut className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col items-start text-left">
-                 <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest group-hover:text-zinc-text transition-colors">Exit Service</span>
-                 <span className="text-[9px] font-bold text-zinc-muted/60 uppercase tracking-tight group-hover:text-brand transition-colors">Back to Portal</span>
+                 <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest group-hover:text-zinc-text transition-colors">{t('sidebar.exit')}</span>
+                 <span className="text-[9px] font-bold text-zinc-muted/60 uppercase tracking-tight group-hover:text-brand transition-colors">{t('sidebar.back_portal')}</span>
               </div>
             )}
           </button>
