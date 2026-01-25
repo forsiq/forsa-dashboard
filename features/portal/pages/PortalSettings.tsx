@@ -74,8 +74,8 @@ export const PortalSettings = () => {
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col animate-fade-up">
       <div className="mb-8">
-         <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">Service Configuration</h1>
-         <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">Manage active modules for <span className="text-brand">{activeProject.name}</span></p>
+         <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">{t('settings.page.title')}</h1>
+         <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] mt-1">{t('settings.page.subtitle')} <span className="text-brand">{activeProject.name}</span></p>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
@@ -84,10 +84,10 @@ export const PortalSettings = () => {
            {/* Top Actions */}
            <div className="flex gap-2">
               <button onClick={() => setSelectedSection('general')} className={cn("flex-1 py-3 px-4 rounded-sm border transition-all text-left flex items-center gap-3", selectedSection === 'general' ? "bg-brand/10 border-brand/30 text-brand" : "bg-obsidian-panel border-white/5 text-zinc-muted hover:text-zinc-text")}>
-                 <SettingsIcon className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">General</span>
+                 <SettingsIcon className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.section.general')}</span>
               </button>
               <button onClick={() => setSelectedSection('billing')} className={cn("flex-1 py-3 px-4 rounded-sm border transition-all text-left flex items-center gap-3", selectedSection === 'billing' ? "bg-brand/10 border-brand/30 text-brand" : "bg-obsidian-panel border-white/5 text-zinc-muted hover:text-zinc-text")}>
-                 <CreditCard className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">Billing</span>
+                 <CreditCard className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.section.billing')}</span>
               </button>
            </div>
 
@@ -96,7 +96,7 @@ export const PortalSettings = () => {
               <div className="p-4 border-b border-white/5 bg-obsidian-panel">
                  <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted" />
-                    <input type="text" placeholder="Filter services..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all" />
+                    <input type="text" placeholder={t('settings.filter_placeholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all" />
                  </div>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
@@ -122,17 +122,17 @@ export const PortalSettings = () => {
         <div className="lg:col-span-8 h-full overflow-y-auto custom-scrollbar space-y-6">
            {selectedSection === 'general' && (
               <Card className="p-8 animate-in fade-in slide-in-from-right-2 duration-300">
-                 <h2 className="text-xl font-black text-zinc-text uppercase italic tracking-tighter mb-6">General Settings</h2>
+                 <h2 className="text-xl font-black text-zinc-text uppercase italic tracking-tighter mb-6">{t('settings.general.title')}</h2>
                  <div className="space-y-6 max-w-2xl">
                    <div>
-                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">Project Name</label>
+                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">{t('settings.general.name')}</label>
                      <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm px-4 text-sm font-bold text-zinc-text outline-none focus:border-brand/30 transition-all" />
                    </div>
                    <div>
-                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">Description</label>
+                     <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1">{t('settings.general.desc')}</label>
                      <textarea rows={4} value={projectDesc} onChange={(e) => setProjectDesc(e.target.value)} className="w-full bg-obsidian-outer border border-white/5 rounded-sm p-4 text-sm font-medium text-zinc-text outline-none focus:border-brand/30 transition-all resize-none" />
                    </div>
-                   <div className="pt-2"><Button onClick={handleGeneralSave}>Save Changes</Button></div>
+                   <div className="pt-2"><Button onClick={handleGeneralSave}>{t('settings.save')}</Button></div>
                  </div>
               </Card>
            )}
@@ -141,12 +141,12 @@ export const PortalSettings = () => {
               <Card className="p-8 border-brand/30 bg-gradient-to-br from-obsidian-panel to-brand/5 relative overflow-hidden animate-in fade-in slide-in-from-right-2 duration-300">
                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                     <div>
-                       <span className="inline-block px-3 py-1 bg-brand text-obsidian-outer text-[9px] font-black uppercase tracking-widest rounded-sm mb-3">Current Plan</span>
+                       <span className="inline-block px-3 py-1 bg-brand text-obsidian-outer text-[9px] font-black uppercase tracking-widest rounded-sm mb-3">{t('settings.billing.current')}</span>
                        <h2 className="text-4xl font-black text-zinc-text uppercase italic tracking-tighter">{activeProject.plan}</h2>
                        <p className="text-sm font-bold text-zinc-muted mt-2">{activeProject.billing.amount}</p>
                     </div>
                     <div className="text-right">
-                       <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1">Next Billing Date</p>
+                       <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1">{t('settings.billing.next_date')}</p>
                        <p className="text-xl font-bold text-zinc-text">{activeProject.billing.nextDue}</p>
                     </div>
                  </div>
@@ -173,31 +173,31 @@ export const PortalSettings = () => {
                        </div>
                        <div className="flex flex-col items-end gap-3">
                           <button onClick={() => handleToggleService(activeServiceData.id)} className="flex items-center gap-3 transition-colors group/btn">
-                             <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest group-hover/btn:text-zinc-text">Service Status</span>
+                             <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest group-hover/btn:text-zinc-text">{t('settings.status.service')}</span>
                              {isServiceEnabled(activeServiceData.id) ? <ToggleRight className="w-10 h-10 text-success transition-transform" /> : <ToggleLeft className="w-10 h-10 text-zinc-muted transition-transform" />}
                           </button>
-                          <span className={cn("text-[10px] font-bold uppercase tracking-widest", isServiceEnabled(activeServiceData.id) ? "text-success" : "text-zinc-muted")}>{isServiceEnabled(activeServiceData.id) ? "Active & Running" : "Disabled"}</span>
+                          <span className={cn("text-[10px] font-bold uppercase tracking-widest", isServiceEnabled(activeServiceData.id) ? "text-success" : "text-zinc-muted")}>{isServiceEnabled(activeServiceData.id) ? t('settings.status.active') : t('settings.status.disabled')}</span>
                        </div>
                     </div>
                  </Card>
                  <Card className="p-6">
-                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-6 border-b border-white/5 pb-2">Configuration</h3>
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-6 border-b border-white/5 pb-2">{t('settings.config.title')}</h3>
                     <div className="space-y-5">
                        <div className="space-y-1.5">
-                          <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">API Endpoint URL</label>
+                          <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">{t('settings.config.endpoint')}</label>
                           <input type="text" disabled={!isServiceEnabled(activeServiceData.id)} defaultValue={`https://api.zonevast.com/v1/${activeServiceData.id.toLowerCase()}`} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-mono text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50" />
                        </div>
                        <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                             <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Max Throughput</label>
+                             <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">{t('settings.config.throughput')}</label>
                              <select disabled={!isServiceEnabled(activeServiceData.id)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50"><option>Standard (1k req/s)</option><option>High (10k req/s)</option></select>
                           </div>
                           <div className="space-y-1.5">
-                             <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">Region</label>
+                             <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1">{t('settings.config.region')}</label>
                              <select disabled={!isServiceEnabled(activeServiceData.id)} className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm px-3 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 disabled:opacity-50"><option>Global (Auto)</option><option>US-East</option></select>
                           </div>
                        </div>
-                       <div className="mt-8 pt-4 border-t border-white/5 flex justify-end"><Button size="sm" disabled={!isServiceEnabled(activeServiceData.id)}>Save Configuration</Button></div>
+                       <div className="mt-8 pt-4 border-t border-white/5 flex justify-end"><Button size="sm" disabled={!isServiceEnabled(activeServiceData.id)}>{t('settings.config.save')}</Button></div>
                     </div>
                  </Card>
               </div>

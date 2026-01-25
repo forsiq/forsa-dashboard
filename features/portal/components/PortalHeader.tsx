@@ -34,7 +34,7 @@ export const PortalHeader = () => {
   const { projects, activeProject, selectProject } = useProjects();
   const navigate = useNavigate();
   
-  const [activeDropdown, setActiveDropdown] = useState<'project' | 'notif' | 'profile' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'notif' | 'profile' | 'project' | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,19 +49,14 @@ export const PortalHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSwitch = (id: string) => {
+  const toggleDropdown = (key: 'notif' | 'profile' | 'project') => {
+    setActiveDropdown(prev => prev === key ? null : key);
+  };
+
+  const handleProjectSwitch = (id: string) => {
     selectProject(id);
     setActiveDropdown(null);
-    navigate('/portal');
-  };
-
-  const handleNewProject = () => {
-    setActiveDropdown(null);
-    navigate(paths.workspaceDirectory, { state: { openCreate: true } });
-  };
-
-  const toggleDropdown = (key: 'project' | 'notif' | 'profile') => {
-    setActiveDropdown(prev => prev === key ? null : key);
+    navigate(paths.dashboard);
   };
 
   const notifications = [
@@ -77,73 +72,65 @@ export const PortalHeader = () => {
         <Link to="/portal" className="flex items-center gap-3 group">
           <AmberLogo className="w-8 h-8 group-hover:scale-105 transition-transform" />
           <div className="hidden sm:block">
-            <span className="text-lg font-black text-zinc-text uppercase italic tracking-tighter leading-none block">ZoneVast</span>
-            <span className="text-[9px] font-bold text-brand/80 uppercase tracking-[0.4em] mt-1 block">Portal</span>
+            <span className="text-lg font-black text-zinc-text uppercase italic tracking-tighter leading-none block">{t('app.name')}</span>
+            <span className="text-[9px] font-bold text-brand/80 uppercase tracking-[0.4em] mt-1 block">{t('portal.title')}</span>
           </div>
         </Link>
 
-        {/* Project Switcher */}
-        <div className="relative">
-          <button 
-            onClick={() => toggleDropdown('project')}
-            className={cn(
-              "flex items-center gap-3 px-3 py-1.5 bg-obsidian-outer border border-white/5 rounded-sm transition-all group",
-              activeDropdown === 'project' ? "border-brand/30" : "hover:border-brand/30"
-            )}
-          >
-            <div className="p-1.5 bg-white/5 rounded-sm text-brand group-hover:bg-brand/10">
-               <Briefcase className="w-4 h-4" />
-            </div>
-            <div className="text-left hidden md:block">
-               <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Current Project</p>
-               <p className="text-xs font-bold text-zinc-text truncate max-w-[120px]">
-                 {activeProject?.name || 'Select Project'}
-               </p>
-            </div>
-            <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-muted transition-transform", activeDropdown === 'project' && "rotate-180")} />
-          </button>
+        {/* Divider */}
+        <div className="hidden md:block h-8 w-px bg-white/5" />
 
-          {activeDropdown === 'project' && (
-            <div className="absolute top-full left-0 mt-2 w-64 bg-obsidian-card border border-white/10 rounded-sm shadow-xl z-50 animate-in fade-in zoom-in-95 duration-100">
-               <div className="px-3 py-2 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                  <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Active Projects</span>
-                  <span className="text-[9px] font-bold bg-white/10 px-1.5 rounded text-zinc-text">{projects.length}</span>
-               </div>
-               <div className="max-h-[300px] overflow-y-auto p-1">
-                  {projects.map(proj => (
-                     <button 
-                       key={proj.id}
-                       onClick={() => handleSwitch(proj.id)}
-                       className={cn(
-                          "w-full flex items-center justify-between px-3 py-2.5 rounded-sm transition-colors group",
-                          activeProject?.id === proj.id ? "bg-brand/5" : "hover:bg-white/5"
-                       )}
-                     >
-                        <div className="text-left">
-                           <p className={cn("text-xs font-bold uppercase tracking-tight", activeProject?.id === proj.id ? "text-brand" : "text-zinc-text")}>{proj.name}</p>
-                           <p className="text-[9px] text-zinc-muted uppercase">{proj.plan}</p>
-                        </div>
-                        {activeProject?.id === proj.id && <Check className="w-3.5 h-3.5 text-brand" />}
-                     </button>
-                  ))}
-               </div>
-               <div className="border-t border-white/5 p-1">
-                  <Link 
-                    to={paths.workspaceDirectory}
-                    onClick={() => setActiveDropdown(null)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black text-zinc-muted hover:text-zinc-text hover:bg-white/5 uppercase tracking-widest transition-colors rounded-sm"
-                  >
-                     <LayoutGrid className="w-3.5 h-3.5" /> Manage Workspaces
-                  </Link>
-                  <button 
-                    onClick={handleNewProject}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black text-brand hover:bg-brand/5 uppercase tracking-widest transition-colors rounded-sm mt-1"
-                  >
-                     <Plus className="w-3.5 h-3.5" /> New Project
-                  </button>
-               </div>
-            </div>
-          )}
+        {/* Project Switcher */}
+        <div className="relative hidden md:block">
+            <button 
+              onClick={() => toggleDropdown('project')}
+              className={cn(
+                "w-60 h-10 flex items-center justify-between gap-3 px-4 bg-obsidian-outer border border-white/5 rounded-sm hover:border-brand/30 hover:bg-white/[0.02] transition-all group",
+                activeDropdown === 'project' && "border-brand/40 ring-1 ring-brand/10"
+              )}
+            >
+              <div className="flex items-center gap-3 overflow-hidden">
+                 <div className="p-1 bg-white/5 rounded-sm text-brand">
+                    <Briefcase className="w-3.5 h-3.5" />
+                 </div>
+                 <div className="flex flex-col items-start truncate">
+                    <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">{t('portal.header.current_project')}</span>
+                    <span className="text-xs font-bold text-zinc-text truncate w-32 text-left">{activeProject?.name || t('portal.header.select_project')}</span>
+                 </div>
+              </div>
+              <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-muted transition-transform", activeDropdown === 'project' && "rotate-180")} />
+            </button>
+
+            {activeDropdown === 'project' && (
+              <div className="absolute top-full left-0 w-80 mt-2 bg-obsidian-card border border-white/10 rounded-sm shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
+                 <div className="px-3 py-2 text-[9px] font-black text-zinc-muted uppercase tracking-widest border-b border-white/5 mb-1">
+                    {t('portal.header.active_projects')}
+                 </div>
+                 <div className="max-h-[300px] overflow-y-auto">
+                    {projects.map(proj => (
+                       <button 
+                         key={proj.id}
+                         onClick={() => handleProjectSwitch(proj.id)}
+                         className={cn(
+                            "w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors group",
+                            activeProject?.id === proj.id && "bg-brand/5"
+                         )}
+                       >
+                          <div className="text-left">
+                             <p className={cn("text-xs font-bold uppercase tracking-tight", activeProject?.id === proj.id ? "text-brand" : "text-zinc-text")}>{proj.name}</p>
+                             <p className="text-[9px] text-zinc-muted uppercase">{proj.plan}</p>
+                          </div>
+                          {activeProject?.id === proj.id && <Check className="w-3.5 h-3.5 text-brand" />}
+                       </button>
+                    ))}
+                 </div>
+                 <div className="border-t border-white/5 mt-1 pt-1">
+                    <Link to="/portal" className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-black text-zinc-muted hover:text-brand hover:bg-white/5 uppercase tracking-widest transition-colors">
+                       <Plus className="w-3.5 h-3.5" /> {t('portal.header.new_project')}
+                    </Link>
+                 </div>
+              </div>
+            )}
         </div>
       </div>
 
@@ -153,7 +140,7 @@ export const PortalHeader = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
             <input 
               type="text" 
-              placeholder="Search portal..."
+              placeholder={t('portal.header.search_placeholder')}
               className="h-9 w-64 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/50 cursor-pointer"
               readOnly
               onClick={() => setIsSearchOpen(true)}
@@ -190,7 +177,7 @@ export const PortalHeader = () => {
                   ))}
                 </div>
                 <Link to="/notifications" onClick={() => setActiveDropdown(null)} className="block w-full py-3 text-center text-[10px] font-black text-brand uppercase tracking-widest hover:bg-white/5 transition-colors">
-                  View All Signals
+                   {t('common.view_all')}
                 </Link>
               </div>
             )}
