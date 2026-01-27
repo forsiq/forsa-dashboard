@@ -62,5 +62,10 @@ export const paths = {
   templateForm: '/templates/form',
   templateDetails: '/templates/details',
   templateAnalytics: '/templates/analytics',
-  templateAutomation: '/templates/automation'
+  templateAutomation: '/templates/automation',
+  // Errors & Results
+  serverError: '/error/500',
+  networkError: '/error/network',
+  result: '/result',
+  loading: '/system/loading',
 };

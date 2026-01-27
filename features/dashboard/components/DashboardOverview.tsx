@@ -1,28 +1,30 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AmberCard } from '../../../amber-ui/components/AmberCard';
-import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
+import { AmberButton } from '../../../amber-ui/components/AmberButton';
 import { 
   Package, 
+  ShoppingCart, 
+  Users, 
   DollarSign, 
-  Clock, 
-  AlertCircle,
-  Activity,
-  ShieldCheck,
-  Zap,
-  FileText,
-  RefreshCw,
-  ArrowRight,
-  Plus,
-  ShoppingCart,
-  Settings2,
+  Settings, 
+  Plus, 
+  ExternalLink,
   X,
   CheckCircle2,
   Circle,
+  Clock,
+  AlertCircle,
+  Activity,
+  CreditCard,
+  FileText,
   Database,
+  ShieldCheck,
   Search,
-  Users,
-  CreditCard
+  LayoutGrid,
+  ArrowRight,
+  Box
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -35,284 +37,323 @@ import {
 } from 'recharts';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { useTheme } from '../../../amber-ui/contexts/ThemeContext';
-import { cn } from '../../../lib/cn';
+import { useProjects } from '../../../contexts/ProjectContext';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '../../../lib/cn';
 import { paths } from '../../../routes/paths';
 
-// ... (Existing Imports) ...
+// --- Configuration Data ---
 
-// We will construct the Actions array inside the component to use `t`
-interface ActionItem {
+interface ActionDef {
   id: string;
   label: string;
   path: string;
   icon: any;
-  category: string;
-  color: string;
-  bg: string;
+  color: string; // Text color
+  bg: string;    // Background color for icon container or card
   border: string;
 }
 
-const timelineData = [
-  { name: 'Mon', enriched: 120, pending: 45 },
-  { name: 'Tue', enriched: 150, pending: 30 },
-  { name: 'Wed', enriched: 210, pending: 80 },
-  { name: 'Thu', enriched: 180, pending: 50 },
-  { name: 'Fri', enriched: 240, pending: 20 },
-  { name: 'Sat', enriched: 90, pending: 10 },
-  { name: 'Sun', enriched: 100, pending: 15 },
+const ACTION_DEFINITIONS: Record<string, ActionDef> = {
+  add_product: { 
+    id: 'add_product', label: 'Add Product', path: '/catalog/new', 
+    icon: Plus, color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/20' 
+  },
+  master_catalog: { 
+    id: 'master_catalog', label: 'Master Catalog', path: paths.catalog, 
+    icon: Package, color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/10' 
+  },
+  inventory_hub: { 
+    id: 'inventory_hub', label: 'Inventory Hub', path: paths.inventory, 
+    icon: Box, color: 'text-info', bg: 'bg-info/10', border: 'border-info/20' 
+  },
+  create_order: { 
+    id: 'create_order', label: 'Create Order', path: paths.pos, 
+    icon: ShoppingCart, color: 'text-info', bg: 'bg-info/10', border: 'border-info/20' 
+  },
+  order_mgmt: { 
+    id: 'order_mgmt', label: 'Order Management', path: paths.orders, 
+    icon: FileText, color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/10' 
+  },
+  analytics: { 
+    id: 'analytics', label: 'Analytics Hub', path: paths.analytics, 
+    icon: Activity, color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' 
+  },
+  billing: { 
+    id: 'billing', label: 'Billing & Plan', path: paths.billing, 
+    icon: CreditCard, color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/20' 
+  },
+  audit: { 
+    id: 'audit', label: 'Audit Vault', path: '/audit-logs', 
+    icon: ShieldCheck, color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/10' 
+  },
+  records: { 
+    id: 'records', label: 'Records', path: paths.records, 
+    icon: Database, color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/10' 
+  },
+  users: { 
+    id: 'users', label: 'User Directory', path: paths.adminUsers, 
+    icon: Users, color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/10' 
+  }
+};
+
+const CATEGORIES = {
+  'CATALOG': ['add_product', 'master_catalog', 'inventory_hub'],
+  'OPERATIONS': ['create_order', 'order_mgmt', 'analytics'],
+  'GENERAL': ['billing', 'audit', 'records'],
+  'ADMIN': ['users']
+};
+
+const STATS = [
+  { label: 'Total Products', value: '12,842', trend: '+42 Today', icon: Package, color: 'text-brand', bg: 'bg-brand/10' },
+  { label: 'Inventory Value', value: '$4.2M', trend: '+2.4%', icon: DollarSign, color: 'text-zinc-text', bg: 'bg-obsidian-outer' },
+  { label: 'Pending Orders', value: '184', trend: '-12%', icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
+  { label: 'Critical Issues', value: '3', trend: 'Action Req', icon: AlertCircle, color: 'text-danger', bg: 'bg-danger/10' },
+];
+
+const CHART_DATA = [
+  { name: 'Mon', value: 120 },
+  { name: 'Tue', value: 132 },
+  { name: 'Wed', value: 145 },
+  { name: 'Thu', value: 160 },
+  { name: 'Fri', value: 190 },
+  { name: 'Sat', value: 170 },
+  { name: 'Sun', value: 185 },
 ];
 
 export const DashboardOverview = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { activeProject } = useProjects();
   const isDark = theme === 'dark';
-
-  // Construct available actions with translations
-  const AVAILABLE_ACTIONS: ActionItem[] = [
-    { id: 'add_sku', label: t('prod.add_sku'), path: '/catalog/new', icon: Plus, category: t('sidebar.catalog'), color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
-    { id: 'view_products', label: t('nav.catalog'), path: paths.catalog, icon: Package, category: t('sidebar.catalog'), color: 'text-brand', bg: 'bg-brand/5', border: 'border-brand/20' },
-    { id: 'new_order', label: t('orders.create'), path: paths.orders, icon: ShoppingCart, category: t('sidebar.operations'), color: 'text-info', bg: 'bg-info/10', border: 'border-info/30' },
-    { id: 'view_orders', label: t('nav.orders'), path: paths.orders, icon: FileText, category: t('sidebar.operations'), color: 'text-info', bg: 'bg-info/5', border: 'border-info/20' },
-    { id: 'view_reports', label: t('nav.analytics'), path: paths.analytics, icon: Activity, category: t('sidebar.operations'), color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' },
-    { id: 'billing', label: 'Billing & Plan', path: '/billing', icon: CreditCard, category: t('sidebar.general'), color: 'text-brand', bg: 'bg-brand/10', border: 'border-brand/30' },
-    { id: 'view_logs', label: t('nav.audit_logs'), path: '/audit-logs', icon: ShieldCheck, category: t('sidebar.general'), color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-    { id: 'db_records', label: t('nav.records'), path: paths.records, icon: Database, category: t('sidebar.general'), color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-    { id: 'manage_users', label: t('nav.admin.users'), path: paths.adminUsers, icon: Users, category: 'Admin', color: 'text-zinc-text', bg: 'bg-white/5', border: 'border-white/20' },
-  ];
-
-  const [activeActionIds, setActiveActionIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('dashboard_actions');
-    return saved ? JSON.parse(saved) : ['add_sku', 'new_order', 'view_reports', 'billing'];
-  });
   
   const [isConfiguring, setIsConfiguring] = useState(false);
-  const [timeRange, setTimeRange] = useState('7d');
-
-  useEffect(() => {
-    localStorage.setItem('dashboard_actions', JSON.stringify(activeActionIds));
-  }, [activeActionIds]);
+  const [activeActionIds, setActiveActionIds] = useState<string[]>([
+    'add_product', 'create_order', 'analytics', 'billing'
+  ]);
 
   const toggleAction = (id: string) => {
-    setActiveActionIds(prev => 
-      prev.includes(id) 
-        ? prev.filter(actionId => actionId !== id) 
-        : [...prev, id]
-    );
+    if (activeActionIds.includes(id)) {
+      setActiveActionIds(prev => prev.filter(a => a !== id));
+    } else {
+      if (activeActionIds.length >= 6) {
+        alert("Maximum 6 shortcuts allowed.");
+        return;
+      }
+      setActiveActionIds(prev => [...prev, id]);
+    }
   };
 
-  const displayActions = useMemo(() => {
-    return activeActionIds
-      .map(id => AVAILABLE_ACTIONS.find(a => a.id === id))
-      .filter(Boolean) as ActionItem[];
-  }, [activeActionIds, AVAILABLE_ACTIONS]);
-
-  const groupedActions = useMemo(() => {
-    const groups: Record<string, ActionItem[]> = {};
-    AVAILABLE_ACTIONS.forEach(action => {
-      if (!groups[action.category]) groups[action.category] = [];
-      groups[action.category].push(action);
-    });
-    return groups;
-  }, [AVAILABLE_ACTIONS]);
-
-  const timeOptions = [
-    { label: language === 'ar' ? 'آخر 7 أيام' : 'Last 7 Days', value: '7d' },
-    { label: language === 'ar' ? 'آخر 30 يوماً' : 'Last 30 Days', value: '30d' },
-  ];
-
   return (
-    <div className="page-transition w-full space-y-8 relative">
+    <div className="space-y-8 animate-fade-up">
       
-      <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase leading-none flex items-center gap-2">
-              {t('dash.title')}
-            </h1>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: t('dash.total_skus'), value: '12,842', icon: Package, trend: '+42 Today', status: 'text-brand', bg: 'bg-brand/10' },
-          { title: t('dash.valuation'), value: '$4.2M', icon: DollarSign, trend: '+2.4%', status: 'text-zinc-text', bg: 'bg-obsidian-hover' },
-          { title: t('dash.pending'), value: '184', icon: Clock, trend: '-12%', status: 'text-warning', bg: 'bg-warning/10' },
-          { title: t('dash.critical'), value: '3', icon: AlertCircle, trend: 'Action Req', status: 'text-danger', bg: 'bg-danger/10' },
-        ].map((stat, i) => (
-          <div key={i} className="bg-obsidian-panel border border-border p-6 rounded-xl hover:border-zinc-secondary/20 transition-all shadow-sm group">
-            <div className="flex items-start justify-between mb-4">
-              <div className={cn("p-2.5 rounded-lg transition-colors", stat.bg, stat.status)}>
-                <stat.icon className="w-5 h-5" />
-              </div>
-              <span className={cn("text-xs font-medium px-2 py-1 rounded-md border border-border", stat.status)}>
-                {stat.trend}
-              </span>
-            </div>
-            <h3 className="text-2xl font-bold text-zinc-text mb-1 tracking-tight group-hover:text-brand transition-colors">{stat.value}</h3>
-            <p className="text-xs font-medium text-zinc-muted uppercase tracking-wider">{stat.title}</p>
-          </div>
-        ))}
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 min-w-0">
-          <AmberCard className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-lg font-bold text-zinc-text">{t('dash.velocity_title')}</h3>
-                <p className="text-sm text-zinc-muted">{t('dash.velocity_desc')}</p>
-              </div>
-              <div className="w-40">
-                <AmberDropdown 
-                  options={timeOptions}
-                  value={timeRange}
-                  onChange={setTimeRange}
-                />
-              </div>
-            </div>
-            <div className="h-[300px] w-full relative flex-1" dir="ltr">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={timelineData}>
-                  <defs>
-                    <linearGradient id="brandGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F5C451" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#F5C451" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fontSize: 12, fill: isDark ? '#64748B' : '#94a3b8'}} 
-                    dy={10} 
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fontSize: 12, fill: isDark ? '#64748B' : '#94a3b8'}} 
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: isDark ? '#1e293b' : '#ffffff', 
-                      border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', 
-                      borderRadius: '8px', 
-                      color: isDark ? '#F1F5F9' : '#0F172A', 
-                      fontSize: '12px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}
-                    itemStyle={{ color: '#F5C451' }}
-                  />
-                  <Area type="monotone" dataKey="enriched" stroke="#F5C451" strokeWidth={2} fillOpacity={1} fill="url(#brandGradient)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </AmberCard>
-        </div>
-
-        <div className="lg:col-span-1 min-w-0">
-          <AmberCard className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
-              <h3 className="text-lg font-bold text-zinc-text">{t('dash.quick_actions')}</h3>
-              <button 
-                onClick={() => setIsConfiguring(true)}
-                className="p-1.5 rounded-sm hover:bg-obsidian-outer text-zinc-muted hover:text-brand transition-all"
-                title="Customize Actions"
-              >
-                <Settings2 className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 mb-8">
-               {displayActions.length > 0 ? (
-                 displayActions.map((action) => (
-                   <button 
-                      key={action.id}
-                      onClick={() => navigate(action.path)}
-                      className="flex flex-col items-center justify-center gap-2 p-4 bg-obsidian-outer hover:bg-obsidian-hover border border-border rounded-lg transition-all group relative overflow-hidden"
-                   >
-                      <div className={cn("p-2 rounded-full transition-transform shadow-sm group-hover:scale-110", action.bg, action.color)}>
-                        <action.icon className="w-5 h-5" />
-                      </div>
-                      <span className={cn("text-[10px] font-black text-zinc-text uppercase tracking-tight transition-colors group-hover:opacity-100 opacity-80", action.color)}>
-                        {action.label}
-                      </span>
-                   </button>
-                 ))
-               ) : (
-                 <div className="col-span-2 py-8 text-center border-2 border-dashed border-white/5 rounded-lg">
-                    <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mb-2">No actions pinned</p>
-                    <button onClick={() => setIsConfiguring(true)} className="text-brand hover:underline text-[10px] font-black uppercase">Configure</button>
-                 </div>
-               )}
-            </div>
-
-            <div className="flex-1 border-t border-border pt-6">
-               <div className="flex items-center justify-between text-xs font-bold text-zinc-muted mb-4 uppercase tracking-wider">
-                 <span>{t('dash.recent_signals')}</span>
-                 <button 
-                    onClick={() => navigate('/notifications')}
-                    className="text-brand hover:text-brand/80 flex items-center gap-1 transition-colors text-[10px]"
-                 >
-                    {t('common.view_all')} <ArrowRight className="w-3 h-3" />
-                 </button>
-               </div>
-               <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-white/[0.02] border border-border rounded-sm hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                     <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-                     <div>
-                        <p className="text-[11px] font-bold text-zinc-text leading-tight group-hover:text-brand transition-colors">Latency Spike: US-East-1</p>
-                        <p className="text-[9px] text-zinc-muted mt-1 font-mono uppercase">2 minutes ago</p>
-                     </div>
-                  </div>
-               </div>
-            </div>
-          </AmberCard>
-        </div>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+         <div className="p-2 bg-brand/10 rounded-sm text-brand border border-brand/20">
+            <LayoutGrid className="w-5 h-5" />
+         </div>
+         <h1 className="text-2xl font-black text-zinc-text uppercase italic tracking-tighter">DASHBOARD</h1>
       </div>
 
-      {isConfiguring && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* 1. Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         {STATS.map((stat, i) => (
+            <AmberCard key={i} className="p-6 flex flex-col justify-between hover:border-zinc-secondary/20 transition-all cursor-default">
+               <div className="flex justify-between items-start mb-4">
+                  <div className={cn("p-3 rounded-lg", stat.bg, stat.color)}>
+                     <stat.icon className="w-5 h-5" />
+                  </div>
+                  <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wide", stat.color.replace('text-', 'text-').replace('text-', 'border-').replace('text-', 'bg-').replace('500', '500/10').replace('text-zinc-text', 'border-zinc-muted/20 bg-white/5'))}>
+                     {stat.trend}
+                  </span>
+               </div>
+               <div>
+                  <h3 className="text-3xl font-black text-zinc-text tracking-tighter mb-1">{stat.value}</h3>
+                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{stat.label}</p>
+               </div>
+            </AmberCard>
+         ))}
+      </div>
+
+      {/* 2. Main Content: Chart (Left) & Actions (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         
+         {/* Left Column: Performance Chart */}
+         <AmberCard className="lg:col-span-2 p-8 flex flex-col min-h-[500px]" glass>
+            <div className="flex items-center justify-between mb-8">
+               <div>
+                  <h3 className="text-lg font-black text-zinc-text uppercase tracking-tight">Performance Trend</h3>
+                  <p className="text-xs font-medium text-zinc-muted mt-1">Daily transaction volume</p>
+               </div>
+               <select className="bg-obsidian-outer border border-white/10 rounded-sm px-3 py-1.5 text-[10px] font-bold text-zinc-muted uppercase tracking-widest outline-none hover:text-zinc-text cursor-pointer transition-colors">
+                  <option>Last 7 Days</option>
+                  <option>Last 30 Days</option>
+                  <option>This Quarter</option>
+               </select>
+            </div>
+            
+            <div className="flex-1 w-full" dir="ltr">
+               <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={CHART_DATA}>
+                     <defs>
+                        <linearGradient id="colorChart" x1="0" y1="0" x2="0" y2="1">
+                           <stop offset="5%" stopColor="#FFC000" stopOpacity={0.2}/>
+                           <stop offset="95%" stopColor="#FFC000" stopOpacity={0}/>
+                        </linearGradient>
+                     </defs>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
+                     <XAxis 
+                        dataKey="name" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{fill: isDark ? '#64748B' : '#94a3b8', fontSize: 10, fontWeight: 700}} 
+                        dy={10} 
+                     />
+                     <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{fill: isDark ? '#64748B' : '#94a3b8', fontSize: 10}} 
+                     />
+                     <Tooltip 
+                        contentStyle={{ 
+                           backgroundColor: isDark ? '#161E36' : '#ffffff', 
+                           border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', 
+                           borderRadius: '4px',
+                           fontSize: '11px',
+                           fontWeight: 'bold',
+                           color: isDark ? '#F1F5F9' : '#0F172A',
+                           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                        }}
+                     />
+                     <Area type="monotone" dataKey="value" stroke="#FFC000" strokeWidth={3} fill="url(#colorChart)" />
+                  </AreaChart>
+               </ResponsiveContainer>
+            </div>
+         </AmberCard>
+
+         {/* Right Column: Quick Actions & Signals */}
+         <div className="space-y-6">
+            
+            {/* Quick Actions Panel */}
+            <AmberCard className="p-6">
+               <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">Quick Actions</h3>
+                  <button 
+                     onClick={() => setIsConfiguring(true)}
+                     className="text-zinc-muted hover:text-zinc-text transition-colors p-1"
+                  >
+                     <Settings className="w-3.5 h-3.5" />
+                  </button>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-3">
+                  {activeActionIds.map(id => {
+                     const action = ACTION_DEFINITIONS[id];
+                     if (!action) return null;
+                     return (
+                        <button
+                           key={id}
+                           onClick={() => navigate(action.path)}
+                           className={cn(
+                              "flex flex-col items-center justify-center p-4 rounded-lg border transition-all duration-300 group relative overflow-hidden",
+                              "hover:shadow-lg hover:-translate-y-1",
+                              "bg-obsidian-outer border-white/5" 
+                           )}
+                        >
+                           {/* Highlight Bg on Hover */}
+                           <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity", action.bg)} />
+                           
+                           <div className={cn("mb-2 p-2 rounded-full", action.bg, action.color)}>
+                              <action.icon className="w-5 h-5" />
+                           </div>
+                           <span className={cn("text-[9px] font-black uppercase tracking-wider text-center leading-tight", action.color === 'text-zinc-text' ? 'text-zinc-muted group-hover:text-zinc-text' : 'text-zinc-text')}>
+                              {action.label}
+                           </span>
+                        </button>
+                     );
+                  })}
+                  {activeActionIds.length < 6 && (
+                     <button
+                        onClick={() => setIsConfiguring(true)}
+                        className="flex flex-col items-center justify-center p-4 rounded-lg border border-dashed border-white/10 hover:border-zinc-muted/50 hover:bg-white/[0.02] transition-all text-zinc-muted/50 hover:text-zinc-muted"
+                     >
+                        <Plus className="w-6 h-6 mb-1" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest">Add</span>
+                     </button>
+                  )}
+               </div>
+            </AmberCard>
+
+            {/* Recent Signals Panel */}
+            <AmberCard className="p-0 overflow-hidden">
+               <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                  <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('dash.recent_signals')}</h3>
+                  <button onClick={() => navigate('/notifications')} className="text-[9px] font-bold text-brand hover:underline flex items-center gap-1">
+                     View All <ArrowRight className="w-3 h-3" />
+                  </button>
+               </div>
+               <div className="divide-y divide-white/5">
+                  {[
+                     { msg: 'Latency Spike: US-East-1', time: '2 minutes ago', type: 'warning' },
+                     { msg: 'Order #2241 Failed Payment', time: '14 minutes ago', type: 'danger' },
+                     { msg: 'Inventory Sync Complete', time: '1 hour ago', type: 'success' },
+                  ].map((sig, i) => (
+                     <div key={i} className="px-6 py-4 hover:bg-white/[0.02] transition-colors flex items-start gap-3">
+                        {sig.type === 'warning' && <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />}
+                        {sig.type === 'danger' && <X className="w-4 h-4 text-danger shrink-0 mt-0.5" />}
+                        {sig.type === 'success' && <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />}
+                        <div>
+                           <p className="text-xs font-bold text-zinc-text leading-tight">{sig.msg}</p>
+                           <p className="text-[9px] font-medium text-zinc-muted mt-1 uppercase tracking-wider">{sig.time}</p>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </AmberCard>
+
+         </div>
+      </div>
+
+      {/* Configure Actions Modal */}
+      {isConfiguring && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsConfiguring(false)} />
            
            <div className="relative w-full max-w-2xl bg-obsidian-panel border border-white/10 rounded-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-obsidian-outer/50">
+              <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-obsidian-outer/50">
                  <div>
-                    <h2 className="text-lg font-black text-zinc-text uppercase italic tracking-tighter">Configure Actions</h2>
-                    <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-1">Select shortcuts to pin to your dashboard</p>
+                    <h2 className="text-xl font-black text-zinc-text uppercase italic tracking-tighter">Configure Actions</h2>
+                    <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.2em] mt-1">Select shortcuts to pin to your dashboard</p>
                  </div>
                  <button onClick={() => setIsConfiguring(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-muted hover:text-zinc-text">
                     <X className="w-5 h-5" />
                  </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-                 {Object.entries(groupedActions).map(([category, actions]: [string, ActionItem[]]) => (
-                    <div key={category} className="space-y-3">
-                       <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] pl-1 flex items-center gap-2">
-                          <span className="w-1 h-1 rounded-full bg-brand" /> {category}
+              <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
+                 {Object.entries(CATEGORIES).map(([category, actionIds]) => (
+                    <div key={category} className="space-y-4">
+                       <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] flex items-center gap-2 pl-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand" /> {category}
                        </h3>
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {actions.map(action => {
-                             const isSelected = activeActionIds.includes(action.id);
+                          {actionIds.map(id => {
+                             const action = ACTION_DEFINITIONS[id];
+                             if (!action) return null;
+                             const isSelected = activeActionIds.includes(id);
                              return (
                                 <button 
-                                   key={action.id}
-                                   onClick={() => toggleAction(action.id)}
+                                   key={id}
+                                   onClick={() => toggleAction(id)}
                                    className={cn(
                                       "flex items-center justify-between p-3 rounded-sm border transition-all group text-left",
                                       isSelected 
-                                         ? `bg-obsidian-card ${action.border} shadow-[inset_0_0_20px_rgba(0,0,0,0.2)]` 
+                                         ? `bg-obsidian-card ${action.border} ring-1 ring-brand/10 shadow-lg` 
                                          : "bg-transparent border-white/5 hover:border-white/10 hover:bg-white/[0.02]"
                                    )}
                                 >
-                                   <div className="flex items-center gap-3">
+                                   <div className="flex items-center gap-4">
                                       <div className={cn("p-2 rounded-sm transition-colors", isSelected ? action.bg + ' ' + action.color : "bg-obsidian-outer text-zinc-muted")}>
                                          <action.icon className="w-4 h-4" />
                                       </div>
@@ -331,17 +372,18 @@ export const DashboardOverview = () => {
                  ))}
               </div>
 
-              <div className="px-6 py-4 border-t border-white/5 bg-obsidian-outer/30 flex justify-between items-center">
+              <div className="px-8 py-5 border-t border-white/5 bg-obsidian-outer/30 flex justify-between items-center">
                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{activeActionIds.length} Actions Pinned</p>
                  <button 
                     onClick={() => setIsConfiguring(false)}
-                    className="px-6 py-2 bg-brand text-obsidian-outer text-[10px] font-black uppercase tracking-widest rounded-sm hover:opacity-90 transition-opacity"
+                    className="px-8 py-2.5 bg-brand text-obsidian-outer text-[10px] font-black uppercase tracking-widest rounded-sm hover:opacity-90 transition-opacity shadow-lg shadow-brand/10"
                  >
                     {t('common.save')}
                  </button>
               </div>
            </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

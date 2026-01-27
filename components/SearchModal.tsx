@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, X, Database, LayoutTemplate, Settings, History, ArrowRight, Package, Check, Plus } from 'lucide-react';
 import { useLanguage } from '../amber-ui/contexts/LanguageContext';
 import { services } from '../config/services.config';
@@ -65,8 +66,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 px-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-20 px-4">
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
       
       <div className="relative w-full max-w-2xl bg-obsidian-panel border border-white/10 rounded-sm shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-top-4 duration-300 flex flex-col max-h-[80vh]">
@@ -212,6 +213,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

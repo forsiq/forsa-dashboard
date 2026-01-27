@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutGrid, 
   BarChart3,
@@ -44,7 +44,12 @@ import {
   PlusCircle,
   Calendar,
   UserCog,
-  BookOpen
+  BookOpen,
+  AlertTriangle, 
+  WifiOff, 
+  FileWarning, 
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -62,6 +67,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
   const { t, dir } = useLanguage();
   const { activeMode, switchMode } = useNavigation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const getModeLabel = (mode: string | null) => {
     if (mode === 'generic') return t('app.suite');
@@ -151,6 +157,16 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
         { label: t('nav.settings'), path: paths.serviceSettings, icon: Sliders }, 
         { label: t('nav.about'), path: '/about', icon: Info },
       ]
+    },
+    {
+      title: t('sidebar.system'),
+      items: [
+        { label: t('nav.result'), path: paths.result, icon: CheckCircle2 },
+        { label: t('nav.loading_screen'), path: paths.loading, icon: Loader2 },
+        { label: t('nav.error_404'), path: '/not-found-preview', icon: FileWarning }, 
+        { label: t('nav.error_500'), path: paths.serverError, icon: AlertTriangle },
+        { label: t('nav.error_network'), path: paths.networkError, icon: WifiOff },
+      ]
     }
   ];
 
@@ -219,20 +235,45 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
                   key={item.path}
                   to={item.path}
                   onClick={() => { if(window.innerWidth < 1024) onClose(); }}
-                  className={({ isActive }) => `
+                  className={({ isActive }) => {
+                    let active = isActive;
+                    
+                    // Conflict Resolution for Sibling Routes
+                    if (active) {
+                        if (item.path === paths.orders && location.pathname.startsWith(paths.ordersDashboard)) {
+                            active = false;
+                        }
+                        if (item.path === paths.catalog && location.pathname.startsWith(paths.catalogDashboard)) {
+                            active = false;
+                        }
+                    }
+
+                    return `
                     flex items-center group px-3 py-2.5 text-sm font-medium transition-all rounded-md mx-3
-                    ${isActive 
+                    ${active 
                       ? 'bg-brand/10 text-brand shadow-sm' 
                       : 'text-zinc-muted hover:text-zinc-text hover:bg-white/5'
                     }
                     ${isCollapsed ? 'justify-center px-2 mx-2' : ''}
-                  `}
+                  `;
+                  }}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  {({ isActive }) => (
+                  {({ isActive }) => {
+                     let active = isActive;
+                     if (active) {
+                        if (item.path === paths.orders && location.pathname.startsWith(paths.ordersDashboard)) {
+                            active = false;
+                        }
+                        if (item.path === paths.catalog && location.pathname.startsWith(paths.catalogDashboard)) {
+                            active = false;
+                        }
+                     }
+
+                    return (
                     <>
                       <item.icon 
-                        className={`w-5 h-5 transition-colors ${isActive ? 'text-brand' : 'text-zinc-muted group-hover:text-zinc-text'} ${!isCollapsed && (dir === 'rtl' ? 'ml-3' : 'mr-3')}`} 
+                        className={`w-5 h-5 transition-colors ${active ? 'text-brand' : 'text-zinc-muted group-hover:text-zinc-text'} ${!isCollapsed && (dir === 'rtl' ? 'ml-3' : 'mr-3')}`} 
                         strokeWidth={1.5} 
                       />
                       {!isCollapsed && (
@@ -241,7 +282,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
                         </span>
                       )}
                     </>
-                  )}
+                  )}}
                 </NavLink>
               ))}
             </nav>

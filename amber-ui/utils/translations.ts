@@ -28,42 +28,6 @@ export const translations = {
     'common.confirm': 'Confirm',
     'common.close': 'Close',
 
-    // --- Portal Specific ---
-    'portal.title': 'Portal',
-    'portal.header.current_project': 'Current Project',
-    'portal.header.select_project': 'Select Project',
-    'portal.header.active_projects': 'Active Projects',
-    'portal.header.manage_workspaces': 'Manage Workspaces',
-    'portal.header.new_project': 'New Project',
-    'portal.header.search_placeholder': 'Search portal...',
-    'portal.home.no_project': 'No Project Selected',
-    'portal.home.select_prompt': 'Please select a project from the top navigation dropdown to access portal services.',
-    'portal.home.status': 'Status',
-    'portal.home.billing': 'Billing',
-    'portal.home.configure': 'Configure Services',
-    
-    // --- Portal Settings ---
-    'settings.page.title': 'Service Configuration',
-    'settings.page.subtitle': 'Manage active modules for',
-    'settings.section.general': 'General',
-    'settings.section.billing': 'Billing',
-    'settings.filter_placeholder': 'Filter services...',
-    'settings.general.title': 'General Settings',
-    'settings.general.name': 'Project Name',
-    'settings.general.desc': 'Description',
-    'settings.billing.current': 'Current Plan',
-    'settings.billing.next_date': 'Next Billing Date',
-    'settings.config.title': 'Configuration',
-    'settings.config.endpoint': 'API Endpoint URL',
-    'settings.config.throughput': 'Max Throughput',
-    'settings.config.region': 'Region',
-    'settings.config.save': 'Save Configuration',
-    'settings.status.service': 'Service Status',
-    'settings.status.active': 'Active & Running',
-    'settings.status.disabled': 'Disabled',
-    'settings.sync.last': 'Last Sync',
-    'settings.sync.msg': 'Configuration was last synchronized with the master node.',
-
     // --- Sidebar ---
     'sidebar.dashboards': 'Dashboards',
     'sidebar.service_repairs': 'Service & Repairs',
@@ -73,10 +37,11 @@ export const translations = {
     'sidebar.inventory': 'Inventory',
     'sidebar.operations': 'Operations',
     'sidebar.general': 'General',
+    'sidebar.system': 'System Responses', 
     'sidebar.exit': 'Exit Service',
     'sidebar.back_portal': 'Back to Portal',
 
-    // --- Navigation Items (Service IDs) ---
+    // --- Navigation Items ---
     'nav.dashboard': 'Dashboard',
     'nav.catalog': 'Master Catalog',
     'nav.catalog_analytics': 'Catalog Analytics',
@@ -90,6 +55,13 @@ export const translations = {
     'nav.terminal': 'System Terminal',
     'nav.admin.users': 'User Directory',
     'nav.settings': 'System Settings',
+    
+    // --- System / Errors ---
+    'nav.result': 'Result Page',
+    'nav.error_404': '404 Not Found',
+    'nav.error_500': '500 Server Error',
+    'nav.error_network': 'Network Error',
+    'nav.loading_screen': 'Loading State',
     
     // --- Other Nav Items ---
     'nav.repair_center': 'Repair Center',
@@ -128,6 +100,42 @@ export const translations = {
     'nav.admin.roles': 'Roles',
     'nav.admin.integrations': 'Integrations',
     'nav.actions': 'Actions',
+
+    // --- Portal Specific ---
+    'portal.title': 'Portal',
+    'portal.header.current_project': 'Current Project',
+    'portal.header.select_project': 'Select Project',
+    'portal.header.active_projects': 'Active Projects',
+    'portal.header.manage_workspaces': 'Manage Workspaces',
+    'portal.header.new_project': 'New Project',
+    'portal.header.search_placeholder': 'Search portal...',
+    'portal.home.no_project': 'No Project Selected',
+    'portal.home.select_prompt': 'Please select a project from the top navigation dropdown to access portal services.',
+    'portal.home.status': 'Status',
+    'portal.home.billing': 'Billing',
+    'portal.home.configure': 'Configure Services',
+    
+    // --- Portal Settings ---
+    'settings.page.title': 'Service Configuration',
+    'settings.page.subtitle': 'Manage active modules for',
+    'settings.section.general': 'General',
+    'settings.section.billing': 'Billing',
+    'settings.filter_placeholder': 'Filter services...',
+    'settings.general.title': 'General Settings',
+    'settings.general.name': 'Project Name',
+    'settings.general.desc': 'Description',
+    'settings.billing.current': 'Current Plan',
+    'settings.billing.next_date': 'Next Billing Date',
+    'settings.config.title': 'Configuration',
+    'settings.config.endpoint': 'API Endpoint URL',
+    'settings.config.throughput': 'Max Throughput',
+    'settings.config.region': 'Region',
+    'settings.config.save': 'Save Configuration',
+    'settings.status.service': 'Service Status',
+    'settings.status.active': 'Active & Running',
+    'settings.status.disabled': 'Disabled',
+    'settings.sync.last': 'Last Sync',
+    'settings.sync.msg': 'Configuration was last synchronized with the master node.',
     
     // --- Dashboard Overview ---
     'dash.title': 'Dashboard',
@@ -272,42 +280,6 @@ export const translations = {
     'common.confirm': 'تأكيد',
     'common.close': 'إغلاق',
 
-    // --- Portal Specific ---
-    'portal.title': 'البوابة',
-    'portal.header.current_project': 'المشروع الحالي',
-    'portal.header.select_project': 'اختر مشروعاً',
-    'portal.header.active_projects': 'المشاريع النشطة',
-    'portal.header.manage_workspaces': 'إدارة مساحات العمل',
-    'portal.header.new_project': 'مشروع جديد',
-    'portal.header.search_placeholder': 'بحث في البوابة...',
-    'portal.home.no_project': 'لم يتم تحديد مشروع',
-    'portal.home.select_prompt': 'يرجى تحديد مشروع من القائمة المنسدلة للوصول إلى الخدمات.',
-    'portal.home.status': 'الحالة',
-    'portal.home.billing': 'الفوترة',
-    'portal.home.configure': 'تكوين الخدمات',
-
-    // --- Portal Settings ---
-    'settings.page.title': 'تكوين الخدمات',
-    'settings.page.subtitle': 'إدارة الوحدات النشطة لـ',
-    'settings.section.general': 'عام',
-    'settings.section.billing': 'الفوترة',
-    'settings.filter_placeholder': 'تصفية الخدمات...',
-    'settings.general.title': 'الإعدادات العامة',
-    'settings.general.name': 'اسم المشروع',
-    'settings.general.desc': 'الوصف',
-    'settings.billing.current': 'الخطة الحالية',
-    'settings.billing.next_date': 'تاريخ الفوترة القادم',
-    'settings.config.title': 'التكوين',
-    'settings.config.endpoint': 'رابط نقطة النهاية API',
-    'settings.config.throughput': 'الحد الأقصى للإنتاجية',
-    'settings.config.region': 'المنطقة',
-    'settings.config.save': 'حفظ التكوين',
-    'settings.status.service': 'حالة الخدمة',
-    'settings.status.active': 'نشط ويعمل',
-    'settings.status.disabled': 'معطل',
-    'settings.sync.last': 'آخر مزامنة',
-    'settings.sync.msg': 'تمت مزامنة التكوين آخر مرة مع العقدة الرئيسية.',
-
     // --- Sidebar ---
     'sidebar.dashboards': 'لوحات التحكم',
     'sidebar.service_repairs': 'الصيانة والإصلاح',
@@ -317,6 +289,7 @@ export const translations = {
     'sidebar.inventory': 'المخزون',
     'sidebar.operations': 'العمليات',
     'sidebar.general': 'عام',
+    'sidebar.system': 'استجابات النظام', 
     'sidebar.exit': 'خروج من الخدمة',
     'sidebar.back_portal': 'العودة للبوابة',
 
@@ -334,6 +307,13 @@ export const translations = {
     'nav.terminal': 'محطة النظام',
     'nav.admin.users': 'دليل المستخدمين',
     'nav.settings': 'إعدادات النظام',
+
+    // --- System / Errors ---
+    'nav.result': 'صفحة النتائج',
+    'nav.error_404': 'خطأ 404',
+    'nav.error_500': 'خطأ 500',
+    'nav.error_network': 'خطأ في الشبكة',
+    'nav.loading_screen': 'حالة التحميل',
 
     // --- Other Nav Items ---
     'nav.repair_center': 'مركز الإصلاح',
@@ -372,6 +352,42 @@ export const translations = {
     'nav.admin.roles': 'الأدوار',
     'nav.admin.integrations': 'التكاملات',
     'nav.actions': 'الإجراءات',
+
+    // --- Portal Specific ---
+    'portal.title': 'البوابة',
+    'portal.header.current_project': 'المشروع الحالي',
+    'portal.header.select_project': 'اختر مشروعاً',
+    'portal.header.active_projects': 'المشاريع النشطة',
+    'portal.header.manage_workspaces': 'إدارة مساحات العمل',
+    'portal.header.new_project': 'مشروع جديد',
+    'portal.header.search_placeholder': 'بحث في البوابة...',
+    'portal.home.no_project': 'لم يتم تحديد مشروع',
+    'portal.home.select_prompt': 'يرجى تحديد مشروع من القائمة المنسدلة للوصول إلى الخدمات.',
+    'portal.home.status': 'الحالة',
+    'portal.home.billing': 'الفوترة',
+    'portal.home.configure': 'تكوين الخدمات',
+
+    // --- Portal Settings ---
+    'settings.page.title': 'تكوين الخدمات',
+    'settings.page.subtitle': 'إدارة الوحدات النشطة لـ',
+    'settings.section.general': 'عام',
+    'settings.section.billing': 'الفوترة',
+    'settings.filter_placeholder': 'تصفية الخدمات...',
+    'settings.general.title': 'الإعدادات العامة',
+    'settings.general.name': 'اسم المشروع',
+    'settings.general.desc': 'الوصف',
+    'settings.billing.current': 'الخطة الحالية',
+    'settings.billing.next_date': 'تاريخ الفوترة القادم',
+    'settings.config.title': 'التكوين',
+    'settings.config.endpoint': 'رابط نقطة النهاية API',
+    'settings.config.throughput': 'الحد الأقصى للإنتاجية',
+    'settings.config.region': 'المنطقة',
+    'settings.config.save': 'حفظ التكوين',
+    'settings.status.service': 'حالة الخدمة',
+    'settings.status.active': 'نشط ويعمل',
+    'settings.status.disabled': 'معطل',
+    'settings.sync.last': 'آخر مزامنة',
+    'settings.sync.msg': 'تمت مزامنة التكوين آخر مرة مع العقدة الرئيسية.',
 
     // --- Dashboard Overview ---
     'dash.title': 'لوحة التحكم',

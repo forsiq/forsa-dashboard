@@ -39,7 +39,7 @@ export const AmberSlideOver: React.FC<SlideOverProps> = ({
   if (!isVisible && !isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] overflow-hidden">
+    <div className="fixed inset-0 z-[200] overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         {/* Backdrop */}
         <div 

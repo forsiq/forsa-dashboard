@@ -7,6 +7,7 @@ export const translations = {
     'sidebar.main_menu': 'Main Menu',
     'sidebar.operations': 'Operations',
     'sidebar.general': 'General',
+    'sidebar.system': 'System Responses',
 
     // Global Labels
     'label.status': 'Status',
@@ -46,6 +47,10 @@ export const translations = {
     'nav.audit_logs': 'Audit Logs',
     'nav.profile': 'Profile',
     'nav.help': 'Help Center',
+    'nav.result': 'Result Page',
+    'nav.error_404': '404 Not Found',
+    'nav.error_500': '500 Server Error',
+    'nav.error_network': 'Network Error',
 
     // Admin Section
     'nav.admin.users': 'Users',
@@ -363,6 +368,7 @@ export const translations = {
     'sidebar.main_menu': 'القائمة الرئيسية',
     'sidebar.operations': 'العمليات',
     'sidebar.general': 'عام',
+    'sidebar.system': 'استجابات النظام',
 
     // Global Labels
     'label.status': 'الحالة',
@@ -402,6 +408,10 @@ export const translations = {
     'nav.audit_logs': 'سجلات النظام',
     'nav.profile': 'الملف الشخصي',
     'nav.help': 'مركز المساعدة',
+    'nav.result': 'صفحة النتائج',
+    'nav.error_404': 'خطأ 404',
+    'nav.error_500': 'خطأ 500',
+    'nav.error_network': 'خطأ في الشبكة',
 
     // Admin Section
     'nav.admin.users': 'المستخدمين',

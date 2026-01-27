@@ -45,7 +45,7 @@ import { NewRepairWizard } from '../features/repairs/pages/NewRepairWizard';
 import { RepairDetails } from '../features/repairs/pages/RepairDetails';
 import { RepairCalendar } from '../features/repairs/pages/RepairCalendar';
 import { Technicians } from '../features/repairs/pages/Technicians';
-import { ServiceCatalog } from '../features/repairs/pages/ServiceCatalog'; // New
+import { ServiceCatalog } from '../features/repairs/pages/ServiceCatalog'; 
 import { Projects } from '../pages/Projects';
 import { Records } from '../pages/Records';
 import { Reports } from '../pages/Reports';
@@ -64,6 +64,10 @@ import { SearchResults } from '../pages/core/SearchResults';
 import { AccessDenied } from '../pages/errors/AccessDenied';
 import { Maintenance } from '../pages/core/Maintenance';
 import { NotFound } from '../pages/errors/NotFound';
+import { ServerError } from '../pages/errors/ServerError';
+import { NetworkError } from '../pages/errors/NetworkError';
+import { LoadingScreen } from '../pages/core/LoadingScreen';
+import { ResultPage } from '../pages/core/ResultPage';
 import { ListTemplate } from '../pages/templates/ListTemplate';
 import { FormTemplate } from '../pages/templates/FormTemplate';
 import { DetailsTemplate } from '../pages/templates/DetailsTemplate';
@@ -102,6 +106,19 @@ const router = createHashRouter([
   {
     path: '/maintenance',
     element: <Maintenance />
+  },
+  // Full screen error pages (outside app shell)
+  {
+    path: '/error/500',
+    element: <ServerError />
+  },
+  {
+    path: '/error/network',
+    element: <NetworkError />
+  },
+  {
+    path: paths.loading,
+    element: <LoadingScreen />
   },
   // Portal Routes (Separate Layout - Full Page)
   {
@@ -287,7 +304,7 @@ const router = createHashRouter([
         element: <Technicians />
       },
       {
-        path: paths.serviceCatalog, // New Route
+        path: paths.serviceCatalog, 
         element: <ServiceCatalog />
       },
       {
@@ -325,6 +342,10 @@ const router = createHashRouter([
       {
         path: '/search-results',
         element: <SearchResults />
+      },
+      {
+        path: '/result',
+        element: <ResultPage />
       },
       {
         path: '/access-denied',
