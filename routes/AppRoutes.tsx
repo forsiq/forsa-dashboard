@@ -80,6 +80,7 @@ import { RolesPermissions } from '../pages/admin/RolesPermissions';
 import { StoresBranches } from '../pages/admin/StoresBranches';
 import { Integrations } from '../pages/admin/Integrations';
 import { ProductsDashboard } from '../features/products/pages/ProductsDashboard';
+import { TableExample } from '../pages/examples/TableExample';
 import { paths } from './paths';
 
 const router = createHashRouter([
@@ -398,6 +399,10 @@ const router = createHashRouter([
       {
         path: paths.templateAutomation,
         element: <AutomationTemplate />
+      },
+      {
+        path: paths.tableExample,
+        element: <TableExample />
       },
       {
         path: '*',

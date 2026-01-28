@@ -49,7 +49,8 @@ import {
   WifiOff, 
   FileWarning, 
   CheckCircle2,
-  Loader2
+  Loader2,
+  Table
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -161,6 +162,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onTo
     {
       title: t('sidebar.system'),
       items: [
+        { label: t('nav.table_example'), path: paths.tableExample, icon: Table },
         { label: t('nav.result'), path: paths.result, icon: CheckCircle2 },
         { label: t('nav.loading_screen'), path: paths.loading, icon: Loader2 },
         { label: t('nav.error_404'), path: '/not-found-preview', icon: FileWarning }, 

@@ -1,26 +1,28 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AmberCard } from '../../../amber-ui/components/AmberCard';
 import { AmberButton } from '../../../amber-ui/components/AmberButton';
 import { AmberInput } from '../../../amber-ui/components/AmberInput';
 import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
 import { AmberSlideOver } from '../../../amber-ui/components/AmberSlideOver';
+import { DataTable, Column } from '../../../amber-ui/components/Data/DataTable';
+import { StatusBadge, StatusVariant } from '../../../amber-ui/components/Data/StatusBadge';
 import { 
   FolderTree, 
   Plus, 
   Search, 
-  MoreHorizontal, 
   ChevronRight, 
   ChevronDown, 
-  MoveUp, 
-  MoveDown, 
   Edit, 
   Trash2, 
-  Check, 
-  X,
   Image as ImageIcon,
-  GripVertical
+  GripVertical,
+  Filter,
+  Layers,
+  Tag,
+  Hash
 } from 'lucide-react';
+import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { cn } from '../../../lib/cn';
 
 // --- Types ---
@@ -55,9 +57,8 @@ const INITIAL_DATA: Category[] = [
   { id: '8', name: 'Office', slug: 'office-furniture', parentId: '7', count: 150, description: 'Workspaces', status: 'Active', order: 0 },
 ];
 
-// --- Components ---
-
 export const Categories = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<Category[]>(INITIAL_DATA);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['1', '2', '6']));
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,9 +74,6 @@ export const Categories = () => {
     status: 'Active'
   });
 
-  // Drag State
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-
   // --- Helpers ---
 
   const getChildCategories = (parentId: string | null) => {
@@ -84,7 +82,6 @@ export const Categories = () => {
       .sort((a, b) => a.order - b.order);
   };
 
-  // Flatten the tree for rendering while respecting expansion state
   const flattenTree = (
     parentId: string | null = null, 
     depth = 0, 
@@ -93,26 +90,19 @@ export const Categories = () => {
     const children = getChildCategories(parentId);
     
     for (const child of children) {
-      // Basic Search Filter: If searching, ignore hierarchy and show matches
       if (searchQuery && !child.name.toLowerCase().includes(searchQuery.toLowerCase()) && !child.slug.includes(searchQuery)) {
-         // If generic search match fails, check if children match? 
-         // For simple UI, let's just flatten everything if searching, or keep hierarchy if not.
-         // Let's stick to: search filters list flatly.
-      } else {
-         // Hierarchy Logic
-      }
+         // Skip if filtering and doesn't match
+      } 
 
       const hasChildren = data.some(c => c.parentId === child.id);
       const isExpanded = expandedIds.has(child.id);
 
-      // If Searching, show all matches flat
       if (searchQuery) {
          if (child.name.toLowerCase().includes(searchQuery.toLowerCase())) {
             result.push({ ...child, depth: 0, hasChildren, isExpanded: true });
          }
-         flattenTree(child.id, 0, result); // Continue searching deep
+         flattenTree(child.id, 0, result);
       } else {
-         // Standard Tree View
          result.push({ ...child, depth, hasChildren, isExpanded });
          if (isExpanded) {
             flattenTree(child.id, depth + 1, result);
@@ -124,7 +114,6 @@ export const Categories = () => {
 
   const displayNodes = useMemo(() => {
     if (searchQuery) {
-       // Simple flat filter
        return data.filter(c => 
          c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
          c.slug.includes(searchQuery.toLowerCase())
@@ -142,64 +131,24 @@ export const Categories = () => {
     setExpandedIds(newSet);
   };
 
-  const handleMove = (id: string, direction: 'up' | 'down') => {
-    const item = data.find(c => c.id === id);
-    if (!item) return;
-
-    const siblings = getChildCategories(item.parentId);
-    const index = siblings.findIndex(s => s.id === id);
-    
-    if (direction === 'up' && index > 0) {
-      const prev = siblings[index - 1];
-      // Swap orders
-      const newOrder = prev.order;
-      const prevOrder = item.order;
-      
-      const newData = data.map(c => {
-        if (c.id === item.id) return { ...c, order: newOrder };
-        if (c.id === prev.id) return { ...c, order: prevOrder };
-        return c;
-      });
-      setData(newData);
-    } else if (direction === 'down' && index < siblings.length - 1) {
-      const next = siblings[index + 1];
-      const newOrder = next.order;
-      const nextOrder = item.order;
-
-      const newData = data.map(c => {
-        if (c.id === item.id) return { ...c, order: newOrder };
-        if (c.id === next.id) return { ...c, order: nextOrder };
-        return c;
-      });
-      setData(newData);
-    }
-  };
-
-  const handleDelete = (id: string) => {
+  const handleDelete = (row: FlatNode) => {
     if (window.confirm('Are you sure? This will delete the category and may affect products.')) {
-      // Basic check for children
-      const hasChildren = data.some(c => c.parentId === id);
+      const hasChildren = data.some(c => c.parentId === row.id);
       if (hasChildren) {
         alert('Cannot delete category with subcategories. Please move or delete them first.');
         return;
       }
-      setData(data.filter(c => c.id !== id));
+      setData(data.filter(c => c.id !== row.id));
     }
   };
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({
-      name: '',
-      slug: '',
-      parentId: null,
-      description: '',
-      status: 'Active'
-    });
+    setFormData({ name: '', slug: '', parentId: null, description: '', status: 'Active' });
     setIsModalOpen(true);
   };
 
-  const openEditModal = (cat: Category) => {
+  const openEditModal = (cat: FlatNode) => {
     setEditingId(cat.id);
     setFormData({ ...cat });
     setIsModalOpen(true);
@@ -209,10 +158,8 @@ export const Categories = () => {
     if (!formData.name) return;
 
     if (editingId) {
-      // Update
       setData(data.map(c => c.id === editingId ? { ...c, ...formData } as Category : c));
     } else {
-      // Create
       const newId = `cat_${Date.now()}`;
       const siblings = getChildCategories(formData.parentId || null);
       const order = siblings.length > 0 ? siblings[siblings.length - 1].order + 1 : 0;
@@ -232,37 +179,66 @@ export const Categories = () => {
     setIsModalOpen(false);
   };
 
-  // Drag & Drop Handlers
-  const onDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.effectAllowed = 'move';
-    setDraggedId(id);
+  const getStatusVariant = (status: string): StatusVariant => {
+     return status === 'Active' ? 'success' : 'inactive';
   };
 
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // Necessary to allow dropping
-  };
-
-  const onDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (!draggedId || draggedId === targetId) return;
-
-    // Reparent logic: draggedId becomes child of targetId
-    // Prevent cycles: ensure targetId is not a child of draggedId
-    let current = data.find(c => c.id === targetId);
-    while (current) {
-        if (current.parentId === draggedId) return; // Cycle detected
-        current = data.find(c => c.id === current?.parentId);
+  // --- Table Columns ---
+  const columns: Column<FlatNode>[] = [
+    {
+      key: 'name',
+      label: 'Category Name',
+      render: (node) => (
+        <div 
+          className="flex items-center gap-2"
+          style={{ paddingLeft: `${node.depth * 24}px` }}
+        >
+          <div className="text-zinc-muted hover:text-zinc-text cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-50 transition-opacity">
+            <GripVertical className="w-4 h-4" />
+          </div>
+          
+          <button 
+            onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+            className={cn(
+               "p-1 rounded-sm hover:bg-white/10 transition-colors",
+               !node.hasChildren && "invisible"
+            )}
+          >
+            {node.isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-zinc-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-zinc-muted" />}
+          </button>
+          
+          <span className={cn(
+             "text-sm font-bold truncate select-none",
+             node.depth === 0 ? "text-zinc-text" : "text-zinc-secondary"
+          )}>
+             {node.name}
+          </span>
+        </div>
+      )
+    },
+    {
+      key: 'slug',
+      label: 'Slug',
+      render: (row) => (
+        <span className="text-[10px] font-mono text-zinc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+            /{row.slug}
+        </span>
+      )
+    },
+    {
+      key: 'count',
+      label: 'Products',
+      render: (row) => <span className="text-xs font-bold text-zinc-text">{row.count}</span>,
+      align: 'center'
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => (
+        <StatusBadge status={row.status} variant={getStatusVariant(row.status)} size="sm" />
+      )
     }
-
-    setData(data.map(c => {
-        if (c.id === draggedId) {
-            return { ...c, parentId: targetId };
-        }
-        return c;
-    }));
-    setDraggedId(null);
-    setExpandedIds(new Set([...expandedIds, targetId])); // Expand target to show dropped item
-  };
+  ];
 
   return (
     <div className="animate-fade-up space-y-8">
@@ -281,7 +257,32 @@ export const Categories = () => {
         </AmberButton>
       </div>
 
-      {/* Main Card */}
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <AmberCard className="p-5 flex items-center justify-between">
+           <div>
+              <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Total Categories</p>
+              <p className="text-2xl font-black text-zinc-text">{data.length}</p>
+           </div>
+           <div className="p-3 bg-brand/10 rounded-full text-brand"><Layers className="w-6 h-6" /></div>
+        </AmberCard>
+        <AmberCard className="p-5 flex items-center justify-between">
+           <div>
+              <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Active Groups</p>
+              <p className="text-2xl font-black text-zinc-text">{data.filter(c => c.status === 'Active').length}</p>
+           </div>
+           <div className="p-3 bg-success/10 rounded-full text-success"><Tag className="w-6 h-6" /></div>
+        </AmberCard>
+        <AmberCard className="p-5 flex items-center justify-between">
+           <div>
+              <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">Total SKUs</p>
+              <p className="text-2xl font-black text-zinc-text">5,902</p>
+           </div>
+           <div className="p-3 bg-info/10 rounded-full text-info"><Hash className="w-6 h-6" /></div>
+        </AmberCard>
+      </div>
+
+      {/* Main List */}
       <AmberCard noPadding className="flex flex-col min-h-[600px] overflow-hidden bg-obsidian-panel/50 border-white/5">
         
         {/* Toolbar */}
@@ -296,107 +297,19 @@ export const Categories = () => {
                 className="w-full h-10 bg-obsidian-outer border border-white/5 rounded-sm pl-10 pr-4 text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all"
               />
            </div>
+           <button className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5">
+               <Filter className="w-4 h-4" />
+           </button>
         </div>
 
-        {/* Tree Table */}
-        <div className="flex-1 overflow-auto">
-           <table className="w-full text-left border-collapse">
-              <thead className="bg-obsidian-outer/50 text-[9px] font-black text-zinc-muted uppercase tracking-widest sticky top-0 z-10">
-                 <tr>
-                    <th className="px-6 py-3 w-[40%]">Category Name</th>
-                    <th className="px-6 py-3 w-[20%]">Slug</th>
-                    <th className="px-6 py-3 w-[10%] text-center">Products</th>
-                    <th className="px-6 py-3 w-[10%]">Status</th>
-                    <th className="px-6 py-3 w-[20%] text-right">Actions</th>
-                 </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                 {displayNodes.map((node) => (
-                    <tr 
-                      key={node.id} 
-                      className={cn(
-                        "group hover:bg-white/[0.02] transition-colors",
-                        draggedId === node.id && "opacity-50 bg-brand/5"
-                      )}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, node.id)}
-                      onDragOver={onDragOver}
-                      onDrop={(e) => onDrop(e, node.id)}
-                    >
-                       <td className="px-6 py-3">
-                          <div 
-                            className="flex items-center gap-2"
-                            style={{ paddingLeft: `${node.depth * 24}px` }}
-                          >
-                             <div className="cursor-grab active:cursor-grabbing text-zinc-muted hover:text-zinc-text">
-                                <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-50" />
-                             </div>
-                             
-                             <button 
-                                onClick={() => toggleExpand(node.id)}
-                                className={cn(
-                                   "p-1 rounded-sm hover:bg-white/10 transition-colors",
-                                   !node.hasChildren && "invisible"
-                                )}
-                             >
-                                {node.isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-zinc-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-zinc-muted" />}
-                             </button>
-                             
-                             <span className={cn(
-                                "text-sm font-bold truncate select-none",
-                                node.depth === 0 ? "text-zinc-text" : "text-zinc-secondary"
-                             )}>
-                                {node.name}
-                             </span>
-                          </div>
-                       </td>
-                       <td className="px-6 py-3">
-                          <span className="text-[10px] font-mono text-zinc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
-                             /{node.slug}
-                          </span>
-                       </td>
-                       <td className="px-6 py-3 text-center">
-                          <span className="text-xs font-bold text-zinc-text">{node.count}</span>
-                       </td>
-                       <td className="px-6 py-3">
-                          <span className={cn(
-                             "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest border",
-                             node.status === 'Active' ? "bg-success/5 border-success/20 text-success" : "bg-white/5 border-white/10 text-zinc-muted"
-                          )}>
-                             {node.status}
-                          </span>
-                       </td>
-                       <td className="px-6 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                             {!searchQuery && (
-                               <>
-                                 <button onClick={() => handleMove(node.id, 'up')} className="p-1.5 hover:bg-white/5 rounded-sm text-zinc-muted hover:text-zinc-text" title="Move Up">
-                                    <MoveUp className="w-3.5 h-3.5" />
-                                 </button>
-                                 <button onClick={() => handleMove(node.id, 'down')} className="p-1.5 hover:bg-white/5 rounded-sm text-zinc-muted hover:text-zinc-text" title="Move Down">
-                                    <MoveDown className="w-3.5 h-3.5" />
-                                 </button>
-                                 <div className="w-px h-4 bg-white/10 mx-1" />
-                               </>
-                             )}
-                             <button onClick={() => openEditModal(node)} className="p-1.5 hover:bg-white/5 rounded-sm text-zinc-muted hover:text-brand" title="Edit">
-                                <Edit className="w-3.5 h-3.5" />
-                             </button>
-                             <button onClick={() => handleDelete(node.id)} className="p-1.5 hover:bg-white/5 rounded-sm text-zinc-muted hover:text-danger" title="Delete">
-                                <Trash2 className="w-3.5 h-3.5" />
-                             </button>
-                          </div>
-                       </td>
-                    </tr>
-                 ))}
-              </tbody>
-           </table>
-           {displayNodes.length === 0 && (
-              <div className="p-12 text-center text-zinc-muted opacity-50">
-                 <p className="text-xs font-bold uppercase tracking-widest">No categories found</p>
-              </div>
-           )}
-        </div>
+        <DataTable
+          columns={columns}
+          data={displayNodes}
+          rowActions={[
+            { label: 'Edit', icon: Edit, onClick: openEditModal },
+            { label: 'Delete', icon: Trash2, onClick: handleDelete, variant: 'danger' }
+          ]}
+        />
       </AmberCard>
 
       {/* Form SlideOver */}
@@ -420,7 +333,6 @@ export const Categories = () => {
                onChange={(e) => setFormData({ 
                   ...formData, 
                   name: e.target.value,
-                  // Auto-gen slug if creating and slug is pristine
                   slug: !editingId ? e.target.value.toLowerCase().replace(/\s+/g, '-') : formData.slug 
                })}
                required
@@ -441,7 +353,7 @@ export const Categories = () => {
                >
                   <option value="">(None - Root Level)</option>
                   {data
-                     .filter(c => c.id !== editingId) // Prevent self-parenting
+                     .filter(c => c.id !== editingId)
                      .map(c => (
                      <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -463,22 +375,12 @@ export const Categories = () => {
             </div>
             <div>
                <label className="text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1 mb-1.5 block">Status</label>
-               <div className="flex gap-2">
-                  {['Active', 'Inactive'].map((s) => (
-                     <button
-                        key={s}
-                        onClick={() => setFormData({ ...formData, status: s as any })}
-                        className={cn(
-                           "flex-1 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest border transition-all",
-                           formData.status === s 
-                              ? "bg-brand/10 border-brand/30 text-brand" 
-                              : "bg-obsidian-outer border-white/5 text-zinc-muted"
-                        )}
-                     >
-                        {s}
-                     </button>
-                  ))}
-               </div>
+               <AmberDropdown 
+                  options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]}
+                  value={formData.status || 'Active'}
+                  onChange={(val) => setFormData({ ...formData, status: val as any })}
+                  className="w-full"
+               />
             </div>
          </div>
       </AmberSlideOver>

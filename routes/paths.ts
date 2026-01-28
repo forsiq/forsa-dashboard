@@ -63,6 +63,8 @@ export const paths = {
   templateDetails: '/templates/details',
   templateAnalytics: '/templates/analytics',
   templateAutomation: '/templates/automation',
+  // Examples
+  tableExample: '/examples/table',
   // Errors & Results
   serverError: '/error/500',
   networkError: '/error/network',

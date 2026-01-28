@@ -37,7 +37,7 @@ export const translations = {
     'sidebar.inventory': 'Inventory',
     'sidebar.operations': 'Operations',
     'sidebar.general': 'General',
-    'sidebar.system': 'System Responses', 
+    'sidebar.system': 'System Responses',
     'sidebar.exit': 'Exit Service',
     'sidebar.back_portal': 'Back to Portal',
 
@@ -62,6 +62,7 @@ export const translations = {
     'nav.error_500': '500 Server Error',
     'nav.error_network': 'Network Error',
     'nav.loading_screen': 'Loading State',
+    'nav.table_example': 'Table Example',
     
     // --- Other Nav Items ---
     'nav.repair_center': 'Repair Center',
@@ -314,6 +315,7 @@ export const translations = {
     'nav.error_500': 'خطأ 500',
     'nav.error_network': 'خطأ في الشبكة',
     'nav.loading_screen': 'حالة التحميل',
+    'nav.table_example': 'مثال على الجدول',
 
     // --- Other Nav Items ---
     'nav.repair_center': 'مركز الإصلاح',

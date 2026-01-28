@@ -6,6 +6,8 @@ import { AmberInput } from '../../../amber-ui/components/AmberInput';
 import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
 import { AmberSlideOver } from '../../../amber-ui/components/AmberSlideOver';
 import { AmberAutocomplete } from '../../../amber-ui/components/AmberAutocomplete';
+import { DataTable, Column } from '../../../amber-ui/components/Data/DataTable';
+import { StatusBadge } from '../../../amber-ui/components/Data/StatusBadge';
 import { 
   ArrowRightLeft,
   ArrowDownRight,
@@ -15,10 +17,7 @@ import {
   Filter,
   Download,
   Plus,
-  Calendar,
-  Box,
-  ChevronRight,
-  ChevronDown
+  Box
 } from 'lucide-react';
 import { cn } from '../../../lib/cn';
 
@@ -82,13 +81,6 @@ export const Movements = () => {
     notes: ''
   });
 
-  // Expanded Row State
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  // -- Pagination --
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   // -- Helpers --
   const handleSave = () => {
     // Basic Validation
@@ -106,8 +98,6 @@ export const Movements = () => {
     } else if (formData.type === 'Out') {
       finalFrom = MOCK_WAREHOUSES.find(w => w.value === formData.warehouseFrom)?.label;
     } else if (formData.type === 'Adjustment') {
-      // Adjustment logic: if negative, 'from', if positive 'to' - simplistic approach for now
-      // Or just assign to a location
       finalFrom = MOCK_WAREHOUSES.find(w => w.value === formData.warehouseFrom)?.label; 
     }
 
@@ -124,14 +114,13 @@ export const Movements = () => {
       warehouseFrom: finalFrom,
       warehouseTo: finalTo,
       quantity: formData.type === 'Out' || (formData.type === 'Adjustment' && formData.quantity < 0) ? Math.abs(formData.quantity) : formData.quantity,
-      user: 'Current User', // Mock user
+      user: 'Current User',
       notes: formData.notes
     };
 
     setMovements([newMovement, ...movements]);
     setIsCreateOpen(false);
     
-    // Reset Form
     setFormData({
       type: 'In',
       date: new Date().toISOString().split('T')[0],
@@ -159,30 +148,97 @@ export const Movements = () => {
     });
   }, [movements, searchQuery, typeFilter, warehouseFilter]);
 
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredMovements.slice(start, start + itemsPerPage);
-  }, [filteredMovements, currentPage]);
+  // --- Table Columns ---
+  const columns: Column<Movement>[] = [
+    {
+      key: 'date',
+      label: 'Date',
+      render: (row) => <span className="text-[10px] font-bold text-zinc-muted">{row.date}</span>,
+      sortable: true
+    },
+    {
+      key: 'reference',
+      label: 'Reference',
+      render: (row) => <span className="font-mono text-[10px] font-bold text-zinc-text group-hover:text-brand transition-colors">{row.reference}</span>,
+      sortable: true
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      render: (row) => {
+        let variant: any = 'info';
+        if (row.type === 'In') variant = 'success';
+        if (row.type === 'Out') variant = 'error';
+        if (row.type === 'Adjustment') variant = 'warning';
 
-  const totalPages = Math.ceil(filteredMovements.length / itemsPerPage);
-
-  const getIconForType = (type: MovementType) => {
-    switch(type) {
-      case 'In': return <ArrowDownRight className="w-3.5 h-3.5" />;
-      case 'Out': return <ArrowUpRight className="w-3.5 h-3.5" />;
-      case 'Transfer': return <ArrowRightLeft className="w-3.5 h-3.5" />;
-      case 'Adjustment': return <RefreshCw className="w-3.5 h-3.5" />;
+        return (
+          <StatusBadge status={row.type} variant={variant} size="sm" showDot />
+        );
+      },
+      sortable: true
+    },
+    {
+      key: 'product',
+      label: 'Product',
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-zinc-text">{row.productName}</span>
+          <span className="text-[9px] font-mono text-zinc-muted">{row.sku}</span>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      key: 'location',
+      label: 'From / To',
+      render: (row) => (
+        <div className="text-[10px]">
+          {row.type === 'Transfer' ? (
+            <div className="flex flex-col gap-1">
+              <span className="text-zinc-muted flex items-center gap-1"><Box className="w-3 h-3" /> {row.warehouseFrom}</span>
+              <span className="text-zinc-text flex items-center gap-1"><ArrowRightLeft className="w-3 h-3" /> {row.warehouseTo}</span>
+            </div>
+          ) : row.type === 'In' ? (
+            <span className="text-zinc-text flex items-center gap-1"><Box className="w-3 h-3" /> {row.warehouseTo}</span>
+          ) : (
+            <span className="text-zinc-muted flex items-center gap-1"><Box className="w-3 h-3" /> {row.warehouseFrom}</span>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'quantity',
+      label: 'Qty',
+      align: 'right',
+      render: (row) => (
+        <span className={cn(
+          "font-bold text-xs",
+          row.type === 'In' ? 'text-success' : row.type === 'Out' ? 'text-danger' : 'text-zinc-text'
+        )}>
+          {row.type === 'In' ? '+' : row.type === 'Out' ? '-' : ''}{Math.abs(row.quantity)}
+        </span>
+      ),
+      sortable: true
     }
-  };
+  ];
 
-  const getColorForType = (type: MovementType) => {
-    switch(type) {
-      case 'In': return 'text-success bg-success/10 border-success/20';
-      case 'Out': return 'text-danger bg-danger/10 border-danger/20';
-      case 'Transfer': return 'text-info bg-info/10 border-info/20';
-      case 'Adjustment': return 'text-warning bg-warning/10 border-warning/20';
-    }
-  };
+  // Details expand component
+  const renderDetails = (row: Movement) => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-[10px]">
+       <div>
+          <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Movement ID</p>
+          <p className="font-mono text-zinc-text">{row.id}</p>
+       </div>
+       <div>
+          <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Initiated By</p>
+          <p className="text-zinc-text">{row.user}</p>
+       </div>
+       <div className="col-span-2">
+          <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Notes</p>
+          <p className="text-zinc-secondary italic">{row.notes || 'No notes provided.'}</p>
+       </div>
+    </div>
+  );
 
   return (
     <div className="animate-fade-up space-y-8 min-h-[calc(100vh-100px)] flex flex-col">
@@ -241,120 +297,17 @@ export const Movements = () => {
         </button>
       </AmberCard>
 
-      {/* Data Table */}
-      <AmberCard noPadding className="flex-1 flex flex-col bg-obsidian-panel border-white/5 shadow-xl overflow-hidden">
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left min-w-[1000px]">
-            <thead className="bg-obsidian-outer/50 border-b border-white/5 text-[9px] font-black text-zinc-muted uppercase tracking-widest sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Reference</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">From / To</th>
-                <th className="px-6 py-4 text-right">Qty</th>
-                <th className="w-12"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.03]">
-              {paginatedData.map((m) => (
-                <React.Fragment key={m.id}>
-                  <tr 
-                    className={cn(
-                      "hover:bg-white/[0.02] transition-colors group cursor-pointer",
-                      expandedId === m.id && "bg-white/[0.02]"
-                    )}
-                    onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
-                  >
-                    <td className="px-6 py-4 text-[10px] font-bold text-zinc-muted">{m.date}</td>
-                    <td className="px-6 py-4 font-mono text-[10px] font-bold text-zinc-text group-hover:text-brand transition-colors">{m.reference}</td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm border text-[9px] font-black uppercase tracking-widest",
-                        getColorForType(m.type)
-                      )}>
-                        {getIconForType(m.type)}
-                        {m.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-zinc-text">{m.productName}</span>
-                        <span className="text-[9px] font-mono text-zinc-muted">{m.sku}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[10px]">
-                      {m.type === 'Transfer' ? (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-zinc-muted flex items-center gap-1"><Box className="w-3 h-3" /> {m.warehouseFrom}</span>
-                          <span className="text-zinc-text flex items-center gap-1"><ArrowDownRight className="w-3 h-3" /> {m.warehouseTo}</span>
-                        </div>
-                      ) : m.type === 'In' ? (
-                        <span className="text-zinc-text flex items-center gap-1"><Box className="w-3 h-3" /> {m.warehouseTo}</span>
-                      ) : (
-                        <span className="text-zinc-muted flex items-center gap-1"><Box className="w-3 h-3" /> {m.warehouseFrom}</span>
-                      )}
-                    </td>
-                    <td className={cn(
-                      "px-6 py-4 text-right font-bold text-xs",
-                      m.type === 'In' ? 'text-success' : m.type === 'Out' ? 'text-danger' : 'text-zinc-text'
-                    )}>
-                      {m.type === 'In' ? '+' : m.type === 'Out' ? '-' : ''}{Math.abs(m.quantity)}
-                    </td>
-                    <td className="px-2 py-4 text-center">
-                      <ChevronRight className={cn("w-4 h-4 text-zinc-muted transition-transform", expandedId === m.id && "rotate-90")} />
-                    </td>
-                  </tr>
-                  
-                  {/* Expanded Details */}
-                  {expandedId === m.id && (
-                    <tr className="bg-obsidian-outer/30 shadow-inner">
-                      <td colSpan={7} className="px-6 py-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-[10px]">
-                           <div>
-                              <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Movement ID</p>
-                              <p className="font-mono text-zinc-text">{m.id}</p>
-                           </div>
-                           <div>
-                              <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Initiated By</p>
-                              <p className="text-zinc-text">{m.user}</p>
-                           </div>
-                           <div className="col-span-2">
-                              <p className="font-black text-zinc-muted uppercase tracking-widest mb-1">Notes</p>
-                              <p className="text-zinc-secondary italic">{m.notes || 'No notes provided.'}</p>
-                           </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Footer */}
-        <div className="px-6 py-4 border-t border-white/5 bg-obsidian-outer/30 flex justify-between items-center">
-           <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">
-             Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredMovements.length)} of {filteredMovements.length}
-           </p>
-           <div className="flex gap-2">
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="px-4 py-1.5 bg-obsidian-card border border-white/5 rounded-sm text-[10px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-50 transition-all"
-              >
-                Previous
-              </button>
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="px-4 py-1.5 bg-obsidian-card border border-white/5 rounded-sm text-[10px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-50 transition-all"
-              >
-                Next
-              </button>
-           </div>
-        </div>
+      {/* Shared Data Table */}
+      <AmberCard noPadding className="flex-1 border-white/5 shadow-xl overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={filteredMovements}
+          expandable
+          expandComponent={renderDetails}
+          pagination
+          pageSize={10}
+          emptyMessage="No stock movements found."
+        />
       </AmberCard>
 
       {/* New Movement SlideOver */}

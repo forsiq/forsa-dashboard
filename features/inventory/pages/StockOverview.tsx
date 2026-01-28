@@ -5,23 +5,17 @@ import { AmberButton } from '../../../amber-ui/components/AmberButton';
 import { AmberInput } from '../../../amber-ui/components/AmberInput';
 import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
 import { AmberSlideOver } from '../../../amber-ui/components/AmberSlideOver';
+import { DataTable, Column } from '../../../amber-ui/components/Data/DataTable';
+import { StatusBadge, StatusVariant } from '../../../amber-ui/components/Data/StatusBadge';
 import { 
   Package, 
   Search, 
   Filter, 
   Download, 
   Printer, 
-  ChevronRight, 
-  MoreHorizontal, 
-  CheckSquare, 
-  Square,
-  AlertTriangle,
-  ArrowRightLeft,
-  Edit,
-  MapPin,
-  RefreshCw,
-  Trash2,
-  X,
+  Edit, 
+  MapPin, 
+  RefreshCw, 
   Plus
 } from 'lucide-react';
 import { cn } from '../../../lib/cn';
@@ -78,16 +72,10 @@ export const StockOverview = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(new Set());
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   // SlideOver State
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductStock | null>(null);
-
-  // -- Pagination --
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   // -- Filtering Logic --
   const filteredItems = useMemo(() => {
@@ -101,44 +89,91 @@ export const StockOverview = () => {
     });
   }, [items, searchQuery, categoryFilter, statusFilter]);
 
-  const paginatedItems = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredItems.slice(start, start + itemsPerPage);
-  }, [filteredItems, currentPage]);
-
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-
   // -- Handlers --
-  const toggleRow = (id: string) => {
-    const newSet = new Set(expandedRowIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setExpandedRowIds(newSet);
+  const handleEdit = (product: ProductStock) => {
+    setSelectedProduct(product);
+    setIsAdjustOpen(true);
   };
 
-  const toggleSelect = (id: string) => {
-    const newSet = new Set(selectedIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setSelectedIds(newSet);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === paginatedItems.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(paginatedItems.map(i => i.id)));
-    }
-  };
-
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): StatusVariant => {
     switch (status) {
-      case 'In Stock': return 'text-success bg-success/10 border-success/20';
-      case 'Low Stock': return 'text-warning bg-warning/10 border-warning/20';
-      case 'Out of Stock': return 'text-danger bg-danger/10 border-danger/20';
-      default: return 'text-zinc-muted';
+      case 'In Stock': return 'success';
+      case 'Low Stock': return 'warning';
+      case 'Out of Stock': return 'error';
+      default: return 'inactive';
     }
   };
+
+  // -- Columns --
+  const columns: Column<ProductStock>[] = [
+    {
+      key: 'product',
+      label: 'Product',
+      render: (row) => (
+        <div className="flex items-center gap-4">
+          <div 
+            className="w-10 h-10 rounded-sm bg-obsidian-outer border border-white/5 shrink-0" 
+            style={{ backgroundColor: row.image }}
+          />
+          <div>
+            <p className="text-xs font-bold text-zinc-text truncate max-w-[200px]">{row.name}</p>
+            <p className="text-[9px] font-bold text-zinc-muted font-mono mt-0.5">{row.sku}</p>
+          </div>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      render: (row) => (
+        <span className="text-[10px] font-bold text-zinc-secondary bg-white/5 px-2 py-1 rounded-sm border border-white/5">
+          {row.category}
+        </span>
+      ),
+      sortable: true
+    },
+    {
+      key: 'totalStock',
+      label: 'Total Stock',
+      render: (row) => (
+        <span className="text-sm font-bold text-zinc-text">
+          {row.totalStock} <span className="text-[9px] text-zinc-muted font-medium">Units</span>
+        </span>
+      ),
+      sortable: true
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => (
+         <StatusBadge status={row.status} variant={getStatusVariant(row.status)} size="sm" showDot />
+      ),
+      sortable: true
+    }
+  ];
+
+  // -- Expandable Component --
+  const renderBreakdown = (row: ProductStock) => (
+    <div className="ml-14 grid grid-cols-1 md:grid-cols-3 gap-4">
+      {row.breakdown.map(wh => (
+        <div key={wh.id} className="p-3 bg-obsidian-panel border border-white/5 rounded-sm flex items-center justify-between">
+           <div className="flex items-center gap-3">
+              <div className="p-1.5 bg-obsidian-outer rounded-sm text-zinc-muted">
+                 <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-[10px] font-bold text-zinc-text uppercase tracking-wide">{wh.name}</span>
+           </div>
+           <span className="text-xs font-mono font-bold text-brand">{wh.quantity}</span>
+        </div>
+      ))}
+      <div className="flex items-center justify-center p-3 border border-dashed border-white/10 rounded-sm hover:border-brand/30 hover:bg-brand/5 cursor-pointer transition-all group">
+         <span className="text-[9px] font-bold text-zinc-muted group-hover:text-brand uppercase tracking-widest flex items-center gap-2">
+            <Plus className="w-3 h-3" /> Add Warehouse
+         </span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="animate-fade-up space-y-6 min-h-[calc(100vh-100px)] flex flex-col relative">
@@ -198,170 +233,25 @@ export const StockOverview = () => {
         </button>
       </AmberCard>
 
-      {/* Bulk Actions Bar */}
-      <div className={cn(
-         "fixed bottom-6 left-1/2 -translate-x-1/2 bg-obsidian-card border border-white/10 shadow-2xl rounded-full px-6 py-3 flex items-center gap-6 z-40 transition-all duration-300",
-         selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
-      )}>
-         <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest border-r border-white/10 pr-6">
-            {selectedIds.size} Selected
-         </span>
-         <div className="flex items-center gap-2">
-            <button className="p-2 text-zinc-muted hover:text-brand transition-colors rounded-full hover:bg-white/5" title="Bulk Update">
-               <Edit className="w-4 h-4" />
-            </button>
-            <button className="p-2 text-zinc-muted hover:text-info transition-colors rounded-full hover:bg-white/5" title="Transfer">
-               <ArrowRightLeft className="w-4 h-4" />
-            </button>
-            <div className="w-px h-4 bg-white/10 mx-1" />
-            <button className="p-2 text-zinc-muted hover:text-danger transition-colors rounded-full hover:bg-white/5" title="Delete">
-               <Trash2 className="w-4 h-4" />
-            </button>
-         </div>
-         <button onClick={() => setSelectedIds(new Set())} className="ml-2 p-1 bg-white/10 rounded-full text-zinc-muted hover:bg-white/20 transition-colors">
-            <X className="w-3 h-3" />
-         </button>
-      </div>
-
-      {/* Data Table */}
-      <AmberCard noPadding className="flex-1 flex flex-col bg-obsidian-panel border-white/5 shadow-xl overflow-hidden">
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left min-w-[900px]">
-            <thead className="bg-obsidian-outer/50 border-b border-white/5 text-[9px] font-black text-zinc-muted uppercase tracking-widest sticky top-0 z-10">
-              <tr>
-                <th className="w-12 px-6 py-4 text-center">
-                  <button onClick={toggleSelectAll} className="hover:text-brand transition-colors">
-                    {selectedIds.size > 0 && selectedIds.size === paginatedItems.length ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                  </button>
-                </th>
-                <th className="w-12"></th>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Total Stock</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.03]">
-              {paginatedItems.map((item) => (
-                <React.Fragment key={item.id}>
-                  <tr className={cn(
-                    "hover:bg-white/[0.02] transition-colors group",
-                    expandedRowIds.has(item.id) && "bg-white/[0.02]",
-                    selectedIds.has(item.id) && "bg-brand/[0.03]"
-                  )}>
-                    <td className="px-6 py-4 text-center">
-                      <button onClick={() => toggleSelect(item.id)} className={cn("transition-colors", selectedIds.has(item.id) ? "text-brand" : "text-zinc-muted")}>
-                        {selectedIds.has(item.id) ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                      </button>
-                    </td>
-                    <td className="px-2 py-4 text-center">
-                      <button 
-                        onClick={() => toggleRow(item.id)}
-                        className={cn(
-                          "p-1 rounded-sm text-zinc-muted hover:text-brand hover:bg-white/5 transition-all",
-                          expandedRowIds.has(item.id) && "text-brand rotate-90"
-                        )}
-                      >
-                        <ChevronRight className="w-4 h-4 transition-transform" />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div 
-                          className="w-10 h-10 rounded-sm bg-obsidian-outer border border-white/5 shrink-0" 
-                          style={{ backgroundColor: item.image }}
-                        />
-                        <div>
-                          <p className="text-xs font-bold text-zinc-text truncate max-w-[200px]">{item.name}</p>
-                          <p className="text-[9px] font-bold text-zinc-muted font-mono mt-0.5">{item.sku}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-bold text-zinc-secondary bg-white/5 px-2 py-1 rounded-sm border border-white/5">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-zinc-text">{item.totalStock} <span className="text-[9px] text-zinc-muted font-medium">Units</span></span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "text-[9px] font-black px-2 py-0.5 rounded-sm border uppercase tracking-widest inline-flex items-center gap-1.5",
-                        getStatusColor(item.status)
-                      )}>
-                        {item.status === 'Low Stock' && <AlertTriangle className="w-3 h-3" />}
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-1">
-                        <button 
-                          className="p-1.5 text-zinc-muted hover:text-brand hover:bg-white/5 rounded-sm transition-colors"
-                          onClick={() => { setSelectedProduct(item); setIsAdjustOpen(true); }}
-                          title="Adjust Stock"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-1.5 text-zinc-muted hover:text-zinc-text hover:bg-white/5 rounded-sm transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  
-                  {/* Expanded Row Details */}
-                  {expandedRowIds.has(item.id) && (
-                    <tr className="bg-obsidian-outer/30 shadow-inner">
-                      <td colSpan={7} className="px-6 py-4">
-                        <div className="ml-14 grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {item.breakdown.map(wh => (
-                            <div key={wh.id} className="p-3 bg-obsidian-panel border border-white/5 rounded-sm flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                  <div className="p-1.5 bg-obsidian-outer rounded-sm text-zinc-muted">
-                                     <MapPin className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="text-[10px] font-bold text-zinc-text uppercase tracking-wide">{wh.name}</span>
-                               </div>
-                               <span className="text-xs font-mono font-bold text-brand">{wh.quantity}</span>
-                            </div>
-                          ))}
-                          <div className="flex items-center justify-center p-3 border border-dashed border-white/10 rounded-sm hover:border-brand/30 hover:bg-brand/5 cursor-pointer transition-all group">
-                             <span className="text-[9px] font-bold text-zinc-muted group-hover:text-brand uppercase tracking-widest flex items-center gap-2">
-                                <Plus className="w-3 h-3" /> Add Warehouse
-                             </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-white/5 bg-obsidian-outer/30 flex justify-between items-center">
-           <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredItems.length)} of {filteredItems.length}</p>
-           <div className="flex gap-2">
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="px-4 py-1.5 bg-obsidian-card border border-white/5 rounded-sm text-[10px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-50 transition-all"
-              >
-                Previous
-              </button>
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="px-4 py-1.5 bg-obsidian-card border border-white/5 rounded-sm text-[10px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-50 transition-all"
-              >
-                Next
-              </button>
-           </div>
-        </div>
+      {/* Shared Data Table */}
+      <AmberCard noPadding className="flex-1 border-white/5 shadow-xl overflow-hidden">
+        <DataTable 
+          columns={columns}
+          data={filteredItems}
+          expandable
+          expandComponent={renderBreakdown}
+          selectable
+          pagination
+          pageSize={10}
+          onSelectionChange={(ids) => console.log(ids)}
+          rowActions={[
+            {
+               label: 'Adjust Stock',
+               icon: Edit,
+               onClick: handleEdit
+            }
+          ]}
+        />
       </AmberCard>
 
       {/* Adjust Stock Modal */}

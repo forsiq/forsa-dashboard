@@ -5,20 +5,20 @@ import { AmberButton } from '../../../amber-ui/components/AmberButton';
 import { AmberInput } from '../../../amber-ui/components/AmberInput';
 import { AmberDropdown } from '../../../amber-ui/components/AmberDropdown';
 import { AmberSlideOver } from '../../../amber-ui/components/AmberSlideOver';
+import { DataTable, Column } from '../../../amber-ui/components/Data/DataTable';
+import { StatusBadge, StatusVariant } from '../../../amber-ui/components/Data/StatusBadge';
 import { 
   Tag, 
   Plus, 
-  MoreVertical, 
-  Globe, 
+  Briefcase, 
+  CheckCircle2, 
   Search, 
   Filter, 
   Edit, 
   Trash2, 
   ExternalLink,
   Image as ImageIcon,
-  CheckCircle2,
-  XCircle,
-  Briefcase
+  Globe
 } from 'lucide-react';
 import { useLanguage } from '../../../amber-ui/contexts/LanguageContext';
 import { cn } from '../../../lib/cn';
@@ -49,7 +49,6 @@ export const Brands = () => {
   // -- View State --
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState('name_asc');
   
   // -- Modal State --
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,7 +61,6 @@ export const Brands = () => {
   });
 
   // -- Handlers --
-
   const handleSave = () => {
     if (!formData.name) return;
 
@@ -83,9 +81,9 @@ export const Brands = () => {
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (brand: Brand) => {
     if (window.confirm('Are you sure you want to delete this brand? This action cannot be undone.')) {
-      setBrands(brands.filter(b => b.id !== id));
+      setBrands(brands.filter(b => b.id !== brand.id));
     }
   };
 
@@ -102,22 +100,61 @@ export const Brands = () => {
   };
 
   const processedBrands = useMemo(() => {
-    let result = brands.filter(b => {
+    return brands.filter(b => {
       const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
+  }, [brands, searchQuery, statusFilter]);
 
-    return result.sort((a, b) => {
-      switch (sortConfig) {
-        case 'name_asc': return a.name.localeCompare(b.name);
-        case 'name_desc': return b.name.localeCompare(a.name);
-        case 'count_high': return b.productCount - a.productCount;
-        case 'count_low': return a.productCount - b.productCount;
-        default: return 0;
-      }
-    });
-  }, [brands, searchQuery, statusFilter, sortConfig]);
+  const getStatusVariant = (status: string): StatusVariant => {
+    return status === 'Active' ? 'success' : 'inactive';
+  };
+
+  // --- Table Columns ---
+  const columns: Column<Brand>[] = [
+    {
+      key: 'name',
+      label: 'Brand Name',
+      render: (row) => (
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-sm bg-obsidian-outer border border-white/5 flex items-center justify-center text-zinc-muted font-black text-xs uppercase group-hover:border-brand/30 transition-colors">
+              {row.logo ? <img src={row.logo} className="w-full h-full object-cover rounded-sm" /> : row.name.substring(0, 2)}
+          </div>
+          <div>
+            <p className="text-sm font-black text-zinc-text uppercase tracking-tight italic">{row.name}</p>
+            <p className="text-[9px] font-bold text-zinc-muted uppercase font-mono">{row.id}</p>
+          </div>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      key: 'website',
+      label: 'Website',
+      render: (row) => row.website ? (
+        <a href={row.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold text-zinc-secondary hover:text-brand transition-colors">
+          {row.website.replace('https://', '')} <ExternalLink className="w-3 h-3" />
+        </a>
+      ) : <span className="text-xs text-zinc-muted">-</span>,
+      sortable: true
+    },
+    {
+      key: 'productCount',
+      label: 'Products',
+      render: (row) => <span className="text-xs font-bold text-zinc-text">{row.productCount}</span>,
+      sortable: true,
+      align: 'center'
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => (
+         <StatusBadge status={row.status} variant={getStatusVariant(row.status)} showDot size="sm" />
+      ),
+      sortable: true
+    }
+  ];
 
   return (
     <div className="animate-fade-up space-y-8">
@@ -178,18 +215,6 @@ export const Brands = () => {
            </div>
            
            <AmberDropdown 
-                label="Sort Order"
-                options={[
-                  { label: 'Name (A-Z)', value: 'name_asc' },
-                  { label: 'Name (Z-A)', value: 'name_desc' },
-                  { label: 'Products (High-Low)', value: 'count_high' },
-                ]}
-                value={sortConfig}
-                onChange={setSortConfig}
-                className="w-full lg:w-48"
-           />
-
-           <AmberDropdown 
                 label="Status"
                 options={[
                   { label: 'All', value: 'All' },
@@ -200,73 +225,21 @@ export const Brands = () => {
                 onChange={setStatusFilter}
                 className="w-full lg:w-48"
            />
+           
+           <button className="h-10 px-4 bg-obsidian-card border border-white/5 text-zinc-muted hover:text-zinc-text transition-all rounded-sm flex items-center justify-center hover:bg-white/5">
+               <Filter className="w-4 h-4" />
+           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-start">
-            <thead>
-              <tr className="bg-white/[0.02] border-b border-white/5">
-                <th className="px-6 py-4 text-start text-[9px] font-black text-zinc-muted uppercase tracking-widest italic">Brand Name</th>
-                <th className="px-6 py-4 text-start text-[9px] font-black text-zinc-muted uppercase tracking-widest italic">Website</th>
-                <th className="px-6 py-4 text-start text-[9px] font-black text-zinc-muted uppercase tracking-widest italic">Products</th>
-                <th className="px-6 py-4 text-start text-[9px] font-black text-zinc-muted uppercase tracking-widest italic">Status</th>
-                <th className="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.03]">
-              {processedBrands.length > 0 ? (
-                processedBrands.map((brand) => (
-                  <tr key={brand.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-3">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-sm bg-obsidian-outer border border-white/5 flex items-center justify-center text-zinc-muted font-black text-xs uppercase group-hover:border-brand/30 transition-colors">
-                           {brand.logo ? <img src={brand.logo} className="w-full h-full object-cover rounded-sm" /> : brand.name.substring(0, 2)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-zinc-text uppercase tracking-tight italic">{brand.name}</p>
-                          <p className="text-[9px] font-bold text-zinc-muted uppercase font-mono">{brand.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-3">
-                       {brand.website ? (
-                         <a href={brand.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold text-zinc-secondary hover:text-brand transition-colors">
-                            {brand.website.replace('https://', '')} <ExternalLink className="w-3 h-3" />
-                         </a>
-                       ) : (
-                         <span className="text-xs text-zinc-muted">-</span>
-                       )}
-                    </td>
-                    <td className="px-6 py-3">
-                       <span className="text-xs font-bold text-zinc-text">{brand.productCount}</span>
-                    </td>
-                    <td className="px-6 py-3">
-                       <span className={cn(
-                          "text-[9px] font-black px-2 py-0.5 rounded-sm border uppercase tracking-widest inline-flex items-center gap-1.5",
-                          brand.status === 'Active' ? 'bg-success/5 text-success border-success/20' : 'bg-white/5 text-zinc-muted border-white/10'
-                       )}>
-                          {brand.status === 'Active' && <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
-                          {brand.status}
-                       </span>
-                    </td>
-                    <td className="px-6 py-3 text-end">
-                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => openEditModal(brand)} className="p-2 text-zinc-muted hover:text-brand transition-colors bg-white/5 rounded-sm"><Edit className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => handleDelete(brand.id)} className="p-2 text-zinc-muted hover:text-danger transition-colors bg-white/5 rounded-sm"><Trash2 className="w-3.5 h-3.5" /></button>
-                       </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-muted text-xs italic">
-                    No brands found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={processedBrands}
+          sortable
+          rowActions={[
+            { label: 'Edit', icon: Edit, onClick: openEditModal },
+            { label: 'Delete', icon: Trash2, onClick: handleDelete, variant: 'danger' }
+          ]}
+        />
       </AmberCard>
 
       {/* Form SlideOver */}
@@ -320,23 +293,12 @@ export const Brands = () => {
 
             <div>
                <label className="text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1 mb-1.5 block">Status</label>
-               <div className="flex gap-2">
-                  {['Active', 'Inactive'].map((s) => (
-                     <button
-                        key={s}
-                        onClick={() => setFormData({ ...formData, status: s as any })}
-                        className={cn(
-                           "flex-1 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-center gap-2",
-                           formData.status === s 
-                              ? "bg-brand/10 border-brand/30 text-brand" 
-                              : "bg-obsidian-outer border-white/5 text-zinc-muted hover:text-zinc-text"
-                        )}
-                     >
-                        {s === 'Active' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                        {s}
-                     </button>
-                  ))}
-               </div>
+               <AmberDropdown 
+                  options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]}
+                  value={formData.status || 'Active'}
+                  onChange={(val) => setFormData({ ...formData, status: val as any })}
+                  className="w-full"
+               />
             </div>
          </div>
       </AmberSlideOver>
