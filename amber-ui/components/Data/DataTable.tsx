@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -11,8 +11,8 @@ import {
   Search,
   CheckSquare,
   Square,
-  AlertCircle,
-  Loader2
+  Loader2,
+  GripVertical
 } from 'lucide-react';
 import { cn } from '../../../lib/cn';
 
@@ -45,8 +45,10 @@ interface DataTableProps<T> {
   pagination?: boolean;
   pageSize?: number;
   loading?: boolean;
+  draggable?: boolean; // New prop for DnD
   onRowClick?: (row: T) => void;
   onSelectionChange?: (selectedIds: string[]) => void;
+  onRowReorder?: (sourceIndex: number, destinationIndex: number) => void; // New callback
   rowActions?: Action<T>[];
   expandComponent?: (row: T) => React.ReactNode;
   emptyMessage?: string;
@@ -63,8 +65,10 @@ export function DataTable<T extends Record<string, any>>({
   pagination = false,
   pageSize = 10,
   loading = false,
+  draggable = false,
   onRowClick,
   onSelectionChange,
+  onRowReorder,
   rowActions,
   expandComponent,
   emptyMessage = "No data available",
@@ -76,6 +80,9 @@ export function DataTable<T extends Record<string, any>>({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [openActionId, setOpenActionId] = useState<string | null>(null);
+  
+  // Drag State
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // --- Sorting ---
   const sortedData = useMemo(() => {
@@ -138,6 +145,25 @@ export function DataTable<T extends Record<string, any>>({
     setExpandedIds(newSet);
   };
 
+  // Drag Handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    // Optional: Set ghost image
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault(); // Necessary to allow dropping
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropIndex) return;
+    
+    onRowReorder?.(draggedIndex, dropIndex);
+    setDraggedIndex(null);
+  };
+
   // Click outside to close actions menu
   useEffect(() => {
     const handleClickOutside = () => setOpenActionId(null);
@@ -164,6 +190,9 @@ export function DataTable<T extends Record<string, any>>({
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
             <tr>
+              {/* Drag Handle Column */}
+              {draggable && <th className="w-10 px-2"></th>}
+
               {/* Checkbox Column */}
               {selectable && (
                 <th className="w-12 px-6 py-4 text-center">
@@ -220,7 +249,7 @@ export function DataTable<T extends Record<string, any>>({
 
           <tbody className="divide-y divide-white/[0.03]">
             {paginatedData.length > 0 ? (
-              paginatedData.map((row) => {
+              paginatedData.map((row, index) => {
                 const id = String(row[keyField as keyof T]);
                 const isSelected = selectedIds.has(id);
                 const isExpanded = expandedIds.has(id);
@@ -228,14 +257,26 @@ export function DataTable<T extends Record<string, any>>({
                 return (
                   <React.Fragment key={id}>
                     <tr 
+                      draggable={draggable}
+                      onDragStart={(e) => draggable && handleDragStart(e, index)}
+                      onDragOver={(e) => draggable && handleDragOver(e, index)}
+                      onDrop={(e) => draggable && handleDrop(e, index)}
                       className={cn(
                         "group transition-colors",
                         onRowClick ? "cursor-pointer" : "",
                         isSelected ? "bg-brand/[0.03]" : "hover:bg-white/[0.02]",
-                        isExpanded && "bg-white/[0.02]"
+                        isExpanded && "bg-white/[0.02]",
+                        draggable && "cursor-move"
                       )}
                       onClick={() => onRowClick?.(row)}
                     >
+                      {/* Drag Handle */}
+                      {draggable && (
+                        <td className="px-2 py-3 text-center text-zinc-muted/50 cursor-grab active:cursor-grabbing">
+                           <GripVertical className="w-4 h-4 mx-auto" />
+                        </td>
+                      )}
+
                       {/* Checkbox */}
                       {selectable && (
                         <td className="px-6 py-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -329,7 +370,7 @@ export function DataTable<T extends Record<string, any>>({
                     {/* Expanded Content */}
                     {expandable && isExpanded && expandComponent && (
                       <tr className="bg-obsidian-outer/30 shadow-inner">
-                         <td colSpan={columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0) + 1} className="px-6 py-4 border-b border-white/5">
+                         <td colSpan={columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0) + (draggable ? 1 : 0) + 1} className="px-6 py-4 border-b border-white/5">
                             {expandComponent(row)}
                          </td>
                       </tr>
@@ -341,7 +382,7 @@ export function DataTable<T extends Record<string, any>>({
               // Empty State
               <tr>
                 <td 
-                  colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0)} 
+                  colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0) + (draggable ? 1 : 0)} 
                   className="px-6 py-20 text-center"
                 >
                   <div className="flex flex-col items-center justify-center text-zinc-muted opacity-50">

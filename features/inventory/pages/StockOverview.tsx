@@ -238,10 +238,10 @@ export const StockOverview = () => {
         <DataTable 
           columns={columns}
           data={filteredItems}
-          expandable
+          expandable={true}
           expandComponent={renderBreakdown}
-          selectable
-          pagination
+          selectable={true}
+          pagination={true}
           pageSize={10}
           onSelectionChange={(ids) => console.log(ids)}
           rowActions={[

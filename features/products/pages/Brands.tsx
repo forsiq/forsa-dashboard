@@ -49,7 +49,8 @@ export const Brands = () => {
   // -- View State --
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  
+  const [sortConfig, setSortConfig] = useState('name_asc');
+
   // -- Modal State --
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -100,16 +101,33 @@ export const Brands = () => {
   };
 
   const processedBrands = useMemo(() => {
-    return brands.filter(b => {
+    let result = brands.filter(b => {
       const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [brands, searchQuery, statusFilter]);
+
+    return result.sort((a, b) => {
+        switch (sortConfig) {
+            case 'name_asc': return a.name.localeCompare(b.name);
+            case 'name_desc': return b.name.localeCompare(a.name);
+            case 'count_high': return b.productCount - a.productCount;
+            case 'count_low': return a.productCount - b.productCount;
+            default: return 0;
+        }
+    });
+  }, [brands, searchQuery, statusFilter, sortConfig]);
 
   const getStatusVariant = (status: string): StatusVariant => {
     return status === 'Active' ? 'success' : 'inactive';
   };
+
+  const sortOptions = [
+    { label: 'Name (A-Z)', value: 'name_asc' },
+    { label: 'Name (Z-A)', value: 'name_desc' },
+    { label: 'Products (High)', value: 'count_high' },
+    { label: 'Products (Low)', value: 'count_low' },
+  ];
 
   // --- Table Columns ---
   const columns: Column<Brand>[] = [
@@ -215,6 +233,14 @@ export const Brands = () => {
            </div>
            
            <AmberDropdown 
+                label="Sort Order"
+                options={sortOptions}
+                value={sortConfig}
+                onChange={setSortConfig}
+                className="w-full lg:w-48"
+           />
+
+           <AmberDropdown 
                 label="Status"
                 options={[
                   { label: 'All', value: 'All' },
@@ -234,7 +260,7 @@ export const Brands = () => {
         <DataTable
           columns={columns}
           data={processedBrands}
-          sortable
+          sortable={true}
           rowActions={[
             { label: 'Edit', icon: Edit, onClick: openEditModal },
             { label: 'Delete', icon: Trash2, onClick: handleDelete, variant: 'danger' }

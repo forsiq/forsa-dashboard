@@ -304,7 +304,7 @@ export const Movements = () => {
           data={filteredMovements}
           expandable
           expandComponent={renderDetails}
-          pagination
+          pagination={true}
           pageSize={10}
           emptyMessage="No stock movements found."
         />
