@@ -1,0 +1,19 @@
+{
+  "$schema": "./template.config.schema.json",
+  "template": {
+    "name": "zonevast-template",
+    "version": "1.0.0",
+    "minCompatibleProject": "1.0.0",
+    "changelog": "Initial template release with feature-based architecture"
+  },
+  "paths": {
+    "core": ["src/core/", "src/features/_core/"],
+    "config": ["src/config/"],
+    "userEditable": ["src/features/", "src/services/"],
+    "customZone": ["src/custom/"]
+  },
+  "subtree": {
+    "prefix": "template",
+    "branch": "main"
+  }
+}

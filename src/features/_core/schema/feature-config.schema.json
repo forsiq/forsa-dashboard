@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ZoneVast Template Configuration",
+  "description": "Configuration file for ZoneVast template features and settings",
+  "type": "object",
+  "properties": {
+    "features": {
+      "description": "Feature toggle configuration",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "description": "Whether the feature is enabled",
+            "type": "boolean",
+            "default": true
+          },
+          "override": {
+            "description": "Whether the feature has custom overrides in the custom/ directory",
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["enabled"]
+      }
+    },
+    "theme": {
+      "description": "Theme configuration",
+      "type": "object",
+      "properties": {
+        "defaultTheme": {
+          "description": "Default theme for the application",
+          "type": "string",
+          "enum": ["light", "dark"],
+          "default": "dark"
+        },
+        "allowToggle": {
+          "description": "Whether users can toggle between themes",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "language": {
+      "description": "Language/i18n configuration",
+      "type": "object",
+      "properties": {
+        "defaultLanguage": {
+          "description": "Default language code",
+          "type": "string",
+          "enum": ["en", "ar", "ku"],
+          "default": "en"
+        },
+        "supportedLanguages": {
+          "description": "List of supported language codes",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["en", "ar", "ku"]
+        }
+      }
+    },
+    "api": {
+      "description": "API configuration",
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "description": "Base URL for API requests",
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:3000"
+        },
+        "timeout": {
+          "description": "Request timeout in milliseconds",
+          "type": "number",
+          "minimum": 1000,
+          "default": 30000
+        }
+      }
+    }
+  },
+  "required": ["features"]
+}

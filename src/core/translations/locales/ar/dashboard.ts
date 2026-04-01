@@ -1,0 +1,23 @@
+// Dashboard feature translations (Arabic)
+export const dashboard = {
+  "dash.title": "لوحة التحكم",
+  "dash.subtitle": "نظرة عامة على مقاييس الأداء الرئيسية.",
+  "dash.total_skus": "إجمالي المنتجات",
+  "dash.valuation": "قيمة المخزون",
+  "dash.pending": "طلبات معلقة",
+  "dash.critical": "مشكلات حرجة",
+  "dash.velocity_title": "اتجاه الأداء",
+  "dash.velocity_desc": "حجم المعاملات اليومية",
+  "dash.quick_actions": "إجراءات سريعة",
+  "dash.quickActions": "إجراءات سريعة",
+  "dash.recent_signals": "الإشارات الأخيرة",
+  "dash.refresh": "تحديث",
+  "dash.export": "تصدير",
+  "dash.view_terminal": "عرض الطرفية",
+  "dash.sync_title": "مزامنة البيانات",
+  "dash.from_last_month": "من الشهر الماضي",
+  "dash.recent_logs": "السجلات الأخيرة",
+  "dashboard.title": "لوحة التحكم",
+  "dashboard.today": "اليوم",
+  "dashboard.refresh": "تحديث",
+} as const;

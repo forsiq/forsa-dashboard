@@ -1,0 +1,175 @@
+// Add these translations to appropriate files in src/core/translations/locales/en/
+
+// === Missing translation keys ===
+"-": "TODO: translate -",
+".": "TODO: translate .",
+"/": "TODO: translate /",
+"/${id}": "TODO: translate /${id}",
+"/?${params.toString()}": "TODO: translate /?${params.toString()}",
+"/?${params}": "TODO: translate /?${params}",
+"/movements/?${params.toString()}": "TODO: translate /movements/?${params.toString()}",
+"/products/${id}": "TODO: translate /products/${id}",
+"/products/?${params.toString()}": "TODO: translate /products/?${params.toString()}",
+"/stats": "TODO: translate /stats",
+"/stats/": "TODO: translate /stats/",
+"@custom/features/${featureName}/components/${componentName}": "TODO: translate @custom/features/${featureName}/components/${componentName}",
+"@features/${featureName}/routes": "TODO: translate @features/${featureName}/routes",
+"T": "TODO: translate T",
+"\n": "TODO: translate \n",
+"div": "TODO: translate div",
+"search:open": "TODO: translate search:open",
+"status.${category.status}": "TODO: translate status.${category.status}",
+"status.${customer.status}": "TODO: translate status.${customer.status}",
+"status.${item.status}": "TODO: translate status.${item.status}",
+
+// === Hardcoded strings to translate ===
+
+// Used 4 time(s) in: features/_core/hooks/useRoutes.tsx, features/_example/pages/ExampleDetailPage.tsx
+"common.loading": "Loading...",
+
+// Used 3 time(s) in: core/layout/components/SearchModal.tsx, features/_example/components/ExampleForm.tsx
+"ui.active": "Active",
+
+// Used 2 time(s) in: features/_example/api/index.ts, features/_example/hooks/useExampleCRUD.ts
+"common.promise": "): Promise",
+
+// Used 2 time(s) in: features/_example/components/ExampleForm.tsx, features/orders/pages/OrdersListPage.tsx
+"ui.pending": "Pending",
+
+// Used 2 time(s) in: features/orders/pages/OrderDetailPage.tsx, features/orders/pages/OrderFormPage.tsx
+"common.shipping_address": "Shipping Address",
+
+// Used 2 time(s) in: features/orders/pages/OrderDetailPage.tsx, features/orders/pages/OrderFormPage.tsx
+"common.notes": "Notes",
+
+// Used 2 time(s) in: features/orders/pages/OrderFormPage.tsx, features/orders/pages/OrderFormPage.tsx
+"common.city": "City",
+
+// Used 2 time(s) in: features/orders/pages/OrderFormPage.tsx, features/orders/pages/OrderFormPage.tsx
+"common.state": "State",
+
+// Used 2 time(s) in: features/orders/pages/OrderFormPage.tsx, features/orders/pages/OrderFormPage.tsx
+"common.country": "Country",
+
+// Used 2 time(s) in: features/orders/pages/OrderFormPage.tsx, features/settings/pages/SettingsPage.tsx
+"common.usd": "USD",
+
+// Used 1 time(s) in: features/_core/hooks/useFeatureConfig.ts
+"common.feature_not_enabled": "Feature not enabled",
+
+// Used 1 time(s) in: features/_core/hooks/useFeatureConfig.ts
+"common.my_feature_content": "My Feature Content",
+
+// Used 1 time(s) in: core/components/AmberAutocomplete.tsx
+"ui.no_matches_found": "No matches found.",
+
+// Used 1 time(s) in: core/components/AmberAutocomplete.tsx
+"ui.filter": "Filter...",
+
+// Used 1 time(s) in: core/components/AmberAvatar.tsx
+"ui.user": "User",
+
+// Used 1 time(s) in: core/components/AmberAvatar.tsx
+"ui.user_1": "User 1",
+
+// Used 1 time(s) in: core/components/AmberAvatar.tsx
+"ui.user_2": "User 2",
+
+// Used 1 time(s) in: core/components/AmberAvatar.tsx
+"ui.user_3": "User 3",
+
+// Used 1 time(s) in: core/components/AmberAvatar.tsx
+"ui.user_4": "User 4",
+
+// Used 1 time(s) in: core/components/AmberLogo.tsx
+"ui.zonevast_logo": "ZoneVast Logo",
+
+// Used 1 time(s) in: core/components/AmberTabs.tsx
+"ui.tab_1": "Tab 1",
+
+// Used 1 time(s) in: core/components/AmberTabs.tsx
+"ui.tab_2": "Tab 2",
+
+// Used 1 time(s) in: core/components/AmberTabs.tsx
+"ui.content_1": "Content 1",
+
+// Used 1 time(s) in: core/components/AmberTabs.tsx
+"ui.content_2": "Content 2",
+
+// Used 1 time(s) in: core/components/Data/AmberExcelExport.tsx
+"ui.download_excel": "Download Excel",
+
+// Used 1 time(s) in: core/components/Navigation/AmberBreadcrumb.tsx
+"ui.home": "Home",
+
+// Used 1 time(s) in: core/components/Navigation/AmberBreadcrumb.tsx
+"ui.products": "Products",
+
+// Used 1 time(s) in: core/components/Navigation/AmberBreadcrumb.tsx
+"ui.details": "Details",
+
+// Used 1 time(s) in: core/components/Navigation/AmberBreadcrumb.tsx
+"ui.more": "More",
+
+// Used 1 time(s) in: core/components/Navigation/AmberBreadcrumb.tsx
+"ui.breadcrumb": "Breadcrumb",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.min": "Min",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.max": "Max",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.filters": "Filters",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.apply_filters": "Apply Filters",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.start": "Start",
+
+// Used 1 time(s) in: core/components/Navigation/FilterPanel.tsx
+"ui.end": "End",
+
+// Used 1 time(s) in: core/components/Navigation/SearchInput.tsx
+"ui.clear_search": "Clear search",
+
+// Used 1 time(s) in: core/components/Navigation/Stepper.tsx
+"ui.processing": "Processing...",
+
+// Used 1 time(s) in: core/layout/AmberAuthLayout.tsx
+"common.manage_your": "Manage Your",
+
+// Used 1 time(s) in: core/layout/AmberAuthLayout.tsx
+"common.ecosystem": "Ecosystem",
+
+// Used 1 time(s) in: core/layout/AmberAuthLayout.tsx
+"common.zonevast_secure_node_v4_12": "ZoneVast Secure Node v4.12",
+
+// Used 1 time(s) in: core/layout/components/SearchModal.tsx
+"ui.enable": "Enable",
+
+// Used 1 time(s) in: core/layout/components/SearchModal.tsx
+"ui.searching_authoritative_data_sources_for": "Searching authoritative data sources for",
+
+// Used 1 time(s) in: core/layout/components/SearchModal.tsx
+"ui.esc": "ESC",
+
+// Used 1 time(s) in: core/layout/components/Topbar.tsx
+"ui.no_services_available": "No Services Available",
+
+// Used 1 time(s) in: core/layout/components/Topbar.tsx
+"ui.language": "Language",
+
+// Used 1 time(s) in: core/layout/components/Topbar.tsx
+"ui.switch_service": "Switch Service",
+
+// Used 1 time(s) in: core/layout/components/Topbar.tsx
+"ui.view_notifications": "View Notifications",
+
+// Used 1 time(s) in: core/pages/AboutPage.tsx
+"common.template": "Template",
+
+// Used 1 time(s) in: core/pages/AboutPage.tsx
+"common.zonevast_template_changelog": "~/zonevast/template/changelog/",

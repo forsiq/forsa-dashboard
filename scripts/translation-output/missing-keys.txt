@@ -1,0 +1,9 @@
+// Missing translation keys
+// Add these to src/core/translations/locales/en/
+
+// TODO: Add translation for "/stats"
+"/stats": "TODO",
+
+// TODO: Add translation for "/stats/"
+"/stats/": "TODO",
+

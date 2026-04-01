@@ -1,0 +1,33 @@
+{
+  "$schema": "./src/features/_core/schema/feature-config.schema.json",
+  "template": {
+    "version": "1.0.0",
+    "upstream": "git@github.com:zonevast/zonevast-template.git",
+    "lastUpdate": "2026-04-02",
+    "autoSync": false
+  },
+  "features": {
+    "_core": { "enabled": true, "override": false },
+    "auth": { "enabled": true, "override": false },
+    "dashboard": { "enabled": true, "override": false },
+    "orders": { "enabled": true, "override": false },
+    "categories": { "enabled": true, "override": false },
+    "customers": { "enabled": true, "override": false },
+    "inventory": { "enabled": true, "override": false },
+    "reports": { "enabled": true, "override": false },
+    "settings": { "enabled": true, "override": false },
+    "_example": { "enabled": false, "override": false }
+  },
+  "theme": {
+    "defaultTheme": "dark",
+    "allowToggle": true
+  },
+  "language": {
+    "defaultLanguage": "en",
+    "supportedLanguages": ["en", "ar", "ku"]
+  },
+  "api": {
+    "baseUrl": "http://localhost:3000",
+    "timeout": 30000
+  }
+}

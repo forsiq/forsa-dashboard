@@ -1,0 +1,21 @@
+// Authentication translations (Arabic)
+export const auth = {
+  "login.welcome": "مرحباً بعودتك",
+  "login.subtitle": "المصادقة للوصول إلى البوابة",
+  "login.email": "البريد الإلكتروني أو اسم المستخدم",
+  "login.password": "كلمة المرور",
+  "login.remember": "تذكرني",
+  "login.forgot": "نسيت كلمة المرور؟",
+  "login.button": "تسجيل الدخول",
+  "login.loading": "جاري المصادقة...",
+  "login.or_continue": "أو المتابعة مع",
+  "login.google": "جوجل",
+  "login.github": "GitHub",
+  "login.no_account": "ليس لديك حساب؟",
+  "login.create_account": "إنشاء حساب",
+  "login.error.invalid": "بيانات غير صالحة. يرجى التحقق من اسم المستخدم وكلمة المرور.",
+  "login.error.network": "فشل الاتصال. يرجى التحقق من الشبكة أو المحاولة مرة أخرى لاحقاً.",
+  "login.select_language": "اختر اللغة",
+  "login.switch_theme_light": "التبديل إلى الوضع الفاتح",
+  "login.switch_theme_dark": "التبديل إلى الوضع الداكن",
+} as const;

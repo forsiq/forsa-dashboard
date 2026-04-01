@@ -1,0 +1,23 @@
+// Dashboard feature translations
+export const dashboard = {
+  "dash.title": "Dashboard",
+  "dash.subtitle": "Overview of your key performance metrics.",
+  "dash.total_skus": "Total Products",
+  "dash.valuation": "Inventory Value",
+  "dash.pending": "Pending Orders",
+  "dash.critical": "Critical Issues",
+  "dash.velocity_title": "Performance Trend",
+  "dash.velocity_desc": "Daily transaction volume",
+  "dash.quick_actions": "Quick Actions",
+  "dash.quickActions": "Quick Actions",
+  "dash.recent_signals": "Recent Signals",
+  "dash.refresh": "Refresh",
+  "dash.export": "Export",
+  "dash.view_terminal": "View Terminal",
+  "dash.sync_title": "Sync Data",
+  "dash.from_last_month": "from last month",
+  "dash.recent_logs": "Recent Logs",
+  "dashboard.title": "Dashboard",
+  "dashboard.today": "Today",
+  "dashboard.refresh": "Refresh",
+} as const;
