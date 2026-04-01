@@ -10,6 +10,12 @@ export interface FeatureConfigs {
 }
 
 export interface AppConfig {
+  template?: {
+    version: string;
+    upstream: string;
+    lastUpdate: string;
+    autoSync: boolean;
+  };
   features: FeatureConfigs;
   theme: {
     defaultTheme: 'light' | 'dark';
@@ -19,7 +25,7 @@ export interface AppConfig {
     defaultLanguage: 'en' | 'ar' | 'ku';
     supportedLanguages: string[];
   };
-  api: {
+  api?: {
     baseUrl: string;
     timeout: number;
   };
@@ -31,6 +37,7 @@ interface FeatureContextType {
   isFeatureEnabled: (featureName: string) => boolean;
   hasCustomOverride: (featureName: string) => boolean;
   reloadConfig: () => Promise<void>;
+  getApiBaseUrl: () => string;
 }
 
 const FeatureContext = createContext<FeatureContextType | undefined>(undefined);
@@ -40,35 +47,64 @@ interface FeatureProviderProps {
   configPath?: string;
 }
 
+const DEFAULT_CONFIG: AppConfig = {
+  features: {},
+  theme: {
+    defaultTheme: 'dark',
+    allowToggle: true
+  },
+  language: {
+    defaultLanguage: 'en',
+    supportedLanguages: ['en', 'ar', 'ku']
+  }
+};
+
+/**
+ * Get API base URL from environment variable (highest priority)
+ * Falls back to config file, then localhost
+ */
+export const getApiBaseUrl = (configBaseUrl?: string): string => {
+  // Priority: 1) Env var, 2) Config, 3) Fallback
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl;
+  if (configBaseUrl) return configBaseUrl;
+  return 'http://localhost:3000';
+};
+
 export const FeatureProvider: React.FC<FeatureProviderProps> = ({
   children,
   configPath = '/zvs.config.json'
 }) => {
-  const [config, setConfig] = useState<AppConfig>({
-    features: {},
-    theme: {
-      defaultTheme: 'dark',
-      allowToggle: true
-    },
-    language: {
-      defaultLanguage: 'en',
-      supportedLanguages: ['en', 'ar', 'ku']
-    },
-    api: {
-      baseUrl: 'http://localhost:3000',
-      timeout: 30000
-    }
-  });
+  const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
 
   const loadConfig = async () => {
     try {
       const response = await fetch(configPath);
       if (response.ok) {
-        const data = await response.json();
-        setConfig(data);
+        const data: AppConfig = await response.json();
+
+        // Merge with defaults - env vars take precedence for API URL
+        const mergedConfig: AppConfig = {
+          ...DEFAULT_CONFIG,
+          ...data,
+          api: {
+            baseUrl: getApiBaseUrl(data.api?.baseUrl),
+            timeout: data.api?.timeout || 30000
+          }
+        };
+
+        setConfig(mergedConfig);
       }
     } catch (error) {
       console.warn('Failed to load feature config, using defaults:', error);
+      // Use env var for API URL even if config fails
+      setConfig({
+        ...DEFAULT_CONFIG,
+        api: {
+          baseUrl: getApiBaseUrl(),
+          timeout: 30000
+        }
+      });
     }
   };
 
@@ -76,16 +112,16 @@ export const FeatureProvider: React.FC<FeatureProviderProps> = ({
     loadConfig();
   }, [configPath]);
 
-  const enabledFeatures = Object.entries(config.features)
+  const enabledFeatures = Object.entries(config.features || {})
     .filter(([_, cfg]) => cfg.enabled)
     .map(([name]) => name);
 
   const isFeatureEnabled = (featureName: string): boolean => {
-    return config.features[featureName]?.enabled ?? false;
+    return config.features?.[featureName]?.enabled ?? false;
   };
 
   const hasCustomOverride = (featureName: string): boolean => {
-    return config.features[featureName]?.override ?? false;
+    return config.features?.[featureName]?.override ?? false;
   };
 
   return (
@@ -95,7 +131,8 @@ export const FeatureProvider: React.FC<FeatureProviderProps> = ({
         enabledFeatures,
         isFeatureEnabled,
         hasCustomOverride,
-        reloadConfig: loadConfig
+        reloadConfig: loadConfig,
+        getApiBaseUrl: () => getApiBaseUrl(config.api?.baseUrl)
       }}
     >
       {children}
@@ -106,7 +143,7 @@ export const FeatureProvider: React.FC<FeatureProviderProps> = ({
 export const useFeatureConfig = () => {
   const context = useContext(FeatureContext);
   if (context === undefined) {
-    throw new Error('useFeatureConfig must be used within a FeatureProvider');
+    throw new Error('useFeatureConfig must be used within aFeatureProvider');
   }
   return context;
 };

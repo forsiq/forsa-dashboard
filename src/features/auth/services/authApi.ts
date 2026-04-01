@@ -1,6 +1,23 @@
 import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const PROJECT_STORAGE_KEY = 'zv_project';
+
+/**
+ * Get project ID from localStorage
+ */
+function getProjectId(): string {
+  const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
+  if (stored) {
+    try {
+      const project = JSON.parse(stored);
+      return project.id || '11';
+    } catch {
+      // Ignore
+    }
+  }
+  return '11'; // Default fallback
+}
 
 /**
  * Login with username and password
@@ -8,9 +25,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const response = await fetch(`${API_BASE}/api/v1/auth/auth/token/`, {
     method: 'POST',
-    headers: { 
+    headers: {
         'Content-Type': 'application/json',
-        'X-Project-ID': '11'
+        'X-Project-ID': getProjectId()
     },
     body: JSON.stringify(credentials)
   });
@@ -21,12 +38,12 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   }
 
   const data = await response.json();
-  
+
   // Fetch user profile after successful login
   const userResponse = await fetch(`${API_BASE}/api/v1/auth/auth/user/`, {
     headers: {
       'Authorization': `Bearer ${data.access}`,
-      'X-Project-ID': '11'
+      'X-Project-ID': getProjectId()
     }
   });
 
@@ -49,18 +66,18 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
     // Note: Registration endpoint might vary, using a placeholder for now
     const response = await fetch(`${API_BASE}/api/v1/auth/auth/register/`, {
       method: 'POST',
-      headers: { 
+      headers: {
           'Content-Type': 'application/json',
-          'X-Project-ID': '11'
+          'X-Project-ID': getProjectId()
       },
       body: JSON.stringify(data)
     });
-  
+
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.detail || errorData.message || 'Registration failed');
     }
-  
+
     return response.json();
 };
 
@@ -99,14 +116,13 @@ export const logout = async (): Promise<void> => {
 export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE}/api/v1/auth/auth/token/refresh/`, {
       method: 'POST',
-      headers: { 
+      headers: {
           'Content-Type': 'application/json',
-          'X-Project-ID': '11'
+          'X-Project-ID': getProjectId()
       },
       body: JSON.stringify({ refresh: refreshToken })
     });
-  
+
     if (!response.ok) throw new Error('Refresh failed');
     return response.json();
 };
-

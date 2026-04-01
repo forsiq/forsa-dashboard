@@ -8,6 +8,9 @@ export { AmberAutocomplete } from './AmberAutocomplete';
 export { AmberSlideOver } from './AmberSlideOver';
 export { AmberSettingsToolbar } from './AmberSettingsToolbar';
 
+// Onboarding Components
+export { ProjectOnboarding } from './ProjectOnboarding';
+
 // Form Components
 export { FormBuilder, FormField, TextField, TextareaField, NumberField, SelectField, CheckboxField, RadioField, DateField, FileField } from './Form';
 export type { FormBuilderProps, FormAction, FormFieldProps, FormState } from './Form/types';

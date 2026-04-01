@@ -6,6 +6,8 @@
 
 const GRAPHQL_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+const PROJECT_STORAGE_KEY = 'zv_project';
+
 /**
  * Get auth token from storage
  */
@@ -16,6 +18,22 @@ function getAuthToken(): string | null {
     return accessCookie.split('=')[1]?.trim() || null;
   }
   return localStorage.getItem('access_token');
+}
+
+/**
+ * Get project ID from localStorage
+ */
+function getProjectId(): string {
+  const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
+  if (stored) {
+    try {
+      const project = JSON.parse(stored);
+      return project.id || '11';
+    } catch {
+      // Ignore
+    }
+  }
+  return '11'; // Default fallback
 }
 
 /**
@@ -65,7 +83,7 @@ export async function graphqlRequest<T = unknown>({
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
-      'X-Project-ID': '11',
+      'X-Project-ID': getProjectId(),
     },
     body: JSON.stringify({ query, variables }),
   });

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
+import { useProject } from '@core/contexts';
+import { ProjectOnboarding } from '@core/components';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -10,6 +12,7 @@ interface AuthGuardProps {
 /**
  * AuthGuard - Protects routes that require authentication
  * Redirects to login if user is not authenticated
+ * Shows project onboarding if no project is selected
  */
 export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
@@ -17,18 +20,38 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 }) => {
   const location = useLocation();
   const { isFeatureEnabled } = useFeatureConfig();
+  const { isAuthenticated: isProjectSelected } = useProject();
 
   // If auth feature is disabled, bypass auth check
   if (!isFeatureEnabled('auth')) {
+    // Still require project selection
+    if (!isProjectSelected) {
+      return <ProjectOnboarding />;
+    }
     return <>{children}</>;
   }
 
-  // TODO: Implement actual auth check
-  // For now, we'll use a simple localStorage check
-  const isAuthenticated = localStorage.getItem('access_token') !== null;
+  // Check auth (using token in cookie or localStorage)
+  const checkAuthToken = (): boolean => {
+    // Check cookie first
+    const cookies = document.cookie.split(';');
+    const hasAccessCookie = cookies.some(c => c.trim().startsWith('access='));
+    if (hasAccessCookie) return true;
 
-  if (!isAuthenticated) {
+    // Fallback to localStorage
+    return localStorage.getItem('access_token') !== null;
+  };
+
+  const isAuthValid = checkAuthToken();
+
+  // First check auth
+  if (!isAuthValid) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
+  }
+
+  // Then check project selection
+  if (!isProjectSelected) {
+    return <ProjectOnboarding />;
   }
 
   return <>{children}</>;

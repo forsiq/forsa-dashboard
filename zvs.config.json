@@ -27,6 +27,7 @@
     "supportedLanguages": ["en", "ar", "ku"]
   },
   "api": {
+    "comment": "API base URL from VITE_API_BASE_URL env var takes precedence",
     "baseUrl": "http://localhost:3000",
     "timeout": 30000
   }

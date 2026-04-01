@@ -12,6 +12,8 @@ import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+const PROJECT_STORAGE_KEY = 'zv_project';
+
 /**
  * Get auth token from storage
  */
@@ -28,6 +30,22 @@ function getAuthToken(): string | null {
 }
 
 /**
+ * Get project ID from localStorage
+ */
+function getProjectId(): string {
+  const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
+  if (stored) {
+    try {
+      const project = JSON.parse(stored);
+      return project.id || '11';
+    } catch {
+      // Ignore
+    }
+  }
+  return '11'; // Default fallback
+}
+
+/**
  * Create base axios instance with common configuration
  */
 function createBaseInstance(baseURL: string): AxiosInstance {
@@ -38,12 +56,16 @@ function createBaseInstance(baseURL: string): AxiosInstance {
     },
   });
 
-  // Request interceptor - add auth token
+  // Request interceptor - add auth token and project ID
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       const token = getAuthToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      // Add project ID header
+      if (config.headers) {
+        config.headers['X-Project-ID'] = getProjectId();
       }
       return config;
     },
