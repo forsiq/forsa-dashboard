@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useFeatureConfig } from './FeatureContext';
 
 export interface ProjectInfo {
   id: string;
@@ -14,7 +15,6 @@ interface ProjectContextType {
   error: string | null;
   setProject: (project: ProjectInfo) => void;
   clearProject: () => void;
-  fetchProjectByUsername: (username: string) => Promise<ProjectInfo | null>;
   isAuthenticated: boolean;
 }
 
@@ -28,21 +28,45 @@ interface ProjectProviderProps {
 }
 
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) => {
+  const { getProjectUsername, config } = useFeatureConfig();
   const [project, setProjectState] = useState<ProjectInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load project from localStorage on mount
+  // Auto-load project from config
   useEffect(() => {
-    const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
-    if (stored) {
-      try {
-        setProjectState(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem(PROJECT_STORAGE_KEY);
+    const loadProjectFromConfig = async () => {
+      const projectUsername = getProjectUsername();
+
+      // If project is disabled in config, skip
+      if (config.project?.enabled === false) {
+        console.log('Project feature is disabled');
+        return;
       }
-    }
-  }, []);
+
+      // First check localStorage for cached project
+      const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
+      if (stored) {
+        try {
+          const cachedProject: ProjectInfo = JSON.parse(stored);
+          // If cached project matches config username, use it
+          if (cachedProject.username === projectUsername) {
+            setProjectState(cachedProject);
+            return;
+          }
+        } catch {
+          localStorage.removeItem(PROJECT_STORAGE_KEY);
+        }
+      }
+
+      // If project username is configured, fetch project info
+      if (projectUsername && projectUsername.trim()) {
+        await fetchProjectByUsername(projectUsername);
+      }
+    };
+
+    loadProjectFromConfig();
+  }, [config, getProjectUsername]);
 
   const setProject = (projectInfo: ProjectInfo) => {
     setProjectState(projectInfo);
@@ -55,7 +79,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     localStorage.removeItem(PROJECT_STORAGE_KEY);
   };
 
-  const fetchProjectByUsername = async (username: string): Promise<ProjectInfo | null> {
+  const fetchProjectByUsername = async (username: string): Promise<ProjectInfo | null> => {
     if (!username || username.trim().length === 0) {
       setError('Project username is required');
       return null;
@@ -66,7 +90,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
 
     try {
       // Try to fetch project info from API
-      // Endpoint: GET /api/v1/projects/by-username/:username or similar
       const response = await fetch(`${API_BASE_URL}/api/v1/projects/by-username/${username.trim()}`, {
         method: 'GET',
         headers: {
@@ -76,7 +99,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
 
       if (!response.ok) {
         // If API fails, create a temporary project from username
-        // This allows the template to work without a backend
         console.warn('Project API not available, using local project');
 
         const tempProject: ProjectInfo = {
@@ -130,7 +152,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         error,
         setProject,
         clearProject,
-        fetchProjectByUsername,
         isAuthenticated
       }}
     >

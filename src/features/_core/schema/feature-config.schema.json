@@ -4,6 +4,47 @@
   "description": "Configuration file for ZoneVast template features and settings",
   "type": "object",
   "properties": {
+    "template": {
+      "description": "Template version and metadata",
+      "type": "object",
+      "properties": {
+        "version": {
+          "description": "Template version",
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "upstream": {
+          "description": "Upstream git repository",
+          "type": "string",
+          "format": "uri"
+        },
+        "lastUpdate": {
+          "description": "Last update date",
+          "type": "string",
+          "format": "date"
+        },
+        "autoSync": {
+          "description": "Whether to automatically sync template updates",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "project": {
+      "description": "Project configuration - each deployed instance has its own project",
+      "type": "object",
+      "properties": {
+        "username": {
+          "description": "Project username - unique identifier for this project instance",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Whether project feature is enabled",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "features": {
       "description": "Feature toggle configuration",
       "type": "object",

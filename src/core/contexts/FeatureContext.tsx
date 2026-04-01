@@ -16,6 +16,10 @@ export interface AppConfig {
     lastUpdate: string;
     autoSync: boolean;
   };
+  project?: {
+    username: string;
+    enabled: boolean;
+  };
   features: FeatureConfigs;
   theme: {
     defaultTheme: 'light' | 'dark';
@@ -38,6 +42,7 @@ interface FeatureContextType {
   hasCustomOverride: (featureName: string) => boolean;
   reloadConfig: () => Promise<void>;
   getApiBaseUrl: () => string;
+  getProjectUsername: () => string;
 }
 
 const FeatureContext = createContext<FeatureContextType | undefined>(undefined);
@@ -69,6 +74,18 @@ export const getApiBaseUrl = (configBaseUrl?: string): string => {
   if (envUrl) return envUrl;
   if (configBaseUrl) return configBaseUrl;
   return 'http://localhost:3000';
+};
+
+/**
+ * Get project username from environment variable (highest priority)
+ * Falls back to config file, then empty string
+ */
+export const getProjectUsername = (configUsername?: string): string => {
+  // Priority: 1) Env var, 2) Config, 3) Fallback
+  const envUsername = import.meta.env.VITE_PROJECT_USERNAME;
+  if (envUsername) return envUsername;
+  if (configUsername) return configUsername;
+  return '';
 };
 
 export const FeatureProvider: React.FC<FeatureProviderProps> = ({
@@ -132,7 +149,8 @@ export const FeatureProvider: React.FC<FeatureProviderProps> = ({
         isFeatureEnabled,
         hasCustomOverride,
         reloadConfig: loadConfig,
-        getApiBaseUrl: () => getApiBaseUrl(config.api?.baseUrl)
+        getApiBaseUrl: () => getApiBaseUrl(config.api?.baseUrl),
+        getProjectUsername: () => getProjectUsername(config.project?.username)
       }}
     >
       {children}

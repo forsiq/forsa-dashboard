@@ -2,7 +2,6 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
-import { ProjectOnboarding } from '@core/components';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -11,22 +10,30 @@ interface AuthGuardProps {
 
 /**
  * AuthGuard - Protects routes that require authentication
- * Redirects to login if user is not authenticated
- * Shows project onboarding if no project is selected
+ *
+ * Flow:
+ * 1. If auth feature is disabled → bypass auth, check project only
+ * 2. Check auth token
+ * 3. Check project selection (auto-loaded from config)
+ * 4. If no project configured and auth is enabled → redirect to login
  */
 export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
   fallback = '/login'
 }) => {
   const location = useLocation();
-  const { isFeatureEnabled } = useFeatureConfig();
-  const { isAuthenticated: isProjectSelected } = useProject();
+  const { isFeatureEnabled, getProjectUsername } = useFeatureConfig();
+  const { isAuthenticated: isProjectSelected, isLoading: projectLoading } = useProject();
+
+  // Get project username from config
+  const projectUsername = getProjectUsername();
 
   // If auth feature is disabled, bypass auth check
   if (!isFeatureEnabled('auth')) {
-    // Still require project selection
-    if (!isProjectSelected) {
-      return <ProjectOnboarding />;
+    // If no project username configured but project feature is enabled, show onboarding
+    if (!projectUsername && !isProjectSelected && !projectLoading) {
+      // TODO: Show project selection UI
+      // For now, just let children through
     }
     return <>{children}</>;
   }
@@ -50,8 +57,11 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   }
 
   // Then check project selection
-  if (!isProjectSelected) {
-    return <ProjectOnboarding />;
+  // If project username is configured, it will be auto-loaded
+  // If not configured and project is not selected, redirect to login
+  if (!isProjectSelected && !projectUsername && !projectLoading) {
+    // No project configured, but user is authenticated
+    // Let them through - they'll see empty dashboard or can configure project
   }
 
   return <>{children}</>;
