@@ -70,4 +70,13 @@ export const navigation = {
   "nav.segments": "Nav Segments",
   "nav.shipping": "Nav Shipping",
   "nav.tickets": "Nav Tickets",
+  // Auction app specific
+  "auction.title": "Auctions",
+  "auction.create": "Create Auction",
+  "auction.live_bidding": "Live Bidding",
+  "auction.bids": "Bids",
+  "auction.group_buying": "Group Buying",
+  "item.title": "Items",
+  "item.add": "Add Item",
+  "inventory.warehouses": "Warehouses",
 } as const;

@@ -53,6 +53,50 @@ export const menuSections: MenuSection[] = [
     ],
   },
   {
+    title: 'sidebar.auctions',
+    items: [
+      {
+        path: '/auctions',
+        label: 'auction.title',
+        icon: 'Gavel',
+        serviceId: 'auctions',
+      },
+      {
+        path: '/auctions/add',
+        label: 'auction.create',
+        icon: 'PlusCircle',
+      },
+      {
+        path: '/bidding',
+        label: 'auction.live_bidding',
+        icon: 'Zap',
+        serviceId: 'bidding',
+      },
+      {
+        path: '/bids',
+        label: 'auction.bids',
+        icon: 'Hammer',
+        serviceId: 'bidding',
+      },
+    ],
+  },
+  {
+    title: 'sidebar.items',
+    items: [
+      {
+        path: '/items',
+        label: 'item.title',
+        icon: 'Package2',
+        serviceId: 'items',
+      },
+      {
+        path: '/items/add',
+        label: 'item.add',
+        icon: 'Plus',
+      },
+    ],
+  },
+  {
     title: 'sidebar.catalog',
     items: [
       {
@@ -67,16 +111,27 @@ export const menuSections: MenuSection[] = [
     title: 'sidebar.sales',
     items: [
       {
-        path: '/customers',
-        label: 'customer.title',
-        icon: 'Users',
-        serviceId: 'customers',
-      },
-      {
         path: '/orders',
         label: 'order.title',
         icon: 'ShoppingCart',
         serviceId: 'orders',
+      },
+      {
+        path: '/group-buying',
+        label: 'auction.group_buying',
+        icon: 'Users',
+        serviceId: 'sales',
+      },
+    ],
+  },
+  {
+    title: 'sidebar.customers',
+    items: [
+      {
+        path: '/customers',
+        label: 'customer.title',
+        icon: 'UserCircle',
+        serviceId: 'customers',
       },
     ],
   },
@@ -90,9 +145,9 @@ export const menuSections: MenuSection[] = [
         serviceId: 'inventory',
       },
       {
-        path: '/inventory/add',
-        label: 'inventory.add_item',
-        icon: 'Plus',
+        path: '/warehouses',
+        label: 'inventory.warehouses',
+        icon: 'Warehouse',
       },
     ],
   },

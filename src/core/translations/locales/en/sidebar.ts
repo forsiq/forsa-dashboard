@@ -57,4 +57,8 @@ export const sidebar = {
   "sidebar.order_processing": "Sidebar Order processing",
   "sidebar.sales_marketing": "Sidebar Sales marketing",
   "sidebar.system": "Sidebar System",
+  // Auction app specific
+  "sidebar.auction_items": "Items",
+  "sidebar.customers": "Customers",
+  "sidebar.warehouses": "Warehouses",
 } as const;

@@ -50,7 +50,7 @@ export const importFeatureRoutes = async (
   featureName: string
 ): Promise<FeatureRoute[]> => {
   try {
-    const module = await import(`@features/${featureName}/routes`);
+    const module = await import(/* @vite-ignore */ `@features/${featureName}/routes`);
     return module.routes || [];
   } catch (error) {
     console.warn(`Failed to load routes for feature "${featureName}":`, error);

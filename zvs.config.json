@@ -7,13 +7,20 @@
     "autoSync": false
   },
   "project": {
-    "username": "",
+    "username": "yousef2014",
+    "id": "11",
+    "name": "auction-app",
+    "description": "ZoneVast Auction Management Platform",
     "enabled": true
   },
   "features": {
     "_core": { "enabled": true, "override": false },
     "auth": { "enabled": true, "override": false },
     "dashboard": { "enabled": true, "override": false },
+    "auctions": { "enabled": true, "override": false },
+    "bidding": { "enabled": true, "override": false },
+    "items": { "enabled": true, "override": false },
+    "sales": { "enabled": true, "override": false },
     "orders": { "enabled": true, "override": false },
     "categories": { "enabled": true, "override": false },
     "customers": { "enabled": true, "override": false },
@@ -32,7 +39,7 @@
   },
   "api": {
     "comment": "API base URL from VITE_API_BASE_URL env var takes precedence",
-    "baseUrl": "http://localhost:3000",
+    "baseUrl": "https://test.zonevast.com",
     "timeout": 30000
   }
 }

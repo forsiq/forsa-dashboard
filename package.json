@@ -1,11 +1,11 @@
 {
-  "name": "zonevast-template",
+  "name": "auction-app",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "ZoneVast Template Project - Feature-based architecture for rapid development",
+  "description": "ZoneVast Auction Management Platform - Full-featured auction management system",
   "scripts": {
-    "dev": "vite --port 4000",
+    "dev": "vite --port 4001",
     "build": "tsc -b && vite build",
     "build:check": "npm run build && node scripts/check-translations.cjs",
     "preview": "vite preview",

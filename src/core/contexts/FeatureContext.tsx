@@ -18,6 +18,7 @@ export interface AppConfig {
   };
   project?: {
     username: string;
+    id?: string;
     enabled: boolean;
   };
   features: FeatureConfigs;

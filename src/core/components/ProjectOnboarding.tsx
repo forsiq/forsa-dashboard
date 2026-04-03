@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useProject, useLanguage } from '@core/contexts';
 import { AmberButton } from '@core/components';
-import { Logo } from 'lucide-react';
+import { Layout } from 'lucide-react';
 
 interface ProjectOnboardingProps {
   onSuccess?: () => void;
@@ -33,7 +33,7 @@ export const ProjectOnboarding: React.FC<ProjectOnboardingProps> = ({ onSuccess 
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
-            <Logo className="w-8 h-8 text-white" />
+            <Layout className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-black text-zinc-text tracking-tighter">
             ZONEVAST

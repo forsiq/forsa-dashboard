@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Cookies from 'js-cookie';
 import { useFeatureConfig } from './FeatureContext';
 
 export interface ProjectInfo {
@@ -16,12 +17,41 @@ interface ProjectContextType {
   setProject: (project: ProjectInfo) => void;
   clearProject: () => void;
   isAuthenticated: boolean;
+  fetchProjectByUsername: (username: string) => Promise<ProjectInfo | null>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 const PROJECT_STORAGE_KEY = 'zv_project';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
+
+/**
+ * Fetch with timeout helper
+ * Handles slow API responses by setting a maximum wait time
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout = 30000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeout}ms`);
+    }
+    throw error;
+  }
+}
 
 interface ProjectProviderProps {
   children: ReactNode;
@@ -33,8 +63,24 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-load project from config
+  // Perform one-time cleanup of legacy project IDs and auto-load
   useEffect(() => {
+    const projectUsername = getProjectUsername();
+    
+    // Cleanup: If localStorage has a "local-" prefixed ID, clear it to force use of config/ID 11
+    const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
+    if (stored) {
+      try {
+        const cachedProject: ProjectInfo = JSON.parse(stored);
+        if (cachedProject.id?.startsWith('local-')) {
+          console.log('[ProjectContext] 🧹 Cleaning up legacy local project ID');
+          localStorage.removeItem(PROJECT_STORAGE_KEY);
+        }
+      } catch {
+        localStorage.removeItem(PROJECT_STORAGE_KEY);
+      }
+    }
+
     const loadProjectFromConfig = async () => {
       const projectUsername = getProjectUsername();
 
@@ -89,13 +135,19 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     setError(null);
 
     try {
-      // Try to fetch project info from API
-      const response = await fetch(`${API_BASE_URL}/api/v1/projects/by-username/${username.trim()}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      // Try to fetch project info from API with 30s timeout for slow responses
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/v1/projects/by-username/${username.trim()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Project': config.project?.id || '11',
+            'X-Project-ID': config.project?.id || '11'
+          }
+        },
+        30000 // 30 second timeout
+      );
 
       if (!response.ok) {
         // If API fails, create a temporary project from username
@@ -152,7 +204,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         error,
         setProject,
         clearProject,
-        isAuthenticated
+        isAuthenticated,
+        fetchProjectByUsername
       }}
     >
       {children}
@@ -172,6 +225,7 @@ export const useProject = () => {
  * Get X-Project-ID header value for API requests
  */
 export const getProjectIdHeader = (): string => {
+  // Check localStorage for cached project info first
   const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
   if (stored) {
     try {
@@ -181,5 +235,28 @@ export const getProjectIdHeader = (): string => {
       // Ignore
     }
   }
-  return '11'; // Default fallback
+
+  // Fallback to cookie check (matching base project pattern)
+  const currentProjectStr = Cookies.get('currentProject');
+  if (currentProjectStr) {
+      try {
+          const project = JSON.parse(currentProjectStr);
+          return String(project.id);
+      } catch (e) {
+          // Ignore
+      }
+  }
+
+  return '11'; // Final fallback matching base project
+};
+
+/**
+ * Get all project headers for API requests
+ */
+export const getProjectHeaders = (): Record<string, string> => {
+    const projectId = getProjectIdHeader();
+    return {
+        'X-Project': projectId,
+        'X-Project-ID': projectId
+    };
 };

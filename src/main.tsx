@@ -53,6 +53,12 @@ const AppRouter: React.FC = () => {
         { name: 'auth', path: '@features/auth/routes', enabled: enabledFeatures.includes('auth'), isPublic: true },
         { name: 'dashboard', path: '@features/dashboard/routes', enabled: enabledFeatures.includes('dashboard') },
         { name: 'settings', path: '@features/settings/routes', enabled: enabledFeatures.includes('settings') },
+        // Auction features
+        { name: 'auctions', path: '@features/auctions/routes', enabled: enabledFeatures.includes('auctions') },
+        { name: 'bidding', path: '@features/bidding/routes', enabled: enabledFeatures.includes('bidding') },
+        { name: 'items', path: '@features/items/routes', enabled: enabledFeatures.includes('items') },
+        { name: 'sales', path: '@features/sales/routes', enabled: enabledFeatures.includes('sales') },
+        // Service features
         { name: 'inventory', path: '@services/inventory/routes', enabled: enabledFeatures.includes('inventory') },
         { name: 'orders', path: '@services/orders/routes', enabled: enabledFeatures.includes('orders') },
         { name: 'categories', path: '@services/categories/routes', enabled: enabledFeatures.includes('categories') },
@@ -60,15 +66,34 @@ const AppRouter: React.FC = () => {
         { name: 'reports', path: '@services/reports/routes', enabled: enabledFeatures.includes('reports') },
       ];
 
+      // Mapping of feature loaders to ensure Vite can analyze and bundle them correctly
+      const loaders: Record<string, () => Promise<any>> = {
+        'auth': () => import('@features/auth/routes'),
+        'dashboard': () => import('@features/dashboard/routes'),
+        'settings': () => import('@features/settings/routes'),
+        'auctions': () => import('@features/auctions/routes'),
+        'bidding': () => import('@features/bidding/routes'),
+        'items': () => import('@features/items/routes'),
+        'sales': () => import('@features/sales/routes'),
+        'inventory': () => import('@services/inventory/routes'),
+        'orders': () => import('@services/orders/routes'),
+        'categories': () => import('@services/categories/routes'),
+        'customers': () => import('@services/customers/routes'),
+        'reports': () => import('@services/reports/routes'),
+      };
+
       // Load only enabled features
       for (const feature of featureImports) {
         if (feature.enabled) {
           try {
-            const module = await import(/* @vite-ignore */ feature.path);
-            const featureRoutes = module.default || module[`${feature.name}Routes`] || [];
-            routes.push(...featureRoutes);
+            const loader = loaders[feature.name];
+            if (loader) {
+              const module = await loader();
+              const featureRoutes = module.default || module[`${feature.name}Routes`] || [];
+              routes.push(...featureRoutes);
+            }
           } catch (error) {
-            console.warn(`Feature "${feature.name}" could not be loaded, skipping...`);
+            console.warn(`Feature "${feature.name}" could not be loaded, skipping...`, error);
           }
         }
       }
@@ -154,19 +179,19 @@ const AppRouter: React.FC = () => {
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <ThemeProvider>
-          <NavigationProvider>
-            <ProjectProvider>
-              <FeatureProvider configPath="/zvs.config.json">
+      <FeatureProvider configPath="/zvs.config.json">
+        <LanguageProvider>
+          <ThemeProvider>
+            <NavigationProvider>
+              <ProjectProvider>
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">BOOTING SYSTEM...</div>}>
                   <AppRouter />
                 </Suspense>
-              </FeatureProvider>
-            </ProjectProvider>
-          </NavigationProvider>
-        </ThemeProvider>
-      </LanguageProvider>
+              </ProjectProvider>
+            </NavigationProvider>
+          </ThemeProvider>
+        </LanguageProvider>
+      </FeatureProvider>
     </QueryClientProvider>
   );
 };
