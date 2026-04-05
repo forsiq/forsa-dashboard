@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
-import { useCreateAuction } from '../hooks/useAuctions';
+import { useCreateAuction } from '../graphql';
 import type { AuctionCreateInput } from '../types/auction.types';
 
 const Button = ({ className, children, disabled, ...props }: any) => (

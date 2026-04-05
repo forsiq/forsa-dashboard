@@ -3,7 +3,7 @@ import { CustomersPage } from './pages/CustomersPage';
 import { CustomerDetailPage } from './pages/CustomerDetailPage';
 import { CustomerFormPage } from './pages/CustomerFormPage';
 
-export const customersRoutes: RouteObject[] = [
+const customersRoutes: RouteObject[] = [
   {
     path: '/customers',
     element: <CustomersPage />,
@@ -21,3 +21,5 @@ export const customersRoutes: RouteObject[] = [
     element: <CustomerFormPage />,
   },
 ];
+
+export default customersRoutes;

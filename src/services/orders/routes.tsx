@@ -3,7 +3,7 @@ import { OrdersListPage } from './pages/OrdersListPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
 import { OrderFormPage } from './pages/OrderFormPage';
 
-export const ordersRoutes: RouteObject[] = [
+const ordersRoutes: RouteObject[] = [
   {
     path: '/orders',
     element: <OrdersListPage />
@@ -21,3 +21,5 @@ export const ordersRoutes: RouteObject[] = [
     element: <OrderFormPage />
   }
 ];
+
+export default ordersRoutes;

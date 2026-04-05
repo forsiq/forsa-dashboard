@@ -25,6 +25,7 @@
     "categories": { "enabled": true, "override": false },
     "customers": { "enabled": true, "override": false },
     "inventory": { "enabled": true, "override": false },
+    "users": { "enabled": true, "override": false },
     "reports": { "enabled": true, "override": false },
     "settings": { "enabled": true, "override": false },
     "_example": { "enabled": false, "override": false }

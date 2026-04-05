@@ -24,6 +24,7 @@ import { crm } from './crm';
 import { finance } from './finance';
 import { misc } from './misc';
 import { ui } from './ui';
+import { items } from './items';
 
 export const en = {
   ...common,
@@ -51,4 +52,5 @@ export const en = {
   ...finance,
   ...misc,
   ...ui,
+  ...items,
 } as const;

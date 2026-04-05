@@ -1,10 +1,15 @@
 import { RouteObject } from 'react-router-dom';
-import { InventoryPage } from './pages/InventoryPage';
+import { InventoryOverviewPage } from './pages/InventoryOverviewPage';
 import { ProductAddPage } from './pages/ProductAddPage';
+import { InventoryPage } from './pages/InventoryPage';
 
-export const inventoryRoutes: RouteObject[] = [
+const inventoryRoutes: RouteObject[] = [
   {
     path: '/inventory',
+    element: <InventoryOverviewPage />,
+  },
+  {
+    path: '/inventory/list',
     element: <InventoryPage />,
   },
   {
@@ -16,3 +21,5 @@ export const inventoryRoutes: RouteObject[] = [
     element: <ProductAddPage />,
   }
 ];
+
+export default inventoryRoutes;

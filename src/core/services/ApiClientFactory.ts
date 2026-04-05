@@ -84,11 +84,31 @@ function createBaseInstance(baseURL: string): AxiosInstance {
       };
 
       // Handle 401 - unauthorized
+      // Only clear tokens if we're not already on the login page and it's a genuine auth error
       if (error.response?.status === 401) {
-        // Clear tokens
-        localStorage.removeItem('access_token');
-        document.cookie = 'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        // Could trigger redirect to login here
+        const isAuthEndpoint = error.config?.url?.includes('/auth/');
+        const isLoginPath = window.location.pathname.includes('/login');
+        
+        // Log it for transparency
+        console.error('[API] 401 Unauthorized:', error.config?.url, apiError);
+
+        if (!isLoginPath && (isAuthEndpoint || (error.response?.data as any)?.code === 'token_not_valid')) {
+          // Clear tokens
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          document.cookie = 'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          
+          // Optionally notify the user or redirect
+          console.warn('[API] Session expired or invalid. Logging out.');
+          
+          // Only redirect if absolutely necessary to avoid infinite loops
+          if (!isLoginPath) {
+            window.location.href = '/login?expired=true';
+          }
+        }
+      } else {
+        // Log other errors for debugging "lost connection"
+        console.error(`[API] ${error.response?.status || 'Network'} Error:`, error.config?.url, apiError);
       }
 
       return Promise.reject(apiError);

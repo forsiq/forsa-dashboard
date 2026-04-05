@@ -10,7 +10,7 @@ import { AmberTableSkeleton } from '../../../core/components/Loading/AmberTableS
 import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { AmberCard as Card } from '../../../core/components/AmberCard';
-import { useGetCustomers, useGetCustomerStats, useDeleteCustomerMutation } from '../hooks';
+import { useGetCustomers, useGetCustomerStats, useDeleteCustomer } from '../hooks';
 import type { Customer } from '../types';
 
 // Simple debounce hook
@@ -48,9 +48,13 @@ export function CustomersPage() {
 
   const { data: stats } = useGetCustomerStats();
 
-  const deleteMutation = useDeleteCustomerMutation({
-    onSuccess: () => refetch(),
-  });
+  const deleteMutation = useDeleteCustomer();
+
+  // Refetch customers after successful delete
+  const handleDelete = async (id: string) => {
+    await deleteMutation.mutateAsync(id);
+    refetch();
+  };
 
   const columns = [
     {
@@ -281,7 +285,7 @@ export function CustomersPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={data?.data || []}
+            data={data?.customers || []}
             pagination
             pageSize={10}
             selectable

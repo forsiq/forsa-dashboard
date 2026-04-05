@@ -4,7 +4,7 @@
  * Uses fetch API with JWT authentication for GraphQL queries/mutations
  */
 
-const GRAPHQL_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const GRAPHQL_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
 
 const PROJECT_STORAGE_KEY = 'zv_project';
 

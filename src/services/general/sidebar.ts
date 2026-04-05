@@ -16,6 +16,8 @@ export const sidebarSections: MenuSection[] = [
     title: 'sidebar.catalog',
     items: [
       { path: '/categories', label: 'category.title', icon: 'FolderTree' },
+      { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
+      { path: '/inventory', label: 'sidebar.auction_items', icon: 'Package' },
     ]
   },
   {
@@ -23,6 +25,8 @@ export const sidebarSections: MenuSection[] = [
     items: [
       { path: '/customers', label: 'customer.title', icon: 'Users' },
       { path: '/orders', label: 'order.title', icon: 'ShoppingCart' },
+      { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
+      { path: '/group-buying/review', label: 'sidebar.group_review', icon: 'ClipboardCheck' },
     ]
   },
   {

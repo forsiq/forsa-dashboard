@@ -20,7 +20,7 @@ import {
   ShieldCheck,
   UserPlus
 } from 'lucide-react';
-import { useGetCustomer, useCreateCustomerMutation, useUpdateCustomerMutation } from '../hooks';
+import { useGetCustomer, useCreateCustomer, useUpdateCustomer } from '../hooks';
 import type { Customer } from '../types';
 
 interface CustomerForm {
@@ -67,13 +67,24 @@ export function CustomerFormPage() {
 
   const { data: customer, isLoading: isFetching } = useGetCustomer(id || '', isEditMode);
 
-  const createMutation = useCreateCustomerMutation({
-    onSuccess: () => navigate('/customers'),
-  });
+  const createMutation = useCreateCustomer();
+  const updateMutation = useUpdateCustomer();
 
-  const updateMutation = useUpdateCustomerMutation({
-    onSuccess: () => navigate(`/customers/${id}`),
-  });
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    try {
+      if (isEditMode) {
+        await updateMutation.mutateAsync({ id, ...formData } as any);
+        navigate(`/customers/${id}`);
+      } else {
+        await createMutation.mutateAsync(formData as any);
+        navigate('/customers');
+      }
+    } catch (error) {
+      console.error('Failed to save customer:', error);
+    }
+  };
 
   useEffect(() => {
     if (customer && isEditMode) {
@@ -120,19 +131,9 @@ export function CustomerFormPage() {
     const e: Record<string, string> = {};
     if (!formData.name) e.name = t('error.required_fields') || 'Entity name required';
     if (!formData.email) e.email = t('error.required_fields') || 'Primary email required';
-    
+
     setErrors(e);
     return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validate()) return;
-    
-    if (isEditMode) {
-      updateMutation.mutate({ id, ...formData });
-    } else {
-      createMutation.mutate(formData);
-    }
   };
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;

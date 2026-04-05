@@ -7,6 +7,7 @@ export const common = {
   // Common UI actions
   "common.search": "Search...",
   "common.filter": "Filter",
+  "common.filters": "Filters",
   "common.export": "Export",
   "common.import": "Import",
   "common.add": "Add",

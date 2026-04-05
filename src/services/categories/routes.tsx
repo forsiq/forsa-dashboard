@@ -5,7 +5,7 @@ import { CategoryEditPage } from './pages/CategoryEditPage';
 
 // --- Categories Routes ---
 
-export const categoriesRoutes: RouteObject[] = [
+const categoriesRoutes: RouteObject[] = [
   {
     path: '/categories',
     element: <CategoriesPage />,
@@ -19,3 +19,5 @@ export const categoriesRoutes: RouteObject[] = [
     element: <CategoryEditPage />,
   },
 ];
+
+export default categoriesRoutes;

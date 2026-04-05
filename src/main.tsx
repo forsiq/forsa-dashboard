@@ -10,6 +10,8 @@ import { LanguageProvider } from '@core/contexts/LanguageContext';
 import { ThemeProvider } from '@core/contexts/ThemeContext';
 import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
+import { ToastProvider } from '@core/contexts/ToastContext';
+import { Toast } from '@core/components/Feedback/Toast';
 
 // Core Pages (always available)
 import { NotFoundPage } from '@features/_core/pages/NotFoundPage';
@@ -53,6 +55,7 @@ const AppRouter: React.FC = () => {
         { name: 'auth', path: '@features/auth/routes', enabled: enabledFeatures.includes('auth'), isPublic: true },
         { name: 'dashboard', path: '@features/dashboard/routes', enabled: enabledFeatures.includes('dashboard') },
         { name: 'settings', path: '@features/settings/routes', enabled: enabledFeatures.includes('settings') },
+        { name: 'users', path: '@features/users/routes', enabled: enabledFeatures.includes('users') },
         // Auction features
         { name: 'auctions', path: '@features/auctions/routes', enabled: enabledFeatures.includes('auctions') },
         { name: 'bidding', path: '@features/bidding/routes', enabled: enabledFeatures.includes('bidding') },
@@ -71,6 +74,7 @@ const AppRouter: React.FC = () => {
         'auth': () => import('@features/auth/routes'),
         'dashboard': () => import('@features/dashboard/routes'),
         'settings': () => import('@features/settings/routes'),
+        'users': () => import('@features/users/routes'),
         'auctions': () => import('@features/auctions/routes'),
         'bidding': () => import('@features/bidding/routes'),
         'items': () => import('@features/items/routes'),
@@ -89,7 +93,7 @@ const AppRouter: React.FC = () => {
             const loader = loaders[feature.name];
             if (loader) {
               const module = await loader();
-              const featureRoutes = module.default || module[`${feature.name}Routes`] || [];
+              const featureRoutes = module.default || [];
               routes.push(...featureRoutes);
             }
           } catch (error) {
@@ -180,17 +184,20 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <FeatureProvider configPath="/zvs.config.json">
-        <LanguageProvider>
-          <ThemeProvider>
-            <NavigationProvider>
-              <ProjectProvider>
-                <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">BOOTING SYSTEM...</div>}>
-                  <AppRouter />
-                </Suspense>
-              </ProjectProvider>
-            </NavigationProvider>
-          </ThemeProvider>
-        </LanguageProvider>
+        <ToastProvider>
+          <LanguageProvider>
+            <ThemeProvider>
+              <NavigationProvider>
+                <ProjectProvider>
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">BOOTING SYSTEM...</div>}>
+                    <Toast />
+                    <AppRouter />
+                  </Suspense>
+                </ProjectProvider>
+              </NavigationProvider>
+            </ThemeProvider>
+          </LanguageProvider>
+        </ToastProvider>
       </FeatureProvider>
     </QueryClientProvider>
   );

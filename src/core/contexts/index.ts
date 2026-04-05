@@ -4,6 +4,8 @@ export { ThemeProvider, useTheme } from './ThemeContext';
 export { NavigationProvider, useNavigation } from './NavigationContext';
 export { FeatureProvider, useFeatureConfig } from './FeatureContext';
 export { ProjectProvider, useProject, getProjectIdHeader } from './ProjectContext';
+export { ToastProvider, useToast } from './ToastContext';
+export type { Toast, ToastType } from './ToastContext';
 
 // Types
 export type { AppConfig, FeatureConfig, FeatureConfigs } from './FeatureContext';

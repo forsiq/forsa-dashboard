@@ -4,7 +4,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { PreferencesPage } from './pages/PreferencesPage';
 import { LanguagePage } from './pages/LanguagePage';
 
-export const settingsRoutes: RouteObject[] = [
+const settingsRoutes: RouteObject[] = [
   {
     path: '/settings',
     element: <SettingsPage />,
@@ -16,3 +16,5 @@ export const settingsRoutes: RouteObject[] = [
     ]
   }
 ];
+
+export default settingsRoutes;

@@ -1,31 +1,44 @@
 import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types';
 
+/**
+ * Get API base URL with priority:
+ * 1. Environment variable
+ * 2. Hardcoded fallback (https://test.zonevast.com)
+ */
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
-const PROJECT_API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
-const PROJECT_STORAGE_KEY = 'zv_project';
 
 /**
- * Get project ID from localStorage
+ * Get project ID from localStorage with priority over static fallback
  */
-function getProjectId(): string {
-  const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
-  if (stored) {
-    try {
+function getProjectIdValue(): string {
+  try {
+    const stored = localStorage.getItem('zv_project');
+    if (stored) {
       const project = JSON.parse(stored);
-      // Ignore legacy local- IDs and enforce 11 as the standard
+      // Enforce project ID 11 as the current standard, but respect stored ID if it's valid
       if (project.id && !project.id.startsWith('local-')) {
-        return project.id;
+        return String(project.id);
       }
-    } catch {
-      // Ignore
     }
+  } catch (err) {
+    console.warn('[authApi] Error reading project from localStorage:', err);
   }
-  return '11'; // Base project default
+  return '11'; // Default project ID per ZoneVast standards
 }
 
 /**
- * Fetch with timeout helper
- * Handles slow API responses by setting a maximum wait time
+ * Helper to get all required project headers
+ */
+function getProjectHeaders(): Record<string, string> {
+  const projectId = getProjectIdValue();
+  return {
+    'X-Project': projectId,
+    'X-Project-ID': projectId
+  };
+}
+
+/**
+ * Fetch with timeout helper with better error reporting
  */
 async function fetchWithTimeout(
   url: string,
@@ -45,51 +58,79 @@ async function fetchWithTimeout(
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeout}ms`);
+      throw new Error(`Connection timeout after ${timeout/1000}s. Please check your connectivity.`);
     }
     throw error;
   }
 }
 
 /**
- * Login with username and password
+ * Login with credentials
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  console.log('[authApi] Attempting login for:', credentials.username);
+  
   const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/token/`, {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json',
-        'X-Project': getProjectId(),
-        'X-Project-ID': getProjectId()
+      'Content-Type': 'application/json',
+      ...getProjectHeaders()
     },
-    body: JSON.stringify(credentials)
-  }, 30000); // 30 second timeout for slow API
+    body: JSON.stringify({
+      username: credentials.username,
+      password: credentials.password
+    })
+  });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.message || 'Login failed');
+    console.error('[authApi] Login failed:', response.status, errorData);
+    
+    if (response.status === 401) {
+      throw new Error('Invalid username or password. Please verify your credentials.');
+    }
+    
+    throw new Error(errorData.detail || errorData.message || 'Authentication failed. Please try again.');
   }
 
   const data = await response.json();
+  console.log('[authApi] Login successful, fetching profile...');
 
-  // Fetch user profile after successful login
-  const userResponse = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/user/`, {
-    headers: {
-      'Authorization': `Bearer ${data.access}`,
-      'X-Project': getProjectId(),
-      'X-Project-ID': getProjectId()
+  // Fetch user profile immediately after login
+  try {
+    const userResponse = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/user/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${data.access}`,
+        ...getProjectHeaders()
+      }
+    });
+
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      return {
+        access: data.access,
+        refresh: data.refresh,
+        user: {
+          id: userData.id || 'unknown',
+          username: userData.username || credentials.username,
+          email: userData.email || ''
+        }
+      };
     }
-  }, 30000);
-
-  let user = { id: 'unknown', username: credentials.username, email: '' };
-  if (userResponse.ok) {
-    user = await userResponse.json();
+  } catch (profileErr) {
+    console.warn('[authApi] Profile fetch failed, using fallback:', profileErr);
   }
 
+  // Fallback if profile fetch fails
   return {
     access: data.access,
     refresh: data.refresh,
-    user
+    user: {
+      id: 'session-id',
+      username: credentials.username,
+      email: ''
+    }
   };
 };
 
@@ -97,68 +138,64 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
  * Register a new user
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-    // Note: Registration endpoint might vary, using a placeholder for now
-    const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/register/`, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'X-Project': getProjectId(),
-          'X-Project-ID': getProjectId()
-      },
-      body: JSON.stringify(data)
-    }, 30000);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || errorData.message || 'Registration failed');
-    }
-
-    return response.json();
-};
-
-/**
- * Verify OTP code
- */
-export const verifyOTP = async (data: OTPData): Promise<AuthResponse> => {
-  // Placeholder implementation for OTP verification
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        access: 'mock-access-token',
-        refresh: 'mock-refresh-token',
-        user: {
-          id: '1',
-          username: 'user',
-          email: 'user@example.com'
-        }
-      });
-    }, 500);
+  const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/register/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getProjectHeaders()
+    },
+    body: JSON.stringify(data)
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || 'Registration failed');
+  }
+
+  return response.json();
 };
 
 /**
- * Logout
+ * Logout - clears local state and potentially calls backend
  */
 export const logout = async (): Promise<void> => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
+  // Can be expanded to call sign-out endpoint if necessary
+  console.log('[authApi] Logging out user...');
 };
 
 /**
  * Refresh access token
  */
-export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/token/refresh/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Project': getProjectId(),
-        'X-Project-ID': getProjectId()
-      },
-      body: JSON.stringify({ refresh: refreshToken })
-    }, 30000);
+export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
+  const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/token/refresh/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getProjectHeaders()
+    },
+    body: JSON.stringify({ refresh })
+  });
 
-    if (!response.ok) throw new Error('Refresh failed');
-    return response.json();
+  if (!response.ok) {
+    throw new Error('Session expired. Please login again.');
+  }
+
+  return response.json();
 };
+
+/**
+ * Verify OTP
+ */
+export const verifyOTP = async (data: OTPData): Promise<AuthResponse> => {
+  // Mock implementation for development; replace with actual API when ready
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        access: 'mock-token',
+        refresh: 'mock-refresh',
+        user: { id: '1', username: 'dev-user', email: 'dev@zonevast.com' }
+      });
+    }, 1000);
+  });
+};
+

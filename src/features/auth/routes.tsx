@@ -4,7 +4,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { OTPPage } from './pages/OTPPage';
 import { AmberAuthLayout } from '@core/layout/AmberAuthLayout';
 
-export const authRoutes: RouteObject[] = [
+const authRoutes: RouteObject[] = [
   {
     path: '/login',
     element: (
@@ -30,3 +30,5 @@ export const authRoutes: RouteObject[] = [
     )
   }
 ];
+
+export default authRoutes;

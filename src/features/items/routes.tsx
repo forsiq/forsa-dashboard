@@ -2,15 +2,22 @@
  * Items Feature Routes
  */
 
-// Placeholder routes - to be implemented
+import { ItemsListPage } from './pages/ItemsListPage';
+import { ItemFormPage } from './pages/ItemFormPage';
+
+// Routes for items feature
 const itemsRoutes = [
   {
     path: '/items',
-    element: <div className="p-8 text-white">Items List Page - Coming Soon</div>,
+    element: <ItemsListPage />,
   },
   {
     path: '/items/add',
-    element: <div className="p-8 text-white">Add Item Page - Coming Soon</div>,
+    element: <ItemFormPage />,
+  },
+  {
+    path: '/items/edit/:id',
+    element: <ItemFormPage />,
   },
 ];
 

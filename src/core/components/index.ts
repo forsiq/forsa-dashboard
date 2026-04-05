@@ -124,6 +124,7 @@ export type {
 // Feedback Components
 export { AmberConfirmModal, useConfirmModal } from './Feedback/AmberConfirmModal';
 export { DeleteCardConfirmation } from './Feedback/DeleteCardConfirmation';
+export { Toast } from './Feedback/Toast';
 
 // Layout Components
 export {

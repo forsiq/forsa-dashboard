@@ -10,7 +10,7 @@ import { AmberCard as Card } from '../../../core/components/AmberCard';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { DataTable } from '../../../core/components/Data/DataTable';
 import type { Column } from '../../../core/components/Data/DataTable';
-import { useGetCustomer, useDeleteCustomerMutation } from '../hooks';
+import { useGetCustomer, useDeleteCustomer } from '../hooks';
 import type { Customer } from '../types';
 
 /**
@@ -25,9 +25,12 @@ export function CustomerDetailPage() {
 
   const { data: customer, isLoading, error } = useGetCustomer(id || '', true);
 
-  const deleteMutation = useDeleteCustomerMutation({
-    onSuccess: () => navigate('/customers'),
-  });
+  const deleteMutation = useDeleteCustomer();
+
+  const handleDelete = async () => {
+    await deleteMutation.mutateAsync(id || '');
+    navigate('/customers');
+  };
 
   const isRTL = dir === 'rtl';
 
@@ -78,7 +81,7 @@ export function CustomerDetailPage() {
             className="h-11 px-6 border-[var(--color-danger)]/20 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 font-bold rounded-xl text-sm gap-2"
             onClick={() => {
               if (window.confirm(t('customer.delete_confirm') || 'هل أنت متأكد من حذف هذا العميل؟')) {
-                deleteMutation.mutate(customer.id);
+                handleDelete();
               }
             }}
           >

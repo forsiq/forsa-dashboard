@@ -1,6 +1,7 @@
 /** Categories Hooks Compatibility */
 import { categoryService } from '../config';
 
+// REST API Hooks (fallback)
 export function useList(filters = {}, options = {}) {
   return categoryService.usePaginatedList(filters, options);
 }
@@ -32,3 +33,7 @@ export const useGetCategoryStats = useStats;
 export const useCreateCategoryMutation = useCreate;
 export const useUpdateCategoryMutation = useUpdate;
 export const useDeleteCategoryMutation = useDelete;
+
+// GraphQL Hooks (recommended for new code)
+// Export from ../graphql/hooks
+export * from '../graphql/hooks';

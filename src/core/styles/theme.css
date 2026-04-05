@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
-  /* Light Mode Colors - Modern High-Contrast */
-  --color-obsidian-outer: #F4F7FB; /* Lighter, clean background */
+  /* High-Contrast Light Mode */
+  --color-obsidian-outer: #F4F7FB;
   --color-obsidian-panel: #FFFFFF;
   --color-obsidian-card: #FFFFFF;
   --color-obsidian-hover: #F8FAFC;
 
-  --color-zinc-text: #1E293B; /* Slate 800 */
-  --color-zinc-secondary: #475569; /* Slate 600 */
-  --color-zinc-muted: #94A3B8; /* Slate 400 */
+  --color-zinc-text: #1E293B;
+  --color-zinc-secondary: #475569;
+  --color-zinc-muted: #94A3B8;
   --color-border: rgba(0, 0, 0, 0.06);
 
   --glass-bg: rgba(255, 255, 255, 0.9);
@@ -20,19 +20,21 @@
   --color-brand: #FFC000;
   --color-brand-muted: #FFF9E6;
 
-  /* Status Colors (Image Match) */
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* legacy helpers */
   --color-success-bg: #E7FBF3;
   --color-success-text: #059669;
   --color-danger-bg: #FFF1F2;
   --color-danger-text: #E11D48;
-  --color-warning-bg: #FFF9E6;
-  --color-warning-text: #FFBA00;
-  --color-info-bg: #E0F2FE;
-  --color-info-text: #0EA5E9;
 }
 
 .dark {
-  /* Dark Mode Colors - Midnight Blue Theme */
+  /* Midnight Dark Mode */
   --color-obsidian-outer: #050914;
   --color-obsidian-panel: #0D1326;
   --color-obsidian-card: #161E36;
@@ -46,16 +48,6 @@
   --glass-bg: rgba(13, 19, 38, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 16px;
-
-  /* Status Colors Dark Mode Override */
-  --color-success-bg: rgba(5, 150, 105, 0.15);
-  --color-success-text: #10B981;
-  --color-danger-bg: rgba(225, 29, 72, 0.15);
-  --color-danger-text: #FB7185;
-  --color-warning-bg: rgba(255, 192, 0, 0.15);
-  --color-warning-text: #FFC000;
-  --color-info-bg: rgba(14, 165, 233, 0.15);
-  --color-info-text: #38BDF8;
 }
 
 
@@ -131,8 +123,8 @@ body {
 }
 
 .enterprise-card {
-  background: var(--color-obsidian-card);
-  border: 1px solid var(--color-border);
+  background: rgb(var(--color-obsidian-card));
+  border: 1px solid rgba(var(--color-border), 0.08);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
   transition: all 200ms ease-out;
 }

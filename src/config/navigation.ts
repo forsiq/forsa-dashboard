@@ -136,18 +136,12 @@ export const menuSections: MenuSection[] = [
     ],
   },
   {
-    title: 'sidebar.inventory',
+    title: 'sidebar.users',
     items: [
       {
-        path: '/inventory',
-        label: 'inventory.overview',
-        icon: 'Package',
-        serviceId: 'inventory',
-      },
-      {
-        path: '/warehouses',
-        label: 'inventory.warehouses',
-        icon: 'Warehouse',
+        path: '/users',
+        label: 'user.title',
+        icon: 'Users',
       },
     ],
   },

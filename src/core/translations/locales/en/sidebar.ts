@@ -61,4 +61,5 @@ export const sidebar = {
   "sidebar.auction_items": "Items",
   "sidebar.customers": "Customers",
   "sidebar.warehouses": "Warehouses",
+  "sidebar.group_review": "Group Deal Review",
 } as const;

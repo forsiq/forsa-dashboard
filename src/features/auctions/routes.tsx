@@ -3,31 +3,30 @@
  */
 
 import { AuctionsList } from './pages/AuctionsList';
-import { AuctionAdd } from './pages/AuctionAdd';
+import { AuctionFormPage } from './pages/AuctionFormPage';
 import { AuctionDetails } from './pages/AuctionDetails';
 
-// Export routes as default for dynamic import
-const auctionRoutes = [
+const auctionsRoutes = [
   {
     path: '/auctions',
     element: <AuctionsList />,
   },
   {
     path: '/auctions/add',
-    element: <AuctionAdd />,
+    element: <AuctionFormPage />,
   },
   {
     path: '/auctions/:id',
     element: <AuctionDetails />,
   },
   {
-    path: '/auctions/:id/edit',
-    element: <div>Auction Edit (Coming Soon)</div>, // TODO: Create AuctionEdit page
+    path: '/auctions/edit/:id',
+    element: <AuctionFormPage />,
   },
 ];
 
-export default auctionRoutes;
-export { auctionRoutes };
+export default auctionsRoutes;
+export { auctionsRoutes };
 
 // For now, also export components individually if needed
 export { default as AuctionsList } from './pages/AuctionsList';
