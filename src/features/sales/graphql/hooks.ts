@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
@@ -21,6 +21,28 @@ import type {
 // ============================================================================
 
 /**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+/**
  * Fetch group buying campaigns with filters
  *
  * @example
@@ -33,19 +55,13 @@ import type {
 export function useGetGroupBuyings(
   filters: GroupBuyingFilters = {}
 ): UseQueryResult<GroupBuyingsResponse> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.groupBuyingKeys.list(filters),
     queryFn: () => api.getGroupBuyings(filters),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Show toast on error (React Query v5 pattern)
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load group buying campaigns: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load campaigns');
 
   return query;
 }
@@ -60,7 +76,6 @@ export function useGetGroupBuying(
   id: string,
   enabled = true
 ): UseQueryResult<GroupBuying> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.groupBuyingKeys.detail(id),
     queryFn: () => api.getGroupBuying(id),
@@ -75,12 +90,7 @@ export function useGetGroupBuying(
     },
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && enabled && id) {
-      toast.error(`Failed to load campaign: ${query.error.message}`, 8000);
-    }
-  }, [query.error, enabled, id, toast]);
+  useErrorHandler(query.error, 'Failed to load campaign');
 
   return query;
 }
@@ -92,7 +102,6 @@ export function useGetGroupBuying(
  * const { data, isLoading, error } = useGetGroupBuyingStats();
  */
 export function useGetGroupBuyingStats(): UseQueryResult<GroupBuyingStats> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.groupBuyingKeys.stats(),
     queryFn: api.getGroupBuyingStats,
@@ -100,12 +109,7 @@ export function useGetGroupBuyingStats(): UseQueryResult<GroupBuyingStats> {
     refetchInterval: 30 * 1000, // Refresh every 30 seconds
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load stats: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load stats');
 
   return query;
 }
@@ -117,7 +121,6 @@ export function useGetGroupBuyingStats(): UseQueryResult<GroupBuyingStats> {
  * const { data, isLoading, error } = useGetGroupBuyingParticipants('campaign-id', 1, 20);
  */
 export function useGetGroupBuyingParticipants(id: string, page = 1, limit = 20) {
-  const toast = useToast();
   const query = useQuery({
     queryKey: [...api.groupBuyingKeys.participants(id), page, limit],
     queryFn: () => api.getGroupBuyingParticipants(id, page, limit),
@@ -126,12 +129,7 @@ export function useGetGroupBuyingParticipants(id: string, page = 1, limit = 20) 
     refetchInterval: 15 * 1000, // Refresh participants frequently
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && id) {
-      toast.error(`Failed to load participants: ${query.error.message}`, 8000);
-    }
-  }, [query.error, id, toast]);
+  useErrorHandler(query.error, 'Failed to load participants');
 
   return query;
 }

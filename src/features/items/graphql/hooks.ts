@@ -4,28 +4,52 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type { Item, ItemFilters } from '../types';
+
+// ============================================================================
+// Error Handler
+// ============================================================================
+
+/**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+// ============================================================================
+// Query Hooks
+// ============================================================================
 
 /**
  * useGetItems - Fetch list of items (products) with filters
  */
 export const useGetItems = (filters?: ItemFilters) => {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.itemGraphQLKeys.list(filters || {}),
     queryFn: () => api.getItems(filters),
     staleTime: 60000,
   });
 
-  // Show toast on error (React Query v5 pattern)
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load items: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load items');
 
   return {
     ...query,
@@ -38,22 +62,20 @@ export const useGetItems = (filters?: ItemFilters) => {
  * useGetItem - Fetch single item by ID
  */
 export const useGetItem = (id: string) => {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.itemGraphQLKeys.detail(id),
     queryFn: () => api.getItem(id),
     enabled: !!id,
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && id) {
-      toast.error(`Failed to load item: ${query.error.message}`, 8000);
-    }
-  }, [query.error, id, toast]);
+  useErrorHandler(query.error, 'Failed to load item');
 
   return query;
 };
+
+// ============================================================================
+// Mutation Hooks
+// ============================================================================
 
 /**
  * useCreateItemMutation - Mutation for creating a new item

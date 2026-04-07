@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
@@ -20,6 +20,28 @@ import type {
 // ============================================================================
 
 /**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+/**
  * Fetch users with filters
  *
  * @example
@@ -32,19 +54,13 @@ import type {
 export function useGetUsers(
   filters: UserFilters = {}
 ): UseQueryResult<UsersResponse> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.userKeys.list(filters),
     queryFn: () => api.getUsers(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Show toast on error (React Query v5 pattern)
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load users: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load users');
 
   return query;
 }
@@ -59,7 +75,6 @@ export function useGetUser(
   id: string,
   enabled = true
 ): UseQueryResult<User> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.userKeys.detail(id),
     queryFn: () => api.getUser(id),
@@ -67,12 +82,7 @@ export function useGetUser(
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && enabled && id) {
-      toast.error(`Failed to load user: ${query.error.message}`, 8000);
-    }
-  }, [query.error, enabled, id, toast]);
+  useErrorHandler(query.error, 'Failed to load user');
 
   return query;
 }
@@ -84,19 +94,13 @@ export function useGetUser(
  * const { data, isLoading, error } = useGetUserStats();
  */
 export function useGetUserStats(): UseQueryResult<UserStats> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.userKeys.stats(),
     queryFn: api.getUserStats,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load user stats: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load user stats');
 
   return query;
 }

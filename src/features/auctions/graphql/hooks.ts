@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
@@ -23,22 +23,38 @@ import type {
 // ============================================================================
 
 /**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+/**
  * Get paginated list of auctions
  */
 export function useGetAuctions(filters: AuctionFilters = {}): UseQueryResult<AuctionsResponse> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.auctionGraphQLKeys.list(filters),
     queryFn: () => api.getAuctions(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Show toast on error (React Query v5 pattern)
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load auctions: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load auctions');
 
   return query;
 }
@@ -47,7 +63,6 @@ export function useGetAuctions(filters: AuctionFilters = {}): UseQueryResult<Auc
  * Get a single auction by ID or slug
  */
 export function useGetAuction(id: number | string, enabled = true): UseQueryResult<Auction> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.auctionGraphQLKeys.detail(id),
     queryFn: () => api.getAuction(id),
@@ -55,12 +70,7 @@ export function useGetAuction(id: number | string, enabled = true): UseQueryResu
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && enabled && id) {
-      toast.error(`Failed to load auction: ${query.error.message}`, 8000);
-    }
-  }, [query.error, enabled, id, toast]);
+  useErrorHandler(query.error, 'Failed to load auction');
 
   return query;
 }
@@ -69,19 +79,13 @@ export function useGetAuction(id: number | string, enabled = true): UseQueryResu
  * Get auction statistics
  */
 export function useGetAuctionStats(): UseQueryResult<AuctionStats> {
-  const toast = useToast();
   const query = useQuery({
     queryKey: api.auctionGraphQLKeys.stats(),
     queryFn: api.getAuctionStats,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error) {
-      toast.error(`Failed to load auction stats: ${query.error.message}`, 8000);
-    }
-  }, [query.error, toast]);
+  useErrorHandler(query.error, 'Failed to load auction stats');
 
   return query;
 }
@@ -90,7 +94,6 @@ export function useGetAuctionStats(): UseQueryResult<AuctionStats> {
  * Get bid history for an auction
  */
 export function useGetAuctionBids(auctionId: number | string, page = 1, limit = 20) {
-  const toast = useToast();
   const query = useQuery({
     queryKey: [...api.auctionGraphQLKeys.bids(auctionId), page, limit],
     queryFn: () => api.getAuctionBids(auctionId, page, limit),
@@ -98,12 +101,7 @@ export function useGetAuctionBids(auctionId: number | string, page = 1, limit = 
     staleTime: 10 * 1000, // 10 seconds for real-time history
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (query.error && auctionId) {
-      toast.error(`Failed to load bids: ${query.error.message}`, 8000);
-    }
-  }, [query.error, auctionId, toast]);
+  useErrorHandler(query.error, 'Failed to load bids');
 
   return query;
 }
