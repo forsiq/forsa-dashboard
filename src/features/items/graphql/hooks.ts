@@ -17,7 +17,7 @@ import type { Item, ItemFilters } from '../types';
  * Hook to show error toast only once per unique error
  */
 function useErrorHandler(error: Error | null, messagePrefix: string) {
-  const toast = useToast();
+  const { error: toastError } = useToast();
   const lastErrorRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -26,13 +26,13 @@ function useErrorHandler(error: Error | null, messagePrefix: string) {
       // Only show toast if this is a new error
       if (lastErrorRef.current !== errorKey) {
         lastErrorRef.current = errorKey;
-        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+        toastError(`${messagePrefix}: ${error.message}`, 8000);
       }
     } else {
       // Reset when no error
       lastErrorRef.current = null;
     }
-  }, [error, messagePrefix, toast]);
+  }, [error, messagePrefix, toastError]);
 }
 
 // ============================================================================

@@ -46,16 +46,18 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const info = useCallback((msg: string, dur?: number) => addToast('info', msg, dur), [addToast]);
   const warning = useCallback((msg: string, dur?: number) => addToast('warning', msg, dur), [addToast]);
 
+  const contextValue = React.useMemo(() => ({ 
+    toasts, 
+    addToast, 
+    removeToast, 
+    success, 
+    error, 
+    info, 
+    warning 
+  }), [toasts, addToast, removeToast, success, error, info, warning]);
+
   return (
-    <ToastContext.Provider value={{ 
-      toasts, 
-      addToast, 
-      removeToast, 
-      success, 
-      error, 
-      info, 
-      warning 
-    }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
     </ToastContext.Provider>
   );

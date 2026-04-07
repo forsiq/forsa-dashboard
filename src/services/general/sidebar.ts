@@ -26,7 +26,6 @@ export const sidebarSections: MenuSection[] = [
       { path: '/customers', label: 'customer.title', icon: 'Users' },
       { path: '/orders', label: 'order.title', icon: 'ShoppingCart' },
       { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
-      { path: '/group-buying/review', label: 'sidebar.group_review', icon: 'ClipboardCheck' },
     ]
   },
   {

@@ -12,8 +12,8 @@ export const GET_GROUP_BUYINGS_QUERY = `
     $limit: Int
     $offset: Int
     $search: String
-    $status: String
-    $categoryId: String
+    $status: GroupBuyingStatus
+    $categoryId: ID
     $sortBy: String
     $sortOrder: String
   ) {

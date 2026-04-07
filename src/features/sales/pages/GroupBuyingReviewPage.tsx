@@ -29,6 +29,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { useGetGroupBuyings, useGetGroupBuyingStats } from '../graphql';
+import type { GroupBuyingFilters } from '../types';
 
 /**
  * GroupBuyingReviewPage - High-Level Campaign Evaluation & Fulfillment Matrix
@@ -40,11 +41,13 @@ export const GroupBuyingReviewPage: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     
-    // Fetch only active/ready campaigns for review
-    const { data: campaignsData, isLoading } = useGetGroupBuyings({
-        status: 'active',
+    const filters = React.useMemo<GroupBuyingFilters>(() => ({
+        status: 'active' as const,
         limit: 100
-    });
+    }), []);
+    
+    // Fetch only active/ready campaigns for review
+    const { data: campaignsData, isLoading } = useGetGroupBuyings(filters);
 
     const { data: stats } = useGetGroupBuyingStats();
 
