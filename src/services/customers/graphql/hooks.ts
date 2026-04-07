@@ -3,6 +3,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useRef, useEffect } from 'react';
+import { useToast } from '@core/contexts/ToastContext';
 import {
   getCustomers,
   getCustomer,
@@ -27,6 +29,28 @@ import type {
 // ============================================================================
 
 /**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+/**
  * Fetch customers with filters
  *
  * @example
@@ -39,11 +63,15 @@ import type {
 export function useGetCustomers(
   filters: CustomerFilters = {}
 ): UseQueryResult<CustomersResponse> {
-  return useQuery({
+  const query = useQuery({
     queryKey: customerKeys.list(filters),
     queryFn: () => getCustomers(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load customers');
+
+  return query;
 }
 
 /**
@@ -56,12 +84,16 @@ export function useGetCustomer(
   id: string,
   enabled = true
 ): UseQueryResult<Customer> {
-  return useQuery({
+  const query = useQuery({
     queryKey: customerKeys.detail(id),
     queryFn: () => getCustomer(id),
     enabled: enabled && !!id,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load customer');
+
+  return query;
 }
 
 /**
@@ -71,11 +103,15 @@ export function useGetCustomer(
  * const { data, isLoading, error } = useGetCustomerStats();
  */
 export function useGetCustomerStats(): UseQueryResult<CustomerStats> {
-  return useQuery({
+  const query = useQuery({
     queryKey: customerKeys.stats(),
     queryFn: getCustomerStats,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load customer stats');
+
+  return query;
 }
 
 // ============================================================================
@@ -91,6 +127,7 @@ export function useGetCustomerStats(): UseQueryResult<CustomerStats> {
  */
 export function useCreateCustomer() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: CreateCustomerInput) => createCustomer(input),
@@ -98,6 +135,10 @@ export function useCreateCustomer() {
       // Invalidate customers list queries
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
       queryClient.invalidateQueries({ queryKey: customerKeys.stats() });
+      toast.success('Customer created successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to create customer: ${error.message}`, 8000);
     },
   });
 }
@@ -111,6 +152,7 @@ export function useCreateCustomer() {
  */
 export function useUpdateCustomer() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: UpdateCustomerInput) => updateCustomer(input),
@@ -119,6 +161,10 @@ export function useUpdateCustomer() {
       queryClient.invalidateQueries({ queryKey: customerKeys.detail(variables.id) });
       // Invalidate customers list queries
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
+      toast.success('Customer updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update customer: ${error.message}`, 8000);
     },
   });
 }
@@ -132,6 +178,7 @@ export function useUpdateCustomer() {
  */
 export function useDeleteCustomer() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (id: string) => deleteCustomer(id),
@@ -139,6 +186,10 @@ export function useDeleteCustomer() {
       // Invalidate customers list queries
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
       queryClient.invalidateQueries({ queryKey: customerKeys.stats() });
+      toast.success('Customer deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete customer: ${error.message}`, 8000);
     },
   });
 }
@@ -152,6 +203,7 @@ export function useDeleteCustomer() {
  */
 export function useUpdateCustomerStatus() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Customer['status'] }) =>
@@ -162,6 +214,10 @@ export function useUpdateCustomerStatus() {
       // Invalidate customers list queries
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
       queryClient.invalidateQueries({ queryKey: customerKeys.stats() });
+      toast.success('Customer status updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update customer status: ${error.message}`, 8000);
     },
   });
 }

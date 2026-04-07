@@ -3,6 +3,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
   User,
@@ -30,11 +32,21 @@ import type {
 export function useGetUsers(
   filters: UserFilters = {}
 ): UseQueryResult<UsersResponse> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.userKeys.list(filters),
     queryFn: () => api.getUsers(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Show toast on error (React Query v5 pattern)
+  useEffect(() => {
+    if (query.error) {
+      toast.error(`Failed to load users: ${query.error.message}`, 8000);
+    }
+  }, [query.error, toast]);
+
+  return query;
 }
 
 /**
@@ -47,12 +59,22 @@ export function useGetUser(
   id: string,
   enabled = true
 ): UseQueryResult<User> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.userKeys.detail(id),
     queryFn: () => api.getUser(id),
     enabled: enabled && !!id,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Show toast on error
+  useEffect(() => {
+    if (query.error && enabled && id) {
+      toast.error(`Failed to load user: ${query.error.message}`, 8000);
+    }
+  }, [query.error, enabled, id, toast]);
+
+  return query;
 }
 
 /**
@@ -62,11 +84,21 @@ export function useGetUser(
  * const { data, isLoading, error } = useGetUserStats();
  */
 export function useGetUserStats(): UseQueryResult<UserStats> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.userKeys.stats(),
     queryFn: api.getUserStats,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  // Show toast on error
+  useEffect(() => {
+    if (query.error) {
+      toast.error(`Failed to load user stats: ${query.error.message}`, 8000);
+    }
+  }, [query.error, toast]);
+
+  return query;
 }
 
 // ============================================================================
@@ -82,6 +114,7 @@ export function useGetUserStats(): UseQueryResult<UserStats> {
  */
 export function useCreateUser() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: UserCreateInput) => api.createUser(input),
@@ -89,6 +122,10 @@ export function useCreateUser() {
       // Invalidate users list queries
       queryClient.invalidateQueries({ queryKey: api.userKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.userKeys.stats() });
+      toast.success('User created successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to create user: ${error.message}`, 8000);
     },
   });
 }
@@ -102,6 +139,7 @@ export function useCreateUser() {
  */
 export function useUpdateUser() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: UserUpdateInput) => api.updateUser(input),
@@ -110,6 +148,10 @@ export function useUpdateUser() {
       queryClient.invalidateQueries({ queryKey: api.userKeys.detail(String(variables.id)) });
       // Invalidate users list queries
       queryClient.invalidateQueries({ queryKey: api.userKeys.lists() });
+      toast.success('User updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update user: ${error.message}`, 8000);
     },
   });
 }
@@ -123,6 +165,7 @@ export function useUpdateUser() {
  */
 export function useDeleteUser() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (id: string) => api.deleteUser(id),
@@ -130,6 +173,10 @@ export function useDeleteUser() {
       // Invalidate users list queries
       queryClient.invalidateQueries({ queryKey: api.userKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.userKeys.stats() });
+      toast.success('User deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete user: ${error.message}`, 8000);
     },
   });
 }
@@ -143,6 +190,7 @@ export function useDeleteUser() {
  */
 export function useUpdateUserStatus() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
@@ -153,6 +201,10 @@ export function useUpdateUserStatus() {
       // Invalidate users list queries
       queryClient.invalidateQueries({ queryKey: api.userKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.userKeys.stats() });
+      toast.success('User status updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update user status: ${error.message}`, 8000);
     },
   });
 }
@@ -165,8 +217,16 @@ export function useUpdateUserStatus() {
  * await resetMutation.mutateAsync('user-id');
  */
 export function useResetUserPassword() {
+  const toast = useToast();
+
   return useMutation({
     mutationFn: (id: string) => api.resetUserPassword(id),
+    onSuccess: () => {
+      toast.success('Password reset email sent');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to reset password: ${error.message}`, 8000);
+    },
   });
 }
 

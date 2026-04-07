@@ -27,6 +27,8 @@ export function parseAttachmentIds(attachmentIds: string | string[] | null | und
 /**
  * Get image URL for an auction
  * Uses mainAttachmentId or falls back to first attachmentId
+ *
+ * IMPORTANT: Uses the /download/ endpoint which proxies files with proper authentication
  */
 export function getAuctionImageUrl(auction: {
   imageUrl?: string | null;
@@ -53,8 +55,8 @@ export function getAuctionImageUrl(auction: {
     return null;
   }
 
-  // Build attachment URL
-  return `${API_BASE_URL}/api/v1/project/attachments/${attachmentId}/`;
+  // Use the download endpoint - this proxies the file with authentication
+  return `${API_BASE_URL}/api/v1/project/attachment/${attachmentId}/download/`;
 }
 
 /**
@@ -78,33 +80,26 @@ export function getAuctionImageUrls(auction: {
     urls.push(...auction.images);
   }
 
-  // Add attachment URLs
+  // Add attachment URLs using download endpoint
   const ids = parseAttachmentIds(auction.attachmentIds);
   ids.forEach(id => {
-    urls.push(`${API_BASE_URL}/api/v1/project/attachments/${id}/`);
+    urls.push(`${API_BASE_URL}/api/v1/project/attachment/${id}/download/`);
   });
 
   return [...new Set(urls)]; // Remove duplicates
 }
 
 /**
- * Fetch attachment details to get the actual file URL
- * This makes an API call to get the file_url field
+ * Fetch attachment URL for use in <img> tags
+ *
+ * IMPORTANT: Returns the download endpoint URL which proxies the file
+ * with proper authentication. Direct file.zonevast.com URLs return 403.
+ *
+ * @param attachmentId Database ID of the attachment
+ * @returns Authenticated download URL that works in <img> tags
  */
 export async function fetchAttachmentUrl(attachmentId: number): Promise<string | null> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/project/attachments/${attachmentId}/`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Project-ID': '11',
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    return data.file_url || null;
-  } catch {
-    return null;
-  }
+  // Return the download endpoint directly - it handles authentication
+  // No need to fetch attachment metadata first
+  return `${API_BASE_URL}/api/v1/project/attachment/${attachmentId}/download/`;
 }

@@ -3,6 +3,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
   GroupBuying,
@@ -31,11 +33,21 @@ import type {
 export function useGetGroupBuyings(
   filters: GroupBuyingFilters = {}
 ): UseQueryResult<GroupBuyingsResponse> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.groupBuyingKeys.list(filters),
     queryFn: () => api.getGroupBuyings(filters),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  // Show toast on error (React Query v5 pattern)
+  useEffect(() => {
+    if (query.error) {
+      toast.error(`Failed to load group buying campaigns: ${query.error.message}`, 8000);
+    }
+  }, [query.error, toast]);
+
+  return query;
 }
 
 /**
@@ -48,7 +60,8 @@ export function useGetGroupBuying(
   id: string,
   enabled = true
 ): UseQueryResult<GroupBuying> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.groupBuyingKeys.detail(id),
     queryFn: () => api.getGroupBuying(id),
     enabled: enabled && !!id,
@@ -61,6 +74,15 @@ export function useGetGroupBuying(
       return false;
     },
   });
+
+  // Show toast on error
+  useEffect(() => {
+    if (query.error && enabled && id) {
+      toast.error(`Failed to load campaign: ${query.error.message}`, 8000);
+    }
+  }, [query.error, enabled, id, toast]);
+
+  return query;
 }
 
 /**
@@ -70,12 +92,22 @@ export function useGetGroupBuying(
  * const { data, isLoading, error } = useGetGroupBuyingStats();
  */
 export function useGetGroupBuyingStats(): UseQueryResult<GroupBuyingStats> {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: api.groupBuyingKeys.stats(),
     queryFn: api.getGroupBuyingStats,
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchInterval: 30 * 1000, // Refresh every 30 seconds
   });
+
+  // Show toast on error
+  useEffect(() => {
+    if (query.error) {
+      toast.error(`Failed to load stats: ${query.error.message}`, 8000);
+    }
+  }, [query.error, toast]);
+
+  return query;
 }
 
 /**
@@ -85,13 +117,23 @@ export function useGetGroupBuyingStats(): UseQueryResult<GroupBuyingStats> {
  * const { data, isLoading, error } = useGetGroupBuyingParticipants('campaign-id', 1, 20);
  */
 export function useGetGroupBuyingParticipants(id: string, page = 1, limit = 20) {
-  return useQuery({
+  const toast = useToast();
+  const query = useQuery({
     queryKey: [...api.groupBuyingKeys.participants(id), page, limit],
     queryFn: () => api.getGroupBuyingParticipants(id, page, limit),
     enabled: !!id,
     staleTime: 30 * 1000, // 30 seconds
     refetchInterval: 15 * 1000, // Refresh participants frequently
   });
+
+  // Show toast on error
+  useEffect(() => {
+    if (query.error && id) {
+      toast.error(`Failed to load participants: ${query.error.message}`, 8000);
+    }
+  }, [query.error, id, toast]);
+
+  return query;
 }
 
 // ============================================================================
@@ -107,6 +149,7 @@ export function useGetGroupBuyingParticipants(id: string, page = 1, limit = 20) 
  */
 export function useCreateGroupBuying() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: GroupBuyingCreateInput) => api.createGroupBuying(input),
@@ -114,6 +157,10 @@ export function useCreateGroupBuying() {
       // Invalidate campaigns list queries
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.stats() });
+      toast.success('Campaign created successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to create campaign: ${error.message}`, 8000);
     },
   });
 }
@@ -127,6 +174,7 @@ export function useCreateGroupBuying() {
  */
 export function useUpdateGroupBuying() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (input: GroupBuyingUpdateInput) => api.updateGroupBuying(input),
@@ -136,6 +184,10 @@ export function useUpdateGroupBuying() {
       // Invalidate campaigns list queries
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.stats() });
+      toast.success('Campaign updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update campaign: ${error.message}`, 8000);
     },
   });
 }
@@ -149,6 +201,7 @@ export function useUpdateGroupBuying() {
  */
 export function useDeleteGroupBuying() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: (id: string) => api.deleteGroupBuying(id),
@@ -156,6 +209,10 @@ export function useDeleteGroupBuying() {
       // Invalidate campaigns list queries
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.stats() });
+      toast.success('Campaign deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete campaign: ${error.message}`, 8000);
     },
   });
 }
@@ -169,6 +226,7 @@ export function useDeleteGroupBuying() {
  */
 export function useUpdateGroupBuyingStatus() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: GroupBuying['status'] }) =>
@@ -179,6 +237,10 @@ export function useUpdateGroupBuyingStatus() {
       // Invalidate campaigns list queries
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.stats() });
+      toast.success('Campaign status updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update status: ${error.message}`, 8000);
     },
   });
 }
@@ -192,6 +254,7 @@ export function useUpdateGroupBuyingStatus() {
  */
 export function useJoinGroupBuying() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ groupBuyingId, quantity }: { groupBuyingId: string; quantity: number }) =>
@@ -203,6 +266,10 @@ export function useJoinGroupBuying() {
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.participants(variables.groupBuyingId) });
       // Invalidate stats
       queryClient.invalidateQueries({ queryKey: api.groupBuyingKeys.stats() });
+      toast.success('Successfully joined campaign');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to join campaign: ${error.message}`, 8000);
     },
   });
 }

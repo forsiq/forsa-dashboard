@@ -6,6 +6,53 @@
 
 const GRAPHQL_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
 
+// ============================================================================
+// Error Logging Utilities
+// ============================================================================
+
+/**
+ * Log GraphQL error with full context for debugging
+ */
+function logGraphQLError(error: Error, context: {
+  url: string;
+  service: string;
+  locale: string;
+  variables?: Record<string, unknown>;
+  responseStatus?: number;
+  responseStatusText?: string;
+  graphqlErrors?: Array<{ message: string; path?: string[] }>;
+}) {
+  console.group(`❌ [GraphQL Error] ${context.service}/${context.locale}`);
+  console.error('URL:', context.url);
+  console.error('Error Message:', error.message);
+  if (context.responseStatus) {
+    console.error('HTTP Status:', context.responseStatus, context.responseStatusText);
+  }
+  if (context.graphqlErrors && context.graphqlErrors.length > 0) {
+    console.error('GraphQL Errors:', context.graphqlErrors);
+  }
+  if (context.variables && Object.keys(context.variables).length > 0) {
+    console.error('Variables:', context.variables);
+  }
+  console.error('Timestamp:', new Date().toISOString());
+  console.groupEnd();
+}
+
+/**
+ * Log successful GraphQL request (for debugging)
+ */
+function logGraphQLSuccess(context: {
+  url: string;
+  service: string;
+  locale: string;
+  variables?: Record<string, unknown>;
+}) {
+  console.log(`✅ [GraphQL] ${context.service}/${context.locale}`, {
+    url: context.url,
+    hasVariables: !!context.variables && Object.keys(context.variables).length > 0
+  });
+}
+
 const PROJECT_STORAGE_KEY = 'zv_project';
 
 /**
@@ -91,36 +138,66 @@ export async function graphqlRequest<T = unknown>({
   const baseUrl = GRAPHQL_BASE_URL.replace(/\/$/, '');
   const url = `${baseUrl}/graphql/${service}/${locale}/v1/graphql`;
 
-  console.log(`[GraphQLClient] Requesting: ${url} (Service: ${service}, Locale: ${locale})`);
+  const requestContext = { url, service, locale, variables };
 
   const token = getAuthToken();
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      'X-Project-ID': getProjectId(),
-    },
-    body: JSON.stringify({ query, variables }),
-  });
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        'X-Project-ID': getProjectId(),
+      },
+      body: JSON.stringify({ query, variables }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`GraphQL request failed: ${response.status} ${response.statusText}`);
+    // Log request for debugging
+    logGraphQLSuccess(requestContext);
+
+    // Handle HTTP errors
+    if (!response.ok) {
+      const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+      logGraphQLError(error, {
+        ...requestContext,
+        responseStatus: response.status,
+        responseStatusText: response.statusText
+      });
+      throw error;
+    }
+
+    const result: GraphQLResponse<T> = await response.json();
+
+    // Handle GraphQL errors
+    if (result.errors && result.errors.length > 0) {
+      const errorMessages = result.errors.map(e => e.message).join(', ');
+      const error = new Error(`GraphQL Error: ${errorMessages}`);
+      logGraphQLError(error, {
+        ...requestContext,
+        graphqlErrors: result.errors
+      });
+      throw error;
+    }
+
+    // Handle empty response
+    if (!result.data) {
+      const error = new Error('GraphQL: No data returned from server');
+      logGraphQLError(error, requestContext);
+      throw error;
+    }
+
+    return result.data;
+  } catch (err) {
+    // Re-throw with logging if it hasn't been logged yet
+    if (err instanceof Error) {
+      // Only log if it's not a GraphQL error we already logged
+      if (!err.message.includes('GraphQL Error') && !err.message.includes('HTTP ')) {
+        logGraphQLError(err, requestContext);
+      }
+    }
+    throw err;
   }
-
-  const result: GraphQLResponse<T> = await response.json();
-
-  if (result.errors && result.errors.length > 0) {
-    const errorMessages = result.errors.map(e => e.message).join(', ');
-    throw new Error(`GraphQL Error: ${errorMessages}`);
-  }
-
-  if (!result.data) {
-    throw new Error('GraphQL: No data returned');
-  }
-
-  return result.data;
 }
 
 /**

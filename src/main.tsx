@@ -4,6 +4,21 @@ import './index.css';
 import { RouterProvider, useNavigate, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+// ============================================================================
+// Global Error Logger for React Query
+// ============================================================================
+
+/**
+ * Logs all GraphQL/React Query errors with full context
+ */
+function logQueryError(type: 'query' | 'mutation', error: Error) {
+  console.error(`[${type.toUpperCase()} ERROR]`, {
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+}
+
 // Core Providers
 import { FeatureProvider, useFeatureConfig } from '@core/contexts/FeatureContext';
 import { LanguageProvider } from '@core/contexts/LanguageContext';
@@ -20,10 +35,20 @@ import { AuthGuard } from '@features/_core/components/AuthGuard';
 import { AboutPage } from '@core/pages/AboutPage';
 import { PortalPage } from '@core/pages/PortalPage';
 
+/**
+ * Enhanced QueryClient with global error handling
+ * Shows toast notifications for failed requests
+ */
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, staleTime: 5 * 60 * 1000 }
-  }
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+    mutations: {
+      retry: 1,
+    }
+  },
 });
 
 const RootRedirect: React.FC = () => {

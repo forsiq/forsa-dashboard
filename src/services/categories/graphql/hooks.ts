@@ -4,6 +4,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useRef, useEffect } from 'react';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from './api';
 import type {
   Category,
@@ -19,37 +21,71 @@ import type {
 // ============================================================================
 
 /**
+ * Hook to show error toast only once per unique error
+ */
+function useErrorHandler(error: Error | null, messagePrefix: string) {
+  const toast = useToast();
+  const lastErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const errorKey = `${messagePrefix}:${error.message}`;
+      // Only show toast if this is a new error
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${messagePrefix}: ${error.message}`, 8000);
+      }
+    } else {
+      // Reset when no error
+      lastErrorRef.current = null;
+    }
+  }, [error, messagePrefix, toast]);
+}
+
+/**
  * Get paginated list of categories
  */
 export function useGetCategories(filters: CategoryFilters = {}): UseQueryResult<CategoriesResponse> {
-  return useQuery({
+  const query = useQuery({
     queryKey: api.categoryGraphQLKeys.list(filters),
     queryFn: () => api.getCategories(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load categories');
+
+  return query;
 }
 
 /**
  * Get a single category by ID
  */
 export function useGetCategory(id: string, enabled = true): UseQueryResult<Category> {
-  return useQuery({
+  const query = useQuery({
     queryKey: api.categoryGraphQLKeys.detail(id),
     queryFn: () => api.getCategory(id),
     enabled: enabled && !!id,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load category');
+
+  return query;
 }
 
 /**
  * Get category statistics
  */
 export function useGetCategoryStats(): UseQueryResult<CategoryStats> {
-  return useQuery({
+  const query = useQuery({
     queryKey: api.categoryGraphQLKeys.stats(),
     queryFn: () => api.getCategoryStats(),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  useErrorHandler(query.error, 'Failed to load category stats');
+
+  return query;
 }
 
 // ============================================================================
@@ -64,14 +100,20 @@ export function useCreateCategory(options?: {
   onError?: (error: Error) => void;
 }) {
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   return useMutation({
     mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      toast.success('Category created successfully');
       options?.onSuccess?.(data);
     },
-    onError: options?.onError,
+    onError: (error: Error) => {
+      toast.error(`Failed to create category: ${error.message}`, 8000);
+      options?.onError?.(error);
+    },
   });
 }
 
@@ -83,15 +125,21 @@ export function useUpdateCategory(options?: {
   onError?: (error: Error) => void;
 }) {
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   return useMutation({
     mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      toast.success('Category updated successfully');
       options?.onSuccess?.(data);
     },
-    onError: options?.onError,
+    onError: (error: Error) => {
+      toast.error(`Failed to update category: ${error.message}`, 8000);
+      options?.onError?.(error);
+    },
   });
 }
 
@@ -103,14 +151,20 @@ export function useDeleteCategory(options?: {
   onError?: (error: Error) => void;
 }) {
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      toast.success('Category deleted successfully');
       options?.onSuccess?.();
     },
-    onError: options?.onError,
+    onError: (error: Error) => {
+      toast.error(`Failed to delete category: ${error.message}`, 8000);
+      options?.onError?.(error);
+    },
   });
 }
 
@@ -119,6 +173,8 @@ export function useDeleteCategory(options?: {
  */
 export function useUpdateCategoryStatus() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Category['status'] }) =>
       api.updateCategoryStatus(id, status),
@@ -126,6 +182,10 @@ export function useUpdateCategoryStatus() {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      toast.success('Category status updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update category status: ${error.message}`, 8000);
     },
   });
 }
