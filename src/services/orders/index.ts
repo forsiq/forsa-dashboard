@@ -1,5 +1,5 @@
 // Routes
-export { ordersRoutes } from './routes';
+export { default as ordersRoutes } from './routes';
 
 // Pages
 export { OrdersListPage } from './pages/OrdersListPage';

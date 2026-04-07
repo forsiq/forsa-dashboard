@@ -11,11 +11,17 @@ import type { Item, ItemFilters } from '../types';
  * useGetItems - Fetch list of items (products) with filters
  */
 export const useGetItems = (filters?: ItemFilters) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: api.itemGraphQLKeys.list(filters || {}),
     queryFn: () => api.getItems(filters),
     staleTime: 60000,
   });
+
+  return {
+    ...query,
+    items: query.data?.items || [],
+    totalCount: query.data?.totalCount || 0
+  };
 };
 
 /**

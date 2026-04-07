@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Gavel, 
-  Plus, 
-  Search, 
-  SlidersHorizontal, 
-  TrendingUp, 
-  Clock, 
-  DollarSign, 
-  Eye, 
-  Edit, 
+import {
+  Gavel,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  TrendingUp,
+  Clock,
+  DollarSign,
+  Eye,
+  Edit,
   Trash2,
   Calendar,
   Layers,
@@ -26,6 +26,7 @@ import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetAuctions, useGetAuctionStats, useDeleteAuction } from '../graphql';
+import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
 
 /**
@@ -40,6 +41,8 @@ export const AuctionsList: React.FC = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | AuctionStatus>('all');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(12);
     const [currentTime, setCurrentTime] = useState(new Date());
 
     // Update current time every second for accurate countdowns
@@ -53,6 +56,8 @@ export const AuctionsList: React.FC = () => {
         search: searchQuery || undefined,
         sortBy: 'endTime',
         sortOrder: 'asc',
+        page,
+        limit
     });
 
     const { data: stats } = useGetAuctionStats();
@@ -180,14 +185,14 @@ export const AuctionsList: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4 uppercase tracking-widest">
-                        <span>Equitable Distribution</span>
+                        <span>{t('auction.equitable_distribution') || 'Equitable Distribution'}</span>
                     </div>
                 </Card>
 
                 <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-2">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-warning uppercase tracking-widest italic font-bold">Critical Termination</span>
+                            <span className="text-[10px] font-black text-warning uppercase tracking-widest italic font-bold">{t('auction.critical_termination') || 'Critical Termination'}</span>
                             <h3 className="text-3xl font-black text-warning tracking-tighter italic tabular-nums">{stats?.scheduledAuctions || 0}</h3>
                         </div>
                         <div className="p-3 bg-warning/10 text-warning rounded-xl border border-warning/20">
@@ -195,7 +200,7 @@ export const AuctionsList: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4 uppercase tracking-widest">
-                        <span>Concluding Soon</span>
+                        <span>{t('auction.concluding_soon') || 'Concluding Soon'}</span>
                     </div>
                 </Card>
             </div>
@@ -204,7 +209,7 @@ export const AuctionsList: React.FC = () => {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] italic flex items-center gap-2">
-                        <Layers className="w-4 h-4" /> Operational Listings Matrix
+                        <Layers className="w-4 h-4" /> {t('auction.operational_listings_matrix') || 'Operational Listings Matrix'}
                     </h2>
                     <div className="relative group min-w-[320px]">
                         <Search className={cn(
@@ -249,17 +254,11 @@ export const AuctionsList: React.FC = () => {
                             >
                                 {/* Asset Narrative & Dynamic Visual */}
                                 <div className="h-56 bg-obsidian-panel/50 relative overflow-hidden">
-                                     {auction.images?.[0] ? (
-                                         <img 
-                                            src={auction.images[0]} 
-                                            alt={auction.title} 
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                         />
-                                     ) : (
-                                         <div className="w-full h-full flex items-center justify-center opacity-20">
-                                             <Gavel className="w-16 h-16 text-zinc-muted" />
-                                         </div>
-                                     )}
+                                     <AuctionImage
+                                         auction={auction}
+                                         alt={auction.title}
+                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                     />
                                      {/* State Indicators */}
                                      <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
                                          <StatusBadge 
@@ -349,7 +348,11 @@ export const AuctionsList: React.FC = () => {
                                          <td className="px-6 py-5">
                                              <div className="flex items-center gap-4">
                                                  <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0 group-hover:border-brand/30 transition-colors">
-                                                     {auction.images?.[0] ? <img src={auction.images[0]} className="w-full h-full object-cover" /> : <Gavel className="w-4 h-4 text-zinc-muted" />}
+                                                     <AuctionImage
+                                                         auction={auction}
+                                                         alt={auction.title}
+                                                         fallbackClassName="w-full h-full object-cover"
+                                                     />
                                                  </div>
                                                  <div>
                                                      <p className="text-sm font-black text-zinc-text uppercase italic tracking-tight">{auction.title}</p>

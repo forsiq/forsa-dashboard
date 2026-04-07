@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { 
-  Gavel, 
-  Clock, 
-  Users, 
-  DollarSign, 
-  ArrowLeft, 
-  Heart, 
-  Share2, 
-  TrendingUp, 
+import {
+  Clock,
+  Users,
+  DollarSign,
+  ArrowLeft,
+  Heart,
+  Share2,
+  TrendingUp,
   ShieldCheck,
   AlertCircle,
   History,
@@ -25,6 +24,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetAuction, useGetAuctionBids, usePlaceBid } from '../graphql';
+import { AuctionImage } from '../components/AuctionImage';
 
 /**
  * AuctionDetails - Cinematic Asset Monitoring & Bidding Interface
@@ -152,17 +152,11 @@ export const AuctionDetails: React.FC = () => {
                 <div className="lg:col-span-2 space-y-8">
                     {/* Primary Asset Visualizer */}
                     <Card className="!p-0 border-border bg-black overflow-hidden relative group aspect-video lg:aspect-auto h-[600px] shadow-2xl">
-                         {auction.images?.[0] ? (
-                             <img 
-                                src={auction.images[0]} 
-                                alt={auction.title} 
-                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-1000" 
-                             />
-                         ) : (
-                             <div className="w-full h-full flex items-center justify-center">
-                                 <Gavel className="w-32 h-32 text-zinc-muted/10" />
-                             </div>
-                         )}
+                         <AuctionImage
+                             auction={auction}
+                             alt={auction.title}
+                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-1000"
+                         />
                          {/* Visual Overlays */}
                          <div className="absolute top-6 left-6 flex items-center gap-3">
                              <StatusBadge 
@@ -189,9 +183,11 @@ export const AuctionDetails: React.FC = () => {
                                  </div>
                                  <div className="hidden md:flex gap-2">
                                       {[1,2,3].map(i => (
-                                          <div key={i} className="w-16 h-16 rounded-lg border border-white/10 bg-black/40 backdrop-blur-md cursor-pointer hover:border-brand transition-colors overflow-hidden shrink-0">
-                                              <img src={auction.images?.[0] || ''} className="w-full h-full object-cover" />
-                                          </div>
+                                          <AuctionImage
+                                              key={i}
+                                              auction={auction}
+                                              fallbackClassName="w-full h-full object-cover"
+                                          />
                                       ))}
                                  </div>
                              </div>

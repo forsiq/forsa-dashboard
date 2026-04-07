@@ -1,54 +1,51 @@
 /**
- * GraphQL Queries & Mutations for Items (Products)
- * Uses 'product' service
+ * GraphQL Queries & Mutations for Inventory/Products
+ * Uses 'inventory' service
  */
 
 // ============ Queries ============
 
 /**
- * Get paginated list of products
+ * Get paginated list of products (inventory items)
  */
 export const GET_PRODUCTS_QUERY = `
   query GetProducts(
     $limit: Int
     $offset: Int
     $search: String
-    $categoryId: Int
     $status: String
   ) {
     products(
       limit: $limit
       offset: $offset
       search: $search
-      categoryId: $categoryId
       status: $status
     ) {
       id
-      idNum
       name
       nameAr
+      nameKu
+      sku
+      barcode
       description
       descriptionAr
+      descriptionKu
+      price
+      costPrice
       sellingPrice
+      currency
       stockQuantity
-      sku
-      status
-      images
+      lowStockThreshold
+      stockStatus
       categoryId
-      category {
-        id
-        name
-        nameAr
-      }
+      categoryName
+      isActive
+      images
+      image
+      imageUrl
       createdAt
       updatedAt
-      auctionCount
     }
-    productCount(
-      search: $search
-      categoryId: $categoryId
-      status: $status
-    )
   }
 `;
 
@@ -59,25 +56,40 @@ export const GET_PRODUCT_QUERY = `
   query GetProduct($id: ID!) {
     product(id: $id) {
       id
-      idNum
       name
       nameAr
-      description
-      descriptionAr
-      sellingPrice
-      stockQuantity
       sku
-      status
-      images
+      barcode
+      description
+      price
+      cost
+      quantity
+      minStock
+      maxStock
       categoryId
-      category {
-        id
-        name
-        nameAr
-      }
+      categoryName
+      status
+      imageUrl
       createdAt
       updatedAt
-      auctionCount
+    }
+  }
+`;
+
+/**
+ * Get inventory statistics
+ */
+export const GET_INVENTORY_STATS_QUERY = `
+  query GetInventoryStats {
+    inventoryStats {
+      totalProducts
+      inStock
+      lowStock
+      outOfStock
+      totalValue
+      lowStockValue
+      totalStock
+      recentMovements
     }
   }
 `;
@@ -93,6 +105,7 @@ export const CREATE_PRODUCT_MUTATION = `
       id
       name
       sku
+      status
     }
   }
 `;
@@ -105,6 +118,7 @@ export const UPDATE_PRODUCT_MUTATION = `
     updateProduct(id: $id, input: $input) {
       id
       name
+      sku
       status
     }
   }
@@ -131,14 +145,15 @@ export function buildProductVariables(filters: {
   page?: number;
   limit?: number;
   search?: string;
-  categoryId?: number;
-  status?: string;
+  categoryId?: string;
+  stockStatus?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }) {
   return {
     limit: filters.limit || 50,
     offset: filters.page ? ((filters.page - 1) * (filters.limit || 50)) : 0,
     ...(filters.search && { search: filters.search }),
-    ...(filters.categoryId && filters.categoryId !== 0 && { categoryId: filters.categoryId }),
-    ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+    // Note: categoryId, stockStatus filters applied client-side
   };
 }

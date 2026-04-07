@@ -95,7 +95,7 @@ export function CategoryEditPage() {
         initialData={category}
         onSubmit={handleSubmit}
         isLoading={updateMutation.isPending}
-        parentCategories={categoriesData?.data || []}
+        parentCategories={categoriesData?.categories || []}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
 import { useCreateAuction } from '../graphql';
 import type { AuctionCreateInput } from '../types/auction.types';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 const Button = ({ className, children, disabled, ...props }: any) => (
   <button
@@ -66,6 +67,7 @@ const TextArea = ({ label, ...props }: any) => (
 
 export const AuctionAdd = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const createAuction = useCreateAuction();
 
   const [formData, setFormData] = useState<Partial<AuctionCreateInput>>({
@@ -161,15 +163,15 @@ export const AuctionAdd = () => {
           <ArrowLeft size={20} className="text-white" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-white">Create Auction</h1>
-          <p className="text-zinc-400">List an item for auction</p>
+          <h1 className="text-2xl font-bold text-white">{t('auction.create_auction') || 'Create Auction'}</h1>
+          <p className="text-zinc-400">{t('auction.list_item_desc') || 'List an item for auction'}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-white">{t('auction.basic_info') || 'Basic Information'}</h2>
 
           <Input
             label="Title"
@@ -290,7 +292,7 @@ export const AuctionAdd = () => {
 
         {/* Timing */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Auction Schedule</h2>
+          <h2 className="text-lg font-semibold text-white">{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <Input

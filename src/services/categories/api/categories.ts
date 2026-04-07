@@ -1,34 +1,30 @@
-/** Categories API Compatibility */
-import { categoryService } from '../config';
+/** Categories API - Using GraphQL */
+import * as api from '../graphql/api';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoryStats } from '../types';
+import { categoryGraphQLKeys } from '../graphql/api';
 
 export async function getCategories(filters: CategoryFilters = {} as any) {
-  const response = await categoryService.api.list(filters);
-  return response.data;
+  return await api.getCategories(filters);
 }
 
 export async function getCategory(id: string) {
-  const response = await categoryService.api.getById(id);
-  return response.data;
+  return await api.getCategory(id);
 }
 
 export async function getCategoryStats() {
-  const response = await categoryService.api.getStats();
-  return response.data;
+  return await api.getCategoryStats();
 }
 
 export async function createCategory(input: CreateCategoryInput) {
-  const response = await categoryService.api.create(input);
-  return response.data;
+  return await api.createCategory(input);
 }
 
 export async function updateCategory(input: UpdateCategoryInput) {
-  const response = await categoryService.api.update(input);
-  return response.data;
+  return await api.updateCategory(input);
 }
 
 export async function deleteCategory(id: string) {
-  await categoryService.api.delete(id);
+  return await api.deleteCategory(id);
 }
 
-export const categoryKeys = categoryService.queryKeys;
+export const categoryKeys = categoryGraphQLKeys;

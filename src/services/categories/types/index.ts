@@ -3,25 +3,27 @@
 export interface Category {
   id: string;
   name: string;
-  nameAr?: string;
   slug?: string;
   description?: string;
   parentId?: string;
   parent?: Category;
-  status: 'active' | 'inactive';
+  createdAt: string;
+  // Fields not in remote schema - kept for local compatibility
+  nameAr?: string;
+  status?: 'active' | 'inactive';
   order?: number;
   image?: string;
   productCount?: number;
-  createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateCategoryInput {
   name: string;
-  nameAr?: string;
   slug?: string;
   description?: string;
   parentId?: string;
+  // Optional fields not in remote schema
+  nameAr?: string;
   status?: 'active' | 'inactive';
   order?: number;
   image?: string;

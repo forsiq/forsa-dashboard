@@ -39,8 +39,8 @@ export function ReportsPage() {
     },
     {
       title: t('report.customers') || 'العملاء',
-      value: 2840,
-      change: 15.3,
+      value: report?.totalCustomers || 0,
+      change: 0, // Should be from backend
       icon: Users,
       color: 'info',
     },

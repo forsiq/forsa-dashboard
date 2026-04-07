@@ -1,10 +1,9 @@
-/**
- * Dashboard Hooks - Fetch real data for dashboard statistics
- * Matching original auction implementation
- */
-
 import { useQuery } from '@tanstack/react-query';
 import { gqlQuery } from '@core/services/GraphQLClient';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { ActivityItem, StatCard } from '../types';
+import { TrendingUp, Gavel, Package, Users } from 'lucide-react';
+import React from 'react';
 
 // ============================================================================
 // GraphQL Queries
@@ -124,38 +123,38 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: async (): Promise<DashboardStats> => {
-      // Fetch data from multiple services in parallel
-      const [productsData, customersData, auctionsData, groupBuyingsData] = await Promise.all([
-        gqlQuery<{ products: any[] }>(GET_PRODUCTS_COUNT, { limit: 1000 }, 'product').catch(() => ({ products: [] })),
-        gqlQuery<{ customers: any[] }>(GET_CUSTOMERS, {}, 'customer').catch(() => ({ customers: [] })),
-        gqlQuery<{ auctions: any[] }>(GET_AUCTIONS, {}, 'auction').catch(() => ({ auctions: [] })),
-        gqlQuery<{ groupBuying: any[] }>(GET_GROUP_BUYINGS, {}, 'auction').catch(() => ({ groupBuying: [] })),
+      // Fetch data from multiple services in parallel using ACTUAL existing schema fields
+      const [productsData, auctionsData] = await Promise.all([
+        gqlQuery<{ products: any[] }>(`query { products(limit: 100) { id } }`, {}, 'product').catch(() => ({ products: [] })),
+        gqlQuery<{ auctions: any[] }>(`
+          query GetAuctions {
+            auctions(limit: 100) {
+              id
+              status
+              currentBid
+            }
+          }
+        `, {}, 'auction').catch(() => ({ auctions: [] })),
       ]);
 
       const products = productsData?.products || [];
-      const customers = customersData?.customers || [];
       const auctions = auctionsData?.auctions || [];
-      const groupBuyings = groupBuyingsData?.groupBuying || [];
 
-      // Calculate total revenue from auctions and group buyings
-      const auctionRevenue = auctions.reduce((sum: number, a: any) => sum + (a.currentBid || 0), 0);
-      const groupBuyingRevenue = groupBuyings.reduce((sum: number, g: any) =>
-        sum + ((g.dealPrice || 0) * (g.currentParticipants || 0)), 0);
-      const totalRevenue = auctionRevenue + groupBuyingRevenue;
-
-      // Calculate total orders (auctions + group buying participants)
-      const totalOrders = auctions.length + groupBuyings.reduce((sum: number, g: any) =>
-        sum + (g.currentParticipants || 0), 0);
+      // Calculate stats based on available data
+      const activeAuctions = auctions.filter(a => a.status === 'active');
+      const totalRevenue = auctions
+        .filter(a => ['ended', 'sold'].includes(a.status))
+        .reduce((sum, a) => sum + (a.currentBid || 0), 0);
 
       return {
-        totalRevenue,
-        revenueChange: 0, // Requires historical data to calculate
-        totalOrders,
-        ordersChange: 0, // Requires historical data to calculate
+        totalRevenue: totalRevenue,
+        revenueChange: 0,
+        totalOrders: activeAuctions.length,
+        ordersChange: 0,
         totalProducts: products.length,
-        productsChange: 0, // Requires historical data to calculate
-        totalCustomers: customers.length,
-        customersChange: 0, // Requires historical data to calculate
+        productsChange: 0,
+        totalCustomers: 0, // Disabled - customer service not available
+        customersChange: 0,
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -367,26 +366,61 @@ export const dashboardKeys = {
 // ============================================================================
 
 /**
- * @deprecated Use useDashboardStats, useRecentOrders, etc. directly
+ * Combined hook for all dashboard data
  */
 export const useDashboardData = () => {
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: activities, isLoading: activitiesLoading } = useRecentOrders();
+  const { t } = useLanguage();
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
+  const { data: recentActivities, isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useRecentOrders();
+
+  const dashboardStats: StatCard[] = [
+    {
+      id: 'revenue',
+      title: t('stats.revenue') || 'Total Revenue',
+      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+      change: stats?.revenueChange || 0,
+      color: 'brand',
+    },
+    {
+      id: 'orders',
+      title: t('stats.orders') || 'Active Auctions',
+      value: (stats?.totalOrders || 0).toString(),
+      change: stats?.ordersChange || 0,
+      color: 'success',
+    },
+    {
+      id: 'products',
+      title: t('stats.products') || 'Total Products',
+      value: (stats?.totalProducts || 0).toString(),
+      change: stats?.productsChange || 0,
+      color: 'warning',
+    },
+    {
+      id: 'customers',
+      title: t('stats.customers') || 'Total Customers',
+      value: (stats?.totalCustomers || 0).toString(),
+      change: stats?.customersChange || 0,
+      color: 'info',
+    },
+  ];
+
+  // Convert RecentOrder to ActivityItem
+  const activities: ActivityItem[] = (recentActivities || []).map(order => ({
+    id: order.id,
+    type: order.status === 'active' ? 'success' : 'info',
+    title: order.productName,
+    description: `${order.customerName} - $${order.amount.toLocaleString()}`,
+    timestamp: new Date(order.date).toLocaleString(),
+  }));
 
   return {
-    stats: stats ? [
-      { id: '1', title: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, change: stats.revenueChange, color: 'brand' as const },
-      { id: '2', title: 'Total Orders', value: stats.totalOrders.toString(), change: stats.ordersChange, color: 'success' as const },
-      { id: '3', title: 'Products', value: stats.totalProducts.toString(), change: stats.productsChange, color: 'warning' as const },
-      { id: '4', title: 'Customers', value: stats.totalCustomers.toString(), change: stats.customersChange, color: 'info' as const },
-    ] : [],
-    activities: activities?.map((a, i) => ({
-      id: i.toString(),
-      type: 'info' as const,
-      title: `Order ${a.id}`,
-      description: `${a.productName} - ${a.customerName}`,
-      timestamp: new Date(a.date).toLocaleString(),
-    })) || [],
+    stats: dashboardStats,
+    activities,
     isLoading: statsLoading || activitiesLoading,
+    isError: statsError || activitiesError,
+    refetch: () => {
+      refetchStats();
+      refetchActivities();
+    },
   };
 };

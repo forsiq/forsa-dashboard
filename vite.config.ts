@@ -6,6 +6,19 @@ export default defineConfig({
   server: {
     port: 4000,
     host: '0.0.0.0',
+    proxy: {
+      '/api/v1/auth': {
+        target: 'https://test.zonevast.com',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/graphql': {
+        target: 'https://test.zonevast.com/graphql',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/graphql/, ''),
+      },
+    }
   },
   plugins: [react()],
   resolve: {
@@ -15,10 +28,15 @@ export default defineConfig({
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
       'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
       '@core': path.resolve(__dirname, './src/core'),
+      '@core/': path.resolve(__dirname, './src/core/'),
       '@features': path.resolve(__dirname, './src/features'),
+      '@features/': path.resolve(__dirname, './src/features/'),
       '@services': path.resolve(__dirname, './src/services'),
+      '@services/': path.resolve(__dirname, './src/services/'),
       '@config': path.resolve(__dirname, './src/config'),
+      '@config/': path.resolve(__dirname, './src/config/'),
       '@types': path.resolve(__dirname, './src/types'),
+      '@types/': path.resolve(__dirname, './src/types/'),
     }
   }
 });

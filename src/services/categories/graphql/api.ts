@@ -26,15 +26,18 @@ export async function getCategories(filters: CategoryFilters = {}): Promise<Cate
 
   const data = await gqlQuery<{
     categories: Category[];
-    categoryCount: number;
+    categoryCount?: number;
   }>(Queries.GET_CATEGORIES_QUERY, variables, 'product');
 
+  const categories = data.categories || [];
+  const totalCount = data.categoryCount ?? categories.length;
+
   return {
-    categories: data.categories || [],
-    total: data.categoryCount || 0,
+    categories,
+    total: totalCount,
     page: filters.page || 1,
     limit: filters.limit || 50,
-    totalPages: Math.ceil((data.categoryCount || 0) / (filters.limit || 50)),
+    totalPages: Math.ceil(totalCount / (filters.limit || 50)),
   };
 }
 
@@ -52,14 +55,38 @@ export async function getCategory(id: string): Promise<Category> {
 
 /**
  * Get category statistics
+ * Note: categoryStats field not available, calculating from categories list
  */
 export async function getCategoryStats(): Promise<CategoryStats> {
-  const data = await gqlQuery<{ categoryStats: CategoryStats }>(
-    Queries.GET_CATEGORY_STATS_QUERY,
-    {},
-    'product'
-  );
-  return data.categoryStats;
+  try {
+    // Fetch all categories to calculate stats
+    const data = await gqlQuery<{ categories: Category[] }>(
+      Queries.GET_CATEGORIES_QUERY,
+      { limit: 1000, offset: 0 },
+      'product'
+    );
+
+    const categories = data.categories || [];
+    const withParent = categories.filter(c => c.parentId).length;
+    const withoutParent = categories.length - withParent;
+
+    return {
+      total: categories.length,
+      active: categories.length, // No status field, assume all active
+      inactive: 0,
+      withParent,
+      withoutParent,
+    };
+  } catch (error) {
+    // Return empty stats on error
+    return {
+      total: 0,
+      active: 0,
+      inactive: 0,
+      withParent: 0,
+      withoutParent: 0,
+    };
+  }
 }
 
 // ============================================================================

@@ -3,31 +3,22 @@
  * Uses 'auction' service
  */
 
-import { AuctionStatus } from '../types/auction.types';
-
 // ============ Queries ============
 
 /**
  * Get paginated list of auctions
+ * Supported args: limit, offset, search, orderBy (JSONString), where, filter
  */
 export const GET_AUCTIONS_QUERY = `
   query GetAuctions(
     $limit: Int
     $offset: Int
     $search: String
-    $status: String
-    $categoryId: Int
-    $sortBy: String
-    $sortOrder: String
   ) {
     auctions(
       limit: $limit
       offset: $offset
       search: $search
-      status: $status
-      categoryId: $categoryId
-      sortBy: $sortBy
-      sortOrder: $sortOrder
     ) {
       id
       title
@@ -41,16 +32,13 @@ export const GET_AUCTIONS_QUERY = `
       status
       bidIncrement
       categoryId
+      imageUrl
+      mainAttachmentId
+      attachmentIds
       images
       createdAt
       updatedAt
-      currentBidderId
     }
-    auctionCount(
-      search: $search
-      status: $status
-      categoryId: $categoryId
-    )
   }
 `;
 
@@ -74,10 +62,12 @@ export const GET_AUCTION_QUERY = `
       status
       bidIncrement
       categoryId
+      imageUrl
+      mainAttachmentId
+      attachmentIds
       images
       createdAt
       updatedAt
-      currentBidderId
       category {
         id
         name
@@ -184,6 +174,7 @@ export const PLACE_BID_MUTATION = `
 
 /**
  * Build variables for auction list query
+ * Only uses supported arguments: limit, offset, search
  */
 export function buildAuctionVariables(filters: {
   page?: number;
@@ -198,9 +189,7 @@ export function buildAuctionVariables(filters: {
     limit: filters.limit || 50,
     offset: filters.page ? ((filters.page - 1) * (filters.limit || 50)) : 0,
     ...(filters.search && { search: filters.search }),
-    ...(filters.status && filters.status !== 'all' && { status: filters.status }),
-    ...(filters.categoryId && filters.categoryId !== 0 && { categoryId: filters.categoryId }),
-    ...(filters.sortBy && { sortBy: filters.sortBy }),
-    ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
+    // Note: status, categoryId, sortBy, sortOrder NOT supported by the API
+    // These filters would need to be applied client-side after fetching
   };
 }

@@ -57,4 +57,6 @@ export const sidebar = {
   "sidebar.order_processing": "معالجة الطلبات",
   "sidebar.sales_marketing": "المبيعات والتسويق",
   "sidebar.system": "النظام",
+  "sidebar.auction_items": "عناصر المزاد",
+  "sidebar.group_review": "مراجعة الصفقة الجماعية",
 } as const;

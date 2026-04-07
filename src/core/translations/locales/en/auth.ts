@@ -10,7 +10,6 @@ export const auth = {
   "login.loading": "Authenticating...",
   "login.or_continue": "Or Continue With",
   "login.google": "Google",
-  "login.github": "Github",
   "login.no_account": "Don't have an account?",
   "login.create_account": "Create Account",
   "login.error.invalid": "Invalid credentials. Please check your username and password.",

@@ -23,35 +23,6 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 const PROJECT_STORAGE_KEY = 'zv_project';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
-
-/**
- * Fetch with timeout helper
- * Handles slow API responses by setting a maximum wait time
- */
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeout = 30000
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeout}ms`);
-    }
-    throw error;
-  }
-}
 
 interface ProjectProviderProps {
   children: ReactNode;
@@ -66,14 +37,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   // Perform one-time cleanup of legacy project IDs and auto-load
   useEffect(() => {
     const projectUsername = getProjectUsername();
-    
+
     // Cleanup: If localStorage has a "local-" prefixed ID, clear it to force use of config/ID 11
     const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
     if (stored) {
       try {
         const cachedProject: ProjectInfo = JSON.parse(stored);
         if (cachedProject.id?.startsWith('local-')) {
-          console.log('[ProjectContext] 🧹 Cleaning up legacy local project ID');
+          console.log('[ProjectContext] Cleaning up legacy local project ID');
           localStorage.removeItem(PROJECT_STORAGE_KEY);
         }
       } catch {
@@ -82,8 +53,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     }
 
     const loadProjectFromConfig = async () => {
-      const projectUsername = getProjectUsername();
-
       // If project is disabled in config, skip
       if (config.project?.enabled === false) {
         console.log('Project feature is disabled');
@@ -91,10 +60,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       }
 
       // First check localStorage for cached project
-      const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
-      if (stored) {
+      const cached = localStorage.getItem(PROJECT_STORAGE_KEY);
+      if (cached) {
         try {
-          const cachedProject: ProjectInfo = JSON.parse(stored);
+          const cachedProject: ProjectInfo = JSON.parse(cached);
           // If cached project matches config username, use it
           if (cachedProject.username === projectUsername) {
             setProjectState(cachedProject);
@@ -134,64 +103,18 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     setIsLoading(true);
     setError(null);
 
-    try {
-      // Try to fetch project info from API with 30s timeout for slow responses
-      const response = await fetchWithTimeout(
-        `${API_BASE_URL}/api/v1/projects/by-username/${username.trim()}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Project': config.project?.id || '11',
-            'X-Project-ID': config.project?.id || '11'
-          }
-        },
-        30000 // 30 second timeout
-      );
+    // Always use local project - API call disabled
+    console.log('[ProjectContext] Using local project (API disabled)');
 
-      if (!response.ok) {
-        // If API fails, create a temporary project from username
-        console.warn('Project API not available, using local project');
+    const tempProject: ProjectInfo = {
+      id: config.project?.id || '11',
+      username: username.trim(),
+      name: username.charAt(0).toUpperCase() + username.slice(1),
+    };
 
-        const tempProject: ProjectInfo = {
-          id: `local-${username}`,
-          username: username.trim(),
-          name: username.charAt(0).toUpperCase() + username.slice(1),
-        };
-
-        setProject(tempProject);
-        setIsLoading(false);
-        return tempProject;
-      }
-
-      const data = await response.json();
-
-      const projectInfo: ProjectInfo = {
-        id: data.id,
-        username: data.username,
-        name: data.name,
-        logo: data.logo,
-        domain: data.domain,
-      };
-
-      setProject(projectInfo);
-      setIsLoading(false);
-      return projectInfo;
-
-    } catch (err) {
-      // On network error, create local project
-      console.warn('Network error, using local project:', err);
-
-      const tempProject: ProjectInfo = {
-        id: `local-${username}`,
-        username: username.trim(),
-        name: username.charAt(0).toUpperCase() + username.slice(1),
-      };
-
-      setProject(tempProject);
-      setIsLoading(false);
-      return tempProject;
-    }
+    setProject(tempProject);
+    setIsLoading(false);
+    return tempProject;
   };
 
   const isAuthenticated = project !== null;
@@ -239,12 +162,12 @@ export const getProjectIdHeader = (): string => {
   // Fallback to cookie check (matching base project pattern)
   const currentProjectStr = Cookies.get('currentProject');
   if (currentProjectStr) {
-      try {
-          const project = JSON.parse(currentProjectStr);
-          return String(project.id);
-      } catch (e) {
-          // Ignore
-      }
+    try {
+      const project = JSON.parse(currentProjectStr);
+      return String(project.id);
+    } catch (e) {
+      // Ignore
+    }
   }
 
   return '11'; // Final fallback matching base project
@@ -254,9 +177,9 @@ export const getProjectIdHeader = (): string => {
  * Get all project headers for API requests
  */
 export const getProjectHeaders = (): Record<string, string> => {
-    const projectId = getProjectIdHeader();
-    return {
-        'X-Project': projectId,
-        'X-Project-ID': projectId
-    };
+  const projectId = getProjectIdHeader();
+  return {
+    'X-Project': projectId,
+    'X-Project-ID': projectId
+  };
 };

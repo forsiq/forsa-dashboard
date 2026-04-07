@@ -8,20 +8,15 @@
 // ============================================================================
 
 export const GET_CATEGORIES_QUERY = `
-  query GetCategories($limit: Int, $offset: Int, $status: String) {
-    categories(limit: $limit, offset: $offset, status: $status) {
+  query GetCategories($limit: Int, $offset: Int) {
+    categories(limit: $limit, offset: $offset) {
       id
       name
-      nameAr
       slug
       description
-      status
-      order
       parentId
       createdAt
-      updatedAt
     }
-    categoryCount
   }
 `;
 
@@ -30,14 +25,10 @@ export const GET_CATEGORY_QUERY = `
     category(id: $id) {
       id
       name
-      nameAr
       slug
       description
-      status
-      order
       parentId
       createdAt
-      updatedAt
     }
   }
 `;
@@ -63,11 +54,8 @@ export const CREATE_CATEGORY_MUTATION = `
     createCategory(input: $input) {
       id
       name
-      nameAr
       slug
       description
-      status
-      order
       parentId
     }
   }
@@ -78,11 +66,8 @@ export const UPDATE_CATEGORY_MUTATION = `
     updateCategory(id: $id, input: $input) {
       id
       name
-      nameAr
       slug
       description
-      status
-      order
       parentId
     }
   }
@@ -122,6 +107,5 @@ export function buildCategoryVariables(filters: {
   return {
     limit: filters.limit || 50,
     offset: filters.page ? ((filters.page - 1) * (filters.limit || 50)) : 0,
-    ...(filters.status && filters.status !== 'all' && { status: filters.status }),
   };
 }

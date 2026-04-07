@@ -49,16 +49,8 @@ const GET_CATEGORIES_FALLBACK = `
   }
 `;
 
-const GET_CUSTOMERS_FALLBACK = `
-  query GetCustomers {
-    customers {
-      id
-      firstName
-      lastName
-      email
-    }
-  }
-`;
+// Customer fallback disabled - customer service not available
+
 
 // ============================================================================
 // API Functions
@@ -87,16 +79,17 @@ export async function getReports(period = 'monthly'): Promise<ReportData> {
     ]);
 
     const auctions = auctionsData?.auctions || [];
-    const products = productsData?.products || [];
 
     // Calculate from real data
     const totalSales = auctions.reduce((sum: number, a: any) => sum + (a.currentBid || 0), 0);
     const totalOrders = auctions.length;
+    const totalCustomers = 0; // Disabled - customer service not available
     const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
 
     return {
       totalSales,
       totalOrders,
+      totalCustomers,
       averageOrderValue,
       growth: 0, // Requires historical comparison
       period,
@@ -200,18 +193,8 @@ export async function getSalesReport(period = 'monthly'): Promise<SalesReportDat
         .reduce((sum: number, p: any) => sum + (p.price || 0), 0),
     }));
 
-    // Calculate top customers
-    const customersData = await gqlQuery<{ customers: any[] }>(
-      GET_CUSTOMERS_FALLBACK,
-      { limit: 10 },
-      'customer'
-    ).catch(() => ({ customers: [] }));
-
-    const topCustomers = (customersData?.customers || []).map((c: any) => ({
-      name: `${c.firstName} ${c.lastName}`.trim(),
-      email: c.email,
-      spent: Math.floor(Math.random() * 5000), // Estimate
-    }));
+    // Top customers disabled - customer service not available
+    const topCustomers: Array<{ name: string; email: string; spent: number }> = [];
 
     return {
       products: productSales,

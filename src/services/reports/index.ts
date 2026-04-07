@@ -1,5 +1,5 @@
 // Routes
-export { reportsRoutes } from './routes';
+export { default as reportsRoutes } from './routes';
 
 // Pages
 export { ReportsPage } from './pages/ReportsPage';

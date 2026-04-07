@@ -306,7 +306,6 @@
   "login.loading": "Authenticating...",
   "login.or_continue": "Or Continue With",
   "login.google": "Google",
-  "login.github": "Github",
   "login.create_account": "Create Account",
   "login.error.invalid": "Invalid credentials. Please check your username and password.",
   "login.error.network": "Connection failed. Please check your network or try again later.",

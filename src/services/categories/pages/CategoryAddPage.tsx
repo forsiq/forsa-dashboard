@@ -58,7 +58,7 @@ export function CategoryAddPage() {
       <CategoryForm
         onSubmit={handleSubmit}
         isLoading={createMutation.isPending}
-        parentCategories={categoriesData?.data || []}
+        parentCategories={categoriesData?.categories || []}
       />
     </div>
   );

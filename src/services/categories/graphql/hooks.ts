@@ -59,21 +59,29 @@ export function useGetCategoryStats(): UseQueryResult<CategoryStats> {
 /**
  * Create a new category
  */
-export function useCreateCategory() {
+export function useCreateCategory(options?: {
+  onSuccess?: (data: Category) => void;
+  onError?: (error: Error) => void;
+}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      options?.onSuccess?.(data);
     },
+    onError: options?.onError,
   });
 }
 
 /**
  * Update an existing category
  */
-export function useUpdateCategory() {
+export function useUpdateCategory(options?: {
+  onSuccess?: (data: Category) => void;
+  onError?: (error: Error) => void;
+}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
@@ -81,21 +89,28 @@ export function useUpdateCategory() {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      options?.onSuccess?.(data);
     },
+    onError: options?.onError,
   });
 }
 
 /**
  * Delete a category
  */
-export function useDeleteCategory() {
+export function useDeleteCategory(options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.lists() });
       queryClient.invalidateQueries({ queryKey: api.categoryGraphQLKeys.stats() });
+      options?.onSuccess?.();
     },
+    onError: options?.onError,
   });
 }
 

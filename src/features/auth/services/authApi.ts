@@ -5,7 +5,7 @@ import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types'
  * 1. Environment variable
  * 2. Hardcoded fallback (https://test.zonevast.com)
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
  * Get project ID from localStorage with priority over static fallback

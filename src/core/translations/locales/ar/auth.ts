@@ -10,7 +10,6 @@ export const auth = {
   "login.loading": "جاري المصادقة...",
   "login.or_continue": "أو المتابعة مع",
   "login.google": "جوجل",
-  "login.github": "GitHub",
   "login.no_account": "ليس لديك حساب؟",
   "login.create_account": "إنشاء حساب",
   "login.error.invalid": "بيانات غير صالحة. يرجى التحقق من اسم المستخدم وكلمة المرور.",

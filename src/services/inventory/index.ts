@@ -1,5 +1,5 @@
 // Routes
-export { inventoryRoutes } from './routes';
+export { default as inventoryRoutes } from './routes';
 
 // Pages
 export { InventoryPage } from './pages/InventoryPage';

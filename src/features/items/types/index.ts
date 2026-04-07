@@ -12,6 +12,8 @@ export interface Item {
   sku: string;
   startingBid: number;
   currentBid?: number;
+  sellingPrice?: number;
+  stockQuantity?: number;
   image?: string;
   status: ItemStatus;
   auctionCount: number;
@@ -22,6 +24,7 @@ export interface Item {
 export interface ItemFilters {
   search?: string;
   category?: string;
+  categoryId?: number;
   status?: ItemStatus | 'all';
   page?: number;
   limit?: number;

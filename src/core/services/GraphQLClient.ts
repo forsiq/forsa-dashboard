@@ -21,19 +21,32 @@ function getAuthToken(): string | null {
 }
 
 /**
- * Get project ID from localStorage
+ * Get project ID from localStorage or cookies
  */
 function getProjectId(): string {
+  // Check cookies first (most reliable for cross-app sync)
+  const cookies = document.cookie.split(';');
+  const projectCookie = cookies.find(c => c.trim().startsWith('project_id='));
+  if (projectCookie) {
+    return projectCookie.split('=')[1]?.trim() || '11';
+  }
+
+  // Check localStorage if not in cookies
   const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
   if (stored) {
     try {
       const project = JSON.parse(stored);
-      return project.id || '11';
+      // Valid project ID should be numeric or a specific valid string
+      if (project.id && !isNaN(Number(project.id))) {
+        return project.id;
+      }
     } catch {
       // Ignore
     }
   }
-  return '11'; // Default fallback
+
+  // Fallback to production default
+  return '11'; 
 }
 
 /**
@@ -73,8 +86,12 @@ export async function graphqlRequest<T = unknown>({
   service = 'customer',
   locale = 'en',
 }: GraphQLOptions): Promise<T> {
-  // Build GraphQL URL: /graphql/{service}/{locale}/v1/graphql
-  const url = `${GRAPHQL_BASE_URL}/graphql/${service}/${locale}/v1/graphql`;
+  // Build GraphQL URL: {baseURL}/graphql/{service}/{locale}/v1/graphql
+  // Remove trailing slash from baseURL, no trailing slash on endpoint
+  const baseUrl = GRAPHQL_BASE_URL.replace(/\/$/, '');
+  const url = `${baseUrl}/graphql/${service}/${locale}/v1/graphql`;
+
+  console.log(`[GraphQLClient] Requesting: ${url} (Service: ${service}, Locale: ${locale})`);
 
   const token = getAuthToken();
 

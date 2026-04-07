@@ -3,6 +3,7 @@
 export interface ReportData {
   totalSales: number;
   totalOrders: number;
+  totalCustomers: number;
   averageOrderValue: number;
   growth: number;
   period: string;

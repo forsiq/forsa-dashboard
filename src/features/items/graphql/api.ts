@@ -19,11 +19,12 @@ function mapProductToItem(p: any): Item {
     description: p.description || p.descriptionAr || '',
     category: p.category?.name || 'General',
     sku: p.sku || '',
-    startingBid: p.price || 0,
-    currentBid: p.price || 0, // Fallback if no specific auction data
-    image: p.images?.[0] || '📦',
+    startingBid: p.sellingPrice || 0,
+    currentBid: p.sellingPrice || 0, // Fallback if no specific auction data
+    image: (Array.isArray(p.images) && p.images[0]) || '📦',
     status: (p.status?.toLowerCase() || 'available') as ItemStatus,
     auctionCount: p.auctionCount || 0,
+    stockQuantity: p.stockQuantity || 0,
     isWatched: false, // Local state usually
     createdAt: p.createdAt || new Date().toISOString(),
   };
@@ -32,7 +33,7 @@ function mapProductToItem(p: any): Item {
 /**
  * Get paginated list of items (products)
  */
-export async function getItems(filters: ItemFilters = {}): Promise<Item[]> {
+export async function getItems(filters: ItemFilters = {}): Promise<{ items: Item[]; totalCount: number }> {
   const variables = queries.buildProductVariables(filters);
   const data = await gqlQuery<{ products: any[]; productCount: number }>(
     queries.GET_PRODUCTS_QUERY,
@@ -40,7 +41,10 @@ export async function getItems(filters: ItemFilters = {}): Promise<Item[]> {
     SERVICE_NAME
   );
 
-  return (data.products || []).map(mapProductToItem);
+  return {
+    items: (data.products || []).map(mapProductToItem),
+    totalCount: data.productCount || 0
+  };
 }
 
 /**

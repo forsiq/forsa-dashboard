@@ -313,7 +313,7 @@ export function CategoriesPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={data?.data || []}
+            data={data?.categories || []}
             keyField="id"
             sortable
             selectable

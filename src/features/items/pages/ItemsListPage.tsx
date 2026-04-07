@@ -23,6 +23,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetItems, useDeleteItemMutation } from '../hooks/useItems';
+import { useGetCategories } from '@services/categories';
 import type { Item, ItemStatus } from '../types';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
 
@@ -34,8 +35,10 @@ export const ItemsListPage: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState<string | number>('All');
   const [statusFilter, setStatusFilter] = useState<ItemStatus | 'all'>('all');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
     id: null
@@ -43,11 +46,16 @@ export const ItemsListPage: React.FC = () => {
 
   const isRTL = dir === 'rtl';
 
-  const { data: items = [], isLoading, refetch } = useGetItems({
+  const { items, totalCount, isLoading, refetch } = useGetItems({
     search: searchQuery,
-    category: categoryFilter,
-    status: statusFilter
+    categoryId: categoryFilter === 'All' ? undefined : Number(categoryFilter),
+    status: statusFilter,
+    page,
+    limit
   });
+
+  const { data: categoriesData } = useGetCategories();
+  const categoriesList = categoriesData?.categories || [];
 
   const deleteMutation = useDeleteItemMutation({
     onSuccess: () => {
@@ -57,8 +65,11 @@ export const ItemsListPage: React.FC = () => {
   });
 
   const categories = useMemo(() => {
-    return ['All', ...Array.from(new Set(items.map(i => i.category)))];
-  }, [items]);
+    return [
+      { label: t('common.all') || 'All', value: 'All' },
+      ...categoriesList.map(c => ({ label: c.name, value: c.id.toString() }))
+    ];
+  }, [categoriesList, t]);
 
   // --- Table Configuration ---
   const columns: Column<Item>[] = [
@@ -186,7 +197,7 @@ export const ItemsListPage: React.FC = () => {
                  {t('items.total') || 'Aggregated Total'}
               </span>
               <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
-                {items.length}
+                {totalCount}
               </span>
             </div>
             <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-brand/10 transition-colors" />

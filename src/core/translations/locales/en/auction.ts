@@ -245,4 +245,11 @@ export const auction = {
   "auction.action.agreement": "Agreement",
   "auction.action.view_full": "View Full",
   "auction.action.select_auction": "Select Auction",
+  "auction.critical_termination": "Critical Termination",
+  "auction.equitable_distribution": "Equitable Distribution",
+  "auction.concluding_soon": "Concluding Soon",
+  "auction.operational_listings_matrix": "Operational Listings Matrix",
+  "auction.list_item_desc": "List an item for auction",
+  "auction.basic_info": "Basic Information",
+  "auction.auction_schedule": "Auction Schedule",
 } as const;
