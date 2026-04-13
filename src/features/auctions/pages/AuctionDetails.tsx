@@ -23,7 +23,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuction, useGetAuctionBids, usePlaceBid } from '../graphql';
+import { useGetAuction, useGetAuctionBids, usePlaceBid } from '../api';
 import { AuctionImage } from '../components/AuctionImage';
 
 /**

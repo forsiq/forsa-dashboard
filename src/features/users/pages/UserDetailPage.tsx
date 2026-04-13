@@ -5,7 +5,8 @@
  */
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetUser } from '../graphql';
+import { useGetUser } from '../api';
+
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberCard } from '@core/components/AmberCard';

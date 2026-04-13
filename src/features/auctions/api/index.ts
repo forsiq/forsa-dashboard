@@ -1,31 +1,26 @@
 /**
- * Auction GraphQL Module - Public API
- * Uses 'auction' service
+ * Auction REST API Module - Public API
  */
 
-// Query Hooks
+// Hooks
 export {
   useGetAuctions,
   useGetAuction,
   useGetAuctionStats,
   useGetAuctionBids,
-} from './hooks';
-
-// Mutation Hooks
-export {
+  useGetMyBids,
   useCreateAuction,
   useUpdateAuction,
   useDeleteAuction,
   usePlaceBid,
-} from './hooks';
+  useToggleWatch,
+} from './auction-hooks';
+
+// API Client
+export { auctionApi, bidApi } from './auction-api';
 
 // Query Keys
-export { auctionGraphQLKeys as auctionKeys } from './api';
-
-// Helper Functions
-export {
-  buildAuctionVariables,
-} from './queries';
+export { auctionKeys } from './auction-hooks';
 
 // Types
 export type {

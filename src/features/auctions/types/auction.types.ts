@@ -63,9 +63,10 @@ export interface AuctionCreateInput {
 }
 
 export interface AuctionUpdateInput extends Partial<AuctionCreateInput> {
-  id: number;
+  id: string | number;
   status?: AuctionStatus;
 }
+
 
 export interface BidCreateInput {
   auctionId?: number; // Optional since it's passed as URL param

@@ -26,9 +26,10 @@ export interface UserCreateInput {
 }
 
 export interface UserUpdateInput extends Partial<UserCreateInput> {
-  id: number;
+  id: string | number;
   password?: string; // Optional for update
 }
+
 
 export interface UserFilters {
   page?: number;

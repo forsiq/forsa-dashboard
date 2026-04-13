@@ -1,13 +1,60 @@
-/** Categories Hooks - Using GraphQL */
-import * as graphqlHooks from '../graphql/hooks';
+/** Categories Hooks - Using REST */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as api from '../api/categories';
+import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters } from '../types';
 
-// Re-export all GraphQL hooks as default
-export const useList = graphqlHooks.useGetCategories;
-export const useById = (id: string, enabled = true) => graphqlHooks.useGetCategory(id, enabled);
-export const useStats = graphqlHooks.useGetCategoryStats;
-export const useCreate = graphqlHooks.useCreateCategory;
-export const useUpdate = graphqlHooks.useUpdateCategory;
-export const useDelete = graphqlHooks.useDeleteCategory;
+export const useList = (filters: CategoryFilters = {} as any) => {
+  return useQuery({
+    queryKey: api.categoryKeys.list(filters),
+    queryFn: () => api.getCategories(filters),
+  });
+};
+
+export const useById = (id: string, enabled = true) => {
+  return useQuery({
+    queryKey: api.categoryKeys.detail(id),
+    queryFn: () => api.getCategory(id),
+    enabled: enabled && !!id,
+  });
+};
+
+export const useStats = () => {
+  return useQuery({
+    queryKey: api.categoryKeys.stats(),
+    queryFn: api.getCategoryStats,
+  });
+};
+
+export const useCreate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+    },
+  });
+};
+
+export const useUpdate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.detail(String(data.id)) });
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+    },
+  });
+};
+
+export const useDelete = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+    },
+  });
+};
 
 // Aliases for existing code
 export const useGetCategories = useList;
@@ -17,5 +64,3 @@ export const useCreateCategoryMutation = useCreate;
 export const useUpdateCategoryMutation = useUpdate;
 export const useDeleteCategoryMutation = useDelete;
 
-// Also export all GraphQL hooks directly for access to categoryGraphQLHooks
-export * from '../graphql/hooks';

@@ -28,7 +28,8 @@ import {
   useGetGroupBuying, 
   useCreateGroupBuying, 
   useUpdateGroupBuying 
-} from '../graphql';
+} from '../api';
+
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 
 /**

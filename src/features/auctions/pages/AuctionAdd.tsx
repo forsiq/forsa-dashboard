@@ -7,7 +7,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
-import { useCreateAuction } from '../graphql';
+import { useCreateAuction } from '../api';
+
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 

@@ -22,11 +22,8 @@ export { createCrudService } from './CrudServiceFactory';
 export { createApiClient, createUploadClient, uploadFile } from './ApiClientFactory';
 export { createQueryKeys, isListKey, isDetailKey, isStatsKey } from './QueryKeysFactory';
 
-// GraphQL client
-export { graphqlRequest, gqlQuery, gqlMutation } from './GraphQLClient';
-export type { GraphQLOptions, GraphQLResponse } from './GraphQLClient';
-
 // Hook generators (for advanced usage)
+
 export { createQueryHooks } from './CrudServiceFactory';
 export { createMutationHooks } from './CrudServiceFactory';
 

@@ -28,7 +28,8 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberProgress } from '@core/components/AmberProgress';
-import { useGetGroupBuyings, useGetGroupBuyingStats } from '../graphql';
+import { useGetGroupBuyings, useGetGroupBuyingStats } from '../api';
+
 import type { GroupBuyingFilters } from '../types';
 
 /**

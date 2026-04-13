@@ -6,7 +6,8 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useGetUser, useCreateUser, useUpdateUser } from '../graphql';
+import { useGetUser, useCreateUser, useUpdateUser } from '../api';
+
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberCard } from '@core/components/AmberCard';

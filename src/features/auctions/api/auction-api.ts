@@ -1,9 +1,9 @@
 /**
  * Auction API Service
- * REST-like wrapper around GraphQL API
+ * Comprehensive REST API implementation for Forsa Auctions
  */
 
-import * as graphqlApi from '../graphql/api';
+import { createApiClient } from '@core/services/ApiClientFactory';
 import type {
   Auction,
   AuctionsResponse,
@@ -16,86 +16,113 @@ import type {
 } from '../types/auction.types';
 
 /**
- * Auction API - main auction operations
+ * Base Auction API implementation using shared factory
+ */
+export const auctionBaseApi = createApiClient<Auction, AuctionCreateInput, AuctionUpdateInput, AuctionFilters>({
+  serviceName: 'auctions',
+  endpoint: '/auctions',
+});
+
+/**
+ * Auction API - main auction operations with custom methods
  */
 export const auctionApi = {
   /**
    * Get paginated list of auctions
    */
-  list: (filters?: AuctionFilters): Promise<AuctionsResponse> => {
-    return graphqlApi.getAuctions(filters);
+  list: async (filters?: AuctionFilters): Promise<AuctionsResponse> => {
+    const response = await auctionBaseApi.list(filters) as any;
+    // Compatibility layer: REST API returns { data, total, page, limit }
+    return {
+      data: response.data || [],
+      total: response.total || (response.data?.length || 0),
+      page: filters?.page || 1,
+      limit: filters?.limit || 50,
+      hasMore: (response.total || 0) > (filters?.page || 1) * (filters?.limit || 50),
+    };
   },
 
   /**
    * Get single auction by ID
    */
-  get: (id: number): Promise<Auction> => {
-    return graphqlApi.getAuction(id);
+  get: async (id: number | string): Promise<Auction> => {
+    const response = await auctionBaseApi.getById(String(id));
+    return response.data;
   },
 
   /**
    * Get auction by slug
    */
-  getBySlug: (slug: string): Promise<Auction> => {
-    return graphqlApi.getAuction(slug);
+  getBySlug: async (slug: string): Promise<Auction> => {
+    const response = await auctionBaseApi.getById(slug);
+    return response.data;
   },
+
 
   /**
    * Create a new auction
    */
-  create: (data: AuctionCreateInput): Promise<Auction> => {
-    return graphqlApi.createAuction(data);
+  create: async (data: AuctionCreateInput): Promise<Auction> => {
+    const response = await auctionBaseApi.create(data);
+    return response.data;
   },
 
   /**
    * Update an existing auction
    */
-  update: (id: number, data: AuctionUpdateInput): Promise<Auction> => {
-    return graphqlApi.updateAuction(id, data);
+  update: async (id: number, data: AuctionUpdateInput): Promise<Auction> => {
+    const response = await auctionBaseApi.update({ ...data, id: String(id) });
+    return response.data;
   },
 
   /**
    * Delete an auction
    */
-  delete: (id: number): Promise<void> => {
-    return graphqlApi.deleteAuction(id);
+  delete: async (id: number): Promise<void> => {
+    await auctionBaseApi.delete(String(id));
+  },
+
+  /**
+   * End auction manually
+   */
+  end: async (id: number | string): Promise<void> => {
+    const client = auctionBaseApi.getInstance();
+    await client.post(`/auctions/${id}/end/`);
   },
 
   /**
    * Get auction statistics
    */
-  getStats: (): Promise<AuctionStats> => {
-    return graphqlApi.getAuctionStats();
+  getStats: async (): Promise<AuctionStats> => {
+    const response = await auctionBaseApi.getStats();
+    // Map REST stats to AuctionStats interface
+    const stats = response.data;
+    return {
+      totalAuctions: stats.total || 0,
+      activeAuctions: stats.active || 0,
+      scheduledAuctions: stats.scheduled || 0,
+      endedAuctions: stats.ended || 0,
+      totalBids: stats.bids || 0,
+      totalRevenue: stats.revenue || 0,
+      avgWinningBid: stats.avg_bid || 0,
+    };
   },
 
   /**
-   * Get watched auctions
+   * Toggle watch status (Engagement API)
    */
-  getWatched: (): Promise<Auction[]> => {
-    // TODO: Implement when GraphQL supports it
-    return Promise.resolve([]);
+  toggleWatch: async (auctionId: number, isLiked: boolean): Promise<void> => {
+    const client = auctionBaseApi.getInstance();
+    const endpoint = isLiked ? '/engagement/unlike/' : '/engagement/like/';
+    await client.post(endpoint, { auctionId });
   },
 
   /**
-   * Toggle watch status
+   * Track view
    */
-  toggleWatch: (auctionId: number): Promise<void> => {
-    // TODO: Implement when GraphQL supports it
-    return Promise.resolve(undefined);
-  },
-
-  /**
-   * Get bids for an auction
-   */
-  getBids: (auctionId: number): Promise<Bid[]> => {
-    return graphqlApi.getAuctionBids(auctionId).then(r => r.data);
-  },
-
-  /**
-   * Place a bid
-   */
-  placeBid: (auctionId: number, input: BidCreateInput): Promise<Bid> => {
-    return graphqlApi.placeBid({ ...input, auctionId });
+  trackView: async (auctionId: number): Promise<void> => {
+    const client = auctionBaseApi.getInstance();
+    await client.post('/engagement/view/', { auctionId });
   },
 };
 
@@ -106,14 +133,35 @@ export const bidApi = {
   /**
    * Get bids for an auction
    */
-  list: (auctionId: number, page = 1, limit = 20): Promise<{ data: Bid[]; total: number }> => {
-    return graphqlApi.getAuctionBids(auctionId, page, limit);
+  list: async (auctionId: number | string, page = 1, limit = 20): Promise<{ data: Bid[]; total: number }> => {
+    const response = await auctionBaseApi.getInstance().get('/bids/', {
+      params: { auctionId, page, limit }
+    });
+    return {
+      data: response.data.data,
+      total: response.data.total,
+    };
   },
 
   /**
    * Place a bid
    */
-  create: (input: BidCreateInput): Promise<Bid> => {
-    return graphqlApi.placeBid(input);
+  create: async (input: BidCreateInput): Promise<Bid> => {
+    const response = await auctionBaseApi.getInstance().post('/bids/', input);
+    return response.data.data;
+  },
+
+  /**
+   * Get my bids
+   */
+  getMyBids: async (page = 1, limit = 20): Promise<{ data: Bid[]; total: number }> => {
+    const response = await auctionBaseApi.getInstance().get('/my-bids/', {
+      params: { page, limit }
+    });
+    return {
+      data: response.data.data,
+      total: response.data.total,
+    };
   },
 };
+

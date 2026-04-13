@@ -6,7 +6,8 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from '../graphql';
+import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from '../api';
+
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberCard } from '@core/components/AmberCard';

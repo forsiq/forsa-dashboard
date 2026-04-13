@@ -4,8 +4,10 @@
  * Public API exports
  */
 
-// GraphQL Hooks & API
-export * from './graphql';
+// REST Hooks & API
+export * from './api/user-hooks';
+export * from './api/user-api';
+export { userKeys } from './api/user-hooks';
 
 // Types
 export * from './types';

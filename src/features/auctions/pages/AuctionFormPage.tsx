@@ -22,7 +22,8 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
-import { useGetAuction, useCreateAuction, useUpdateAuction } from '../graphql';
+import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
+
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import type { AuctionCreateInput, AuctionUpdateInput } from '../types/auction.types';
 

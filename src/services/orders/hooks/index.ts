@@ -1,25 +1,64 @@
-/** 
- * Orders Hooks - Migrated to GraphQL (order service)
- */
-export {
-  useGetOrders,
-  useGetOrder,
-  useGetOrderStats,
-  useCreateOrder as useCreate,
-  useUpdateOrder as useUpdate,
-} from '../graphql';
+/** Orders Hooks - Using REST */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as api from '../api/orders';
+import type { CreateOrderInput, UpdateOrderInput, OrderFilters } from '../types';
 
-// Compatibility aliases
-export { useGetOrders as useList } from '../graphql';
-export { useGetOrder as useById } from '../graphql';
-export { useGetOrderStats as useStats } from '../graphql';
+export const useList = (filters: OrderFilters = {} as any) => {
+  return useQuery({
+    queryKey: api.orderKeys.list(filters),
+    queryFn: () => api.getOrders(filters),
+  });
+};
 
-import { useUpdateOrder } from '../graphql';
-export function useDelete() {
-  return { mutate: () => { console.warn('Delete not implemented in GraphQL for orders'); } };
-}
+export const useById = (id: string, enabled = true) => {
+  return useQuery({
+    queryKey: api.orderKeys.detail(id),
+    queryFn: () => api.getOrder(id),
+    enabled: enabled && !!id,
+  });
+};
 
-export async function updateOrderStatus(id: string, status: any) {
-  // This would normally be a direct API call or a mutation
-  console.warn('updateOrderStatus called - should use useUpdateOrder mutation');
-}
+export const useStats = () => {
+  return useQuery({
+    queryKey: api.orderKeys.stats(),
+    queryFn: api.getOrderStats,
+  });
+};
+
+export const useCreate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateOrderInput) => api.createOrder(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+    },
+  });
+};
+
+export const useUpdate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateOrderInput) => api.updateOrder(input),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(String(data.id)) });
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+    },
+  });
+};
+
+export const useDelete = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deleteOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+    },
+  });
+};
+
+// Aliases for existing code
+export const useGetOrders = useList;
+export const useGetOrder = useById;
+export const useGetOrderStats = useStats;
+export const useCreateOrder = useCreate;
+export const useUpdateOrder = useUpdate;

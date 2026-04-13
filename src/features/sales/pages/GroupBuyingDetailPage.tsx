@@ -33,7 +33,8 @@ import {
   useGetGroupBuying, 
   useGetGroupBuyingParticipants,
   useJoinGroupBuying
-} from '../graphql';
+} from '../api';
+
 
 /**
  * GroupBuyingDetailPage - Cinematic Campaign Monitoring & Participation Interface
@@ -59,7 +60,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
     const handleJoin = async () => {
         try {
-            await joinMutation.mutateAsync({ groupBuyingId: campaignId, quantity: 1 });
+            await joinMutation.mutateAsync({ id: campaignId, quantity: 1 });
+
         } catch (err) {
             console.error('Participation rejection:', err);
         }

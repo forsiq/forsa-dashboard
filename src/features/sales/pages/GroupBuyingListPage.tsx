@@ -32,7 +32,8 @@ import {
   useGetGroupBuyings, 
   useGetGroupBuyingStats, 
   useDeleteGroupBuying 
-} from '../graphql';
+} from '../api';
+
 
 /**
  * GroupBuyingListPage - Premium Campaign Orchestration Interface

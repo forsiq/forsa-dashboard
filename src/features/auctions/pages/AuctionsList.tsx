@@ -25,9 +25,10 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuctions, useGetAuctionStats, useDeleteAuction } from '../graphql';
+import { useGetAuctions, useGetAuctionStats, useDeleteAuction } from '../api';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
+
 
 /**
  * AuctionsList - Premium Multi-state Auction Management
