@@ -14,40 +14,59 @@ import type {
   InventoryStats,
 } from '../types';
 
-const SERVICE_NAME = 'inventory';
+const SERVICE_NAME = 'product';
 
 /**
  * Get paginated list of products
  */
 export async function getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {
-  const variables = queries.buildProductVariables(filters);
-  const data = await gqlQuery<{ products: Product[] }>(
-    queries.GET_PRODUCTS_QUERY,
-    variables,
-    SERVICE_NAME
-  );
+  try {
+    const variables = queries.buildProductVariables(filters);
+    const data = await gqlQuery<{ products: Product[] }>(
+      queries.GET_PRODUCTS_QUERY,
+      variables,
+      SERVICE_NAME
+    );
 
-  const products = data.products || [];
-  let filteredProducts = products;
+    const products = (data.products || []).map((p: any) => ({
+      ...p,
+      name: p.title || 'Unknown Product',
+      sku: p.slug || p.id,
+      stockQuantity: 0, // Placeholder until additionalData parsing is refined
+      sellingPrice: 0,
+      isActive: p.status === 'active',
+    }));
 
-  // Apply client-side filters for unsupported query parameters
-  if (filters.stockStatus === 'low_stock') {
-    filteredProducts = filteredProducts.filter((p: Product) => p.stockQuantity <= p.lowStockThreshold);
-  }
-  if (filters.stockStatus === 'out_of_stock') {
-    filteredProducts = filteredProducts.filter((p: Product) => p.stockQuantity === 0);
-  }
-  if (filters.categoryId) {
-    filteredProducts = filteredProducts.filter((p: Product) => p.categoryId === filters.categoryId);
-  }
+    let filteredProducts = products;
 
-  return {
-    data: filteredProducts,
-    total: filteredProducts.length,
-    page: filters.page || 1,
-    limit: filters.limit || 50,
-    totalPages: 1,
-  };
+    // Apply client-side filters for unsupported query parameters
+    if (filters.stockStatus === 'low_stock') {
+      filteredProducts = filteredProducts.filter((p: Product) => p.stockQuantity <= p.lowStockThreshold);
+    }
+    if (filters.stockStatus === 'out_of_stock') {
+      filteredProducts = filteredProducts.filter((p: Product) => p.stockQuantity === 0);
+    }
+    if (filters.categoryId) {
+      filteredProducts = filteredProducts.filter((p: Product) => p.categoryId === filters.categoryId);
+    }
+
+    return {
+      data: filteredProducts,
+      total: filteredProducts.length,
+      page: filters.page || 1,
+      limit: filters.limit || 50,
+      totalPages: 1,
+    };
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return {
+      data: [],
+      total: 0,
+      page: filters.page || 1,
+      limit: filters.limit || 50,
+      totalPages: 0,
+    };
+  }
 }
 
 /**
@@ -66,12 +85,27 @@ export async function getProduct(id: string): Promise<Product> {
  * Get inventory statistics
  */
 export async function getInventoryStats(): Promise<InventoryStats> {
-  const data = await gqlQuery<{ inventoryStats: InventoryStats }>(
-    queries.GET_INVENTORY_STATS_QUERY,
-    {},
-    SERVICE_NAME
-  );
-  return data.inventoryStats;
+  try {
+    const data = await gqlQuery<{ inventoryStats: InventoryStats }>(
+      queries.GET_INVENTORY_STATS_QUERY,
+      {},
+      SERVICE_NAME
+    );
+    return data.inventoryStats;
+  } catch (error) {
+    console.error('Inventory stats not available in this environment:', error);
+    // Return empty stats to prevent UI crash/400 error blocking
+    return {
+      totalProducts: 0,
+      inStock: 0,
+      lowStock: 0,
+      outOfStock: 0,
+      totalValue: 0,
+      lowStockValue: 0,
+      totalStock: 0,
+      recentMovements: 0
+    };
+  }
 }
 
 /**

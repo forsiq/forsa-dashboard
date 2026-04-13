@@ -111,7 +111,7 @@ export function CustomerDetailPage() {
                       </span>
                     )}
                     <StatusBadge
-                      status={customer.status.toUpperCase()}
+                      status={(customer.status || 'unknown').toUpperCase()}
                       variant={customer.status === 'active' ? 'success' : 'inactive'}
                     />
                   </div>

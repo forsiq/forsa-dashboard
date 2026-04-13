@@ -60,26 +60,29 @@ export function CustomersPage() {
     {
       key: 'name',
       label: t('customer.name') || 'Entity Name',
-      render: (customer: Customer) => (
-        <div className="flex items-center gap-3">
-          <AmberAvatar
-            src={customer.avatar}
-            fallback={customer.name}
-            size="sm"
-            className="ring-2 ring-[var(--color-border)]"
-          />
-          <div>
-            <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{customer.name}</p>
-            <p className="text-xs font-bold text-zinc-muted">{customer.email}</p>
+      render: (customer: any) => {
+        const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || 'N/A';
+        return (
+          <div className="flex items-center gap-3">
+            <AmberAvatar
+              src={customer.avatar}
+              fallback={fullName}
+              size="sm"
+              className="ring-2 ring-[var(--color-border)]"
+            />
+            <div>
+              <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{fullName}</p>
+              <p className="text-xs font-bold text-zinc-muted">{customer.email}</p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
       sortable: true,
     },
     {
       key: 'type',
       label: t('customer.type') || 'Classification',
-      render: (customer: Customer) => (
+      render: (customer: any) => (
         <div className="flex items-center gap-2">
           {customer.type === 'business' ? (
             <Building2 className="w-4 h-4 text-[var(--color-brand)]" />
@@ -87,13 +90,8 @@ export function CustomersPage() {
             <User className="w-4 h-4 text-[var(--color-info)]" />
           )}
           <span className="text-xs font-bold text-zinc-muted uppercase tracking-widest">
-            {customer.type}
+            {customer.type || 'UNKNOWN'}
           </span>
-          {customer.company && (
-            <span className="text-xs font-black text-zinc-text px-2 py-0.5 bg-[var(--color-obsidian-hover)] rounded border border-[var(--color-border)]">
-              {customer.company}
-            </span>
-          )}
         </div>
       ),
     },
@@ -118,9 +116,9 @@ export function CustomersPage() {
     {
       key: 'status',
       label: t('common.status') || 'Protocol State',
-      render: (customer: Customer) => (
+      render: (customer: any) => (
         <StatusBadge
-          status={customer.status.toUpperCase()}
+          status={(customer.status || 'unknown').toUpperCase()}
           variant={customer.status === 'active' ? 'success' : 'inactive'}
         />
       ),

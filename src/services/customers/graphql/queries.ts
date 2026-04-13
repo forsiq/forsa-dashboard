@@ -10,30 +10,17 @@
  * Get paginated list of customers
  */
 export const GET_CUSTOMERS_QUERY = `
-  query GetCustomers($page: Int, $limit: Int, $search: String, $status: String, $type: String) {
-    customers(page: $page, limit: $limit, search: $search, status: $status, type: $type) {
+  query GetCustomers($limit: Int, $offset: Int, $search: String) {
+    customers(limit: $limit, offset: $offset, search: $search) {
       id
-      name
+      firstName
+      lastName
       email
       phone
-      avatar
       status
-      type
-      company
-      address {
-        street
-        city
-        state
-        zipCode
-        country
-      }
-      totalOrders
-      totalSpent
-      lastOrderDate
       createdAt
       updatedAt
     }
-    customerCount(search: $search, status: $status, type: $type)
   }
 `;
 
@@ -44,23 +31,11 @@ export const GET_CUSTOMER_QUERY = `
   query GetCustomer($id: ID!) {
     customer(id: $id) {
       id
-      name
+      firstName
+      lastName
       email
       phone
-      avatar
       status
-      type
-      company
-      address {
-        street
-        city
-        state
-        zipCode
-        country
-      }
-      totalOrders
-      totalSpent
-      lastOrderDate
       createdAt
       updatedAt
     }
@@ -178,14 +153,10 @@ export function buildCustomerVariables(filters: {
   page?: number;
   limit?: number;
   search?: string;
-  status?: string;
-  type?: string;
 }) {
   return {
-    page: filters.page || 1,
+    offset: filters.page ? (filters.page - 1) * (filters.limit || 50) : 0,
     limit: filters.limit || 50,
     ...(filters.search && { search: filters.search }),
-    ...(filters.status && filters.status !== 'all' && { status: filters.status }),
-    ...(filters.type && filters.type !== 'all' && { type: filters.type }),
   };
 }

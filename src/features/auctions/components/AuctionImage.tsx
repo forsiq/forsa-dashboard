@@ -30,7 +30,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast
  * Creates an object URL that can be used in <img> tags
  */
 async function fetchAuthenticatedImage(attachmentId: number): Promise<string | null> {
-  const downloadUrl = `${API_BASE_URL}/api/v1/project/attachment/${attachmentId}/download/`;
+  const downloadUrl = `${API_BASE_URL}/en/api/v1/project/attachment/${attachmentId}/download/`;
 
   try {
     const response = await fetch(downloadUrl, {

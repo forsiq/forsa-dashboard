@@ -13,42 +13,20 @@ export const GET_PRODUCTS_QUERY = `
     $limit: Int
     $offset: Int
     $search: String
-    $categoryId: Int
-    $status: String
   ) {
     products(
       limit: $limit
       offset: $offset
       search: $search
-      categoryId: $categoryId
-      status: $status
     ) {
       id
-      idNum
-      name
-      nameAr
-      description
-      descriptionAr
-      sellingPrice
-      stockQuantity
-      sku
+      title
+      slug
       status
-      images
       categoryId
-      category {
-        id
-        name
-        nameAr
-      }
       createdAt
       updatedAt
-      auctionCount
     }
-    productCount(
-      search: $search
-      categoryId: $categoryId
-      status: $status
-    )
   }
 `;
 
@@ -59,25 +37,12 @@ export const GET_PRODUCT_QUERY = `
   query GetProduct($id: ID!) {
     product(id: $id) {
       id
-      idNum
-      name
-      nameAr
-      description
-      descriptionAr
-      sellingPrice
-      stockQuantity
-      sku
+      title
+      slug
       status
-      images
       categoryId
-      category {
-        id
-        name
-        nameAr
-      }
       createdAt
       updatedAt
-      auctionCount
     }
   }
 `;

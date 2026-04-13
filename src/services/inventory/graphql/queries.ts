@@ -13,36 +13,18 @@ export const GET_PRODUCTS_QUERY = `
     $limit: Int
     $offset: Int
     $search: String
-    $status: String
   ) {
     products(
       limit: $limit
       offset: $offset
       search: $search
-      status: $status
     ) {
       id
-      name
-      nameAr
-      nameKu
-      sku
-      barcode
-      description
-      descriptionAr
-      descriptionKu
-      price
-      costPrice
-      sellingPrice
-      currency
-      stockQuantity
-      lowStockThreshold
-      stockStatus
+      title
+      slug
+      status
       categoryId
-      categoryName
-      isActive
-      images
-      image
-      imageUrl
+      additionalData
       createdAt
       updatedAt
     }
@@ -56,20 +38,11 @@ export const GET_PRODUCT_QUERY = `
   query GetProduct($id: ID!) {
     product(id: $id) {
       id
-      name
-      nameAr
-      sku
-      barcode
-      description
-      price
-      cost
-      quantity
-      minStock
-      maxStock
-      categoryId
-      categoryName
+      title
+      slug
       status
-      imageUrl
+      categoryId
+      additionalData
       createdAt
       updatedAt
     }

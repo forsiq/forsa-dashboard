@@ -15,10 +15,10 @@ const SERVICE_NAME = 'product';
 function mapProductToItem(p: any): Item {
   return {
     id: String(p.idNum || p.id),
-    name: p.name || p.nameAr,
-    description: p.description || p.descriptionAr || '',
+    name: p.title || p.name || p.nameAr || 'Unknown Item',
+    description: p.content || p.description || p.descriptionAr || '',
     category: p.category?.name || 'General',
-    sku: p.sku || '',
+    sku: p.slug || p.sku || '',
     startingBid: p.sellingPrice || 0,
     currentBid: p.sellingPrice || 0, // Fallback if no specific auction data
     image: (Array.isArray(p.images) && p.images[0]) || '📦',
@@ -34,17 +34,25 @@ function mapProductToItem(p: any): Item {
  * Get paginated list of items (products)
  */
 export async function getItems(filters: ItemFilters = {}): Promise<{ items: Item[]; totalCount: number }> {
-  const variables = queries.buildProductVariables(filters);
-  const data = await gqlQuery<{ products: any[]; productCount: number }>(
-    queries.GET_PRODUCTS_QUERY,
-    variables,
-    SERVICE_NAME
-  );
+  try {
+    const variables = queries.buildProductVariables(filters);
+    const data = await gqlQuery<{ products: any[]; productCount: number }>(
+      queries.GET_PRODUCTS_QUERY,
+      variables,
+      SERVICE_NAME
+    );
 
-  return {
-    items: (data.products || []).map(mapProductToItem),
-    totalCount: data.productCount || 0
-  };
+    const products = data.products || [];
+    const totalCount = data.productCount ?? products.length;
+
+    return {
+      items: products.map(mapProductToItem),
+      totalCount
+    };
+  } catch (error) {
+    console.error('Failed to fetch items:', error);
+    return { items: [], totalCount: 0 };
+  }
 }
 
 /**
