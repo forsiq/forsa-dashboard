@@ -13,7 +13,7 @@ import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { PageHeader } from '@core/components/Layout/PageHeader';
-import { ArrowLeft, Edit, Shield, Mail, Phone, Calendar, UserCheck, UserX } from 'lucide-react';
+import { Edit, Shield, Mail, Phone, Calendar, UserCheck, UserX } from 'lucide-react';
 import { useEffect } from 'react';
 
 export function UserDetailPage() {
