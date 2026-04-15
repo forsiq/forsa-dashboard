@@ -21,6 +21,19 @@ export const userBaseApi = createApiClient<User, UserCreateInput, UserUpdateInpu
   endpoint: '/users',
 });
 
+const mapToUser = (raw: any): User => ({
+  id: Number(raw?.id ?? raw?.idnum ?? 0),
+  userName: raw?.userName ?? raw?.username ?? '',
+  fullName: raw?.fullName ?? raw?.full_name ?? '',
+  email: raw?.email ?? undefined,
+  phone: raw?.phone ?? undefined,
+  role: (raw?.role ?? 'user') as User['role'],
+  isActive: Boolean(raw?.isActive ?? raw?.is_active ?? true),
+  isTempPass: Boolean(raw?.isTempPass ?? raw?.is_temp_pass ?? false),
+  createdAt: raw?.createdAt ?? raw?.created_at,
+  updatedAt: raw?.updatedAt ?? raw?.updated_at,
+});
+
 /**
  * User API - main user operations
  */
@@ -30,7 +43,7 @@ export const userApi = {
    */
   list: async (filters?: UserFilters): Promise<UsersResponse> => {
     const response = await userBaseApi.list(filters) as any;
-    const users = response.data || [];
+    const users = (response.data || []).map(mapToUser);
     const total = response.total || users.length;
     
     return {
@@ -47,7 +60,7 @@ export const userApi = {
    */
   get: async (id: string): Promise<User> => {
     const response = await userBaseApi.getById(id);
-    return response.data;
+    return mapToUser(response.data);
   },
 
   /**
@@ -55,7 +68,7 @@ export const userApi = {
    */
   create: async (data: UserCreateInput): Promise<User> => {
     const response = await userBaseApi.create(data);
-    return response.data;
+    return mapToUser(response.data);
   },
 
   /**
@@ -63,7 +76,7 @@ export const userApi = {
    */
   update: async (input: UserUpdateInput): Promise<User> => {
     const response = await userBaseApi.update({ ...input, id: String(input.id) });
-    return response.data;
+    return mapToUser(response.data);
   },
 
   /**
@@ -95,7 +108,7 @@ export const userApi = {
    */
   setStatus: async (id: string, isActive: boolean): Promise<User> => {
     const response = await userBaseApi.getInstance().patch(`/users/${id}/`, { is_active: isActive });
-    return response.data.data;
+    return mapToUser(response.data.data);
   },
 
   /**

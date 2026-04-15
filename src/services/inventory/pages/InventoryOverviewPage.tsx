@@ -176,7 +176,9 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-brand/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">Global Inventory Units</span>
+                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">
+                      {t('inventory.global_units') || 'Global Inventory Units'}
+                    </span>
                     <h3 className="text-3xl font-black text-zinc-text tracking-tighter italic tabular-nums">{products.length}</h3>
                 </div>
                 <div className="p-3 bg-brand/10 text-brand rounded-xl border border-brand/20">
@@ -192,7 +194,9 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-danger/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-danger uppercase tracking-widest italic">Critical Supply Alert</span>
+                    <span className="text-[10px] font-black text-danger uppercase tracking-widest italic">
+                      {t('inventory.critical_alert') || 'Critical Supply Alert'}
+                    </span>
                     <h3 className="text-3xl font-black text-danger tracking-tighter italic tabular-nums">{lowStockItems.length}</h3>
                 </div>
                 <div className="p-3 bg-danger/10 text-danger rounded-xl border border-danger/20">
@@ -302,12 +306,14 @@ export const InventoryOverviewPage: React.FC = () => {
                     )) : (
                         <div className="py-12 text-center space-y-3 opacity-40">
                              <Box className="w-8 h-8 mx-auto text-zinc-muted" />
-                             <p className="text-[10px] font-black uppercase tracking-widest italic">All stocks within nominal parameters</p>
+                             <p className="text-[10px] font-black uppercase tracking-widest italic">
+                               {t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}
+                             </p>
                         </div>
                     )}
                 </div>
                 <AmberButton variant="outline" className="w-full mt-6 h-11 border-danger/20 text-danger hover:bg-danger/5 font-black uppercase text-[10px] tracking-widest italic">
-                    Generate Procurement Order
+                    {t('inventory.generate_procurement_order') || 'Generate Procurement Order'}
                 </AmberButton>
            </Card>
 

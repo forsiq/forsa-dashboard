@@ -4,7 +4,7 @@
  * Displays all users with search, filters, and pagination
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from '../api';
 
@@ -46,9 +46,11 @@ export function UsersListPage() {
   const statusMutation = useUpdateUserStatus();
 
   // Error handling
-  if (usersError) {
-    toast.error(usersError.message || t('user.error.load_failed'));
-  }
+  useEffect(() => {
+    if (usersError) {
+      toast.error(usersError.message || t('user.error.load_failed'));
+    }
+  }, [usersError, toast, t]);
 
   // Handle filter changes
   const handleFilterChange = (key: keyof UserFilters, value: string | number) => {
@@ -256,7 +258,7 @@ export function UsersListPage() {
                     {t('user.created_at')}
                   </th>
                   <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
-                    {t('actions')}
+                    {t('common.actions')}
                   </th>
                 </tr>
               </thead>

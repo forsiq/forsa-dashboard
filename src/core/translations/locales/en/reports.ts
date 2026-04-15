@@ -39,6 +39,8 @@ export const reports = {
   "report.customers": "Customers",
   "report.customer_report": "Customer Report",
   "report.sales_report": "Sales Report",
+  "report.gross_sales": "Gross Sales",
+  "report.net_profit": "Net Profit",
   "report.revenue": "Revenue",
   "report.export": "Export",
   "report.vs_last_month": "vs last month",

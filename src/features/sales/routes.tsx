@@ -28,6 +28,10 @@ const salesRoutes: RouteObject[] = [
     path: '/group-buying/:id/edit',
     element: <GroupBuyingFormPage />,
   },
+  {
+    path: '/group-buying/review',
+    element: <GroupBuyingReviewPage />,
+  },
 ];
 
 export default salesRoutes;

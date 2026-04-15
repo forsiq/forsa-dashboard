@@ -304,7 +304,7 @@ export function UserFormPage() {
               onClick={() => navigate('/users')}
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {t('cancel')}
+              {t('common.cancel')}
             </AmberButton>
             <AmberButton
               type="submit"
@@ -315,7 +315,7 @@ export function UserFormPage() {
               {(createMutation.isPending || updateMutation.isPending) ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('saving')}
+                  {t('common.saving')}
                 </>
               ) : (
                 <>

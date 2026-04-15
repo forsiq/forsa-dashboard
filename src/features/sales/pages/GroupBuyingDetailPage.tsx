@@ -101,7 +101,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                     <p className="text-zinc-muted font-bold uppercase tracking-tight text-sm">Requested campaign protocol could not be located within the active matrix.</p>
                 </div>
                 <AmberButton onClick={() => navigate('/group-buying')} variant="secondary" className="px-8 h-12 uppercase font-black italic">
-                    Return to Infrastructure
+                    {t('common.back')}
                 </AmberButton>
             </Card>
         );
@@ -139,9 +139,9 @@ export const GroupBuyingDetailPage: React.FC = () => {
                     >
                         <Share2 className="w-5 h-5" />
                     </AmberButton>
-                    <Link to={`/group-buying/edit/${campaign.id}`}>
+                    <Link to={`/group-buying/${campaign.id}/edit`}>
                         <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest italic rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all shadow-xl">
-                            Modify Protocol
+                            {t('common.edit')}
                         </AmberButton>
                     </Link>
                 </div>

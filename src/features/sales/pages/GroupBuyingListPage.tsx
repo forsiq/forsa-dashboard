@@ -120,7 +120,7 @@ export const GroupBuyingListPage: React.FC = () => {
                         <SlidersHorizontal className="w-4 h-4" />
                         {t('common.filters') || 'Configuration'}
                     </AmberButton>
-                    <Link to="/group-buying/add">
+                    <Link to="/group-buying/new">
                         <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-[0_4px_20px_rgba(245,196,81,0.2)] transition-all border-none active:scale-95 px-8">
                             <Plus className="w-5 h-5" />
                             <span>{t('groupBuying.create') || 'Initialize Campaign'}</span>
@@ -227,7 +227,7 @@ export const GroupBuyingListPage: React.FC = () => {
                             <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest italic">Operational Gap Detected</h3>
                             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase">No active campaign protocols found within the current scan parameters.</p>
                          </div>
-                         <AmberButton onClick={() => navigate('/group-buying/add')} className="h-12 px-10 rounded-xl bg-brand text-black font-black uppercase italic active:scale-95 transition-all shadow-lg">
+                         <AmberButton onClick={() => navigate('/group-buying/new')} className="h-12 px-10 rounded-xl bg-brand text-black font-black uppercase italic active:scale-95 transition-all shadow-lg">
                              Initialize Node First Call
                          </AmberButton>
                     </Card>

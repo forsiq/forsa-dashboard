@@ -248,7 +248,7 @@ export const OrdersListPage = () => {
         ) : (
           <DataTable
             columns={columns}
-            data={ordersData || []}
+            data={ordersData?.data || []}
             onRowClick={handleRowClick}
             pagination
             pageSize={filters.limit}

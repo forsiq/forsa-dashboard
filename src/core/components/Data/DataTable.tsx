@@ -82,6 +82,7 @@ export function DataTable<T extends Record<string, any>>({
   className
 }: DataTableProps<T>) {
   const { t, dir } = useLanguage();
+  const rows = Array.isArray(data) ? data : [];
   // --- State ---
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -104,9 +105,9 @@ export function DataTable<T extends Record<string, any>>({
 
   // --- Sorting ---
   const sortedData = useMemo(() => {
-    if (!sortConfig || !sortable) return data;
+    if (!sortConfig || !sortable) return rows;
 
-    return [...data].sort((a, b) => {
+    return [...rows].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
@@ -114,7 +115,7 @@ export function DataTable<T extends Record<string, any>>({
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [data, sortConfig, sortable]);
+  }, [rows, sortConfig, sortable]);
 
   // --- Pagination ---
   const paginatedData = useMemo(() => {
@@ -473,7 +474,7 @@ export function DataTable<T extends Record<string, any>>({
                 <button
                   key={i}
                   onClick={() => {
-                    const selectedRows = data.filter(row => selectedIds.has(String(row[keyField as keyof T])));
+                    const selectedRows = rows.filter(row => selectedIds.has(String(row[keyField as keyof T])));
                     action.onClick(Array.from(selectedIds), selectedRows);
                   }}
                   className={cn(
@@ -543,7 +544,7 @@ export function DataTable<T extends Record<string, any>>({
           )}
 
           {rowActions.map((action, i) => {
-            const row = data.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
+            const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
             if (!row) return null;
             return (
               <button

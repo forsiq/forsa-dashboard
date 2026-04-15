@@ -39,6 +39,8 @@ export const reports = {
   "report.customers": "العملاء",
   "report.customer_report": "تقرير العملاء",
   "report.sales_report": "تقرير المبيعات",
+  "report.gross_sales": "إجمالي المبيعات",
+  "report.net_profit": "صافي الربح",
   "report.revenue": "الإيرادات",
   "report.export": "تصدير",
   "report.vs_last_month": "مقارنة بالشهر الماضي",

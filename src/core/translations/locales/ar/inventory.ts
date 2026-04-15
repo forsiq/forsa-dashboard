@@ -27,4 +27,8 @@ export const inventory = {
   "inventory.delete_message": "هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
   "inventory.needs_review": "يحتاج مراجعة",
   "inventory.global_dist": "التوزيع العالمي",
+  "inventory.global_units": "إجمالي وحدات المخزون",
+  "inventory.critical_alert": "تنبيه حرج للمخزون",
+  "inventory.generate_procurement_order": "إنشاء أمر توريد",
+  "inventory.all_stocks_nominal": "جميع مستويات المخزون ضمن النطاق الطبيعي",
 } as const;

@@ -29,7 +29,8 @@ export const auctionKeys = {
   details: () => [...auctionKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...auctionKeys.details(), id] as const,
   stats: () => [...auctionKeys.all, 'stats'] as const,
-  bids: (auctionId: number | string) => [...auctionKeys.all, 'bids', auctionId] as const,
+  bids: (auctionId: number | string, page = 1, limit = 20) =>
+    [...auctionKeys.all, 'bids', auctionId, page, limit] as const,
   myBids: (page: number, limit: number) => [...auctionKeys.all, 'my-bids', page, limit] as const,
 };
 
@@ -114,7 +115,7 @@ export function useGetAuctionStats(): UseQueryResult<AuctionStats> {
  */
 export function useGetAuctionBids(auctionId: number | string, page = 1, limit = 20) {
   const query = useQuery({
-    queryKey: auctionKeys.bids(auctionId),
+    queryKey: auctionKeys.bids(auctionId, page, limit),
     queryFn: () => bidApi.list(auctionId, page, limit),
     enabled: !!auctionId,
     staleTime: 10 * 1000,
@@ -217,7 +218,7 @@ export function usePlaceBid() {
       bidApi.create(input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(variables.auctionId) });
-      queryClient.invalidateQueries({ queryKey: auctionKeys.bids(variables.auctionId) });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'bids', variables.auctionId] });
       toast.success('Bid placed successfully');
     },
     onError: (error: any) => {

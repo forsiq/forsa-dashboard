@@ -18,22 +18,35 @@ export const useGetItem = (id: string, enabled = true) => {
   });
 };
 
-export const useCreateItemMutation = () => {
+export const useCreateItemMutation = (options?: { onSuccess?: () => void }) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: any) => api.createProduct(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.itemKeys.all });
+      options?.onSuccess?.();
     },
   });
 };
 
-export const useDeleteItemMutation = () => {
+export const useUpdateItemMutation = (options?: { onSuccess?: () => void }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: any }) => api.updateProduct(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.itemKeys.all });
+      options?.onSuccess?.();
+    },
+  });
+};
+
+export const useDeleteItemMutation = (options?: { onSuccess?: () => void }) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.itemKeys.all });
+      options?.onSuccess?.();
     },
   });
 };

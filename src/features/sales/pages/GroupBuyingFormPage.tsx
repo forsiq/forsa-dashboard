@@ -186,7 +186,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 className="h-12 border-border font-bold rounded-xl px-6 hover:bg-obsidian-hover active:scale-95 transition-all uppercase italic text-xs tracking-widest"
                 onClick={() => navigate('/group-buying')}
            >
-                Abort Matrix
+                {t('common.cancel')}
            </AmberButton>
            <AmberButton 
                 className="h-12 bg-brand hover:bg-brand text-black font-black rounded-xl px-10 shadow-[0_10px_40px_rgba(245,196,81,0.1)] border-none active:scale-95 transition-all gap-3"
@@ -403,7 +403,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                     className="w-full h-14 bg-obsidian-card font-black uppercase tracking-widest italic rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
                     onClick={() => navigate('/group-buying')}
                 >
-                    Discard Configuration
+                    {t('common.cancel')}
                 </AmberButton>
             </div>
         </div>

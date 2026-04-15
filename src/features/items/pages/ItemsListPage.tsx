@@ -46,7 +46,7 @@ export const ItemsListPage: React.FC = () => {
 
   const isRTL = dir === 'rtl';
 
-  const { items, totalCount, isLoading, refetch } = useGetItems({
+  const { data, isLoading, refetch } = useGetItems({
     search: searchQuery,
     categoryId: categoryFilter === 'All' ? undefined : Number(categoryFilter),
     status: statusFilter,
@@ -56,6 +56,8 @@ export const ItemsListPage: React.FC = () => {
 
   const { data: categoriesData } = useGetCategories();
   const categoriesList = categoriesData?.categories || [];
+  const items = data?.items || [];
+  const totalCount = data?.totalCount || 0;
 
   const deleteMutation = useDeleteItemMutation({
     onSuccess: () => {
@@ -138,7 +140,7 @@ export const ItemsListPage: React.FC = () => {
     {
       label: t('common.view') || 'Inspect',
       icon: Eye,
-      onClick: (row) => navigate(`/auctions/${row.id}`), // Adjust link as needed
+      onClick: (row) => navigate(`/items/edit/${row.id}`),
     },
     {
       label: t('common.edit') || 'Modify',
@@ -365,7 +367,7 @@ export const ItemsListPage: React.FC = () => {
                                     variant="outline" 
                                     size="sm" 
                                     className="p-2 border-border h-9"
-                                    onClick={() => navigate(`/auctions/${item.id}`)}
+                                    onClick={() => navigate(`/items/edit/${item.id}`)}
                                 >
                                     <Eye className="w-4 h-4" />
                                 </AmberButton>

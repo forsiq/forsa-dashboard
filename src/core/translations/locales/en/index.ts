@@ -25,6 +25,7 @@ import { finance } from './finance';
 import { misc } from './misc';
 import { ui } from './ui';
 import { items } from './items';
+import { groupBuying } from './groupBuying';
 
 export const en = {
   ...common,
@@ -53,4 +54,5 @@ export const en = {
   ...misc,
   ...ui,
   ...items,
+  ...groupBuying,
 } as const;

@@ -37,6 +37,7 @@ export const customers = {
   "customer.no_orders": "لا توجد طلبات حديثة",
   "customer.statistics": "الإحصائيات",
   "customer.total_orders": "إجمالي الطلبات",
+  "customer.orders": "الطلبات",
   "customer.member_since": "عضو منذ",
   "customer.contact": "الاتصال",
   "customer.error_loading": "خطأ في تحميل العملاء",

@@ -22,7 +22,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
-import { useGetItem, useCreateItemMutation } from '../hooks/useItems';
+import { useGetItem, useCreateItemMutation, useUpdateItemMutation } from '../hooks/useItems';
 import type { Item, ItemStatus } from '../types';
 
 /**
@@ -36,6 +36,9 @@ export const ItemFormPage: React.FC = () => {
 
   const { data: existingItem, isLoading: itemLoading } = useGetItem(id || '');
   const createMutation = useCreateItemMutation({
+    onSuccess: () => navigate('/items')
+  });
+  const updateMutation = useUpdateItemMutation({
     onSuccess: () => navigate('/items')
   });
 
@@ -83,6 +86,11 @@ export const ItemFormPage: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
     
+    if (isEdit && id) {
+      updateMutation.mutate({ id, input: formData });
+      return;
+    }
+
     createMutation.mutate(formData);
   };
 
@@ -255,9 +263,9 @@ export const ItemFormPage: React.FC = () => {
             <AmberButton 
               type="submit" 
               className="w-full py-6 bg-brand hover:bg-brand text-black font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {createMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              {(createMutation.isPending || updateMutation.isPending) ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
               {isEdit ? 'Overwrite Node' : 'Deploy Asset'}
             </AmberButton>
             

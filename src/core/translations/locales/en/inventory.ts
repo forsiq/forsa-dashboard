@@ -27,4 +27,8 @@ export const inventory = {
   "inventory.delete_message": "Are you sure you want to delete this item? This action cannot be undone.",
   "inventory.needs_review": "Needs Review",
   "inventory.global_dist": "Global Distribution",
+  "inventory.global_units": "Global Inventory Units",
+  "inventory.critical_alert": "Critical Supply Alert",
+  "inventory.generate_procurement_order": "Generate Procurement Order",
+  "inventory.all_stocks_nominal": "All stocks within nominal parameters",
 } as const;

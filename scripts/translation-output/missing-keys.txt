@@ -1,9 +1,252 @@
 // Missing translation keys
 // Add these to src/core/translations/locales/en/
 
-// TODO: Add translation for "/stats"
-"/stats": "TODO",
+// TODO: Add translation for " "
+" ": "TODO",
 
-// TODO: Add translation for "/stats/"
-"/stats/": "TODO",
+// TODO: Add translation for ";"
+";": "TODO",
+
+// TODO: Add translation for "="
+"=": "TODO",
+
+// TODO: Add translation for "@services/categories/routes"
+"@services/categories/routes": "TODO",
+
+// TODO: Add translation for "@services/customers/routes"
+"@services/customers/routes": "TODO",
+
+// TODO: Add translation for "@services/inventory/routes"
+"@services/inventory/routes": "TODO",
+
+// TODO: Add translation for "@services/orders/routes"
+"@services/orders/routes": "TODO",
+
+// TODO: Add translation for "@services/reports/routes"
+"@services/reports/routes": "TODO",
+
+// TODO: Add translation for "Z"
+"Z": "TODO",
+
+// TODO: Add translation for "common.choose_file"
+"common.choose_file": "TODO",
+
+// TODO: Add translation for "common.delete_confirm"
+"common.delete_confirm": "TODO",
+
+// TODO: Add translation for "common.fix_errors"
+"common.fix_errors": "TODO",
+
+// TODO: Add translation for "common.invalid_format"
+"common.invalid_format": "TODO",
+
+// TODO: Add translation for "common.is_required"
+"common.is_required": "TODO",
+
+// TODO: Add translation for "common.max_length"
+"common.max_length": "TODO",
+
+// TODO: Add translation for "common.max_value"
+"common.max_value": "TODO",
+
+// TODO: Add translation for "common.min_length"
+"common.min_length": "TODO",
+
+// TODO: Add translation for "common.min_value"
+"common.min_value": "TODO",
+
+// TODO: Add translation for "common.new"
+"common.new": "TODO",
+
+// TODO: Add translation for "common.no_results"
+"common.no_results": "TODO",
+
+// TODO: Add translation for "common.required"
+"common.required": "TODO",
+
+// TODO: Add translation for "customer.address.city"
+"customer.address.city": "TODO",
+
+// TODO: Add translation for "customer.address.country"
+"customer.address.country": "TODO",
+
+// TODO: Add translation for "customer.address.state"
+"customer.address.state": "TODO",
+
+// TODO: Add translation for "customer.address.street"
+"customer.address.street": "TODO",
+
+// TODO: Add translation for "customer.address.zip"
+"customer.address.zip": "TODO",
+
+// TODO: Add translation for "customer.form_note_desc"
+"customer.form_note_desc": "TODO",
+
+// TODO: Add translation for "customer.form_note_title"
+"customer.form_note_title": "TODO",
+
+// TODO: Add translation for "customer.identity_matrix"
+"customer.identity_matrix": "TODO",
+
+// TODO: Add translation for "customer.protocol_state"
+"customer.protocol_state": "TODO",
+
+// TODO: Add translation for "customer.spatial_matrix"
+"customer.spatial_matrix": "TODO",
+
+// TODO: Add translation for "groupBuying.category"
+"groupBuying.category": "TODO",
+
+// TODO: Add translation for "groupBuying.select_category"
+"groupBuying.select_category": "TODO",
+
+// TODO: Add translation for "inventory.default_warehouse"
+"inventory.default_warehouse": "TODO",
+
+// TODO: Add translation for "pagination.next"
+"pagination.next": "TODO",
+
+// TODO: Add translation for "pagination.previous"
+"pagination.previous": "TODO",
+
+// TODO: Add translation for "portal.all_systems_normal"
+"portal.all_systems_normal": "TODO",
+
+// TODO: Add translation for "portal.logout"
+"portal.logout": "TODO",
+
+// TODO: Add translation for "portal.operational_status"
+"portal.operational_status": "TODO",
+
+// TODO: Add translation for "portal.platform_settings"
+"portal.platform_settings": "TODO",
+
+// TODO: Add translation for "portal.service_external"
+"portal.service_external": "TODO",
+
+// TODO: Add translation for "portal.service_internal"
+"portal.service_internal": "TODO",
+
+// TODO: Add translation for "portal.service_management"
+"portal.service_management": "TODO",
+
+// TODO: Add translation for "portal.subtitle"
+"portal.subtitle": "TODO",
+
+// TODO: Add translation for "prod.add.buy_now"
+"prod.add.buy_now": "TODO",
+
+// TODO: Add translation for "prod.add.category_cooling"
+"prod.add.category_cooling": "TODO",
+
+// TODO: Add translation for "prod.add.category_energy"
+"prod.add.category_energy": "TODO",
+
+// TODO: Add translation for "prod.add.category_hardware"
+"prod.add.category_hardware": "TODO",
+
+// TODO: Add translation for "prod.add.category_security"
+"prod.add.category_security": "TODO",
+
+// TODO: Add translation for "prod.add.category_sensing"
+"prod.add.category_sensing": "TODO",
+
+// TODO: Add translation for "prod.add.condition_new"
+"prod.add.condition_new": "TODO",
+
+// TODO: Add translation for "prod.add.condition_refurbished"
+"prod.add.condition_refurbished": "TODO",
+
+// TODO: Add translation for "prod.add.condition_used"
+"prod.add.condition_used": "TODO",
+
+// TODO: Add translation for "prod.add.description"
+"prod.add.description": "TODO",
+
+// TODO: Add translation for "prod.add.description_placeholder"
+"prod.add.description_placeholder": "TODO",
+
+// TODO: Add translation for "prod.add.duration_14"
+"prod.add.duration_14": "TODO",
+
+// TODO: Add translation for "prod.add.duration_3"
+"prod.add.duration_3": "TODO",
+
+// TODO: Add translation for "prod.add.duration_30"
+"prod.add.duration_30": "TODO",
+
+// TODO: Add translation for "prod.add.duration_7"
+"prod.add.duration_7": "TODO",
+
+// TODO: Add translation for "prod.add.image_hint"
+"prod.add.image_hint": "TODO",
+
+// TODO: Add translation for "prod.add.image_limit_hint"
+"prod.add.image_limit_hint": "TODO",
+
+// TODO: Add translation for "prod.add.limit_reached"
+"prod.add.limit_reached": "TODO",
+
+// TODO: Add translation for "prod.add.no_images"
+"prod.add.no_images": "TODO",
+
+// TODO: Add translation for "prod.add.note_desc"
+"prod.add.note_desc": "TODO",
+
+// TODO: Add translation for "prod.add.note_title"
+"prod.add.note_title": "TODO",
+
+// TODO: Add translation for "prod.add.price"
+"prod.add.price": "TODO",
+
+// TODO: Add translation for "prod.add.primary_image"
+"prod.add.primary_image": "TODO",
+
+// TODO: Add translation for "prod.add.sku"
+"prod.add.sku": "TODO",
+
+// TODO: Add translation for "prod.add.starting_bid"
+"prod.add.starting_bid": "TODO",
+
+// TODO: Add translation for "prod.add.subtitle_add"
+"prod.add.subtitle_add": "TODO",
+
+// TODO: Add translation for "prod.add.subtitle_edit"
+"prod.add.subtitle_edit": "TODO",
+
+// TODO: Add translation for "report.active_users"
+"report.active_users": "TODO",
+
+// TODO: Add translation for "report.conversion_rate"
+"report.conversion_rate": "TODO",
+
+// TODO: Add translation for "report.gross_sales"
+"report.gross_sales": "TODO",
+
+// TODO: Add translation for "report.inventory_dist"
+"report.inventory_dist": "TODO",
+
+// TODO: Add translation for "report.net_profit"
+"report.net_profit": "TODO",
+
+// TODO: Add translation for "report.period_comparison"
+"report.period_comparison": "TODO",
+
+// TODO: Add translation for "report.product_performance"
+"report.product_performance": "TODO",
+
+// TODO: Add translation for "report.sales_performance"
+"report.sales_performance": "TODO",
+
+// TODO: Add translation for "report.shipping"
+"report.shipping": "TODO",
+
+// TODO: Add translation for "report.tax_collected"
+"report.tax_collected": "TODO",
+
+// TODO: Add translation for "time.ended"
+"time.ended": "TODO",
+
+// TODO: Add translation for "validation.password_too_short"
+"validation.password_too_short": "TODO",
 
