@@ -83,10 +83,12 @@ export const OrdersListPage = () => {
             order.status === 'delivered' ? 'success' :
             order.status === 'shipped' ? 'info' :
             order.status === 'processing' ? 'warning' :
+            order.status === 'completed' ? 'success' :
             order.status === 'cancelled' ? 'failed' :
             'pending'
           }
-          size="sm"
+          showDot
+          className="font-black"
         />
       ),
       sortable: true,
@@ -97,9 +99,9 @@ export const OrdersListPage = () => {
       label: t('orders.table.payment') || 'Payment',
       render: (order) => (
         <StatusBadge 
-          status={order.paymentStatus}
+          status={t(`common.${order.paymentStatus}`) || order.paymentStatus || t('common.pending')}
           variant={order.paymentStatus === 'paid' ? 'success' : 'warning'}
-          size="sm"
+          className="font-black"
         />
       ),
       sortable: true,

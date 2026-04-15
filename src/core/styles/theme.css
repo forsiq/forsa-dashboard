@@ -145,5 +145,19 @@ body {
 }
 
 .italic {
-  font-style: normal;
+  font-style: normal !important;
+}
+
+/* Global Typography Cleanliness */
+*, ::before, ::after {
+  font-style: normal !important;
+}
+
+::placeholder {
+  font-style: normal !important;
+  opacity: 0.5;
+}
+
+input, textarea, select, button {
+  font-style: normal !important;
 }

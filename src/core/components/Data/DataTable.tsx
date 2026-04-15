@@ -213,7 +213,7 @@ export function DataTable<T extends Record<string, any>>({
                 <th
                   key={col.key}
                   className={cn(
-                    "px-6 py-4 text-[11px] font-black text-zinc-muted uppercase tracking-[0.1em] select-none group",
+                    "px-6 py-5 text-xs font-black text-zinc-muted uppercase tracking-[0.2em] select-none group",
                     col.width,
                     col.align === 'right' ? 'text-end' :
                       col.align === 'center' ? 'text-center' :
@@ -314,7 +314,7 @@ export function DataTable<T extends Record<string, any>>({
                         <td
                           key={`${id}-${col.key}`}
                           className={cn(
-                            "px-6 py-4 text-sm font-bold text-zinc-text",
+                            "px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight",
                             col.align === 'right' ? 'text-end' :
                               col.align === 'center' ? 'text-center' :
                                 'text-start',

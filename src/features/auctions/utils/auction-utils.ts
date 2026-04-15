@@ -4,6 +4,12 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.zonevast.com';
 
+function getProjectHeaders() {
+  return {
+    'X-Project-ID': localStorage.getItem('project_id') || '11',
+  };
+}
+
 /**
  * Parse attachment IDs from the string format returned by API
  * The API returns attachmentIds as a string like "[131, 132, 130]"
@@ -102,4 +108,43 @@ export async function fetchAttachmentUrl(attachmentId: number): Promise<string |
   // Return the download endpoint directly - it handles authentication
   // No need to fetch attachment metadata first
   return `${API_BASE_URL}/api/v1/project/attachment/${attachmentId}/download/`;
+}
+
+/**
+ * Upload a file to the project attachment service and return attachment id
+ * Tries common upload endpoints used across environments.
+ */
+export async function uploadAttachmentAndGetId(file: File): Promise<number | null> {
+  const endpoints = [
+    `${API_BASE_URL}/en/api/v1/project/attachment/upload/`,
+    `${API_BASE_URL}/api/v1/project/attachment/upload/`,
+    `${API_BASE_URL}/en/api/v1/project/attachment/`,
+    `${API_BASE_URL}/api/v1/project/attachment/`,
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: getProjectHeaders(),
+        body: formData,
+      });
+
+      if (!response.ok) continue;
+      const payload = await response.json();
+      const id =
+        payload?.data?.id ??
+        payload?.data?.attachment_id ??
+        payload?.id ??
+        payload?.attachment_id;
+      if (typeof id === 'number') return id;
+      if (typeof id === 'string' && id.trim()) return Number(id);
+    } catch {
+      // Try next known endpoint
+    }
+  }
+
+  return null;
 }

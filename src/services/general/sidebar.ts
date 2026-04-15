@@ -17,37 +17,23 @@ export const sidebarSections: MenuSection[] = [
     items: [
       { path: '/categories', label: 'category.title', icon: 'FolderTree' },
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
-      { path: '/inventory', label: 'sidebar.auction_items', icon: 'Package' },
-    ]
-  },
-  {
-    title: 'sidebar.sales',
-    items: [
-      { path: '/customers', label: 'customer.title', icon: 'Users' },
-      { path: '/orders', label: 'order.title', icon: 'ShoppingCart' },
       { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
     ]
   },
   {
-    title: 'sidebar.inventory',
+    title: 'sidebar.sales_department',
     items: [
-      { path: '/inventory', label: 'inventory.overview', icon: 'Package' },
-      { path: '/inventory/add', label: 'inventory.add_item', icon: 'Plus' },
+      { path: '/customers', label: 'customer.title', icon: 'Users' },
+      { path: '/orders', label: 'order.title', icon: 'ShoppingCart' },
     ]
   },
   {
     title: 'sidebar.reports',
     items: [
-      { path: '/reports', label: 'report.dashboard', icon: 'BarChart3' },
-      { path: '/reports/analytics', label: 'report.analytics', icon: 'TrendingUp' },
-      { path: '/reports/sales', label: 'report.sales', icon: 'FileText' },
-    ]
-  },
-  {
-    title: 'sidebar.general',
-    items: [
-      { path: '/settings', label: 'settings.page.title', icon: 'Settings' },
-      { path: '/about', label: 'sidebar.about', icon: 'Info' },
+      { path: '/reports/sales-overview', label: 'report.sales_overview_section', icon: 'BarChart3' },
+      { path: '/reports/auction-performance', label: 'report.auction_performance', icon: 'TrendingUp' },
+      { path: '/reports/group-buying-analytics', label: 'report.group_buying_analytics', icon: 'FileText' },
+      { path: '/reports/customer-insights', label: 'report.customer_insights', icon: 'Users' },
     ]
   }
 ];

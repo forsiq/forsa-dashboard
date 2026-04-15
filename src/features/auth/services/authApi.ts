@@ -8,6 +8,31 @@ import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types'
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
+ * Build auth API URL safely without duplicating /api/v1.
+ * Supports bases like:
+ * - https://test.zonevast.com
+ * - https://test.zonevast.com/api/v1
+ * - https://test.zonevast.com/forsa
+ * - /api/v1
+ */
+function buildAuthUrl(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  let originOnly = '';
+
+  if (API_BASE) {
+    try {
+      // Use only origin for auth calls; auth is mounted at root /api/v1 (not under /forsa).
+      originOnly = new URL(API_BASE).origin;
+    } catch {
+      // Relative API_BASE values (e.g., /forsa or /api/v1) should still target root /api/v1.
+      originOnly = '';
+    }
+  }
+
+  return `${originOnly}/api/v1${normalizedPath}`;
+}
+
+/**
  * Get project ID from localStorage with priority over static fallback
  */
 function getProjectIdValue(): string {
@@ -70,7 +95,7 @@ async function fetchWithTimeout(
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   console.log('[authApi] Attempting login for:', credentials.username);
   
-  const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/token/`, {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/token/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -98,7 +123,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
   // Fetch user profile immediately after login
   try {
-    const userResponse = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/user/`, {
+    const userResponse = await fetchWithTimeout(buildAuthUrl('/auth/auth/user/'), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${data.access}`,
@@ -138,7 +163,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
  * Register a new user
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/register/`, {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/register/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -167,7 +192,7 @@ export const logout = async (): Promise<void> => {
  * Refresh access token
  */
 export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
-  const response = await fetchWithTimeout(`${API_BASE}/api/v1/auth/auth/token/refresh/`, {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/token/refresh/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

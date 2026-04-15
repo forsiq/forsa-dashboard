@@ -23,6 +23,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
+import { uploadAttachmentAndGetId } from '../utils/auction-utils';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import type { AuctionCreateInput, AuctionUpdateInput } from '../types/auction.types';
@@ -58,6 +59,7 @@ export const AuctionFormPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // Sync with existing auction if editing
   useEffect(() => {
@@ -118,13 +120,25 @@ export const AuctionFormPage: React.FC = () => {
     if (!validate()) return;
 
     try {
+      let uploadedAttachmentId: number | null = null;
+      if (selectedImageFile) {
+        uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
+      }
+      const payload: any = {
+        ...formData,
+      };
+      if (uploadedAttachmentId) {
+        payload.mainAttachmentId = uploadedAttachmentId;
+        payload.attachmentIds = [uploadedAttachmentId];
+      }
+
       if (isEdit) {
         await updateMutation.mutateAsync({
-          ...formData,
+          ...payload,
           id: Number(id)
         } as AuctionUpdateInput);
       } else {
-        await createMutation.mutateAsync(formData as AuctionCreateInput);
+        await createMutation.mutateAsync(payload as AuctionCreateInput);
       }
       navigate('/auctions');
     } catch (err) {
@@ -309,6 +323,7 @@ export const AuctionFormPage: React.FC = () => {
                         onChange={(files) => {
                             if (files?.[0]) {
                                 const url = URL.createObjectURL(files[0]);
+                                setSelectedImageFile(files[0]);
                                 handleChange('images', [url]);
                             }
                         }}

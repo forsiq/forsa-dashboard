@@ -53,10 +53,13 @@ export const sidebar = {
   "sidebar.userManagement": "إدارة المستخدمين",
   "sidebar.about": "حول",
   "sidebar.sales": "المبيعات",
+  "sidebar.sales_department": "قسم المبيعات",
   "sidebar.customer_service": "خدمة العملاء",
   "sidebar.order_processing": "معالجة الطلبات",
   "sidebar.sales_marketing": "المبيعات والتسويق",
   "sidebar.system": "النظام",
   "sidebar.auction_items": "عناصر المزاد",
   "sidebar.group_review": "مراجعة الصفقة الجماعية",
+  "sidebar.users": "المستخدمون",
+  "sidebar.customers": "العملاء",
 } as const;

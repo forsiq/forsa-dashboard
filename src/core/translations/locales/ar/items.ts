@@ -3,6 +3,8 @@ export const items = {
   "items.title": "مختبر العناصر",
   "items.subtitle": "إدارة الأصول وكتالوج مخزون المزادات",
   "items.add": "بدء أصل جديد",
+  "item.title": "مختبر العناصر",
+  "item.add": "بدء أصل جديد",
   "items.total": "الإجمالي الكلي",
   "items.in_auction": "الانتشارات النشطة",
   "items.available": "المخزون القائم",

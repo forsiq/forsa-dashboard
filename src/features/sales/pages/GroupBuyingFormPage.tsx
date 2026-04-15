@@ -29,6 +29,7 @@ import {
   useCreateGroupBuying, 
   useUpdateGroupBuying 
 } from '../api';
+import { uploadAttachmentAndGetId } from '../../auctions/utils/auction-utils';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 
@@ -64,6 +65,7 @@ export const GroupBuyingFormPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // Sync when editing
   useEffect(() => {
@@ -111,11 +113,11 @@ export const GroupBuyingFormPage: React.FC = () => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title?.trim()) newErrors.title = 'Protocol identifier required';
-    if (!formData.productId) newErrors.productId = 'Asset node allocation required';
-    if (!formData.startTime) newErrors.startTime = 'Deployment window required';
-    if (!formData.endTime) newErrors.endTime = 'Termination window required';
-    if (formData.dealPrice >= formData.originalPrice) newErrors.dealPrice = 'Consolidated price must be below base';
+    if (!formData.title?.trim()) newErrors.title = t('groupBuying.validation.protocol_identifier_req');
+    if (!formData.productId) newErrors.productId = t('groupBuying.validation.asset_node_req');
+    if (!formData.startTime) newErrors.startTime = t('groupBuying.validation.deployment_window_req');
+    if (!formData.endTime) newErrors.endTime = t('groupBuying.validation.termination_window_req');
+    if (formData.dealPrice >= formData.originalPrice) newErrors.dealPrice = t('groupBuying.validation.consolidated_price_below_base');
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -126,6 +128,10 @@ export const GroupBuyingFormPage: React.FC = () => {
     if (!validate()) return;
 
     try {
+      let uploadedAttachmentId: number | null = null;
+      if (selectedImageFile) {
+        uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
+      }
       const input = {
           ...formData,
           productId: Number(formData.productId),
@@ -135,7 +141,11 @@ export const GroupBuyingFormPage: React.FC = () => {
           maxParticipants: Number(formData.maxParticipants),
           startTime: new Date(formData.startTime).toISOString(),
           endTime: new Date(formData.endTime).toISOString(),
-      };
+      } as any;
+      if (uploadedAttachmentId) {
+        input.mainAttachmentId = uploadedAttachmentId;
+        input.attachmentIds = [uploadedAttachmentId];
+      }
 
       if (isEdit) {
         await updateMutation.mutateAsync({ id, ...input });
@@ -152,7 +162,7 @@ export const GroupBuyingFormPage: React.FC = () => {
       return (
           <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
               <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-              <p className="text-zinc-muted font-black uppercase tracking-[0.3em] italic animate-pulse">Syncing campaign node...</p>
+              <p className="text-zinc-muted font-black uppercase tracking-[0.3em] animate-pulse">{t('groupBuying.form.syncing_node')}</p>
           </div>
       );
   }
@@ -172,18 +182,18 @@ export const GroupBuyingFormPage: React.FC = () => {
              </AmberButton>
           </Link>
           <div>
-            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic leading-none">
-              {isEdit ? 'Authorize Campaign Modification' : 'Initialize Asset Consolidation'}
+            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
+              {isEdit ? t('groupBuying.form.authorize_mod') : t('groupBuying.form.init_consolidation')}
             </h1>
             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
-              {isEdit ? `Node Protocol ID: ${id}` : 'Configure multi-node participation and collective acquisition logic'}
+              {isEdit ? `${t('groupBuying.form.node_protocol_id')}: ${id}` : t('groupBuying.form.init_desc')}
             </p>
           </div>
         </div>
         <div className="flex gap-3">
            <AmberButton 
                 variant="outline" 
-                className="h-12 border-border font-bold rounded-xl px-6 hover:bg-obsidian-hover active:scale-95 transition-all uppercase italic text-xs tracking-widest"
+                className="h-12 border-border font-bold rounded-xl px-6 hover:bg-obsidian-hover active:scale-95 transition-all uppercase text-xs tracking-widest"
                 onClick={() => navigate('/group-buying')}
            >
                 {t('common.cancel')}
@@ -198,7 +208,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 ) : (
                     <Save className="w-5 h-5" />
                 )}
-                <span className="uppercase italic tracking-widest">Execute Node Sync</span>
+                <span className="uppercase tracking-widest">{t('groupBuying.form.execute_sync')}</span>
            </AmberButton>
         </div>
       </div>
@@ -214,16 +224,16 @@ export const GroupBuyingFormPage: React.FC = () => {
                    <div className="w-11 h-11 rounded-xl bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-inner">
                       <Target className="w-5 h-5" />
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">Campaign Identification Node</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.id_node_title')}</h3>
                 </div>
 
                 <div className="space-y-7 relative pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
-                             <label className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 italic">Asset Allocation Scan</label>
+                             <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 ${isRTL ? 'text-right block' : ''}`}>{t('groupBuying.form.asset_scan_label')}</label>
                              <AmberDropdown 
                                 options={[
-                                    { label: 'Manual Asset Protocol', value: '' },
+                                    { label: t('groupBuying.form.manual_asset_protocol'), value: '' },
                                     ...inventoryItems.map((item: any) => ({
                                         label: item.name,
                                         value: String(item.id)
@@ -233,15 +243,15 @@ export const GroupBuyingFormPage: React.FC = () => {
                                 onChange={(val) => handleChange('productId', val)}
                                 className="h-12 w-full bg-obsidian-outer border-border rounded-xl"
                              />
-                             {errors.productId && <p className="text-[10px] text-danger font-black uppercase italic px-1">{errors.productId}</p>}
+                             {errors.productId && <p className={`text-[10px] text-danger font-black uppercase px-1 ${isRTL ? 'text-right' : ''}`}>{errors.productId}</p>}
                         </div>
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 italic">Tactical Division</label>
+                            <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 ${isRTL ? 'text-right block' : ''}`}>{t('groupBuying.form.tactical_division')}</label>
                             <AmberDropdown 
                                 options={[
-                                    { label: 'General Consolidation', value: '1' },
-                                    { label: 'Enterprise Acquisition', value: '2' },
-                                    { label: 'Bulk Scaling Protocol', value: '3' },
+                                    { label: t('groupBuying.form.gen_consolidation'), value: '1' },
+                                    { label: t('groupBuying.form.ent_acquisition'), value: '2' },
+                                    { label: t('groupBuying.form.bulk_scaling'), value: '3' },
                                 ]}
                                 value={formData.categoryId || '1'}
                                 onChange={(val) => handleChange('categoryId', val)}
@@ -251,22 +261,23 @@ export const GroupBuyingFormPage: React.FC = () => {
                     </div>
 
                     <AmberInput 
-                        label="Campaign Protocol Nomenclature"
-                        placeholder="Define listing identify..."
+                        label={t('groupBuying.form.protocol_nomenclature')}
+                        placeholder={t('groupBuying.form.define_identify')}
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
                         error={errors.title}
-                        className="h-12 italic"
+                        className="h-12"
+                        dir={dir}
                     />
 
                     <AmberInput 
-                        label="Strategic Campaign Narrative"
-                        placeholder="Elaborate on consolidation logic and asset advantages..."
+                        label={t('groupBuying.form.strat_narrative')}
+                        placeholder={t('groupBuying.form.elaborate_narrative')}
                         value={formData.description}
                         onChange={(e) => handleChange('description', e.target.value)}
                         multiline
                         rows={6}
-                        className="italic"
+                        dir={dir}
                     />
                 </div>
             </Card>
@@ -274,28 +285,30 @@ export const GroupBuyingFormPage: React.FC = () => {
             {/* Threshold & Participation Metrics */}
             <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-8">
                 <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                       <Users className="w-5 h-5" />
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">Reach & Participation thresholds</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.threshold_reach_title')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <AmberInput 
-                        label="Minimum Activation Reach"
+                        label={t('groupBuying.form.min_activation_reach')}
                         type="number"
                         value={formData.minParticipants}
                         onChange={(e) => handleChange('minParticipants', Number(e.target.value))}
                         icon={<Zap className="w-4 h-4" />}
-                        className="h-12 italic tabular-nums"
+                        className="h-12 tabular-nums"
+                        dir={dir}
                     />
                     <AmberInput 
-                        label="Maximum Node Capacity"
+                        label={t('groupBuying.form.max_node_capacity')}
                         type="number"
                         value={formData.maxParticipants}
                         onChange={(e) => handleChange('maxParticipants', Number(e.target.value))}
                         icon={<Users className="w-4 h-4" />}
-                        className="h-12 italic tabular-nums"
+                        className="h-12 tabular-nums"
+                        dir={dir}
                     />
                 </div>
 
@@ -304,8 +317,8 @@ export const GroupBuyingFormPage: React.FC = () => {
                          <Info className="w-5 h-5 text-primary" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-xs font-black text-primary uppercase italic tracking-widest">Reach Protocol Insight</p>
-                        <p className="text-[11px] text-zinc-muted font-bold tracking-tight uppercase">Minmum reach is required for campaign activation. Scaling beyond node capacity triggers automatic asset reallocation.</p>
+                        <p className="text-xs font-black text-primary uppercase tracking-widest">{t('groupBuying.form.reach_insight_title')}</p>
+                        <p className="text-[11px] text-zinc-muted font-bold tracking-tight uppercase">{t('groupBuying.form.reach_insight_desc')}</p>
                     </div>
                 </div>
             </Card>
@@ -313,37 +326,56 @@ export const GroupBuyingFormPage: React.FC = () => {
 
         {/* Temporal & Fiscal Logistics */}
         <div className="space-y-8">
+            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+                   <div className="w-11 h-11 rounded-xl bg-info/10 flex items-center justify-center text-info border border-info/20 shadow-inner">
+                      <ImageIcon className="w-5 h-5" />
+                   </div>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.campaign_imagery')}</h3>
+                </div>
+                <AmberImageUpload
+                  value=""
+                  onChange={(files) => {
+                    if (files?.[0]) {
+                      setSelectedImageFile(files[0]);
+                    }
+                  }}
+                />
+            </Card>
+
             {/* Value Logic Matrix */}
             <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-7 h-fit">
                 <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
                    <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-inner">
                       <Calculator className="w-5 h-5" />
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">Fiscal Optimization</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.fiscal_opt')}</h3>
                 </div>
                 
                 <div className="space-y-6">
                     <AmberInput 
-                        label="Asset Base Premium ($)"
+                        label={t('groupBuying.form.asset_base_premium')}
                         type="number"
                         value={formData.originalPrice}
                         onChange={(e) => handleChange('originalPrice', Number(e.target.value))}
                         icon={<DollarSign className="w-4 h-4" />}
-                        className="h-12 italic tabular-nums"
+                        className="h-12 tabular-nums"
+                        dir={dir}
                     />
                     <AmberInput 
-                        label="Consolidated Deal Price ($)"
+                        label={t('groupBuying.form.consolidated_deal_price')}
                         type="number"
                         value={formData.dealPrice}
                         onChange={(e) => handleChange('dealPrice', Number(e.target.value))}
                         icon={<TrendingDown className="w-4 h-4" />}
                         error={errors.dealPrice}
-                        className="h-12 italic tabular-nums"
+                        className="h-12 tabular-nums"
+                        dir={dir}
                     />
 
                     <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between shadow-inner">
-                         <p className="text-[11px] font-black text-emerald-400 uppercase italic">Applied Scalability Discount</p>
-                         <span className="text-3xl font-black text-emerald-400 italic tabular-nums tracking-tighter leading-none">{discount}%</span>
+                         <p className="text-[11px] font-black text-emerald-400 uppercase">{t('groupBuying.form.applied_discount')}</p>
+                         <span className="text-3xl font-black text-emerald-400 tabular-nums tracking-tighter leading-none">{discount}%</span>
                     </div>
                 </div>
             </Card>
@@ -354,33 +386,35 @@ export const GroupBuyingFormPage: React.FC = () => {
                    <div className="w-11 h-11 rounded-xl bg-warning/10 flex items-center justify-center text-warning border border-warning/20 shadow-inner">
                       <Clock className="w-5 h-5" />
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">Temporal Spectrum</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.temporal_spectrum')}</h3>
                 </div>
                 <div className="space-y-6">
                     <AmberInput 
-                        label="Node Initialization start"
+                        label={t('groupBuying.form.node_init_start')}
                         type="datetime-local"
                         value={formData.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
                         icon={<Calendar className="w-4 h-4" />}
                         error={errors.startTime}
-                        className="h-12 italic"
+                        className="h-12"
+                        dir={dir}
                     />
                     <AmberInput 
-                        label="Protocol Termination Window"
+                        label={t('groupBuying.form.protocol_termination_window')}
                         type="datetime-local"
                         value={formData.endTime}
                         onChange={(e) => handleChange('endTime', e.target.value)}
                         icon={<Clock className="w-4 h-4" />}
                         error={errors.endTime}
-                        className="h-12 italic"
+                        className="h-12"
+                        dir={dir}
                     />
                 </div>
                 {/* Dynamic Duration Logic Mask */}
                 <div className="p-6 rounded-2xl bg-obsidian-panel/60 border border-white/5 space-y-4 shadow-inner">
                      <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
-                         <span className="text-zinc-muted italic">Campaign cycle duration</span>
-                         <span className="text-brand tabular-nums shadow-sm">Calculating...</span>
+                         <span className="text-zinc-muted">{t('groupBuying.form.cycle_duration')}</span>
+                         <span className="text-brand tabular-nums shadow-sm">{t('groupBuying.form.calculating')}</span>
                      </div>
                      <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden shadow-inner">
                          <div className="h-full bg-brand w-[45%] shadow-[0_0_10px_rgba(245,196,81,0.5)]" />
@@ -391,16 +425,16 @@ export const GroupBuyingFormPage: React.FC = () => {
             {/* Strategy Control Node */}
             <div className="space-y-4">
                 <AmberButton 
-                    className="w-full h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] italic rounded-[2rem] shadow-[0_15px_50px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm group"
+                    className="w-full h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-[0_15px_50px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm group"
                     onClick={handleSubmit}
                     disabled={createMutation.isPending || updateMutation.isPending}
                 >
-                    <span className="group-hover:tracking-[0.4em] transition-all duration-500">Commence Protocol Execution</span>
+                    <span className="group-hover:tracking-[0.4em] transition-all duration-500">{t('groupBuying.form.commence_execution')}</span>
                 </AmberButton>
                 
                 <AmberButton 
                     variant="secondary" 
-                    className="w-full h-14 bg-obsidian-card font-black uppercase tracking-widest italic rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
+                    className="w-full h-14 bg-obsidian-card font-black uppercase tracking-widest rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
                     onClick={() => navigate('/group-buying')}
                 >
                     {t('common.cancel')}

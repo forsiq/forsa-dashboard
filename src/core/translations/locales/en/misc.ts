@@ -89,6 +89,7 @@ export const misc = {
   "messaging.folders": "Folders",
   "messaging.templates": "Templates",
   "messaging.title": "Messaging",
+  "messaging.concluded_nodes": "Concluded Nodes",
 
   // Opportunities
   "opportunities.add": "Add",

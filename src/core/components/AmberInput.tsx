@@ -36,7 +36,7 @@ export const AmberInput: React.FC<AmberInputProps> = ({
           error ? "text-danger" : "text-zinc-muted/80"
         )}>
           <span>{label} {props.required && <span className="text-brand ml-0.5">*</span>}</span>
-          {error && <span className="italic normal-case opacity-90 text-[9px]">{error}</span>}
+          {error && <span className="normal-case opacity-90 text-[9px]">{error}</span>}
         </label>
       )}
       <div className="relative group">

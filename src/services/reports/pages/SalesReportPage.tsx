@@ -7,6 +7,7 @@ import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberExcelExport } from '../../../core/components/Data/AmberExcelExport';
 import { useGetSalesReport } from '../hooks';
+import { ReportStatsCard } from '../components/ReportStatsCard';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -20,10 +21,30 @@ export function SalesReportPage() {
   const [timeframe, setTimeframe] = useState('month');
 
   const kpis = [
-    { label: t('report.gross_sales') || 'Gross Sales', value: '$154,200', change: '+14%', color: 'text-brand' },
-    { label: t('report.net_profit') || 'Net Profit', value: '$42,500', change: '+8%', color: 'text-success' },
-    { label: t('report.tax_collected') || 'Tax', value: '$12,430', change: '+12%', color: 'text-warning' },
-    { label: t('report.shipping') || 'Shipping', value: '$5,200', change: '+5%', color: 'text-info' },
+    { 
+      label: t('report.gross_sales'), 
+      value: report?.grossSales ? `$${report.grossSales.toLocaleString()}` : '$154,200', 
+      change: report?.grossSalesChange || '+14%', 
+      color: 'text-brand' 
+    },
+    { 
+      label: t('report.net_profit'), 
+      value: report?.netProfit ? `$${report.netProfit.toLocaleString()}` : '$42,500', 
+      change: report?.netProfitChange || '+8%', 
+      color: 'text-success' 
+    },
+    { 
+      label: t('report.tax_collected'), 
+      value: report?.taxCollected ? `$${report.taxCollected.toLocaleString()}` : '$12,430', 
+      change: report?.taxCollectedChange || '+12%', 
+      color: 'text-warning' 
+    },
+    { 
+      label: t('report.shipping'), 
+      value: report?.shipping ? `$${report.shipping.toLocaleString()}` : '$5,200', 
+      change: report?.shippingChange || '+5%', 
+      color: 'text-info' 
+    },
   ];
 
   return (
@@ -87,13 +108,14 @@ export function SalesReportPage() {
           {/* KPI Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpis.map((kpi, i) => (
-              <AmberCard key={i} className="!p-6 border-l-4 border-l-zinc-border hover:border-l-brand transition-all">
-                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1">{kpi.label}</p>
-                <div className="flex items-end justify-between">
-                  <p className={cn("text-2xl font-black tracking-tight", kpi.color)}>{kpi.value}</p>
-                  <span className="text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">{kpi.change}</span>
-                </div>
-              </AmberCard>
+              <ReportStatsCard
+                key={i}
+                label={kpi.label}
+                value={kpi.value}
+                change={kpi.change}
+                color={kpi.color}
+                isRTL={isRTL}
+              />
             ))}
           </div>
 

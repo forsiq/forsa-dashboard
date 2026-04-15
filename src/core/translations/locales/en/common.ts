@@ -120,4 +120,11 @@ export const common = {
   "inventory": "Inventory",
   "display": "Display",
   "from": "From",
+  "common.all_protocols": "All Protocols",
+  "common.general_asset": "General Asset",
+  "common.reset": "Reset",
+  "common.complete": "COMPLETE",
+  "common.joined": "Joined",
+  "common.required": "Required",
+  "common.max": "Max",
 } as const;

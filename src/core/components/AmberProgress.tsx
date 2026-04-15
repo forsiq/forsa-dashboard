@@ -115,8 +115,6 @@ export const AmberProgress = React.forwardRef<HTMLDivElement, AmberProgressProps
             className={cn(
               'h-full rounded-full transition-all duration-300 ease-out',
               variantClasses[variant],
-              striped && 'bg-[length:10px_10px] bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)]',
-              animated && striped && 'animate-[progress-stripes_1s_linear_infinite]',
               indeterminate && 'animate-[indeterminate_1.5s_ease-in-out_infinite]'
             )}
             style={{

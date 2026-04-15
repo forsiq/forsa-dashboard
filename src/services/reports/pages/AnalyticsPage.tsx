@@ -21,6 +21,8 @@ import { cn } from '../../../core/lib/utils/cn';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { useGetAnalytics } from '../hooks';
 
+import { ReportStatsCard } from '../components/ReportStatsCard';
+
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export function AnalyticsPage() {
@@ -29,10 +31,34 @@ export function AnalyticsPage() {
   const { data: analytics, isLoading } = useGetAnalytics();
 
   const summaryStats = [
-    { label: t('report.total_revenue') || 'Total Revenue', value: '$124,592', change: '+12.5%', icon: DollarSign, color: 'text-success' },
-    { label: t('report.active_users') || 'Active Users', value: '8,432', change: '+5.2%', icon: Users, color: 'text-info' },
-    { label: t('report.avg_order') || 'Avg. Order', value: '$142.10', change: '-2.1%', icon: ShoppingCart, color: 'text-warning' },
-    { label: t('report.conversion_rate') || 'Conversion', value: '3.2%', change: '+0.4%', icon: TrendingUp, color: 'text-brand' },
+    { 
+      label: t('report.total_revenue'), 
+      value: analytics?.totalRevenue ? `$${analytics.totalRevenue.toLocaleString()}` : '$124,592', 
+      change: analytics?.totalRevenueChange || '+12.5%', 
+      icon: DollarSign, 
+      color: 'text-success' 
+    },
+    { 
+      label: t('report.active_users'), 
+      value: analytics?.activeUsers ? analytics.activeUsers.toLocaleString() : '8,432', 
+      change: analytics?.activeUsersChange || '+5.2%', 
+      icon: Users, 
+      color: 'text-info' 
+    },
+    { 
+      label: t('report.avg_order'), 
+      value: analytics?.avgOrderValue ? `$${analytics.avgOrderValue.toLocaleString()}` : '$142.10', 
+      change: analytics?.avgOrderValueChange || '-2.1%', 
+      icon: ShoppingCart, 
+      color: 'text-warning' 
+    },
+    { 
+      label: t('report.conversion_rate'), 
+      value: analytics?.conversionRate ? `${analytics.conversionRate}%` : '3.2%', 
+      change: analytics?.conversionRateChange || '+0.4%', 
+      icon: TrendingUp, 
+      color: 'text-brand' 
+    },
   ];
 
   const pieData = [
@@ -66,27 +92,15 @@ export function AnalyticsPage() {
           {/* Summary Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {summaryStats.map((stat, i) => (
-              <AmberCard key={i} className="!p-6 group hover:border-[var(--color-brand)]/20 transition-all">
-                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex flex-col items-center flex-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1">
-                      {stat.label}
-                    </span>
-                    <span className="text-2xl font-black text-zinc-text tracking-tight">
-                      {stat.value}
-                    </span>
-                    <div className="mt-2 flex items-center gap-1">
-                      {stat.change.startsWith('+') ? <ArrowUpRight className="w-3 h-3 text-success" /> : <ArrowDownRight className="w-3 h-3 text-danger" />}
-                      <span className={cn("text-[10px] font-bold", stat.change.startsWith('+') ? "text-success" : "text-danger")}>
-                        {stat.change} vs LY
-                      </span>
-                    </div>
-                  </div>
-                  <div className={cn('p-3 rounded-xl bg-white/5 border border-white/5 shadow-inner', stat.color)}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                </div>
-              </AmberCard>
+              <ReportStatsCard
+                key={i}
+                label={stat.label}
+                value={stat.value}
+                change={stat.change}
+                icon={stat.icon}
+                color={stat.color}
+                isRTL={isRTL}
+              />
             ))}
           </div>
 

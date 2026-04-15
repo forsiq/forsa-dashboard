@@ -53,6 +53,7 @@ export const sidebar = {
   "sidebar.userManagement": "User Management",
   "sidebar.about": "About",
   "sidebar.sales": "Sales",
+  "sidebar.sales_department": "Sales Department",
   "sidebar.customer_service": "Sidebar Customer service",
   "sidebar.order_processing": "Sidebar Order processing",
   "sidebar.sales_marketing": "Sidebar Sales marketing",

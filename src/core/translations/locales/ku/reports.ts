@@ -42,4 +42,12 @@ export const reports = {
   "report.revenue": "داهات",
   "report.export": "هەناردن",
   "report.vs_last_month": "بەراورد بە مانگی پێشوو",
+  "report.tax_collected": "باجی وەرگیراو",
+  "report.shipping": "گواستنەوە",
+  "report.active_users": "بەکارهێنەرانی چالاک",
+  "report.conversion_rate": "ڕێژەی گۆڕانکاری",
+  "report.gross_sales": "فرۆشتنی گشتی",
+  "report.net_profit": "قازانجی پاک",
+  "report.product_performance": "ئەدای بەرهەمەکان",
+  "report.period_comparison": "بەراوردی ماوە",
 } as const;

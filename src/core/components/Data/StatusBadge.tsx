@@ -23,25 +23,29 @@ export interface StatusBadgeProps {
 }
 
 const variantStyles: Record<StatusVariant, string> = {
-  active: 'bg-[#E7FBF3] text-[#059669] border-[#D1FAE5]',
-  success: 'bg-[#E7FBF3] text-[#059669] border-[#D1FAE5]',
-  completed: 'bg-[#E7FBF3] text-[#059669] border-[#D1FAE5]',
+  // Success/Active - Emerald/Green
+  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]',
+  success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]',
+  completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   
-  pending: 'bg-[#FFF9E6] text-[#FFC000] border-[#FEF3C7]',
-  warning: 'bg-[#FFF9E6] text-[#FFC000] border-[#FEF3C7]',
+  // Warning/Pending - Amber/Yellow (Fixed contrast: darker text would be black, but on dark theme we use vibrant on deep)
+  pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]',
+  warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]',
   
-  failed: 'bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]',
-  error: 'bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]',
-  cancelled: 'bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]',
-  inactive: 'bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]', // Matching image "غير نشط"
+  // Danger/Error/Cancelled - Rose/Red
+  failed: 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]',
+  error: 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]',
+  cancelled: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  inactive: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
   
-  info: 'bg-blue-50 text-blue-700 border-blue-100',
+  // Info/Processing - Cyan/Blue
+  info: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.05)]',
 };
 
 const sizeStyles = {
-  sm: 'text-[10px] px-2 py-0.5 h-5',
-  md: 'text-[11px] px-2.5 py-0.5 h-6',
-  lg: 'text-xs px-3 py-1 h-7',
+  sm: 'text-[11px] px-2.5 py-1 h-6',
+  md: 'text-xs px-3 py-1.5 h-7',
+  lg: 'text-sm px-4 py-2 h-9',
 };
 
 const dotSizes = {
@@ -75,7 +79,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <span 
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-sm border font-bold whitespace-nowrap select-none",
+        "inline-flex items-center gap-1.5 rounded-lg border font-black uppercase tracking-widest whitespace-nowrap select-none transition-all duration-300",
         !isCustomStyle && variantStyles[variant],
         sizeStyles[size],
         className

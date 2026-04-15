@@ -27,6 +27,8 @@ export const orders = {
   "orders.stat.returns": "المرتجعات",
   "orders.status.pending": "معلق",
   "orders.status.processing": "قيد المعالجة",
+  "orders.status.shipped": "تم الشحن",
+  "orders.status.delivered": "تم التوصيل",
   "orders.status.cancelled": "ملغي",
   "orders.status.completed": "مكتمل",
   "orders.status.packing": "التغليف",

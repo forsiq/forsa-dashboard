@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -8,6 +8,14 @@ export interface Toast {
   message: string;
   duration?: number;
 }
+
+export interface GlobalToastEventDetail {
+  type: ToastType;
+  message: string;
+  duration?: number;
+}
+
+const GLOBAL_TOAST_EVENT = 'zv:toast';
 
 interface ToastContextType {
   toasts: Toast[];
@@ -45,6 +53,21 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const error = useCallback((msg: string, dur?: number) => addToast('error', msg, dur), [addToast]);
   const info = useCallback((msg: string, dur?: number) => addToast('info', msg, dur), [addToast]);
   const warning = useCallback((msg: string, dur?: number) => addToast('warning', msg, dur), [addToast]);
+
+  useEffect(() => {
+    const handleGlobalToast = (event: Event) => {
+      const customEvent = event as CustomEvent<GlobalToastEventDetail>;
+      if (!customEvent.detail?.type || !customEvent.detail?.message) {
+        return;
+      }
+      addToast(customEvent.detail.type, customEvent.detail.message, customEvent.detail.duration);
+    };
+
+    window.addEventListener(GLOBAL_TOAST_EVENT, handleGlobalToast);
+    return () => {
+      window.removeEventListener(GLOBAL_TOAST_EVENT, handleGlobalToast);
+    };
+  }, [addToast]);
 
   const contextValue = React.useMemo(() => ({ 
     toasts, 

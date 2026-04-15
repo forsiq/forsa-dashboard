@@ -74,6 +74,7 @@ export const misc = {
 
   // CRM
   "crm.title": "مركز إدارة علاقات العملاء",
+  "messaging.concluded_nodes": "العقد المنتهية",
   "crm.subtitle": "علاقات العملاء والخطوط",
 
   // Finance

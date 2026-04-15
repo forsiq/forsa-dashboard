@@ -14,10 +14,26 @@ export interface AnalyticsData {
   orders: { date: string; value: number }[];
   visitors: { date: string; value: number }[];
   conversion: number;
+  totalRevenue: number;
+  totalRevenueChange: string;
+  activeUsers: number;
+  activeUsersChange: string;
+  avgOrderValue: number;
+  avgOrderValueChange: string;
+  conversionRate: number;
+  conversionRateChange: string;
 }
 
 export interface SalesReportData {
   products: { name: string; sales: number; revenue: number }[];
   categories: { name: string; sales: number; revenue: number }[];
   topCustomers: { name: string; email: string; spent: number }[];
+  grossSales: number;
+  grossSalesChange: string;
+  netProfit: number;
+  netProfitChange: string;
+  taxCollected: number;
+  taxCollectedChange: string;
+  shipping: number;
+  shippingChange: string;
 }

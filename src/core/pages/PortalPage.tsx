@@ -73,7 +73,7 @@ export const PortalPage: React.FC = () => {
             <div className="p-2.5 bg-brand/10 rounded-sm border border-brand/20 shadow-[0_0_15px_rgba(255,192,0,0.1)]">
               <Grip className="w-6 h-6 text-brand" />
             </div>
-            <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
+            <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
               ZV <span className="text-brand">Gateway</span>
             </h1>
           </motion.div>
@@ -130,7 +130,7 @@ export const PortalPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-xl font-black text-white tracking-tighter italic uppercase group-hover:text-brand transition-colors">
+                  <h3 className="text-xl font-black text-white tracking-tighter uppercase group-hover:text-brand transition-colors">
                      {t(`service.${service.id}.name`) || service.name}
                   </h3>
                   <p className="text-[11px] text-zinc-muted leading-relaxed font-medium tracking-tight">

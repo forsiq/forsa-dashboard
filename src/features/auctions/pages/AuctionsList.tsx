@@ -96,7 +96,7 @@ export const AuctionsList: React.FC = () => {
                             <Gavel className="w-6 h-6" />
                         </div>
                         <div>
-                            <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase italic">
+                            <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
                                 {t('auction.listings.title') || 'Auction Infrastructure'}
                             </h1>
                             <p className="text-base text-zinc-secondary font-bold tracking-tight uppercase mt-1">
@@ -148,44 +148,44 @@ export const AuctionsList: React.FC = () => {
                 <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-2">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic font-bold">Active Engines</span>
-                            <h3 className="text-3xl font-black text-zinc-text tracking-tighter italic tabular-nums">{stats?.activeAuctions || 0}</h3>
+                            <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest font-bold">{t('auction.metrics.active_engines') || 'Active Engines'}</span>
+                            <h3 className="text-3xl font-black text-zinc-text tracking-tighter tabular-nums">{stats?.activeAuctions || 0}</h3>
                         </div>
                         <div className="p-3 bg-brand/10 text-brand rounded-xl border border-brand/20">
                             <Gavel className="w-5 h-5" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-brand italic mt-4 uppercase tracking-widest">
-                        <span>Live Liquidations</span>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-brand mt-4 uppercase tracking-widest">
+                        <span>{t('auction.metrics.live_liquidations') || 'Live Liquidations'}</span>
                     </div>
                 </Card>
 
                 <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-2">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest italic font-bold">Total Bid Velocity</span>
-                            <h3 className="text-3xl font-black text-emerald-400 tracking-tighter italic tabular-nums">{stats?.totalBids || 0}</h3>
+                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-bold">{t('auction.metrics.bid_velocity') || 'Total Bid Velocity'}</span>
+                            <h3 className="text-3xl font-black text-emerald-400 tracking-tighter tabular-nums">{stats?.totalBids || 0}</h3>
                         </div>
                         <div className="p-3 bg-emerald-400/10 text-emerald-400 rounded-xl border border-emerald-400/20">
                             <TrendingUp className="w-5 h-5" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4 uppercase tracking-widest">
-                        <span>Interaction Throughput</span>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
+                        <span>{t('auction.metrics.interaction_throughput') || 'Interaction Throughput'}</span>
                     </div>
                 </Card>
 
                 <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-2">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-info uppercase tracking-widest italic font-bold">Projected Revenue</span>
-                            <h3 className="text-3xl font-black text-info tracking-tighter italic tabular-nums">${stats?.totalRevenue?.toLocaleString() || '0'}</h3>
+                            <span className="text-[10px] font-black text-info uppercase tracking-widest font-bold">{t('auction.metrics.projected_revenue') || 'Projected Revenue'}</span>
+                            <h3 className="text-3xl font-black text-info tracking-tighter tabular-nums">${stats?.totalRevenue?.toLocaleString() || '0'}</h3>
                         </div>
                         <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
                             <DollarSign className="w-5 h-5" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4 uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
                         <span>{t('auction.equitable_distribution') || 'Equitable Distribution'}</span>
                     </div>
                 </Card>
@@ -193,14 +193,14 @@ export const AuctionsList: React.FC = () => {
                 <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
                     <div className="flex items-start justify-between mb-2">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black text-warning uppercase tracking-widest italic font-bold">{t('auction.critical_termination') || 'Critical Termination'}</span>
-                            <h3 className="text-3xl font-black text-warning tracking-tighter italic tabular-nums">{stats?.scheduledAuctions || 0}</h3>
+                            <span className="text-[10px] font-black text-warning uppercase tracking-widest font-bold">{t('auction.critical_termination') || 'Critical Termination'}</span>
+                            <h3 className="text-3xl font-black text-warning tracking-tighter tabular-nums">{stats?.scheduledAuctions || 0}</h3>
                         </div>
                         <div className="p-3 bg-warning/10 text-warning rounded-xl border border-warning/20">
                             <Clock className="w-5 h-5" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4 uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
                         <span>{t('auction.concluding_soon') || 'Concluding Soon'}</span>
                     </div>
                 </Card>
@@ -209,7 +209,7 @@ export const AuctionsList: React.FC = () => {
             {/* Asset Distribution Grid */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] italic flex items-center gap-2">
+                    <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] flex items-center gap-2">
                         <Layers className="w-4 h-4" /> {t('auction.operational_listings_matrix') || 'Operational Listings Matrix'}
                     </h2>
                     <div className="relative group min-w-[320px]">
@@ -218,8 +218,11 @@ export const AuctionsList: React.FC = () => {
                             isRTL ? 'right-4' : 'left-4'
                         )} />
                         <AmberInput 
-                            placeholder="Scan listing identifiers..." 
-                            className="h-11 bg-obsidian-card border-border pl-11 pr-4 text-xs font-bold italic"
+                            placeholder={t('auction.listings.search') || "Scan listing identifiers..."} 
+                            className={cn(
+                                "h-11 bg-obsidian-card border-border text-xs font-bold",
+                                isRTL ? "pr-11 pl-4 text-right" : "pl-11 pr-4 text-left"
+                            )}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -238,11 +241,11 @@ export const AuctionsList: React.FC = () => {
                              <Gavel className="w-10 h-10 text-zinc-muted/30" />
                          </div>
                          <div className="max-w-md mx-auto space-y-2">
-                            <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest italic">Inventory Depleted</h3>
-                            <p className="text-sm text-zinc-muted font-bold tracking-tight">No active liquidation identifiers found matching your current configuration parameters.</p>
+                            <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('auction.inventory.depleted') || 'Inventory Depleted'}</h3>
+                            <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('auction.inventory.no_identifiers') || 'No active liquidation identifiers found matching your current configuration parameters.'}</p>
                          </div>
-                         <AmberButton onClick={() => navigate('/auctions/add')} className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase italic active:scale-95 transition-all">
-                             Deploy First Listing
+                         <AmberButton onClick={() => navigate('/auctions/add')} className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all">
+                             {t('auction.action.deploy_listing') || 'Deploy First Listing'}
                          </AmberButton>
                     </Card>
                 ) : viewMode === 'grid' ? (
@@ -266,11 +269,11 @@ export const AuctionsList: React.FC = () => {
                                             status={auction.status.toUpperCase()} 
                                             variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
                                             size="sm"
-                                            className="font-bold tracking-[0.2em] italic backdrop-blur-md bg-black/40"
+                                            className="font-bold tracking-[0.2em] backdrop-blur-md bg-black/40"
                                          />
                                          <div className="bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
                                              <Clock className="w-3.5 h-3.5 text-warning" />
-                                             <span className="text-[10px] font-black text-white italic tabular-nums uppercase">
+                                             <span className="text-[10px] font-black text-white tabular-nums uppercase">
                                                  {getCountdown(auction.endTime)}
                                              </span>
                                          </div>
@@ -278,8 +281,8 @@ export const AuctionsList: React.FC = () => {
                                      {/* Bottom Gradient Over */}
                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                                      <div className="absolute bottom-4 left-4 right-4">
-                                         <span className="text-[10px] font-black text-brand uppercase tracking-widest italic">{auction.categoryName || 'GENERAL ASSET'}</span>
-                                         <h4 className="text-lg font-black text-white leading-none uppercase italic tracking-tight truncate mt-1">{auction.title}</h4>
+                                         <span className="text-[10px] font-black text-brand uppercase tracking-widest">{auction.categoryName || (t('common.general_asset') || 'GENERAL ASSET')}</span>
+                                         <h4 className="text-lg font-black text-white leading-none uppercase tracking-tight truncate mt-1">{auction.title}</h4>
                                      </div>
                                 </div>
 
@@ -287,18 +290,18 @@ export const AuctionsList: React.FC = () => {
                                      {/* High-Level Bidding Telemetry */}
                                      <div className="grid grid-cols-2 gap-4">
                                          <div className="space-y-1">
-                                             <span className="text-[9px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">Current Premium</span>
+                                             <span className="text-[9px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auction.detail.current_premium') || 'Current Premium'}</span>
                                              <div className="flex items-baseline gap-1 text-brand">
-                                                 <span className="text-xl font-black italic tabular-nums leading-none tracking-tighter">
+                                                 <span className="text-xl font-black tabular-nums leading-none tracking-tighter">
                                                      ${(auction.currentBid || auction.startPrice).toLocaleString()}
                                                  </span>
                                              </div>
                                          </div>
                                          <div className="space-y-1 text-right">
-                                             <span className="text-[9px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">Bid Interactions</span>
+                                             <span className="text-[9px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auction.table.interactions') || 'Bid Interactions'}</span>
                                              <div className="flex items-center justify-end gap-1.5 text-zinc-text">
                                                  <TrendingUp className="w-3.5 h-3.5 text-success" />
-                                                 <span className="text-xl font-black italic tabular-nums leading-none tracking-tighter">{auction.totalBids || 0}</span>
+                                                 <span className="text-xl font-black tabular-nums leading-none tracking-tighter">{auction.totalBids || 0}</span>
                                              </div>
                                          </div>
                                      </div>
@@ -309,7 +312,7 @@ export const AuctionsList: React.FC = () => {
                                      <div className="flex items-center gap-3">
                                          <AmberButton 
                                             variant="secondary" 
-                                            className="flex-1 h-11 rounded-xl bg-obsidian-hover hover:bg-brand hover:text-black font-black uppercase text-[10px] tracking-widest italic transition-all active:scale-95"
+                                            className="flex-1 h-11 rounded-xl bg-obsidian-hover hover:bg-brand hover:text-black font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
                                          >
                                              Inspect Node
                                          </AmberButton>
@@ -335,11 +338,11 @@ export const AuctionsList: React.FC = () => {
                          <table className="w-full text-left border-collapse" dir={dir}>
                              <thead>
                                  <tr className="border-b border-border bg-obsidian-panel/40">
-                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">Identification</th>
-                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">State</th>
-                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest italic text-center">Protocol Duration</th>
-                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest italic text-right">Premium Value</th>
-                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest italic text-right">Interactions</th>
+                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.table.identification') || 'Identification'}</th>
+                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.table.state') || 'State'}</th>
+                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest text-center">{t('auction.table.protocol_duration') || 'Protocol Duration'}</th>
+                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest text-right">{t('auction.table.premium_value') || 'Premium Value'}</th>
+                                     <th className="px-6 py-4 text-[10px] font-black text-zinc-muted uppercase tracking-widest text-right">{t('auction.table.interactions') || 'Interactions'}</th>
                                      <th className="px-6 py-4"></th>
                                  </tr>
                              </thead>
@@ -356,7 +359,7 @@ export const AuctionsList: React.FC = () => {
                                                      />
                                                  </div>
                                                  <div>
-                                                     <p className="text-sm font-black text-zinc-text uppercase italic tracking-tight">{auction.title}</p>
+                                                     <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{auction.title}</p>
                                                      <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || 'GENERAL'}</p>
                                                  </div>
                                              </div>
@@ -365,17 +368,17 @@ export const AuctionsList: React.FC = () => {
                                              <StatusBadge status={auction.status.toUpperCase()} variant={auction.status === 'active' ? 'success' : 'warning'} size="sm" />
                                          </td>
                                          <td className="px-6 py-5 text-center">
-                                             <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning italic tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
+                                             <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
                                                  <Clock className="w-3 h-3" />
                                                  {getCountdown(auction.endTime)}
                                              </div>
                                          </td>
                                          <td className="px-6 py-5 text-right">
-                                             <span className="text-base font-black text-brand italic tabular-nums leading-none tracking-tight">
+                                             <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
                                                  ${(auction.currentBid || auction.startPrice).toLocaleString()}
                                              </span>
                                          </td>
-                                         <td className="px-6 py-5 text-right font-black text-zinc-text italic text-sm tabular-nums tracking-tighter">
+                                         <td className="px-6 py-5 text-right font-black text-zinc-text text-sm tabular-nums tracking-tighter">
                                              {auction.totalBids || 0}
                                          </td>
                                          <td className="px-6 py-5 text-right">
@@ -402,14 +405,14 @@ export const AuctionsList: React.FC = () => {
             <AmberSlideOver
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
-                title="Operational Configuration"
-                description="Refine listing matrix by status, category, and interaction throughput."
+                title={t('auction.config.operational_title') || "Operational Configuration"}
+                description={t('auction.config.refine_matrix') || "Refine listing matrix by status, category, and interaction throughput."}
             >
                 <div className="space-y-8 py-4">
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">Protocol Identifier Search</label>
+                        <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.config.protocol_identifier_search') || 'Protocol Identifier Search'}</label>
                         <AmberInput 
-                            placeholder="Scan by title or identifier..." 
+                            placeholder={t('auction.listings.search') || "Scan by title or identifier..."} 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="h-12"
@@ -420,14 +423,14 @@ export const AuctionsList: React.FC = () => {
 
                     <div className="space-y-6">
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">State Protocol</label>
+                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.config.state_protocol') || 'State Protocol'}</label>
                             <AmberDropdown 
                                 options={[
-                                    { label: 'All Protocols', value: 'all' },
-                                    { label: 'Live Liquidations', value: 'active' },
-                                    { label: 'Scheduled Deployments', value: 'scheduled' },
-                                    { label: 'Concluded Nodes', value: 'ended' },
-                                    { label: 'Draft Schema', value: 'draft' },
+                                    { label: t('common.all_protocols') || 'All Protocols', value: 'all' },
+                                    { label: t('auction.metrics.live_liquidations') || 'Live Liquidations', value: 'active' },
+                                    { label: t('auction.scheduled_deployments') || 'Scheduled Deployments', value: 'scheduled' },
+                                    { label: t('auction.concluded_nodes') || 'Concluded Nodes', value: 'ended' },
+                                    { label: t('auction.draft_schema') || 'Draft Schema', value: 'draft' },
                                 ]}
                                 value={statusFilter}
                                 onChange={(value: any) => setStatusFilter(value)}
@@ -438,7 +441,7 @@ export const AuctionsList: React.FC = () => {
                     
                     <div className="pt-8 space-y-3">
                         <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95 transition-all" onClick={() => setIsFilterOpen(false)}>
-                            Reconfigure Matrix
+                            {t('auction.config.reconfigure_matrix') || 'Reconfigure Matrix'}
                         </AmberButton>
                         <AmberButton 
                             variant="secondary" 
@@ -449,7 +452,7 @@ export const AuctionsList: React.FC = () => {
                                 setIsFilterOpen(false);
                             }}
                         >
-                            Reset Configuration
+                            {t('common.reset') || 'Reset Configuration'}
                         </AmberButton>
                     </div>
                 </div>

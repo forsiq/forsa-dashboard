@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Folder, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { cn } from '../../../core/lib/utils/cn';
@@ -40,24 +40,33 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, className, iconClassName, isLoading }: StatCardProps) {
   return (
-    <AmberCard className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-white/10 transition-all group overflow-hidden relative">
+    <AmberCard className={cn(
+      "!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-white/10 transition-all group overflow-hidden relative",
+      className?.includes('text-') && className.split(' ').find(c => c.startsWith('text-'))
+    )}>
       <div className="flex items-start justify-between relative z-10">
         <div className="space-y-1">
-          <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
+          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em] block">
             {label}
           </span>
           {isLoading ? (
             <div className="h-8 w-12 bg-zinc-card/50 rounded animate-pulse mt-1" />
           ) : (
-            <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
+            <span className="text-3xl font-black text-zinc-text tracking-tight tabular-nums leading-none">
               {value}
             </span>
           )}
         </div>
-        <div className={cn('p-3 rounded-xl flex-shrink-0', className)}>
+        <div className={cn(
+          'p-3 rounded-xl flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg',
+          className
+        )}>
           <Icon className={cn('w-5 h-5', iconClassName)} />
         </div>
       </div>
+      
+      {/* Background Polish - Inherits color via bg-current */}
+      <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-current opacity-[0.05] rounded-full blur-3xl group-hover:opacity-[0.1] transition-all duration-500" />
     </AmberCard>
   );
 }
@@ -109,10 +118,10 @@ export function CategoriesPage() {
       label: t('category.name') || 'Name',
       render: (category: Category) => (
         <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-lg bg-black/5">
-            <Folder className="w-4 h-4 text-zinc-muted" />
+          <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
+            <LayoutGrid className="w-4 h-4 text-zinc-muted" />
           </div>
-          <span className="text-sm font-bold text-zinc-text">
+          <span className="text-sm font-bold text-zinc-text tracking-tight uppercase">
             {category.name}
           </span>
         </div>
@@ -207,33 +216,33 @@ export function CategoriesPage() {
         <StatCard
           label={t('category.total') || 'Total Categories'}
           value={stats?.total ?? 0}
-          icon={Folder}
-          className="bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]"
-          iconClassName="text-[var(--color-warning-text)]"
+          icon={LayoutGrid}
+          className="bg-warning/10 text-warning shadow-[0_0_20px_rgba(245,158,11,0.05)]"
+          iconClassName="text-warning"
           isLoading={statsLoading}
         />
         <StatCard
           label={t('category.active') || 'Active'}
           value={stats?.active ?? 0}
-          icon={() => <span className="text-xl">✓</span>}
-          className="bg-[var(--color-success-bg)] text-[var(--color-success-text)]"
-          iconClassName="text-[var(--color-success-text)]"
+          icon={Activity}
+          className="bg-success/10 text-success shadow-[0_0_20px_rgba(16,185,129,0.05)]"
+          iconClassName="text-success"
           isLoading={statsLoading}
         />
         <StatCard
           label={t('category.inactive') || 'Inactive'}
           value={stats?.inactive ?? 0}
-          icon={() => <span className="text-xl">○</span>}
-          className="bg-[var(--color-danger-bg)] text-[var(--color-danger-text)]"
-          iconClassName="text-[var(--color-danger-text)]"
+          icon={Ban}
+          className="bg-danger/10 text-danger shadow-[0_0_20px_rgba(239,68,68,0.05)]"
+          iconClassName="text-danger"
           isLoading={statsLoading}
         />
         <StatCard
           label={t('category.main') || 'Main Categories'}
           value={stats?.withParent ?? 0}
-          icon={() => <span className="text-xl">#</span>}
-          className="bg-[var(--color-info-bg)] text-[var(--color-info-text)]"
-          iconClassName="text-[var(--color-info-text)]"
+          icon={Layers}
+          className="bg-info/10 text-info shadow-[0_0_20px_rgba(59,130,246,0.05)]"
+          iconClassName="text-info"
           isLoading={statsLoading}
         />
       </div>

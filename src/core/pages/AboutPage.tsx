@@ -51,7 +51,7 @@ export const AboutPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                    <h1 className="text-5xl font-black text-zinc-text uppercase tracking-tighter italic leading-none">
+                    <h1 className="text-5xl font-black text-zinc-text uppercase tracking-tighter leading-none">
                         ZoneVast <span className="text-brand">Template</span>
                     </h1>
                     <p className="text-sm text-zinc-muted font-bold uppercase tracking-[0.4em] opacity-80">
@@ -71,7 +71,7 @@ export const AboutPage: React.FC = () => {
                     <h3 className="text-brand uppercase tracking-[0.4em] text-[10px] font-black">
                         {t('about.directive.title')}
                     </h3>
-                    <p className="text-2xl md:text-3xl font-black text-white leading-tight italic tracking-tight">
+                    <p className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight">
                         {t('about.directive.desc')}
                     </p>
                 </div>
@@ -106,7 +106,7 @@ export const AboutPage: React.FC = () => {
                     <div className="p-1.5 bg-brand/10 rounded-lg">
                         <FolderOpen className="w-4 h-4 text-brand" />
                     </div>
-                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.4em] italic">{t('about.history.title')}</h3>
+                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.4em]">{t('about.history.title')}</h3>
                 </div>
 
                 <Card noPadding className="grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden shadow-2xl h-[600px] border-white/5 bg-obsidian-panel" glass>
@@ -191,7 +191,7 @@ export const AboutPage: React.FC = () => {
                                                     return <h1 key={i} className="text-2xl font-black text-white uppercase tracking-tight mb-6 pb-2 border-b border-white/10">{line.replace('# ', '')}</h1>;
                                                 }
                                                 if (line.startsWith('## ')) {
-                                                    return <h2 key={i} className="text-lg font-bold text-brand mt-8 mb-3 italic">{line.replace('## ', '')}</h2>;
+                                                    return <h2 key={i} className="text-lg font-bold text-brand mt-8 mb-3">{line.replace('## ', '')}</h2>;
                                                 }
                                                 if (line.startsWith('- ')) {
                                                     return (
@@ -227,7 +227,7 @@ export const AboutPage: React.FC = () => {
 
             {/* Footer */}
             <div className="pt-12 border-t border-white/5 text-center">
-                <p className="text-[10px] text-zinc-muted/20 font-bold uppercase tracking-[1em] italic">
+                <p className="text-[10px] text-zinc-muted/20 font-bold uppercase tracking-[1em]">
                     ZoneVast Template © 2026
                 </p>
             </div>

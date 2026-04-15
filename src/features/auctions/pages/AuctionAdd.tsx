@@ -32,22 +32,22 @@ const Card = ({ className, children, ...props }: any) => (
 
 const Input = ({ label, error, ...props }: any) => (
   <div className="space-y-1">
-    {label && <label className="text-sm text-zinc-400">{label}</label>}
+    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
     <input
       className={`w-full px-4 py-2 bg-zinc-800 border ${
         error ? 'border-red-500' : 'border-white/10'
-      } rounded-lg text-white focus:outline-none focus:border-brand`}
+      } rounded-lg text-white focus:outline-none focus:border-brand ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
       {...props}
     />
-    {error && <span className="text-xs text-red-400">{error}</span>}
+    {error && <span className={`text-xs text-red-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{error}</span>}
   </div>
 );
 
 const Select = ({ label, children, ...props }: any) => (
   <div className="space-y-1">
-    {label && <label className="text-sm text-zinc-400">{label}</label>}
+    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
     <select
-      className="w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand"
+      className={`w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
       {...props}
     >
       {children}
@@ -57,9 +57,9 @@ const Select = ({ label, children, ...props }: any) => (
 
 const TextArea = ({ label, ...props }: any) => (
   <div className="space-y-1">
-    {label && <label className="text-sm text-zinc-400">{label}</label>}
+    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
     <textarea
-      className="w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand resize-none"
+      className={`w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand resize-none ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
       rows={4}
       {...props}
     />
@@ -68,7 +68,7 @@ const TextArea = ({ label, ...props }: any) => (
 
 export const AuctionAdd = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const createAuction = useCreateAuction();
 
   const [formData, setFormData] = useState<Partial<AuctionCreateInput>>({
@@ -88,14 +88,14 @@ export const AuctionAdd = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
   const categories = [
-    { id: 1, name: 'Electronics' },
-    { id: 2, name: 'Jewelry' },
-    { id: 3, name: 'Art' },
-    { id: 4, name: 'Collectibles' },
-    { id: 5, name: 'Vehicles' },
-    { id: 6, name: 'Real Estate' },
-    { id: 7, name: 'Fashion' },
-    { id: 8, name: 'Other' },
+    { id: 1, name: t('auction.category.electronics') || 'Electronics', key: 'electronics' },
+    { id: 2, name: t('auction.category.jewelry') || 'Jewelry', key: 'jewelry' },
+    { id: 3, name: t('auction.category.art') || 'Art', key: 'art' },
+    { id: 4, name: t('auction.category.collectibles') || 'Collectibles', key: 'collectibles' },
+    { id: 5, name: t('auction.category.vehicles') || 'Vehicles', key: 'vehicles' },
+    { id: 6, name: t('auction.category.real_estate') || 'Real Estate', key: 'real_estate' },
+    { id: 7, name: t('auction.category.fashion') || 'Fashion', key: 'fashion' },
+    { id: 8, name: t('auction.category.other') || 'Other', key: 'other' },
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -122,15 +122,15 @@ export const AuctionAdd = () => {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title?.trim()) newErrors.title = 'Title is required';
-    if (!formData.description?.trim()) newErrors.description = 'Description is required';
+    if (!formData.title?.trim()) newErrors.title = t('auction.validation.title_required') || 'Title is required';
+    if (!formData.description?.trim()) newErrors.description = t('auction.validation.desc_required') || 'Description is required';
     if (!formData.startPrice || formData.startPrice <= 0)
-      newErrors.startPrice = 'Starting price must be greater than 0';
-    if (!formData.startTime) newErrors.startTime = 'Start time is required';
-    if (!formData.endTime) newErrors.endTime = 'End time is required';
+      newErrors.startPrice = t('auction.validation.start_price_gt_0') || 'Starting price must be greater than 0';
+    if (!formData.startTime) newErrors.startTime = t('auction.validation.start_time_required') || 'Start time is required';
+    if (!formData.endTime) newErrors.endTime = t('auction.validation.end_time_required') || 'End time is required';
     if (formData.buyNowPrice && formData.buyNowPrice <= formData.startPrice)
-      newErrors.buyNowPrice = 'Buy now price must be greater than starting price';
-    if (uploadedImages.length === 0) newErrors.images = 'At least one image is required';
+      newErrors.buyNowPrice = t('auction.validation.buy_now_gt_start') || 'Buy now price must be greater than starting price';
+    if (uploadedImages.length === 0) newErrors.images = t('auction.validation.image_required') || 'At least one image is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -152,18 +152,20 @@ export const AuctionAdd = () => {
     }
   };
 
+  const isRTL = dir === 'rtl';
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6" dir={dir}>
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <Button
           variant="ghost"
           className="p-2 hover:bg-white/5"
           onClick={() => navigate('/auctions')}
         >
-          <ArrowLeft size={20} className="text-white" />
+          <ArrowLeft size={20} className={`text-white ${isRTL ? 'rotate-180' : ''}`} />
         </Button>
-        <div>
+        <div className={isRTL ? 'text-right' : 'text-left'}>
           <h1 className="text-2xl font-bold text-white">{t('auction.create_auction') || 'Create Auction'}</h1>
           <p className="text-zinc-400">{t('auction.list_item_desc') || 'List an item for auction'}</p>
         </div>
@@ -172,28 +174,31 @@ export const AuctionAdd = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">{t('auction.basic_info') || 'Basic Information'}</h2>
+          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.basic_info') || 'Basic Information'}</h2>
 
           <Input
-            label="Title"
+            label={t('auction.form.title')}
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
             error={errors.title}
-            placeholder="Enter auction title"
+            placeholder={t('auction.form.title_placeholder')}
+            dir={dir}
           />
 
           <TextArea
-            label="Description"
+            label={t('auction.form.description')}
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
             error={errors.description}
-            placeholder="Describe your item in detail"
+            placeholder={t('auction.form.desc_placeholder')}
+            dir={dir}
           />
 
           <Select
-            label="Category"
+            label={t('auction.form.category')}
             value={formData.categoryId}
             onChange={(e) => handleInputChange('categoryId', parseInt(e.target.value))}
+            dir={dir}
           >
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -203,11 +208,11 @@ export const AuctionAdd = () => {
 
         {/* Images */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Images</h2>
+          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.images') || 'Images'}</h2>
 
           <div className="border-2 border-dashed border-white/10 rounded-lg p-8 text-center hover:border-brand/50 transition-colors">
             <Upload size={32} className="mx-auto text-zinc-500 mb-2" />
-            <p className="text-zinc-400 mb-4">Drag images here or click to upload</p>
+            <p className="text-zinc-400 mb-4">{t('auction.form.drag_drop') || 'Drag images here or click to upload'}</p>
             <input
               type="file"
               multiple
@@ -221,11 +226,11 @@ export const AuctionAdd = () => {
               className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white cursor-pointer"
             >
               <Plus size={18} />
-              Select Images
+              {t('auction.form.select_images') || 'Select Images'}
             </label>
           </div>
 
-          {errors.images && <span className="text-sm text-red-400">{errors.images}</span>}
+          {errors.images && <span className={`text-sm text-red-400 block ${isRTL ? 'text-right' : 'text-left'}`}>{errors.images}</span>}
 
           {uploadedImages.length > 0 && (
             <div className="grid grid-cols-4 gap-4">
@@ -251,85 +256,91 @@ export const AuctionAdd = () => {
 
         {/* Pricing */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Pricing</h2>
+          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.pricing') || 'Pricing'}</h2>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
-              label="Starting Price ($)"
+              label={t('auction.form.start_price')}
               type="number"
               min="0"
               value={formData.startPrice}
               onChange={(e) => handleInputChange('startPrice', parseFloat(e.target.value) || 0)}
               error={errors.startPrice}
+              dir={dir}
             />
 
             <Input
-              label="Reserve Price ($) - Optional"
+              label={`${t('auction.form.reserve_price')} - ${t('auction.form.optional')}`}
               type="number"
               min="0"
               value={formData.reservePrice || ''}
               onChange={(e) => handleInputChange('reservePrice', parseFloat(e.target.value) || undefined)}
               error={errors.reservePrice}
+              dir={dir}
             />
 
             <Input
-              label="Buy Now Price ($) - Optional"
+              label={`${t('auction.form.buy_now_price')} - ${t('auction.form.optional')}`}
               type="number"
               min="0"
               value={formData.buyNowPrice || ''}
               onChange={(e) => handleInputChange('buyNowPrice', parseFloat(e.target.value) || undefined)}
               error={errors.buyNowPrice}
+              dir={dir}
             />
           </div>
 
           <Input
-            label="Bid Increment ($)"
+            label={t('auction.form.bid_increment')}
             type="number"
             min="1"
             value={formData.bidIncrement}
             onChange={(e) => handleInputChange('bidIncrement', parseFloat(e.target.value) || 1)}
+            dir={dir}
           />
         </Card>
 
         {/* Timing */}
         <Card className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
+          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Start Time"
+              label={t('auction.form.start_time')}
               type="datetime-local"
               value={formData.startTime}
               onChange={(e) => handleInputChange('startTime', e.target.value)}
               error={errors.startTime}
+              dir={dir}
             />
 
             <Input
-              label="End Time"
+              label={t('auction.form.end_time')}
               type="datetime-local"
               value={formData.endTime}
               onChange={(e) => handleInputChange('endTime', e.target.value)}
               error={errors.endTime}
+              dir={dir}
             />
           </div>
         </Card>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4">
+        <div className={`flex items-center justify-end gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Button
             type="button"
             variant="ghost"
             className="text-zinc-400 hover:text-white"
             onClick={() => navigate('/auctions')}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
             className="bg-brand hover:bg-brand/90 text-white"
             disabled={createAuction.isPending}
           >
-            {createAuction.isPending ? 'Creating...' : 'Create Auction'}
+            {createAuction.isPending ? t('auction.form.creating') : t('auction.create_auction')}
           </Button>
         </div>
       </form>
