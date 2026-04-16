@@ -1,0 +1,46 @@
+{
+  "$schema": "./src/features/_core/schema/feature-config.schema.json",
+  "template": {
+    "version": "1.0.0",
+    "upstream": "git@github.com:zonevast/zonevast-template.git",
+    "lastUpdate": "2026-04-02",
+    "autoSync": false
+  },
+  "project": {
+    "username": "yousef2014",
+    "id": "11",
+    "name": "auction-app",
+    "description": "ZoneVast Auction Management Platform",
+    "enabled": true
+  },
+  "features": {
+    "_core": { "enabled": true, "override": false },
+    "auth": { "enabled": true, "override": false },
+    "dashboard": { "enabled": true, "override": false },
+    "auctions": { "enabled": true, "override": false },
+    "bidding": { "enabled": true, "override": false },
+    "items": { "enabled": true, "override": false },
+    "sales": { "enabled": true, "override": false },
+    "orders": { "enabled": true, "override": false },
+    "categories": { "enabled": true, "override": false },
+    "customers": { "enabled": true, "override": false },
+    "inventory": { "enabled": true, "override": false },
+    "users": { "enabled": true, "override": false },
+    "reports": { "enabled": true, "override": false },
+    "settings": { "enabled": true, "override": false },
+    "_example": { "enabled": false, "override": false }
+  },
+  "theme": {
+    "defaultTheme": "dark",
+    "allowToggle": true
+  },
+  "language": {
+    "defaultLanguage": "en",
+    "supportedLanguages": ["en", "ar", "ku"]
+  },
+  "api": {
+    "comment": "API base URL from VITE_API_BASE_URL env var takes precedence",
+    "baseUrl": "https://test.zonevast.com/forsa/api/v1",
+    "timeout": 30000
+  }
+}

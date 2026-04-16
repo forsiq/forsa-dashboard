@@ -1,0 +1,43 @@
+// Authentication translations
+export const auth = {
+  "login.welcome": "Welcome Back",
+  "login.subtitle": "Authenticate to access the portal",
+  "login.email": "Email or Username",
+  "login.password": "Password",
+  "login.remember": "Remember Me",
+  "login.forgot": "Forgot Password?",
+  "login.button": "Login",
+  "login.loading": "Authenticating...",
+  "login.or_continue": "Or Continue With",
+  "login.google": "Google",
+  "login.no_account": "Don't have an account?",
+  "login.create_account": "Create Account",
+  "login.error.invalid": "Invalid credentials. Please check your username and password.",
+  "login.error.network": "Connection failed. Please check your network or try again later.",
+  "login.select_language": "Select Language",
+  "login.switch_theme_light": "Switch to Light Mode",
+  "login.switch_theme_dark": "Switch to Dark Mode",
+
+  // OTP
+  "auth.otp.title": "Verify OTP",
+  "auth.otp.subtitle": "Enter the verification code sent to your email",
+  "auth.otp.resend": "Resend Code",
+  "auth.otp.resend_button": "Resend",
+  "auth.otp.submit": "Verify",
+
+  // Register
+  "auth.register.title": "Create Account",
+  "auth.register.subtitle": "Join ZoneVast to manage your ecosystem",
+  "auth.register.username": "Username",
+  "auth.register.username_placeholder": "Enter your username",
+  "auth.register.email": "Email",
+  "auth.register.email_placeholder": "Enter your email",
+  "auth.register.password": "Password",
+  "auth.register.password_placeholder": "Enter your password",
+  "auth.register.confirm_password": "Confirm Password",
+  "auth.register.confirm_password_placeholder": "Confirm your password",
+  "auth.register.submit": "Create Account",
+  "auth.register.has_account": "Already have an account?",
+  "auth.register.login": "Login",
+  "validation.password_too_short": "Password is too short",
+} as const;

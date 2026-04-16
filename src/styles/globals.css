@@ -1,0 +1,6 @@
+@import '../core/styles/theme.css';
+/* Amber UI Theme */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
