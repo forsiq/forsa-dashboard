@@ -12,16 +12,23 @@ interface NavigationContextType {
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [activeMode, setActiveMode] = useState<AppMode>(() => {
-    return (localStorage.getItem('app_mode') as AppMode) || 'portal';
-  });
+  const [activeMode, setActiveMode] = useState<AppMode>('portal');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('app_mode') as AppMode;
+    if (saved) {
+      setActiveMode(saved);
+    }
+  }, []);
 
   const switchMode = (mode: AppMode) => {
     setActiveMode(mode);
-    if (mode) {
-      localStorage.setItem('app_mode', mode);
-    } else {
-      localStorage.removeItem('app_mode');
+    if (typeof window !== 'undefined') {
+      if (mode) {
+        localStorage.setItem('app_mode', mode);
+      } else {
+        localStorage.removeItem('app_mode');
+      }
     }
   };
 

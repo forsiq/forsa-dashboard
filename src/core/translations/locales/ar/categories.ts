@@ -51,4 +51,10 @@ export const categories = {
   "category.not_found_desc": "الفئة المطلوبة غير موجودة",
   "category.no_results": "لا توجد فئات تطابق بحثك",
   "category.search_placeholder": "البحث في الفئات...",
+  "category.name_ar_placeholder": "أدخل اسم التصنيف باللغة العربية",
+  "category.name_en_placeholder": "أدخل اسم التصنيف باللغة الإنجليزية",
+  "category.slug_placeholder": "الرابط الفريد (يتم توليده تلقائياً)",
+  "category.form_note": "ملاحظة: تأكد من صحة البيانات قبل الحفظ لضمان اتساق قواعد البيانات.",
+  "category.architecture": "بنية التصنيفات",
+  "category.architecture_desc": "تحديد العلاقة بين الفئات الرئيسية والفرعية في مصفوفة النظام",
 } as const;

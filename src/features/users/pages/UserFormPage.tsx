@@ -13,6 +13,7 @@ import { useToast } from '@core/contexts/ToastContext';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberDropdown } from '@core/components/AmberDropdown';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
@@ -175,102 +176,66 @@ export function UserFormPage() {
         <AmberCard className="p-6">
           <div className="space-y-6">
             {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.username')} <span className="text-red-400">*</span>
-              </label>
-              <AmberInput
-                value={formData.userName}
-                onChange={(e) => handleChange('userName', e.target.value)}
-                placeholder={t('user.username_placeholder')}
-                className={errors.userName ? 'border-red-500' : ''}
-              />
-              {errors.userName && (
-                <p className="text-red-400 text-sm mt-1">{errors.userName}</p>
-              )}
-            </div>
+            <AmberInput
+              label={t('user.username')}
+              required
+              value={formData.userName}
+              onChange={(e) => handleChange('userName', e.target.value)}
+              placeholder={t('user.username_placeholder')}
+              error={errors.userName}
+            />
 
             {/* Full Name */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.full_name')} <span className="text-red-400">*</span>
-              </label>
-              <AmberInput
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                placeholder={t('user.full_name_placeholder')}
-                className={errors.fullName ? 'border-red-500' : ''}
-              />
-              {errors.fullName && (
-                <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>
-              )}
-            </div>
+            <AmberInput
+              label={t('user.full_name')}
+              required
+              value={formData.fullName}
+              onChange={(e) => handleChange('fullName', e.target.value)}
+              placeholder={t('user.full_name_placeholder')}
+              error={errors.fullName}
+            />
 
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.email')}
-              </label>
-              <AmberInput
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                placeholder={t('user.email_placeholder')}
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="text-red-400 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
+            <AmberInput
+              label={t('user.email')}
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              placeholder={t('user.email_placeholder')}
+              error={errors.email}
+            />
 
             {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.phone')}
-              </label>
-              <AmberInput
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                placeholder={t('user.phone_placeholder')}
-              />
-            </div>
+            <AmberInput
+              label={t('user.phone')}
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              placeholder={t('user.phone_placeholder')}
+            />
 
             {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.role')} <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => handleChange('role', e.target.value)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-              >
-                <option value="user">{t('user.role.user')}</option>
-                <option value="manager">{t('user.role.manager')}</option>
-                <option value="admin">{t('user.role.admin')}</option>
-              </select>
-            </div>
+            <AmberDropdown 
+              label={t('user.role')}
+              options={[
+                { label: t('user.role.user'), value: 'user' },
+                { label: t('user.role.manager'), value: 'manager' },
+                { label: t('user.role.admin'), value: 'admin' },
+              ]}
+              value={formData.role}
+              onChange={(val) => handleChange('role', val)}
+            />
 
             {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                {t('user.password')} {!isEdit && <span className="text-red-400">*</span>}
-              </label>
-              <AmberInput
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                placeholder={isEdit ? t('user.password_leave_blank') : t('user.password_placeholder')}
-                className={errors.password ? 'border-red-500' : ''}
-              />
-              {errors.password && (
-                <p className="text-red-400 text-sm mt-1">{errors.password}</p>
-              )}
-              {!isEdit && (
-                <p className="text-zinc-500 text-sm mt-1">{t('user.password_hint')}</p>
-              )}
-            </div>
+            <AmberInput
+              label={t('user.password')}
+              required={!isEdit}
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              placeholder={isEdit ? t('user.password_leave_blank') : t('user.password_placeholder')}
+              error={errors.password}
+            />
 
             {/* Active Status */}
             <div className="flex items-center justify-between">

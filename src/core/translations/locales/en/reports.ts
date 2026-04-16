@@ -64,4 +64,6 @@ export const reports = {
   "report.net_profit": "Net Profit",
   "report.product_performance": "Product Performance",
   "report.period_comparison": "Period Comparison",
+  "report.inventory_dist": "Inventory Distribution",
+  "report.sales_performance": "Sales Performance Metric",
 } as const;

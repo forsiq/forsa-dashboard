@@ -3,6 +3,7 @@
  */
 
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { withGroupBuyingPhotoFallback } from '@core/utils/devPhotoFallback';
 import type {
   GroupBuying,
   GroupBuyingCreateInput,
@@ -30,7 +31,9 @@ export const groupBuyingApi = {
    */
   list: async (filters?: GroupBuyingFilters): Promise<GroupBuyingsResponse> => {
     const response = await groupBuyingBaseApi.list(filters) as any;
-    const groupBuyings = response.data || [];
+    const groupBuyings = (response.data || []).map((row: Record<string, unknown>) =>
+      withGroupBuyingPhotoFallback(row)
+    );
     const total = response.total || groupBuyings.length;
     
     return {
@@ -47,7 +50,7 @@ export const groupBuyingApi = {
    */
   get: async (id: string): Promise<GroupBuying> => {
     const response = await groupBuyingBaseApi.getById(id);
-    return response.data;
+    return withGroupBuyingPhotoFallback(response.data as unknown as Record<string, unknown>) as unknown as GroupBuying;
   },
 
   /**

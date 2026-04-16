@@ -230,5 +230,10 @@ const App: React.FC = () => {
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<App />);
+  // Use a global to store the root to avoid "container already passed to createRoot" warning
+  const global = window as any;
+  if (!global._reactRoot) {
+    global._reactRoot = ReactDOM.createRoot(rootElement);
+  }
+  global._reactRoot.render(<App />);
 }

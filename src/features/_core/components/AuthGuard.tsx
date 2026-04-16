@@ -24,22 +24,16 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const location = useLocation();
   const { isFeatureEnabled, getProjectUsername } = useFeatureConfig();
   const { isAuthenticated: isProjectSelected, isLoading: projectLoading } = useProject();
+  const [isClient, setIsClient] = React.useState(false);
 
-  // Get project username from config
-  const projectUsername = getProjectUsername();
-
-  // If auth feature is disabled, bypass auth check
-  if (!isFeatureEnabled('auth')) {
-    // If no project username configured but project feature is enabled, show onboarding
-    if (!projectUsername && !isProjectSelected && !projectLoading) {
-      // TODO: Show project selection UI
-      // For now, just let children through
-    }
-    return <>{children}</>;
-  }
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Check auth (using token in cookie or localStorage)
   const checkAuthToken = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    
     // Check cookie first
     const cookies = document.cookie.split(';');
     const hasAccessCookie = cookies.some(c => c.trim().startsWith('access='));
@@ -50,18 +44,29 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   };
 
   const isAuthValid = checkAuthToken();
+  const projectUsername = getProjectUsername();
+  const authEnabled = isFeatureEnabled('auth');
 
-  // First check auth
-  if (!isAuthValid) {
+  // Handle loading and initial state
+  if (!isClient) return null;
+
+  // 1. If auth is enabled but token is missing, redirect to login
+  if (authEnabled && !isAuthValid) {
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }
 
-  // Then check project selection
-  // If project username is configured, it will be auto-loaded
-  // If not configured and project is not selected, redirect to login
-  if (!isProjectSelected && !projectUsername && !projectLoading) {
-    // No project configured, but user is authenticated
-    // Let them through - they'll see empty dashboard or can configure project
+  // 2. If auth is disabled, or token is valid, check project selection
+  // If no project username configured but project feature is enabled, show onboarding
+  if (!authEnabled) {
+    if (!projectUsername && !isProjectSelected && !projectLoading) {
+       // Allow through for now
+    }
+    return <>{children}</>;
+  }
+
+  // 3. Authenticated - Check project selection
+  if (!isProjectSelected && !projectUsername && !projectLoading && location.pathname !== '/onboarding') {
+    // authenticated but no project - let through or redirect to onboarding if needed
   }
 
   return <>{children}</>;

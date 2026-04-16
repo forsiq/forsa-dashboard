@@ -168,4 +168,40 @@ export const misc = {
   "auth.layout.title": "إدارة نظامك البيئي",
   "auth.layout.subtitle": "التحليلات الفورية والتحكم في المخزون ومزامنة العقد الآمنة للمؤسسة الحديثة.",
   "auth.layout.version": "عقدة ZoneVast الآمنة v4.12",
+
+  // Hub / Telemetry
+  "hub.tab.telemetry": "القياس عن بعد",
+  "hub.tab.vault": "قبو",
+
+  // Rec / Proj / Details
+  "details.uuid": "المعرف الفريد (UUID)",
+  "proj.of": "من",
+  "proj.showing": "عرض",
+  "rec.table.date": "التاريخ",
+  "rec.table.module": "الوحدة",
+  "rec.table.name": "الاسم",
+
+  // Customers
+  "customer.recent_onboarding": "التأهيل الأخير",
+
+  // Search
+  "search.global_title": "بحث شامل",
+  "search.placeholder": "بحث...",
+  "search.recent": "عمليات البحث الأخيرة",
+  "search.suggested": "مقترح",
+
+  // Upload
+  "upload.avatar_help": "المساعدة في رفع الصورة الرمزية",
+  "upload.avatar_preview": "معاينة الصورة الرمزية",
+  "upload.click_or_drag": "انقر أو اسحب للإفلات",
+  "upload.error_invalid_type": "نوع ملف غير صالح",
+  "upload.profile_photo": "صورة الملف الشخصي",
+
+  // About History
+  "about.history.markdown": "تاريخ ماركداون",
+  "about.history.objects_found": "تم العثور على عناصر",
+  "about.history.select_file": "تحديد ملف",
+  "about.history.title": "السجل الزمني",
+  "about.history.utf8": "UTF-8",
+
 } as const;

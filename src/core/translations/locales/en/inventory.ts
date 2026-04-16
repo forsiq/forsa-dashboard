@@ -31,4 +31,5 @@ export const inventory = {
   "inventory.critical_alert": "Critical Supply Alert",
   "inventory.generate_procurement_order": "Generate Procurement Order",
   "inventory.all_stocks_nominal": "All stocks within nominal parameters",
+  "inventory.default_warehouse": "Default Warehouse Node",
 } as const;

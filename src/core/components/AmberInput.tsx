@@ -32,11 +32,11 @@ export const AmberInput: React.FC<AmberInputProps> = ({
     <div className="space-y-1.5 w-full">
       {label && (
         <label className={cn(
-          "text-[10px] font-bold uppercase tracking-[0.15em] px-1 flex justify-between",
+          "text-xs font-bold uppercase tracking-[0.15em] px-1 flex justify-between",
           error ? "text-danger" : "text-zinc-muted/80"
         )}>
           <span>{label} {props.required && <span className="text-brand ml-0.5">*</span>}</span>
-          {error && <span className="normal-case opacity-90 text-[9px]">{error}</span>}
+          {error && <span className="normal-case opacity-90 text-[10px]">{error}</span>}
         </label>
       )}
       <div className="relative group">
@@ -52,9 +52,9 @@ export const AmberInput: React.FC<AmberInputProps> = ({
         )}
         <InputComponent
           className={cn(
-            "w-full bg-obsidian-panel border text-sm font-medium text-zinc-text outline-none transition-all placeholder:text-zinc-muted/30 shadow-sm",
+            "w-full bg-obsidian-card/60 border text-base font-medium text-zinc-text outline-none transition-all placeholder:text-zinc-muted/30 shadow-sm",
             radiusClass,
-            multiline ? "p-4 resize-none" : "h-12 px-4",
+            multiline ? "p-4 resize-none" : "h-14 px-4",
             icon && !multiline ? (isRTL ? "pr-11" : "pl-11") : "",
             icon && multiline ? (isRTL ? "pr-11" : "pl-11") : "",
             rightElement && !multiline ? (isRTL ? "pl-11" : "pr-11") : "",

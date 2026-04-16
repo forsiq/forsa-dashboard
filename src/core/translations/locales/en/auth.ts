@@ -39,4 +39,5 @@ export const auth = {
   "auth.register.submit": "Create Account",
   "auth.register.has_account": "Already have an account?",
   "auth.register.login": "Login",
+  "validation.password_too_short": "Password must be at least 8 characters",
 } as const;

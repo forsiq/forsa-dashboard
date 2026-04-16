@@ -5,13 +5,14 @@ import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { cn } from '../../../core/lib/utils/cn';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberInput } from '../../../core/components/AmberInput';
-import { AmberAvatar } from '../../../core/components/AmberAvatar';
+import { AmberAvatar, AmberAvatarGroup } from '../../../core/components/AmberAvatar';
 import { AmberTableSkeleton } from '../../../core/components/Loading/AmberTableSkeleton';
 import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { AmberCard as Card } from '../../../core/components/AmberCard';
 import { useGetCustomers, useGetCustomerStats, useDeleteCustomer } from '../hooks';
 import type { Customer } from '../types';
+import { Users, TrendingUp, Calendar, Trophy, ArrowRight, Activity } from 'lucide-react';
 
 // Simple debounce hook
 function useDebounce(value: string, delay: number) {
@@ -63,16 +64,26 @@ export function CustomersPage() {
       render: (customer: any) => {
         const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || 'N/A';
         return (
-          <div className="flex items-center gap-3">
-            <AmberAvatar
-              src={customer.avatar}
-              fallback={fullName}
-              size="sm"
-              className="ring-2 ring-[var(--color-border)]"
-            />
-            <div>
-              <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{fullName}</p>
-              <p className="text-xs font-bold text-zinc-muted">{customer.email}</p>
+          <div className="flex items-center gap-4 group/avatar">
+            <div className="relative">
+              <AmberAvatar
+                src={customer.avatar}
+                fallback={fullName}
+                size="md"
+                className="ring-1 ring-white/10 group-hover/avatar:ring-brand/50 transition-all duration-300"
+              />
+              {customer.status === 'active' && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-obsidian-card animate-pulse" />
+              )}
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-lg font-black text-zinc-text uppercase tracking-tight group-hover/avatar:text-brand transition-colors">
+                {fullName}
+              </p>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-zinc-muted/40" />
+                <p className="text-sm font-bold text-zinc-muted uppercase tracking-wider">{customer.email}</p>
+              </div>
             </div>
           </div>
         );
@@ -82,33 +93,49 @@ export function CustomersPage() {
     {
       key: 'type',
       label: t('customer.type') || 'Classification',
-      render: (customer: any) => (
-        <div className="flex items-center gap-2">
-          {customer.type === 'business' ? (
-            <Building2 className="w-4 h-4 text-[var(--color-brand)]" />
-          ) : (
-            <User className="w-4 h-4 text-[var(--color-info)]" />
-          )}
-          <span className="text-xs font-bold text-zinc-muted uppercase tracking-widest">
-            {customer.type || 'UNKNOWN'}
-          </span>
-        </div>
-      ),
+      render: (customer: any) => {
+        const typeLabel = customer.type === 'business' 
+          ? (t('customer.business') || 'Corporate')
+          : (t('customer.individual') || 'Personal');
+        
+        return (
+          <div className="flex items-center gap-3 group/type">
+            <div className={cn(
+              "w-9 h-9 rounded-sm flex items-center justify-center transition-colors",
+              customer.type === 'business' ? "bg-[var(--color-brand)]/10 text-[var(--color-brand)]" : "bg-[var(--color-info)]/10 text-[var(--color-info)]"
+            )}>
+              {customer.type === 'business' ? (
+                <Building2 className="w-5 h-5" />
+              ) : (
+                <User className="w-5 h-5" />
+              )}
+            </div>
+            <span className="text-sm font-black text-zinc-muted uppercase tracking-[0.2em] group-hover/type:text-zinc-text transition-colors">
+              {typeLabel}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'phone',
-      label: t('customer.contact') || 'Comms Channel',
-      render: (customer: Customer) => (
-        <div className="flex items-center gap-4 text-xs font-bold text-zinc-muted uppercase">
-          {customer.phone && <span className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-[var(--color-brand)]" />{customer.phone}</span>}
-        </div>
+      label: t('customer.phone') || 'Comms Channel',
+      render: (customer: any) => (
+        <span className="text-base font-black text-zinc-text tabular-nums tracking-tight">
+          {customer.phone || 'N/A'}
+        </span>
       ),
     },
     {
       key: 'totalOrders',
       label: t('customer.orders') || 'Thread Count',
       render: (customer: Customer) => (
-        <span className="text-sm font-black text-zinc-text tabular-nums">{customer.totalOrders ?? 0}</span>
+        <div className="flex flex-col items-center">
+          <span className="text-lg font-black text-zinc-text tabular-nums leading-none">
+            {customer.totalOrders ?? 0}
+          </span>
+          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mt-1 opacity-40">{t('customer.orders') || 'Orders'}</span>
+        </div>
       ),
       sortable: true,
       align: 'center' as const,
@@ -117,12 +144,14 @@ export function CustomersPage() {
       key: 'status',
       label: t('common.status') || 'Protocol State',
       render: (customer: any) => (
-        <StatusBadge
-          status={(customer.status || 'unknown').toUpperCase()}
-          variant={customer.status === 'active' ? 'success' : 'inactive'}
-        />
-      ),
-      sortable: true,
+        <div className="flex justify-end">
+          <StatusBadge
+            status={t(`status.${customer.status || 'unknown'}`).toUpperCase()}
+            variant={customer.status === 'active' ? 'success' : customer.status === 'blocked' ? 'error' : 'warning'}
+            className="tracking-[0.2em] font-black text-sm h-8 px-5 border-none bg-white/5"
+          />
+        </div>
+      ),sortable: true,
     },
   ];
 
@@ -149,60 +178,112 @@ export function CustomersPage() {
         </Link>
       </div>
 
-      {/* Statistics Grid */}
+      {/* Enhanced Statistics Grid */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('common.total') || 'Aggregated Total'}
-              </span>
-              <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
-                {stats.total ?? 0}
-              </span>
-            </div>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-[var(--color-brand)]/10 transition-colors" />
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-success)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('status.active') || 'Operational Nodes'}
-              </span>
-              <span className="text-3xl font-black text-[var(--color-success)] tracking-tight italic tabular-nums leading-none">
-                {stats.active ?? 0}
-              </span>
-            </div>
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('customer.new_this_month') || 'Monthly Iterations'}
-              </span>
-              <span className="text-3xl font-black text-[var(--color-brand)] tracking-tight italic tabular-nums leading-none">
-                {stats.newThisMonth ?? 0}
-              </span>
-            </div>
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-3">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('customer.top_spenders') || 'Priority Accounts'}
-              </span>
-              <div className="flex -space-x-3 rtl:space-x-reverse">
-                {((stats.topSpenders as any) || []).map((c: any) => (
-                  <AmberAvatar 
-                    key={c.id} 
-                    src={c.avatar} 
-                    fallback={c.name} 
-                    size="sm" 
-                    className="ring-4 ring-[var(--color-obsidian-card)]"
-                  />
-                ))}
+          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-xl hover:border-[var(--color-brand)]/40 transition-all duration-500 cursor-default group overflow-hidden relative active:scale-[0.98]">
+            <div className="relative z-10 flex items-start justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.25em] block mb-1">
+                   {t('common.total') || 'Aggregated Total'}
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-zinc-text tracking-tighter tabular-nums leading-none">
+                    {stats.total ?? 0}
+                  </span>
+                  <div className="bg-success/10 px-1.5 py-0.5 rounded text-[8px] font-black text-success uppercase tracking-tighter">+12%</div>
+                </div>
+              </div>
+              <div className="p-3 bg-brand/10 rounded-xl text-brand border border-brand/20 group-hover:scale-110 transition-transform duration-500">
+                <Users className="w-5 h-5" />
               </div>
             </div>
+            {/* Visual Flare */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-[80px] -mr-16 -mt-16 group-hover:bg-brand/10 transition-all duration-700" />
+            <div className="mt-8 flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <div className="w-8 h-1 bg-brand/20 rounded-full overflow-hidden">
+                   <div className="w-[70%] h-full bg-brand" />
+                 </div>
+                 <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Growth Velocity</span>
+               </div>
+               <ArrowRight className="w-4 h-4 text-zinc-muted/30 group-hover:text-brand/60 transition-colors" />
+            </div>
+          </Card>
+
+          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-xl hover:border-success/40 transition-all duration-500 cursor-default group overflow-hidden relative active:scale-[0.98]">
+             <div className="relative z-10 flex items-start justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.25em] block mb-1">
+                   {t('status.active') || 'Operational Nodes'}
+                </span>
+                <span className="text-4xl font-black text-success tracking-tighter tabular-nums leading-none">
+                  {stats.active ?? 0}
+                </span>
+              </div>
+              <div className="p-3 bg-success/10 rounded-xl text-success border border-success/20 group-hover:scale-110 transition-transform duration-500">
+                <Activity className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full blur-[80px] -mr-16 -mt-16 group-hover:bg-success/10 transition-all duration-700" />
+            <div className="mt-8 flex items-center gap-1.5">
+               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+               <span className="text-[9px] font-bold text-success uppercase tracking-[0.2em]">{t('portal.all_systems_normal') || 'Systems Nominal'}</span>
+            </div>
+          </Card>
+
+          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-xl hover:border-brand/40 transition-all duration-500 cursor-default group overflow-hidden relative active:scale-[0.98]">
+             <div className="relative z-10 flex items-start justify-between">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.25em] block mb-1">
+                   {t('customer.new_this_month') || 'Monthly Iterations'}
+                </span>
+                <span className="text-4xl font-black text-brand tracking-tighter tabular-nums leading-none">
+                  {stats.newThisMonth ?? 0}
+                </span>
+              </div>
+              <div className="p-3 bg-brand/10 rounded-xl text-brand border border-brand/20 group-hover:scale-110 transition-transform duration-500">
+                <Calendar className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-[80px] -mr-16 -mt-16 group-hover:bg-brand/10 transition-all duration-700" />
+            <div className="mt-8">
+               <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-[0.2em]">{t('customer.recent_onboarding') || 'Recent Onboarding Protocol'}</span>
+            </div>
+          </Card>
+
+          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-xl hover:border-brand/40 transition-all duration-500 cursor-default group overflow-hidden relative active:scale-[0.98]">
+            <div className="relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.25em] block">
+                     {t('customer.top_spenders') || 'Priority Accounts'}
+                  </span>
+                  <p className="text-[9px] text-zinc-muted font-bold uppercase tracking-tight mt-0.5">Top Transaction Velocity</p>
+                </div>
+                <div className="p-2 bg-brand/10 rounded-lg text-brand group-hover:rotate-12 transition-transform">
+                  <Trophy className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-auto">
+                <AmberAvatarGroup max={4} size="sm" className="space-x-[-12px]">
+                  {((stats.topSpenders as any) || []).map((c: any) => (
+                    <AmberAvatar 
+                      key={c.id} 
+                      src={c.avatar} 
+                      fallback={c.name} 
+                      size="sm" 
+                      className="ring-2 ring-[var(--color-obsidian-card)] group-hover:ring-brand/30 transition-all"
+                    />
+                  ))}
+                </AmberAvatarGroup>
+                <div className="text-right">
+                   <div className="text-xs font-black text-brand tracking-tighter">$14.2k</div>
+                   <div className="text-[8px] font-bold text-zinc-muted uppercase">Avg/Session</div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute bottom-0 right-0 w-24 h-24 bg-brand/5 rounded-full blur-[60px] translate-x-12 translate-y-12" />
           </Card>
         </div>
       )}

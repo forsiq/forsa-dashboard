@@ -12,5 +12,7 @@ export const portal = {
   "portal.platform_settings": "إعدادات المنصة",
   "portal.service_management": "إدارة الخدمات",
   "portal.version": "الإصدار",
+  "portal.items": "عناصر",
+  "portal.selected": "محدد",
 } as const;
 

@@ -14,7 +14,14 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => getLanguage());
+  const [language, setLanguageState] = useState<Language>('en');
+
+  useEffect(() => {
+    const savedLanguage = getLanguage();
+    if (savedLanguage !== language) {
+      setLanguageState(savedLanguage);
+    }
+  }, []);
 
   useEffect(() => {
     // Update document direction (RTL for Arabic and Kurdish)

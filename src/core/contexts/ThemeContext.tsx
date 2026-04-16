@@ -12,7 +12,14 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => getTheme());
+  const [theme, setThemeState] = useState<Theme>('dark');
+
+  useEffect(() => {
+    const savedTheme = getTheme();
+    if (savedTheme !== theme) {
+      setThemeState(savedTheme);
+    }
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;

@@ -108,4 +108,6 @@ export const groupBuying = {
   "groupBuying.validation.deployment_window_req": "نافذة النشر مطلوبة",
   "groupBuying.validation.termination_window_req": "نافذة الإنهاء مطلوبة",
   "groupBuying.validation.consolidated_price_below_base": "يجب أن يكون السعر الموحد أقل من السعر الأساسي",
+  "groupBuying.category": "فئة البروتوكول",
+  "groupBuying.select_category": "تحديد فئة البروتوكول",
 } as const;

@@ -10,6 +10,7 @@ import { AmberInput } from '../../../core/components/AmberInput';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberImageUpload } from '../../../core/components/AmberImageUpload';
+import { AmberDropdown } from '../../../core/components/AmberDropdown';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 
 // --- Validation Schema ---
@@ -143,8 +144,8 @@ export function CategoryForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Name (English) */}
           <AmberInput
-            label={t('category.name_en') || 'Name (English)'}
-            placeholder="Category name"
+            label={t('category.name_en')}
+            placeholder={t('category.name_en_placeholder') || "Category name"}
             error={errors.name}
             required
             {...register('name')}
@@ -152,78 +153,61 @@ export function CategoryForm({
 
           {/* Name (Arabic) */}
           <AmberInput
-            label={t('category.name_ar') || 'Name (Arabic)'}
-            placeholder="اسم التصنيف"
+            label={t('category.name_ar')}
+            placeholder={t('category.name_ar_placeholder') || "اسم التصنيف"}
             dir="rtl"
             {...register('nameAr')}
           />
 
           {/* Slug */}
           <AmberInput
-            label={t('category.slug') || 'Slug'}
-            placeholder="category-url-slug"
+            label={t('category.slug')}
+            placeholder={t('category.slug_placeholder') || "category-url-slug"}
             error={errors.slug}
             {...register('slug')}
           />
 
-          {/* Status */}
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
-              {t('category.status') || 'Status'}
-            </label>
-            <select
-              {...register('status')}
-              className="w-full h-11 px-4 bg-obsidian-outer border border-white/5 rounded-xl text-sm font-bold text-zinc-text focus:outline-none focus:border-brand/30 transition-all"
-            >
-              <option value="active">{t('status.active') || 'نشط'}</option>
-              <option value="inactive">{t('status.inactive') || 'غير نشط'}</option>
-            </select>
-            {errors.status && (
-              <p className="text-xs text-danger">{errors.status}</p>
-            )}
-          </div>
+          <AmberDropdown 
+            label={t('category.status')}
+            options={[
+              { label: t('category.active'), value: 'active' },
+              { label: t('category.inactive'), value: 'inactive' },
+            ]}
+            value={watch('status')}
+            onChange={val => setValue('status', val as any)}
+          />
 
-          {/* Parent Category */}
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
-              {t('category.parent') || 'الفئة الأصل'}
-            </label>
-            <select
-              {...register('parentId')}
-              className="w-full h-11 px-4 bg-obsidian-outer border border-white/5 rounded-xl text-sm font-bold text-zinc-text focus:outline-none focus:border-brand/30 transition-all"
-            >
-              <option value="">{t('category.no_parent') || 'لا يوجد أصل'}</option>
-              {parentCategories
+          <AmberDropdown 
+            label={t('category.parent')}
+            options={[
+              { label: t('category.no_parent'), value: '' },
+              ...parentCategories
                 .filter(c => c.id !== initialData?.id)
-                .map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+                .map(category => ({
+                  label: category.name,
+                  value: category.id
+                }))
+            ]}
+            value={watch('parentId')}
+            onChange={val => setValue('parentId', val)}
+          />
 
           {/* Order */}
           <AmberInput
             type="number"
-            label={t('category.order') || 'Display Order'}
+            label={t('category.order')}
             placeholder="0"
             {...register('order', { valueAsNumber: true })}
           />
         </div>
 
-        {/* Description */}
-        <div className="mt-6">
-          <label className="text-[9px] font-black uppercase tracking-widest px-1 text-zinc-muted block mb-1.5">
-            {t('category.description') || 'الوصف'}
-          </label>
-          <textarea
-            {...register('description')}
-            placeholder={t('category.description_placeholder') || 'وصف التصنيف...'}
-            rows={3}
-            className="w-full px-4 py-3 bg-obsidian-outer border border-white/5 rounded-xl text-sm font-bold text-zinc-text placeholder:text-zinc-muted/40 focus:outline-none focus:border-brand/30 transition-all resize-none"
-          />
-        </div>
+        <AmberInput 
+          label={t('category.description')}
+          multiline
+          rows={3}
+          placeholder={t('category.description_placeholder')}
+          {...register('description')}
+        />
       </AmberCard>
 
       {/* Image Upload */}
@@ -243,6 +227,16 @@ export function CategoryForm({
           onRemove={() => setValue('image', '')}
         />
       </AmberCard>
+
+      {/* Form Note */}
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-brand/5 border border-brand/10">
+        <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+          <AlertCircle className="w-4 h-4" />
+        </div>
+        <p className="text-[11px] font-bold text-zinc-muted tracking-tight uppercase">
+          {t('category.form_note')}
+        </p>
+      </div>
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3">

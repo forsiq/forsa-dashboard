@@ -46,11 +46,11 @@ export function CategoryAddPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-text">
-          {t('category.add_new') || 'Add New Category'}
+        <h1 className="text-3xl font-black text-zinc-text uppercase tracking-tighter italic">
+          {t('category.architecture')}
         </h1>
-        <p className="text-sm text-zinc-muted mt-1">
-          {t('category.add_desc') || 'Create a new product category'}
+        <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
+          {t('category.architecture_desc')}
         </p>
       </div>
 

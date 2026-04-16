@@ -8,10 +8,30 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Gavel } from 'lucide-react';
+import { pickDevPlaceholderImage } from '@core/utils/devPhotoFallback';
 import { getAuctionImageUrl, parseAttachmentIds } from '../utils/auction-utils';
+
+function placeholderSeedFromAuction(auction: {
+  id?: number;
+  title?: string;
+  slug?: string;
+}): number {
+  if (typeof auction.id === 'number' && !Number.isNaN(auction.id) && auction.id > 0) {
+    return auction.id;
+  }
+  const s = String(auction.slug ?? auction.title ?? '');
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) || 1;
+}
 
 interface AuctionImageProps {
   auction: {
+    id?: number;
+    title?: string;
+    slug?: string;
     imageUrl?: string | null;
     image_url?: string | null;
     mainAttachmentId?: number | null;
@@ -202,6 +222,11 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  const placeholderUrl = useMemo(
+    () => pickDevPlaceholderImage(placeholderSeedFromAuction(auction)),
+    [auction.id, auction.title, auction.slug]
+  );
+
   const normalizedAuction = useMemo(() => {
     const imageUrlValue = auction.imageUrl || auction.image_url || null;
     const mainAttachmentIdValue = auction.mainAttachmentId || auction.main_attachment_id || null;
@@ -264,17 +289,18 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
         if (resolvedUrl) {
           setImageUrl(resolvedUrl);
         } else {
-          setHasError(true);
+          // No attachment URL: show catalog-style placeholder (alternative to upload/capture).
+          setImageUrl(placeholderUrl);
         }
       } else {
-        setHasError(true);
+        setImageUrl(placeholderUrl);
       }
 
       setIsLoading(false);
     };
 
     loadImage();
-  }, [normalizedAuction, directImageKey, attachmentKey]);
+  }, [normalizedAuction, directImageKey, attachmentKey, placeholderUrl]);
 
   // Render custom children with URL if provided
   if (children && imageUrl) {
@@ -290,8 +316,22 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
     );
   }
 
-  // Show error/fallback state
-  if (hasError || !imageUrl) {
+  // Missing URL after load (should be rare): still show placeholder image.
+  if (!imageUrl) {
+    return (
+      <img
+        src={placeholderUrl}
+        alt={alt}
+        className={fallbackClassName}
+        onError={() => {
+          setHasError(true);
+        }}
+      />
+    );
+  }
+
+  // Hard failure (e.g. placeholder host blocked): icon fallback only.
+  if (hasError) {
     return (
       <div className={`flex items-center justify-center bg-obsidian-panel/50 ${className}`}>
         <Gavel className="w-16 h-16 text-zinc-muted/20" />
@@ -306,7 +346,13 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
       alt={alt}
       className={fallbackClassName}
       onError={() => {
-        setHasError(true);
+        // Direct URL or CDN failed: switch once to deterministic placeholder photo.
+        if (imageUrl !== placeholderUrl) {
+          setImageUrl(placeholderUrl);
+          setHasError(false);
+        } else {
+          setHasError(true);
+        }
       }}
       onLoad={() => {
         setIsLoading(false);

@@ -163,10 +163,10 @@ export function CustomerFormPage() {
           </AmberButton>
           <div className="space-y-1">
             <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
-              {isEditMode ? t('customer.edit') || 'Modify Node' : t('customer.add_new') || 'Initialize Node'}
+              {isEditMode ? t('customer.edit') : t('customer.add_new')}
             </h1>
             <p className="text-base text-zinc-secondary font-bold opacity-70">
-              {isEditMode ? "Updating existing identity matrix" : "Broadcasting new regional account into registry"}
+              {isEditMode ? t('customer.edit_subtitle') : t('customer.add_subtitle')}
             </p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export function CustomerFormPage() {
             ) : (
               <>
                 <Save className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
-                {isEditMode ? t('common.save') || 'Commit' : t('common.create') || 'Deploy'}
+                {isEditMode ? t('common.save') : t('common.create')}
               </>
             )}
           </AmberButton>
@@ -208,18 +208,18 @@ export function CustomerFormPage() {
             <div className="flex items-center gap-3 mb-8 border-b border-[var(--color-border)] pb-6 relative z-10">
                <User className="w-5 h-5 text-[var(--color-brand)]" />
                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-                  {t('customer.identity_matrix') || 'Identity Matrix Specifications'}
+                  {t('customer.identity_matrix')}
                </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 relative z-10">
               <div className="md:col-span-2">
                 <AmberInput
-                  label={t('customer.name') || 'اسم العميل'}
+                  label={t('customer.name')}
                   value={formData.name}
                   onChange={e => handleChange('name', e.target.value)}
                   error={errors.name}
-                  placeholder={t('customer.name') || 'اسم العميل'}
+                  placeholder={t('customer.name')}
                   required
                 />
               </div>
@@ -230,8 +230,8 @@ export function CustomerFormPage() {
                 </label>
                 <AmberDropdown 
                   options={[
-                    { label: t('customer.individual') || 'عميل فردي', value: 'individual' },
-                    { label: t('customer.business') || 'شركة', value: 'business' },
+                    { label: t('customer.individual'), value: 'individual' },
+                    { label: t('customer.business'), value: 'business' },
                   ]}
                   value={formData.type}
                   onChange={val => handleChange('type', val)}
@@ -277,41 +277,41 @@ export function CustomerFormPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 relative z-10">
               <div className="md:col-span-2">
-                <AmberInput
-                  label={t('customer.address.street') || 'Vector Address'}
-                  value={formData.address.street}
-                  onChange={e => handleChange('address.street', e.target.value)}
-                  placeholder="Sector-7, Cyber-Valley 101"
-                />
-              </div>
-
-              <AmberInput
-                label={t('customer.address.city') || 'Regional Hub'}
-                value={formData.address.city}
-                onChange={e => handleChange('address.city', e.target.value)}
-                placeholder="Neo-Bahrain"
+               <AmberInput
+                label={t('customer.address.street')}
+                value={formData.address.street}
+                onChange={e => handleChange('address.street', e.target.value)}
+                placeholder="Sector-7, Cyber-Valley 101"
               />
+            </div>
 
-              <AmberInput
-                label={t('customer.address.state') || 'Administrative Zone'}
-                value={formData.address.state}
-                onChange={e => handleChange('address.state', e.target.value)}
-                placeholder="ME-SOUTH-1"
-              />
+            <AmberInput
+              label={t('customer.address.city')}
+              value={formData.address.city}
+              onChange={e => handleChange('address.city', e.target.value)}
+              placeholder="Neo-Bahrain"
+            />
 
-              <AmberInput
-                label={t('customer.address.zip') || 'Grid Code'}
-                value={formData.address.zipCode}
-                onChange={e => handleChange('address.zipCode', e.target.value)}
-                placeholder="00000"
-              />
+            <AmberInput
+              label={t('customer.address.state')}
+              value={formData.address.state}
+              onChange={e => handleChange('address.state', e.target.value)}
+              placeholder="ME-SOUTH-1"
+            />
 
-              <AmberInput
-                label={t('customer.address.country') || 'Territorial Sovereign'}
-                value={formData.address.country}
-                onChange={e => handleChange('address.country', e.target.value)}
-                placeholder="Kingdom of Bahrain"
-              />
+            <AmberInput
+              label={t('customer.address.zip')}
+              value={formData.address.zipCode}
+              onChange={e => handleChange('address.zipCode', e.target.value)}
+              placeholder="00000"
+            />
+
+            <AmberInput
+              label={t('customer.address.country')}
+              value={formData.address.country}
+              onChange={e => handleChange('address.country', e.target.value)}
+              placeholder="Kingdom of Bahrain"
+            />
             </div>
           </Card>
         </div>
@@ -321,13 +321,13 @@ export function CustomerFormPage() {
           {/* Protocol State */}
           <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden rounded-2xl shadow-sm">
             <h3 className="text-sm font-black text-zinc-text tracking-widest mb-6 border-b border-[var(--color-border)] pb-4">
-               {t('customer.protocol_state') || 'Protocol Integrity'}
+               {t('customer.protocol_state')}
             </h3>
 
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className={cn("text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block italic", isRTL ? "text-right" : "text-left")}>
-                   {t('common.status') || 'Operational Status'}
+                <label className={cn("text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block", isRTL ? "text-right" : "text-left")}>
+                   {t('common.status')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -340,7 +340,7 @@ export function CustomerFormPage() {
                     )}
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    {t('status.active') || 'Online'}
+                    {t('status.active')}
                   </button>
                   <button
                     onClick={() => handleChange('status', 'inactive')}
@@ -352,7 +352,7 @@ export function CustomerFormPage() {
                     )}
                   >
                     <AlertCircle className="w-4 h-4" />
-                    {t('status.inactive') || 'Offline'}
+                    {t('status.inactive')}
                   </button>
                 </div>
               </div>
@@ -375,9 +375,9 @@ export function CustomerFormPage() {
              <div className="flex items-start gap-4 relative z-10">
                 <UserPlus className="w-5 h-5 text-[var(--color-brand)] shrink-0" />
                 <div className="space-y-1">
-                   <h4 className="text-sm font-black text-[var(--color-brand)] uppercase tracking-widest">{t('customer.form_note_title') || 'ملاحظة'}</h4>
+                   <h4 className="text-sm font-black text-[var(--color-brand)] uppercase tracking-widest">{t('customer.form_note_title')}</h4>
                    <p className="text-xs font-medium text-zinc-muted leading-relaxed">
-                      {t('customer.form_note_desc') || 'تأكد من صحة جميع البيانات قبل الحفظ.'}
+                      {t('customer.form_note_desc')}
                    </p>
                 </div>
              </div>

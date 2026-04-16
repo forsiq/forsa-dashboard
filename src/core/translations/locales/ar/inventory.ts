@@ -31,4 +31,5 @@ export const inventory = {
   "inventory.critical_alert": "تنبيه حرج للمخزون",
   "inventory.generate_procurement_order": "إنشاء أمر توريد",
   "inventory.all_stocks_nominal": "جميع مستويات المخزون ضمن النطاق الطبيعي",
+  "inventory.default_warehouse": "عقدة المستودع الافتراضية",
 } as const;

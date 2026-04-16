@@ -51,4 +51,10 @@ export const categories = {
   "category.not_found_desc": "The requested category could not be found",
   "category.no_results": "No categories match your search",
   "category.search_placeholder": "Search categories...",
+  "category.name_ar_placeholder": "Enter category name in Arabic",
+  "category.name_en_placeholder": "Enter category name in English",
+  "category.slug_placeholder": "Unique identifier (auto-generated)",
+  "category.form_note": "Note: Ensure data integrity before saving to maintain system consistency.",
+  "category.architecture": "Category Architecture",
+  "category.architecture_desc": "Define hierarchy relationships within the system matrix",
 } as const;

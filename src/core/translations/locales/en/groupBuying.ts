@@ -108,4 +108,6 @@ export const groupBuying = {
   "groupBuying.validation.deployment_window_req": "Deployment window required",
   "groupBuying.validation.termination_window_req": "Termination window required",
   "groupBuying.validation.consolidated_price_below_base": "Consolidated price must be below base",
+  "groupBuying.category": "Protocol Category",
+  "groupBuying.select_category": "Select Category Protocol",
 } as const;

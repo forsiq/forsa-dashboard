@@ -45,7 +45,7 @@ export const AmberDropdown: React.FC<DropdownProps> = ({
   return (
     <div className={cn("relative w-full", className)} ref={dropdownRef}>
       {label && (
-        <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1.5 px-1 whitespace-nowrap overflow-hidden text-ellipsis">
+        <label className="block text-xs font-bold text-zinc-muted uppercase tracking-[0.15em] mb-1.5 px-1 whitespace-nowrap overflow-hidden text-ellipsis">
           {label}
         </label>
       )}
@@ -53,21 +53,21 @@ export const AmberDropdown: React.FC<DropdownProps> = ({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-obsidian-outer border border-white/5 rounded-xl h-[40px] outline-none",
-          "text-[10px] font-black uppercase tracking-widest text-zinc-secondary hover:text-zinc-text hover:border-white/20 transition-all",
-          isOpen && "border-brand/40 ring-1 ring-brand/10 text-zinc-text bg-[#1A1E26]"
+          "w-full flex items-center justify-between gap-2 px-4 bg-obsidian-card/60 border border-white/5 rounded-xl h-14 outline-none transition-all",
+          "text-base font-medium text-zinc-text hover:border-brand/20 shadow-sm",
+          isOpen ? "border-brand/30 bg-obsidian-hover ring-1 ring-brand/5" : "bg-obsidian-card/60"
         )}
       >
-        <span className="truncate">
+        <span className="truncate opacity-90">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-s opacity-60", isOpen && "rotate-180 opacity-100 text-brand")} />
+        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300 opacity-40", isOpen && "rotate-180 opacity-100 text-brand")} />
       </button>
 
       {isOpen && (
         <div 
           className={cn(
-            "absolute z-50 mt-1.5 w-full bg-obsidian-card border border-white/10 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-s ring-1 ring-white/5",
+            "absolute z-50 mt-2 w-full bg-[#1A1E26] border border-white/10 rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.9)] py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 ring-1 ring-white/5",
             dir === 'rtl' ? 'right-0' : 'left-0'
           )}
         >
@@ -80,14 +80,14 @@ export const AmberDropdown: React.FC<DropdownProps> = ({
                 setIsOpen(false);
               }}
               className={cn(
-                "w-full flex items-center justify-between px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-start transition-colors outline-none",
+                "w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-start transition-colors outline-none",
                 value === option.value 
                   ? "bg-brand/10 text-brand" 
-                  : "text-zinc-muted hover:bg-white/5 hover:text-zinc-text"
+                  : "text-zinc-secondary hover:bg-white/5 hover:text-zinc-text"
               )}
             >
               <span className="truncate">{option.label}</span>
-              {value === option.value && <Check className="w-3 h-3 shrink-0" />}
+              {value === option.value && <Check className="w-4 h-4 shrink-0" />}
             </button>
           ))}
         </div>

@@ -12,59 +12,10 @@ import { useCreateAuction } from '../api';
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
-const Button = ({ className, children, disabled, ...props }: any) => (
-  <button
-    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-      disabled ? 'opacity-50 cursor-not-allowed' : ''
-    } ${className}`}
-    disabled={disabled}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-const Card = ({ className, children, ...props }: any) => (
-  <div className={`bg-white/5 border border-white/10 rounded-xl ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-const Input = ({ label, error, ...props }: any) => (
-  <div className="space-y-1">
-    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
-    <input
-      className={`w-full px-4 py-2 bg-zinc-800 border ${
-        error ? 'border-red-500' : 'border-white/10'
-      } rounded-lg text-white focus:outline-none focus:border-brand ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
-      {...props}
-    />
-    {error && <span className={`text-xs text-red-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{error}</span>}
-  </div>
-);
-
-const Select = ({ label, children, ...props }: any) => (
-  <div className="space-y-1">
-    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
-    <select
-      className={`w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
-      {...props}
-    >
-      {children}
-    </select>
-  </div>
-);
-
-const TextArea = ({ label, ...props }: any) => (
-  <div className="space-y-1">
-    {label && <label className={`text-sm text-zinc-400 block ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}>{label}</label>}
-    <textarea
-      className={`w-full px-4 py-2 bg-zinc-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand resize-none ${props.dir === 'rtl' ? 'text-right' : 'text-left'}`}
-      rows={4}
-      {...props}
-    />
-  </div>
-);
+import { AmberInput } from '@core/components/AmberInput';
+import { AmberCard as Card } from '@core/components/AmberCard';
+import { AmberButton as Button } from '@core/components/AmberButton';
+import { AmberDropdown } from '@core/components/AmberDropdown';
 
 export const AuctionAdd = () => {
   const navigate = useNavigate();
@@ -160,10 +111,10 @@ export const AuctionAdd = () => {
       <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <Button
           variant="ghost"
-          className="p-2 hover:bg-white/5"
+          className="p-2"
           onClick={() => navigate('/auctions')}
         >
-          <ArrowLeft size={20} className={`text-white ${isRTL ? 'rotate-180' : ''}`} />
+          <ArrowLeft size={20} className={isRTL ? 'rotate-180' : ''} />
         </Button>
         <div className={isRTL ? 'text-right' : 'text-left'}>
           <h1 className="text-2xl font-bold text-white">{t('auction.create_auction') || 'Create Auction'}</h1>
@@ -176,7 +127,7 @@ export const AuctionAdd = () => {
         <Card className="p-6 space-y-4">
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.basic_info') || 'Basic Information'}</h2>
 
-          <Input
+          <AmberInput
             label={t('auction.form.title')}
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
@@ -185,25 +136,23 @@ export const AuctionAdd = () => {
             dir={dir}
           />
 
-          <TextArea
+          <AmberInput
+            multiline
             label={t('auction.form.description')}
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
             error={errors.description}
             placeholder={t('auction.form.desc_placeholder')}
             dir={dir}
+            rows={4}
           />
 
-          <Select
+          <AmberDropdown
             label={t('auction.form.category')}
-            value={formData.categoryId}
-            onChange={(e) => handleInputChange('categoryId', parseInt(e.target.value))}
-            dir={dir}
-          >
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </Select>
+            value={String(formData.categoryId)}
+            onChange={(val) => handleInputChange('categoryId', parseInt(val))}
+            options={categories.map(cat => ({ value: String(cat.id), label: cat.name }))}
+          />
         </Card>
 
         {/* Images */}
@@ -259,7 +208,7 @@ export const AuctionAdd = () => {
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.pricing') || 'Pricing'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
+            <AmberInput
               label={t('auction.form.start_price')}
               type="number"
               min="0"
@@ -269,7 +218,7 @@ export const AuctionAdd = () => {
               dir={dir}
             />
 
-            <Input
+            <AmberInput
               label={`${t('auction.form.reserve_price')} - ${t('auction.form.optional')}`}
               type="number"
               min="0"
@@ -279,7 +228,7 @@ export const AuctionAdd = () => {
               dir={dir}
             />
 
-            <Input
+            <AmberInput
               label={`${t('auction.form.buy_now_price')} - ${t('auction.form.optional')}`}
               type="number"
               min="0"
@@ -290,7 +239,7 @@ export const AuctionAdd = () => {
             />
           </div>
 
-          <Input
+          <AmberInput
             label={t('auction.form.bid_increment')}
             type="number"
             min="1"
@@ -305,7 +254,7 @@ export const AuctionAdd = () => {
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
+            <AmberInput
               label={t('auction.form.start_time')}
               type="datetime-local"
               value={formData.startTime}
@@ -314,7 +263,7 @@ export const AuctionAdd = () => {
               dir={dir}
             />
 
-            <Input
+            <AmberInput
               label={t('auction.form.end_time')}
               type="datetime-local"
               value={formData.endTime}

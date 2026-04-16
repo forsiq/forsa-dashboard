@@ -64,4 +64,6 @@ export const reports = {
   "report.net_profit": "صافي الربح",
   "report.product_performance": "أداء المنتجات",
   "report.period_comparison": "مقارنة الفترة",
+  "report.inventory_dist": "توزيع المخزون",
+  "report.sales_performance": "قياس أداء المبيعات",
 } as const;

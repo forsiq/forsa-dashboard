@@ -148,6 +148,8 @@ export const useProject = () => {
  * Get X-Project-ID header value for API requests
  */
 export const getProjectIdHeader = (): string => {
+  if (typeof window === 'undefined') return '11';
+
   // Check localStorage for cached project info first
   const stored = localStorage.getItem(PROJECT_STORAGE_KEY);
   if (stored) {

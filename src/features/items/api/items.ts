@@ -1,5 +1,6 @@
 /** Items (Products) API - Using REST */
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { resolveItemDisplayImage } from '@core/utils/devPhotoFallback';
 import type { 
   Item, 
   ItemFilters, 
@@ -15,6 +16,8 @@ export const itemBaseApi = createApiClient<Item, any, any, ItemFilters>({
 });
 
 function mapProductToItem(p: any): Item {
+  const rawImage = (Array.isArray(p.images) && p.images[0]) || p.image || '📦';
+  const image = resolveItemDisplayImage(p as Record<string, unknown>, String(rawImage));
   return {
     id: String(p.idnum || p.id),
     name: p.title || p.name || 'Unknown Item',
@@ -23,7 +26,7 @@ function mapProductToItem(p: any): Item {
     sku: p.slug || p.sku || '',
     startingBid: p.selling_price || 0,
     currentBid: p.current_bid || p.selling_price || 0,
-    image: (Array.isArray(p.images) && p.images[0]) || p.image || '📦',
+    image,
     status: (p.status?.toLowerCase() || 'available') as ItemStatus,
     auctionCount: p.auction_count || 0,
     stockQuantity: p.stock_quantity || 0,

@@ -4,6 +4,7 @@
  */
 
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { withAuctionPhotoFallback } from '@core/utils/devPhotoFallback';
 import type {
   Auction,
   AuctionsResponse,
@@ -32,9 +33,11 @@ export const auctionApi = {
    */
   list: async (filters?: AuctionFilters): Promise<AuctionsResponse> => {
     const response = await auctionBaseApi.list(filters) as any;
+    const raw = response.data || [];
+    const data = raw.map((row: Record<string, unknown>) => withAuctionPhotoFallback(row)) as Auction[];
     // Compatibility layer: REST API returns { data, total, page, limit }
     return {
-      data: response.data || [],
+      data,
       total: response.total || (response.data?.length || 0),
       page: filters?.page || 1,
       limit: filters?.limit || 50,
@@ -47,7 +50,7 @@ export const auctionApi = {
    */
   get: async (id: number | string): Promise<Auction> => {
     const response = await auctionBaseApi.getById(String(id));
-    return response.data;
+    return withAuctionPhotoFallback(response.data as unknown as Record<string, unknown>) as unknown as Auction;
   },
 
   /**
@@ -55,7 +58,7 @@ export const auctionApi = {
    */
   getBySlug: async (slug: string): Promise<Auction> => {
     const response = await auctionBaseApi.getById(slug);
-    return response.data;
+    return withAuctionPhotoFallback(response.data as unknown as Record<string, unknown>) as unknown as Auction;
   },
 
 

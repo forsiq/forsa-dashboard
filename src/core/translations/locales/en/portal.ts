@@ -126,4 +126,12 @@ export const portal = {
   "portal.protocol_secure_sync_v2": "Protocol: Secure_Sync_V2",
   "portal.async_queue_length": "Async Queue Length",
   "portal.system_version_history": "System Version History",
+  "portal.all_systems_normal": "All Systems Normal",
+  "portal.logout": "Log Out Profile",
+  "portal.operational_status": "Operational Status",
+  "portal.platform_settings": "Platform Settings",
+  "portal.service_external": "External Client Services",
+  "portal.service_internal": "Internal Cluster Services",
+  "portal.service_management": "Service Management Console",
+  "portal.subtitle": "Unified Enterprise Operating System and Service Matrix",
 } as const;

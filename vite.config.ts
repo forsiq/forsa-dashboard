@@ -18,7 +18,12 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/graphql/, ''),
       },
-    }
+    },
+    watch: {
+      usePolling: true,
+      interval: 1000,
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+    },
   },
   plugins: [react()],
   test: {
