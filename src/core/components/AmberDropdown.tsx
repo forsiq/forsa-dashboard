@@ -43,9 +43,9 @@ export const AmberDropdown: React.FC<DropdownProps> = ({
   }, []);
 
   return (
-    <div className={cn("relative w-full", className)} ref={dropdownRef}>
+    <div className={cn("relative w-full space-y-1.5", className)} ref={dropdownRef}>
       {label && (
-        <label className="block text-xs font-bold text-zinc-muted uppercase tracking-[0.15em] mb-1.5 px-1 whitespace-nowrap overflow-hidden text-ellipsis">
+        <label className="block text-xs font-bold uppercase tracking-[0.15em] px-1 transition-colors text-zinc-muted/90 dark:text-zinc-muted/80">
           {label}
         </label>
       )}

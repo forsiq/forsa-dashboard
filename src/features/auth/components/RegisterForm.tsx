@@ -40,9 +40,7 @@ export const RegisterForm: React.FC = () => {
     try {
       await register(formData);
       setIsSuccess(true);
-    } catch (err) {
-      // Error handled by useAuth
-    }
+    } catch (err) { }
   };
 
   const currentError = localError || authError;
@@ -55,18 +53,18 @@ export const RegisterForm: React.FC = () => {
         className="text-center space-y-6 py-8"
       >
         <div className="flex justify-center">
-          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center border border-success/20">
+          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center border border-success/20 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
             <CheckCircle2 className="w-10 h-10 text-success" />
           </div>
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">Account Created</h2>
-          <p className="text-sm text-zinc-muted max-w-[280px] mx-auto">
+          <p className="text-sm text-zinc-muted max-w-[280px] mx-auto leading-relaxed">
             Your account has been successfully initialized. Welcome to the ecosystem.
           </p>
         </div>
-        <Link href="/login" className="inline-block">
-          <AmberButton variant="primary">
+        <Link href="/login" className="inline-block mt-4">
+          <AmberButton variant="primary" size="lg" className="px-12 h-14 bg-brand text-obsidian-outer">
             Proceed to Login
           </AmberButton>
         </Link>
@@ -76,40 +74,23 @@ export const RegisterForm: React.FC = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="w-full space-y-8"
     >
-      <div className="text-center space-y-2">
-        <motion.div
-           initial={{ scale: 0.9, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           transition={{ delay: 0.1 }}
-        >
-          <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent">
-            {t('auth.register.title') || 'Create Account'}
-          </h1>
-          <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.2em]">
-            {t('auth.register.subtitle') || 'Initialize your secure node access'}
-          </p>
-        </motion.div>
-      </div>
-
       <AnimatePresence mode="wait">
         {currentError && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3"
           >
-            <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3">
-              <div className="w-1 h-8 bg-danger rounded-full" />
-              <p className="text-xs text-danger font-medium leading-tight">
-                {currentError}
-              </p>
-            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+            <p className="text-[11px] font-bold text-danger uppercase tracking-wider">
+              {currentError}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -123,7 +104,6 @@ export const RegisterForm: React.FC = () => {
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             required
-            className="bg-obsidian-panel/50 border-white/5"
           />
 
           <AmberInput
@@ -134,7 +114,6 @@ export const RegisterForm: React.FC = () => {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
-            className="bg-obsidian-panel/50 border-white/5"
           />
 
           <div className="grid grid-cols-1 gap-4">
@@ -146,7 +125,6 @@ export const RegisterForm: React.FC = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
-              className="bg-obsidian-panel/50 border-white/5"
             />
 
             <AmberInput
@@ -167,46 +145,41 @@ export const RegisterForm: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               error={formData.password !== formData.confirmPassword && formData.confirmPassword ? 'Passwords do not match' : ''}
               required
-              className="bg-obsidian-panel/50 border-white/5"
             />
           </div>
         </div>
 
-        <motion.div
-           whileHover={{ scale: 1.01 }}
-           whileTap={{ scale: 0.99 }}
-           className="pt-4"
-        >
+        <div className="pt-4">
           <AmberButton
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full relative py-6 group"
+            className="w-full h-14 bg-brand text-obsidian-outer shadow-xl shadow-brand/10 group overflow-hidden relative"
             disabled={isLoading}
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="font-bold uppercase tracking-widest">{t('common.loading')}</span>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="font-black uppercase tracking-[0.2em]">{t('common.loading')}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <span className="font-bold uppercase tracking-widest">{t('auth.register.submit') || 'Create Account'}</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span className="font-black uppercase tracking-[0.2em]">{t('auth.register.submit') || 'Create Account'}</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </div>
             )}
+            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
           </AmberButton>
-        </motion.div>
+        </div>
       </form>
 
-      <div className="pt-4 flex flex-col items-center gap-4">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-        
-        <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest flex items-center gap-2">
+      <div className="pt-2">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/5 to-transparent mb-6" />
+        <p className="text-[11px] font-bold text-zinc-muted dark:text-zinc-muted uppercase tracking-widest text-center">
           {t('auth.register.has_account') || 'Already have access?'}{' '}
           <Link
             href="/login"
-            className="text-white hover:text-brand transition-colors border-b border-white/10 hover:border-brand/40 pb-0.5"
+            className="text-zinc-text dark:text-white hover:text-brand transition-colors decoration-brand/30 underline underline-offset-4"
           >
             {t('auth.register.login') || 'Sign In'}
           </Link>
@@ -215,4 +188,3 @@ export const RegisterForm: React.FC = () => {
     </motion.div>
   );
 };
-

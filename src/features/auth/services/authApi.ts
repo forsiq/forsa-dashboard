@@ -5,7 +5,7 @@ import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types'
  * 1. Environment variable
  * 2. Hardcoded fallback (https://test.zonevast.com)
  */
-const API_BASE = process.env.VITE_API_BASE_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 /**
  * Build auth API URL safely without duplicating /api/v1.
@@ -95,7 +95,7 @@ async function fetchWithTimeout(
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   console.log('[authApi] Attempting login for:', credentials.username);
   
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/token/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/token/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
   // Fetch user profile immediately after login
   try {
-    const userResponse = await fetchWithTimeout(buildAuthUrl('/auth/auth/user/'), {
+    const userResponse = await fetchWithTimeout(buildAuthUrl('/auth/user/'), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${data.access}`,
@@ -163,7 +163,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
  * Register a new user
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/register/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/register/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export const logout = async (): Promise<void> => {
  * Refresh access token
  */
 export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/auth/token/refresh/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('/auth/token/refresh/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

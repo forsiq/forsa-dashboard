@@ -218,24 +218,24 @@ export const AuctionFormPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <AmberDropdown 
-                            label={t('auction.form.inventory_sync')}
-                            options={[
-                                { label: t('auction.form.manual_config'), value: '' },
-                                ...inventoryItems.map((item: any) => ({
-                                    label: item.name,
-                                    value: String(item.id)
-                                }))
-                            ]}
-                            value={String(formData.productId || '')}
-                            onChange={(val) => handleChange('productId', val ? Number(val) : undefined)}
-                        />
-                        <div className="space-y-4">
-                            <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1 italic">
-                                {t('auction.form.tactical_category')}
-                            </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="w-full">
                             <AmberDropdown 
+                                label={t('auction.form.inventory_sync')}
+                                options={[
+                                    { label: t('auction.form.manual_config'), value: '' },
+                                    ...inventoryItems.map((item: any) => ({
+                                        label: item.name,
+                                        value: String(item.id)
+                                    }))
+                                ]}
+                                value={String(formData.productId || '')}
+                                onChange={(val) => handleChange('productId', val ? Number(val) : undefined)}
+                            />
+                        </div>
+                        <div className="w-full">
+                            <AmberDropdown 
+                                label={t('auction.form.tactical_category')}
                                 options={[
                                     { label: t('auction.form.general_asset'), value: '1' },
                                     { label: t('auction.form.critical_hardware'), value: '2' },
@@ -243,7 +243,6 @@ export const AuctionFormPage: React.FC = () => {
                                 ]}
                                 value={String(formData.categoryId || 1)}
                                 onChange={(val) => handleChange('categoryId', Number(val))}
-                                className="w-full"
                             />
                         </div>
                     </div>
@@ -328,14 +327,21 @@ export const AuctionFormPage: React.FC = () => {
                         {t('auction.form.imagery_specs')}
                     </label>
                     <AmberImageUpload 
-                        value={formData.images?.[0] || ''}
+                        value={formData.images || []}
                         onChange={(files) => {
                             if (files?.[0]) {
                                 const url = URL.createObjectURL(files[0]);
                                 setSelectedImageFile(files[0]);
-                                handleChange('images', [url]);
+                                handleChange('images', [...(formData.images || []), url]);
                             }
                         }}
+                        onRemove={(index) => {
+                          const newImages = [...(formData.images || [])];
+                          newImages.splice(index, 1);
+                          handleChange('images', newImages);
+                          if (index === 0) setSelectedImageFile(null);
+                        }}
+                        multiple={true}
                     />
                     <p className="text-[9px] text-zinc-muted font-bold text-center uppercase tracking-widest italic">{t('auction.form.imagery_format_note')}</p>
                 </div>

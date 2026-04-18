@@ -9,21 +9,16 @@ import { LoginCredentials } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const LoginForm: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t } = useLanguage();
   const { login, isLoading, error: authError } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
   
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: '',
     password: ''
   });
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Load remembered username
   useEffect(() => {
@@ -58,7 +53,6 @@ export const LoginForm: React.FC = () => {
         }
       }
     } catch (err) {
-      // Error handled by useAuth but we can also react here if needed
       console.error('[LoginForm] login error:', err);
     }
   };
@@ -67,45 +61,28 @@ export const LoginForm: React.FC = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
       className="w-full space-y-8"
     >
-      <div className="text-center space-y-2">
-        <motion.div
-           initial={{ scale: 0.9, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           transition={{ delay: 0.2 }}
-        >
-          <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent">
-            {t('login.welcome')}
-          </h1>
-          <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.2em]">
-            {t('login.subtitle')}
-          </p>
-        </motion.div>
-      </div>
-
       <AnimatePresence mode="wait">
         {currentError && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3"
           >
-            <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3">
-              <div className="w-1 h-8 bg-danger rounded-full" />
-              <p className="text-xs text-danger font-medium leading-tight">
-                {currentError}
-              </p>
-            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+            <p className="text-[11px] font-bold text-danger uppercase tracking-wider">
+              {currentError}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <AmberInput
             label={t('login.email')}
@@ -115,37 +92,45 @@ export const LoginForm: React.FC = () => {
             onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             required
             autoComplete="username"
-            className="transition-all duration-300"
           />
 
-          <AmberInput
-            label={t('login.password')}
-            type={showPassword ? 'text' : 'password'}
-            placeholder={t('login.password')}
-            icon={<Lock className="w-4 h-4" />}
-            autoComplete="current-password"
-            rightElement={
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="p-1 text-zinc-muted/60 hover:text-zinc-text transition-colors outline-none"
+          <div className="space-y-2">
+            <AmberInput
+              label={t('login.password')}
+              type={showPassword ? 'text' : 'password'}
+              placeholder={t('login.password')}
+              icon={<Lock className="w-4 h-4" />}
+              autoComplete="current-password"
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1 text-zinc-muted/60 hover:text-zinc-text transition-colors outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+              value={credentials.password}
+              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+              required
+            />
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-[10px] font-bold text-brand hover:text-brand-light transition-colors uppercase tracking-wider"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            }
-            value={credentials.password}
-            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-            required
-            className="transition-all duration-300"
-          />
+                {t('login.forgot')}
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between px-1">
-          <label className="flex items-center gap-2 cursor-pointer group">
-            <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${
-              rememberMe ? 'bg-brand border-brand' : 'border-white/10 bg-white/[0.02] group-hover:border-white/20'
+        <div className="flex items-center px-1">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <div className={`w-5 h-5 rounded-lg border transition-all flex items-center justify-center ${
+              rememberMe ? 'bg-brand border-brand shadow-[0_0_15px_rgba(255,192,0,0.3)]' : 'border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.02] group-hover:border-zinc-300 dark:group-hover:border-white/20'
             }`}>
-              {rememberMe && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+              {rememberMe && <div className="w-2 h-2 bg-obsidian-outer rounded-sm" />}
             </div>
             <input 
               type="checkbox" 
@@ -153,56 +138,43 @@ export const LoginForm: React.FC = () => {
               checked={rememberMe}
               onChange={() => setRememberMe(!rememberMe)}
             />
-            <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
-              rememberMe ? 'text-zinc-text' : 'text-zinc-muted group-hover:text-zinc-400'
+            <span className={`text-[11px] font-bold uppercase tracking-wider transition-colors ${
+              rememberMe ? 'text-zinc-text' : 'text-zinc-muted dark:text-zinc-muted group-hover:text-zinc-500 transition-colors'
             }`}>
               {t('login.remember')}
             </span>
           </label>
-          <Link
-            href="/forgot-password"
-            className="text-[10px] font-bold text-brand hover:text-brand-light transition-colors uppercase tracking-wider underline-offset-4 hover:underline decoration-brand/30"
-          >
-            {t('login.forgot')}
-          </Link>
         </div>
 
-        <motion.div
-           whileHover={{ scale: 1.01 }}
-           whileTap={{ scale: 0.99 }}
+        <AmberButton
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full h-14 bg-brand hover:bg-brand/90 text-obsidian-outer shadow-xl shadow-brand/10 relative overflow-hidden group"
+          disabled={isLoading}
         >
-          <AmberButton
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-full relative py-6 group"
-            disabled={isLoading}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-brand to-brand-light opacity-0 group-hover:opacity-10 transition-opacity rounded-lg" />
-            
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="font-bold uppercase tracking-widest">{t('common.loading')}</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2 group">
-                <span className="font-bold uppercase tracking-widest">{t('login.button')}</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            )}
-          </AmberButton>
-        </motion.div>
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-black uppercase tracking-[0.2em]">{t('common.loading')}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <span className="font-black uppercase tracking-[0.2em]">{t('login.button')}</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+        </AmberButton>
       </form>
 
-      <div className="pt-4 flex flex-col items-center gap-4">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-        
-        <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest flex items-center gap-2">
-          {t('login.no_account')}
+      <div className="pt-2">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/5 to-transparent mb-6" />
+        <p className="text-[11px] font-bold text-zinc-muted dark:text-zinc-muted uppercase tracking-widest text-center">
+          {t('login.no_account')}{' '}
           <Link
             href="/register"
-            className="text-white hover:text-brand transition-colors border-b border-white/10 hover:border-brand/40 pb-0.5"
+            className="text-zinc-text dark:text-white hover:text-brand transition-colors decoration-brand/30 underline underline-offset-4"
           >
             {t('login.create_account')}
           </Link>
@@ -211,4 +183,3 @@ export const LoginForm: React.FC = () => {
     </motion.div>
   );
 };
-

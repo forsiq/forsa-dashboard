@@ -39,4 +39,12 @@ export const auth = {
   "auth.register.login": "تسجيل الدخول",
 
   "validation.password_too_short": "كلمة المرور قصيرة جداً",
+
+  // Marketing Showcase
+  "auth.marketing.title": "تحكم بالكامل في أعمالك",
+  "auth.marketing.subtitle": "المركز الأساسي لإدارة المزادات، تحليلات المزايدة، ومزامنة المخزون عبر المنصات المختلفة.",
+  "auth.marketing.feature1.label": "إحصائيات مباشرة",
+  "auth.marketing.feature1.value": "فوري",
+  "auth.marketing.feature2.label": "طبقة الحماية",
+  "auth.marketing.feature2.value": "مؤسسي",
 } as const;

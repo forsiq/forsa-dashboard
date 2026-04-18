@@ -40,4 +40,12 @@ export const auth = {
   "auth.register.has_account": "Already have an account?",
   "auth.register.login": "Login",
   "validation.password_too_short": "Password is too short",
+
+  // Marketing Showcase
+  "auth.marketing.title": "Master the Global Marketplace",
+  "auth.marketing.subtitle": "The ultimate central hub for auction management, bidding analytics, and cross-platform inventory synchronization.",
+  "auth.marketing.feature1.label": "Real-time Stats",
+  "auth.marketing.feature1.value": "Instant",
+  "auth.marketing.feature2.label": "Security Layer",
+  "auth.marketing.feature2.value": "Enterprise",
 } as const;
