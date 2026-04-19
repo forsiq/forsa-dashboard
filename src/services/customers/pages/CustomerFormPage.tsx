@@ -75,11 +75,13 @@ export function CustomerFormPage() {
 
   const createMutation = useCreateCustomer();
   const updateMutation = useUpdateCustomer();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!validate()) return;
 
     try {
+      setSubmitError(null);
       if (isEditMode) {
         await updateMutation.mutateAsync({ id: id as string, ...formData } as any);
         router.push(`/customers/${id}`);
@@ -87,8 +89,9 @@ export function CustomerFormPage() {
         await createMutation.mutateAsync(formData as any);
         router.push('/customers');
       }
-    } catch (error) {
-      console.error('Failed to save customer:', error);
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Failed to save. Please try again.';
+      setSubmitError(errorMessage);
     }
   };
 
@@ -156,6 +159,16 @@ export function CustomerFormPage() {
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
+      {/* Submission Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+            <span className="text-lg">&times;</span>
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className={cn(
         "flex flex-col sm:flex-row sm:items-start justify-between gap-6",

@@ -143,4 +143,23 @@ export const common = {
   "common.no_results": "No results",
   "pagination.previous": "Previous",
   "pagination.next": "Next",
+
+  // Toast messages
+  "toast.created": "Created successfully",
+  "toast.updated": "Updated successfully",
+  "toast.deleted": "Deleted successfully",
+  "toast.saved": "Saved successfully",
+  "toast.create_failed": "Failed to create",
+  "toast.update_failed": "Failed to update",
+  "toast.delete_failed": "Failed to delete",
+  "toast.save_failed": "Failed to save",
+  "toast.upload_failed": "Failed to upload file",
+  "toast.session_expired": "Session expired. Please login again.",
+  "toast.network_error": "Network error. Please check your connection.",
+
+  // Error messages
+  "error.required_fields": "Please fill in all required fields",
+  "error.save_failed": "Failed to save. Please try again.",
+  "error.load_failed": "Failed to load data",
+  "error.unexpected": "An unexpected error occurred",
 } as const;

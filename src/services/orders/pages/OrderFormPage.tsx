@@ -59,10 +59,14 @@ export const OrderFormPage = () => {
   });
 
   const onSubmit = async (data: CreateOrderInput) => {
-    if (isEdit) {
-      updateMutation.mutate({ id: id as string, ...data });
-    } else {
-      createMutation.mutate(data);
+    try {
+      if (isEdit) {
+        await updateMutation.mutateAsync({ id: id as string, ...data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+    } catch (err: any) {
+      // Error handled by mutation hooks via toast
     }
   };
 

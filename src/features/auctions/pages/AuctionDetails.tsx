@@ -21,6 +21,7 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
+import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
@@ -81,9 +82,17 @@ export const AuctionDetails: React.FC = () => {
 
   if (auctionLoading || !router.isReady) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-        <p className="text-zinc-muted font-black uppercase tracking-[0.3em] animate-pulse">{t('auction.detail.scanning_core')}</p>
+      <div className="max-w-[1600px] mx-auto p-6 space-y-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-white/5 rounded w-1/3" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-96 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
+            <div className="space-y-4">
+              <div className="h-40 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
+              <div className="h-40 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

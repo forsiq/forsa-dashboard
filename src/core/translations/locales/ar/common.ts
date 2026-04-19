@@ -123,4 +123,23 @@ export const common = {
   "common.no_results": "لا توجد نتائج",
   "pagination.previous": "السابق",
   "pagination.next": "التالي",
+
+  // Toast messages
+  "toast.created": "تم الإنشاء بنجاح",
+  "toast.updated": "تم التحديث بنجاح",
+  "toast.deleted": "تم الحذف بنجاح",
+  "toast.saved": "تم الحفظ بنجاح",
+  "toast.create_failed": "فشل في الإنشاء",
+  "toast.update_failed": "فشل في التحديث",
+  "toast.delete_failed": "فشل في الحذف",
+  "toast.save_failed": "فشل في الحفظ",
+  "toast.upload_failed": "فشل في رفع الملف",
+  "toast.session_expired": "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.",
+  "toast.network_error": "خطأ في الاتصال. يرجى التحقق من الشبكة.",
+
+  // Error messages
+  "error.required_fields": "يرجى ملء جميع الحقول المطلوبة",
+  "error.save_failed": "فشل في الحفظ. يرجى المحاولة مرة أخرى.",
+  "error.load_failed": "فشل في تحميل البيانات",
+  "error.unexpected": "حدث خطأ غير متوقع",
 } as const;

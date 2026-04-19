@@ -11,8 +11,7 @@ import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
 // ============================================================================
 
 const API_BASE_URL = 
-  process.env.NEXT_PUBLIC_VITE_API_BASE_URL || 
-  process.env.VITE_API_BASE_URL || 
+  process.env.NEXT_PUBLIC_API_BASE_URL || 
   'https://test.zonevast.com/forsa/api/v1';
 
 const PROJECT_STORAGE_KEY = 'zv_project';
@@ -103,16 +102,56 @@ function createBaseInstance(baseURL: string): AxiosInstance {
           const isLoginPath = window.location.pathname.includes('/login');
           const isRegisterPath = window.location.pathname.includes('/register');
           const isAuthTokenEndpoint = error.config?.url?.includes('/auth/token/');
-          
-          // Log it for transparency
+          const isRefreshEndpoint = error.config?.url?.includes('/auth/token/refresh/');
+
           console.error('[API] 401 Unauthorized detected:', error.config?.url);
 
-          // If we receive 401 and we're not on the login/register page, 
-          // AND it's not a fresh login attempt failing, we should clear session and redirect.
-          if (!isLoginPath && !isRegisterPath && !isAuthTokenEndpoint) {
-            console.warn('[API] Session invalid or expired. Performing emergency logout.');
-            
-            // Clear all auth related storage
+          // Only do emergency logout if NOT on auth pages and NOT a token/refresh endpoint
+          // This prevents redirect loops and allows forms to handle errors gracefully
+          if (!isLoginPath && !isRegisterPath && !isAuthTokenEndpoint && !isRefreshEndpoint) {
+            const refreshToken = localStorage.getItem('refresh_token');
+            const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+            // If we haven't retried yet and have a refresh token, try refreshing
+            if (!originalRequest._retry && refreshToken) {
+              originalRequest._retry = true;
+              console.log('[API] Attempting token refresh...');
+
+              return axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+                refresh: refreshToken
+              }, {
+                headers: { 'Content-Type': 'application/json' }
+              }).then((refreshResponse) => {
+                const newAccess = refreshResponse.data?.access;
+                if (newAccess) {
+                  localStorage.setItem('access_token', newAccess);
+                  document.cookie = `access=${newAccess}; path=/; SameSite=Lax`;
+                  if (originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+                  }
+                  return instance(originalRequest);
+                }
+                return Promise.reject(apiError);
+              }).catch(() => {
+                // Refresh failed - clear session and redirect
+                console.warn('[API] Token refresh failed. Performing emergency logout.');
+                try {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('zv_project');
+                  document.cookie = 'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                  document.cookie = 'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                } catch (e) {
+                  // Ignore
+                }
+                window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
+                return Promise.reject(apiError);
+              });
+            }
+
+            // No refresh token available - redirect
+            console.warn('[API] No refresh token. Redirecting to login.');
             try {
               localStorage.removeItem('access_token');
               localStorage.removeItem('refresh_token');
@@ -123,13 +162,11 @@ function createBaseInstance(baseURL: string): AxiosInstance {
             } catch (e) {
               // Ignore
             }
-            
-            // Redirect to login
             window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
           }
         }
  else if (error.response?.status !== 401) {
-        // Log other errors for debugging "lost connection"
+        // Log other errors for debugging
         console.error(`[API] ${error.response?.status || 'Network'} Error:`, error.config?.url, apiError);
       }
 

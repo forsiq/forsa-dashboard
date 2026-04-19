@@ -23,6 +23,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
+import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
 import { uploadAttachmentAndGetId } from '../utils/auction-utils';
 
@@ -122,14 +123,22 @@ export const AuctionFormPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
+      setSubmitError(null);
       let uploadedAttachmentId: number | null = null;
       if (selectedImageFile) {
-        uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
+        try {
+          uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
+        } catch (uploadErr: any) {
+          setSubmitError(uploadErr.message || t('auction.validation.upload_failed') || 'Image upload failed.');
+          return;
+        }
       }
       const payload: any = {
         ...formData,
@@ -148,8 +157,9 @@ export const AuctionFormPage: React.FC = () => {
         await createMutation.mutateAsync(payload as AuctionCreateInput);
       }
       router.push('/auctions');
-    } catch (err) {
-      console.error('Submission defect detected:', err);
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.details?.[0] || t('auction.validation.submit_failed') || 'Submission failed. Please check your data and try again.';
+      setSubmitError(errorMessage);
     }
   };
 
@@ -157,15 +167,24 @@ export const AuctionFormPage: React.FC = () => {
 
   if (isEdit && (auctionLoading || !router.isReady)) {
       return (
-          <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-              <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-              <p className="text-zinc-muted font-black uppercase tracking-widest italic animate-pulse">{t('auction.detail.scanning_listing')}</p>
+          <div className="max-w-6xl mx-auto p-6 space-y-8">
+              <AmberFormSkeleton fields={8} header actions layout="grid" />
           </div>
       );
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
+      {/* Submission Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Dynamic Navigation Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">

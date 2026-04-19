@@ -21,6 +21,7 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
+import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
@@ -237,11 +238,7 @@ export const AuctionsList: React.FC = () => {
                 </div>
 
                 {listLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                         {[1,2,3,4,5,6].map(i => (
-                             <div key={i} className="h-[400px] rounded-2xl bg-white/[0.02] border border-white/[0.05] animate-pulse" />
-                         ))}
-                    </div>
+                    <CardGridSkeleton count={6} columns={3} />
                 ) : auctions.length === 0 ? (
                     <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
                          <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">

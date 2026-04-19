@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, AlertCircle } from 'lucide-react';
 import { useCreateAuction } from '../api';
 
 import type { AuctionCreateInput } from '../types/auction.types';
@@ -42,6 +42,7 @@ export const AuctionAdd = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const categories = [
     { id: 1, name: t('auction.category.electronics') || 'Electronics', key: 'electronics' },
@@ -98,13 +99,15 @@ export const AuctionAdd = () => {
     if (!validate()) return;
 
     try {
+      setSubmitError(null);
       await createAuction.mutateAsync({
         ...formData,
         images: uploadedImages,
       } as AuctionCreateInput);
       router.push('/auctions');
-    } catch (error) {
-      console.error('Failed to create auction:', error);
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.details?.[0] || t('auction.validation.submit_failed') || 'Failed to create auction. Please try again.';
+      setSubmitError(errorMessage);
     }
   };
 
@@ -114,6 +117,16 @@ export const AuctionAdd = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6" dir={dir}>
+      {/* Submission Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <Button

@@ -372,4 +372,6 @@ export const auction = {
   "auction.detail.scanning_listing": "Loading...",
   "auction.detail.anonymous": "Anonymous Participant",
   "auction.detail.default_custodian": "Strategic Division 11",
+  "auction.validation.upload_failed": "Image upload failed. Please try again.",
+  "auction.validation.submit_failed": "Submission failed. Please check your data and try again.",
 } as const;
