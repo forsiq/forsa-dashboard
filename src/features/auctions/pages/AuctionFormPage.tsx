@@ -24,8 +24,8 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
+import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
-import { uploadAttachmentAndGetId } from '../utils/auction-utils';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import type { AuctionCreateInput, AuctionUpdateInput } from '../types/auction.types';
@@ -68,6 +68,9 @@ export const AuctionFormPage: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  // File upload hook with presigned URL flow
+  const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useFileUpload();
 
   // Sync with existing auction if editing
   useEffect(() => {
@@ -133,10 +136,9 @@ export const AuctionFormPage: React.FC = () => {
       setSubmitError(null);
       let uploadedAttachmentId: number | null = null;
       if (selectedImageFile) {
-        try {
-          uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
-        } catch (uploadErr: any) {
-          setSubmitError(uploadErr.message || t('auction.validation.upload_failed') || 'Image upload failed.');
+        uploadedAttachmentId = await uploadFile(selectedImageFile);
+        if (!uploadedAttachmentId) {
+          setSubmitError(uploadError || t('auction.validation.upload_failed') || 'Image upload failed.');
           return;
         }
       }
@@ -213,9 +215,9 @@ export const AuctionFormPage: React.FC = () => {
            <AmberButton 
                 className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-10 shadow-lg border-none active:scale-95 transition-all gap-2"
                 onClick={handleSubmit}
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploading}
            >
-                {(createMutation.isPending || updateMutation.isPending) ? (
+                {(createMutation.isPending || updateMutation.isPending || isUploading) ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                     <Save className="w-5 h-5" />
@@ -361,7 +363,29 @@ export const AuctionFormPage: React.FC = () => {
                           if (index === 0) setSelectedImageFile(null);
                         }}
                         multiple={true}
+                        disabled={isUploading}
                     />
+                    {/* Upload Progress */}
+                    {isUploading && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                          <span className="text-brand">{t('auction.form.uploading') || 'Uploading...'}</span>
+                          <span className="text-zinc-muted">{uploadProgress}%</span>
+                        </div>
+                        <div className="h-1.5 bg-white/[0.03] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-brand rounded-full transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {uploadError && !submitError && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-danger/10 border border-danger/20">
+                        <AlertCircle className="w-3 h-3 text-danger shrink-0" />
+                        <p className="text-[10px] text-danger font-medium">{uploadError}</p>
+                      </div>
+                    )}
                     <p className="text-[9px] text-zinc-muted font-bold text-center uppercase tracking-widest italic">{t('auction.form.imagery_format_note')}</p>
                 </div>
             </Card>
@@ -407,10 +431,10 @@ export const AuctionFormPage: React.FC = () => {
             <div className="space-y-3">
                 <AmberButton 
                     className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] italic rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
-                    disabled={updateMutation.isPending || createMutation.isPending}
+                    disabled={updateMutation.isPending || createMutation.isPending || isUploading}
                     onClick={handleSubmit}
                 >
-                    {(updateMutation.isPending || createMutation.isPending) && (
+                    {(updateMutation.isPending || createMutation.isPending || isUploading) && (
                         <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     )}
                     {isEdit ? t('auction.form.authorize_sync') : t('auction.form.execute_deployment')}

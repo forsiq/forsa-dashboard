@@ -14,7 +14,7 @@ export const DashboardHomePage = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-zinc-muted">Loading dashboard...</div>
+        <div className="text-zinc-muted">{t('dash.loading')}</div>
       </div>
     );
   }
@@ -24,10 +24,10 @@ export const DashboardHomePage = () => {
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
-          {t('dash.title') || 'لوحة التحكم'}
+          {t('dash.title')}
         </h1>
         <p className="text-base text-zinc-secondary font-bold">
-          {t('dash.subtitle') || 'نظرة عامة على أداء المتجر والعمليات'}
+          {t('dash.subtitle')}
         </p>
       </div>
 

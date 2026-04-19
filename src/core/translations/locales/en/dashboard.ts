@@ -13,6 +13,7 @@ export const dashboard = {
   "dash.recent_signals": "Recent Signals",
   "dash.refresh": "Refresh",
   "dash.export": "Export",
+  "dash.loading": "Loading dashboard...",
   "dash.view_terminal": "View Terminal",
   "dash.sync_title": "Sync Data",
   "dash.from_last_month": "from last month",

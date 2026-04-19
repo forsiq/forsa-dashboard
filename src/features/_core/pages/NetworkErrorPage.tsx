@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { WifiOff, RefreshCw, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const NetworkErrorPage = () => {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -20,20 +22,20 @@ export const NetworkErrorPage = () => {
         </div>
 
         <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic mb-3">
-          Connection Lost
+          {t('error.network_title')}
         </h1>
         <p className="text-xs font-bold text-zinc-secondary uppercase tracking-wider mb-8">
-          Unable to establish uplink with the main server node.
+          {t('error.network_desc')}
         </p>
 
         <div className="p-4 bg-warning/5 border border-warning/10 rounded-sm mb-8 text-left flex gap-4">
            <div className="w-1 h-full bg-warning/50 rounded-full" />
            <div>
-              <p className="text-[10px] font-black text-warning uppercase tracking-widest mb-1">Diagnostic Advice</p>
+              <p className="text-[10px] font-black text-warning uppercase tracking-widest mb-1">{t('error.diagnostic_advice')}</p>
               <ul className="text-[10px] text-zinc-muted space-y-1 list-disc pl-3">
-                 <li>Check your local network connection.</li>
-                 <li>Verify VPN or proxy settings.</li>
-                 <li>The server might be undergoing maintenance.</li>
+                 <li>{t('error.check_network')}</li>
+                 <li>{t('error.check_vpn')}</li>
+                 <li>{t('error.server_maintenance')}</li>
               </ul>
            </div>
         </div>
@@ -43,13 +45,13 @@ export const NetworkErrorPage = () => {
              onClick={() => router.back()}
              className="px-4 py-3 bg-transparent border border-white/10 text-zinc-text rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2"
            >
-             <ArrowLeft className="w-3.5 h-3.5" /> Go Back
+             <ArrowLeft className="w-3.5 h-3.5" /> {t('error.go_back')}
            </button>
            <button
              onClick={() => window.location.reload()}
              className="px-4 py-3 bg-zinc-text text-obsidian-outer rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-2"
            >
-             <RefreshCw className="w-3.5 h-3.5" /> Reconnect
+             <RefreshCw className="w-3.5 h-3.5" /> {t('error.reconnect')}
            </button>
         </div>
       </div>

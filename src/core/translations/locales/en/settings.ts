@@ -95,4 +95,56 @@ export const settings = {
   "settings.firstName": "First Name",
   "settings.lastName": "Last Name",
   "settings.notifications": "Notifications",
+
+  // Settings sub-pages
+  "settings.language_title": "Language & Region",
+  "settings.language_desc": "Select your preferred language",
+  "settings.preferences_title": "Preferences",
+  "settings.preferences_desc": "Customize your application experience",
+  "settings.profile_title": "Profile Settings",
+  "settings.profile_desc": "Update your personal information",
+  "settings.lang_selector_title": "Language / اللغة / زمان",
+  "settings.lang_selector_desc": "Select your preferred language",
+  "settings.lang_active": "Active",
+
+  // Settings page - General tab
+  "settings.protocol_support": "Protocol Support",
+  "settings.protocol_support_desc": "Need technical assistance with engine configuration? Contact our systems integrated support hub.",
+  "settings.documentation": "Documentation",
+  "settings.instance_identity": "Instance Identity",
+  "settings.domain_display_name": "Domain Display Name",
+  "settings.technical_contact_email": "Technical Contact Email",
+  "settings.regional_locale": "Regional Locale",
+  "settings.base_currency_unit": "Base Currency Unit",
+  "settings.system_diagnostics": "System Diagnostics",
+  "settings.protocol_response": "Protocol Response",
+  "settings.protocol_latency": "Latency: 24ms (Nominal)",
+  "settings.mobile_sync_protocol": "Mobile Sync Protocol",
+  "settings.mobile_sync_version": "Version 4.2.1-stable",
+
+  // Settings page - Auction tab
+  "settings.engine_calibration": "Engine Calibration",
+  "settings.global_min_bid_increment": "Global Minimum Bid Increment",
+  "settings.anti_sniper_buffer": "Anti-Sniper Buffer",
+  "settings.bid_cooldown_period": "Bid Cooldown Period",
+  "settings.verification_requirement": "Verification Requirement",
+  "settings.critical_safety": "Critical Safety Protocol",
+  "settings.critical_safety_desc": "INITIALIZING ENGINE RECALIBRATION WILL TEMPORARILY SUSPEND ALL ACTIVE BIDDING THREADS. THIS ACTION IS LOGGED AND ANONYMIZED FOR COMPLIANCE AUDITS.",
+  "settings.request_sync_auth": "Request Sync Authorization",
+
+  // Settings page - Payments tab
+  "settings.financial_bridge": "Financial Bridge Config",
+  "settings.active_gateway_profile": "Active Gateway Profile",
+  "settings.global_protocol_fee": "Global Protocol Fee (%)",
+  "settings.min_payout_threshold": "Minimum Payout Threshold",
+  "settings.dispute_cooldown": "Dispute Cooldown",
+  "settings.tls_encryption": "TLS 1.3 Encryption Active",
+  "settings.tls_encryption_desc": "Financial data is end-to-end encrypted and never stored locally.",
+
+  // Settings page - Shipping tab
+  "settings.logistics_routing": "Logistics Routing",
+  "settings.primary_fulfilment_node": "Primary Fulfilment Node",
+  "settings.auto_tracking_sync": "Automatic Tracking Sync",
+  "settings.avg_lead_time_min": "Average Lead Time (Min)",
+  "settings.avg_lead_time_max": "Average Lead Time (Max)",
 } as const;

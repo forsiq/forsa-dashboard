@@ -1,15 +1,17 @@
 import React from 'react';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const LanguagePage = () => {
+  const { t } = useLanguage();
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-black text-zinc-text uppercase tracking-wider">
-          Language & Region
+          {t('settings.language_title')}
         </h2>
         <p className="text-sm text-zinc-muted mt-1">
-          Select your preferred language
+          {t('settings.language_desc')}
         </p>
       </div>
       <LanguageSelector />

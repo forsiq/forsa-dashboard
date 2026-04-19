@@ -10,7 +10,7 @@ const languages = [
 ];
 
 export const LanguageSelector: React.FC = () => {
-  const { language, setLanguage, dir } = useLanguage();
+  const { language, setLanguage, dir, t } = useLanguage();
 
   return (
     <AmberCard>
@@ -20,10 +20,10 @@ export const LanguageSelector: React.FC = () => {
         </div>
         <div>
           <p className="text-sm font-bold text-zinc-text">
-            Language / اللغة / زمان
+            {t('settings.lang_selector_title')}
           </p>
           <p className="text-[10px] text-zinc-muted uppercase tracking-wider">
-            Select your preferred language
+            {t('settings.lang_selector_desc')}
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@ export const LanguageSelector: React.FC = () => {
             <span className="text-2xl">{lang.flag}</span>
             <span className="text-sm font-bold">{lang.name}</span>
             {language === lang.code && (
-              <span className="ml-auto text-[10px] uppercase tracking-wider">Active</span>
+              <span className="ml-auto text-[10px] uppercase tracking-wider">{t('settings.lang_active')}</span>
             )}
           </button>
         ))}

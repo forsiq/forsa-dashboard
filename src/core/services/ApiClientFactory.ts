@@ -4,6 +4,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import Cookies from 'js-cookie';
 import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
 
 // ============================================================================
@@ -14,29 +15,48 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 
   'https://test.zonevast.com/forsa/api/v1';
 
+/**
+ * Origin URL for REST endpoints that are NOT under /forsa/ prefix.
+ * Auth, project, and catalog services are at /api/v1/... (not /forsa/api/v1/).
+ */
+function getApiOrigin(): string {
+  try { return new URL(API_BASE_URL).origin; } catch { return 'https://test.zonevast.com'; }
+}
+const API_ORIGIN = getApiOrigin();
+
 const PROJECT_STORAGE_KEY = 'zv_project';
 
 /**
- * Get auth token from storage
+ * Get auth token from storage (cookie priority, localStorage fallback)
+ * Uses js-cookie for reliable cookie reading (handles SameSite, path, etc.)
  */
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
 
-  // Check cookie first (preferred)
-  try {
-    const cookies = document.cookie.split(';');
-    const accessCookie = cookies.find(c => c.trim().startsWith('access='));
-    if (accessCookie) {
-      return accessCookie.split('=')[1]?.trim() || null;
-    }
-  } catch (e) {
-    // Ignore document errors
-  }
+  // Cookie first (preferred - set by useAuth via js-cookie)
+  const cookieToken = Cookies.get('access');
+  if (cookieToken) return cookieToken;
 
-  // Fallback to localStorage
+  // Fallback to localStorage (set by useAuth as backup)
   try {
     return localStorage.getItem('access_token');
-  } catch (e) {
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get refresh token from storage (cookie priority, localStorage fallback)
+ */
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const cookieToken = Cookies.get('refresh');
+  if (cookieToken) return cookieToken;
+
+  try {
+    return localStorage.getItem('refresh_token');
+  } catch {
     return null;
   }
 }
@@ -57,6 +77,22 @@ function getProjectId(): string {
     // Ignore
   }
   return '11'; // Default fallback
+}
+
+/**
+ * Clear all auth data from cookie and localStorage
+ */
+function clearAuthSession(): void {
+  try {
+    Cookies.remove('access', { path: '/' });
+    Cookies.remove('refresh', { path: '/' });
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('zv_project');
+  } catch {
+    // Ignore
+  }
 }
 
 /**
@@ -106,26 +142,31 @@ function createBaseInstance(baseURL: string): AxiosInstance {
 
           console.error('[API] 401 Unauthorized detected:', error.config?.url);
 
-          // Only do emergency logout if NOT on auth pages and NOT a token/refresh endpoint
-          // This prevents redirect loops and allows forms to handle errors gracefully
+          // Only attempt refresh if NOT on auth pages and NOT already a token/refresh endpoint
           if (!isLoginPath && !isRegisterPath && !isAuthTokenEndpoint && !isRefreshEndpoint) {
-            const refreshToken = localStorage.getItem('refresh_token');
+            const currentRefreshToken = getRefreshToken();
             const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
             // If we haven't retried yet and have a refresh token, try refreshing
-            if (!originalRequest._retry && refreshToken) {
+            if (!originalRequest._retry && currentRefreshToken) {
               originalRequest._retry = true;
               console.log('[API] Attempting token refresh...');
 
-              return axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-                refresh: refreshToken
+              return axios.post(`${API_ORIGIN}/api/v1/auth/token/refresh/`, {
+                refresh: currentRefreshToken
               }, {
                 headers: { 'Content-Type': 'application/json' }
               }).then((refreshResponse) => {
                 const newAccess = refreshResponse.data?.access;
+                const newRefresh = refreshResponse.data?.refresh;
                 if (newAccess) {
+                  // Update both cookie (primary) and localStorage (fallback)
+                  Cookies.set('access', newAccess, { path: '/', sameSite: 'Lax' });
                   localStorage.setItem('access_token', newAccess);
-                  document.cookie = `access=${newAccess}; path=/; SameSite=Lax`;
+                  if (newRefresh) {
+                    Cookies.set('refresh', newRefresh, { path: '/', sameSite: 'Lax' });
+                    localStorage.setItem('refresh_token', newRefresh);
+                  }
                   if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${newAccess}`;
                   }
@@ -135,16 +176,7 @@ function createBaseInstance(baseURL: string): AxiosInstance {
               }).catch(() => {
                 // Refresh failed - clear session and redirect
                 console.warn('[API] Token refresh failed. Performing emergency logout.');
-                try {
-                  localStorage.removeItem('access_token');
-                  localStorage.removeItem('refresh_token');
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('zv_project');
-                  document.cookie = 'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                  document.cookie = 'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                } catch (e) {
-                  // Ignore
-                }
+                clearAuthSession();
                 window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
                 return Promise.reject(apiError);
               });
@@ -152,20 +184,10 @@ function createBaseInstance(baseURL: string): AxiosInstance {
 
             // No refresh token available - redirect
             console.warn('[API] No refresh token. Redirecting to login.');
-            try {
-              localStorage.removeItem('access_token');
-              localStorage.removeItem('refresh_token');
-              localStorage.removeItem('user');
-              localStorage.removeItem('zv_project');
-              document.cookie = 'access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-              document.cookie = 'refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            } catch (e) {
-              // Ignore
-            }
+            clearAuthSession();
             window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
           }
-        }
- else if (error.response?.status !== 401) {
+        } else if (error.response?.status !== 401) {
         // Log other errors for debugging
         console.error(`[API] ${error.response?.status || 'Network'} Error:`, error.config?.url, apiError);
       }

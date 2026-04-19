@@ -3,15 +3,14 @@
  *
  * Uses presigned URL flow for file uploads:
  *   1. POST presigned-url/ → get S3 upload URL + fields + attachment_id
- *   2. POST to S3 with fields + file → upload directly (no CORS issues)
+ *   2. POST to S3 with fields + file → upload directly (CORS configured)
  *   3. POST confirm-upload/ → confirm and get final file_url
  *
- * The project-service endpoints are at /api/v1/project/attachment/...
- * (NOT under /forsa/ prefix - that's only for GraphQL services)
+ * Uses createClient from ApiClientFactory which has token refresh interceptors.
  */
 
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { createClient } from '@core/services/ApiClientFactory';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
 
@@ -31,29 +30,12 @@ const API_ORIGIN = getApiOrigin();
  */
 const PROJECT_API_URL = `${API_ORIGIN}/api/v1`;
 
-function getProjectId(): string {
-  try {
-    const stored = localStorage.getItem('zv_project');
-    if (stored) {
-      const project = JSON.parse(stored);
-      return String(project.id || '11');
-    }
-  } catch {}
-  return '11';
-}
-
-function getAuthHeaders(): Record<string, string> {
-  const token = Cookies.get('access') || localStorage.getItem('access_token');
-  const projectId = getProjectId();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'X-Project-ID': projectId,
-    'X-Project': projectId,
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
+/**
+ * Get an axios instance with auth interceptors (token refresh on 401).
+ * Uses createClient from ApiClientFactory which handles refresh automatically.
+ */
+function getAuthedClient() {
+  return createClient(PROJECT_API_URL);
 }
 
 /**
@@ -139,7 +121,10 @@ export async function fetchAttachmentUrl(attachmentId: number): Promise<string |
 /**
  * Upload a file using the presigned URL flow (3-step process).
  *
- * Step 1: Request presigned URL from project-service (via gateway)
+ * Uses createClient from ApiClientFactory which automatically handles
+ * token refresh on 401 - so expired tokens are refreshed transparently.
+ *
+ * Step 1: Request presigned URL from project-service
  * Step 2: Upload file directly to S3 (no CORS issues, no size limits)
  * Step 3: Confirm upload with project-service
  */
@@ -147,13 +132,11 @@ export async function uploadAttachmentAndGetId(
   file: File,
   onProgress?: (progress: number) => void
 ): Promise<number> {
-  const headers = getAuthHeaders();
+  const client = getAuthedClient();
 
   // ---------------------------------------------------------------
   // Step 1: Request presigned URL
   // ---------------------------------------------------------------
-  const presignedUrl = `${PROJECT_API_URL}/project/attachment/presigned-url/`;
-
   let presignedData: {
     attachment_id: number;
     upload_url: string;
@@ -162,11 +145,11 @@ export async function uploadAttachmentAndGetId(
   };
 
   try {
-    const presignedResponse = await axios.post(presignedUrl, {
+    const presignedResponse = await client.post('/project/attachment/presigned-url/', {
       file_name: file.name,
       file_size: file.size,
       content_type: file.type || 'application/octet-stream',
-    }, { headers });
+    });
 
     const payload = presignedResponse.data;
     presignedData = payload?.data ?? payload;
@@ -182,13 +165,12 @@ export async function uploadAttachmentAndGetId(
   onProgress?.(10);
 
   // ---------------------------------------------------------------
-  // Step 2: Upload to S3
+  // Step 2: Upload to S3 (raw axios - no auth needed, S3 handles CORS)
   // ---------------------------------------------------------------
   const { upload_url, fields } = presignedData;
 
   try {
     if (fields && Object.keys(fields).length > 0) {
-      // S3 presigned POST: fields first, file last
       const formData = new FormData();
       Object.entries(fields).forEach(([key, value]) => {
         formData.append(key, value);
@@ -206,7 +188,6 @@ export async function uploadAttachmentAndGetId(
         timeout: 300000,
       });
     } else {
-      // Direct PUT upload
       await axios.put(upload_url, file, {
         headers: { 'Content-Type': file.type || 'application/octet-stream' },
         onUploadProgress: (progressEvent) => {
@@ -228,12 +209,10 @@ export async function uploadAttachmentAndGetId(
   // ---------------------------------------------------------------
   // Step 3: Confirm upload
   // ---------------------------------------------------------------
-  const confirmUrl = `${PROJECT_API_URL}/project/attachment/confirm-upload/`;
-
   try {
-    await axios.post(confirmUrl, {
+    await client.post('/project/attachment/confirm-upload/', {
       attachment_id: presignedData.attachment_id,
-    }, { headers });
+    });
   } catch (err: any) {
     const msg = err?.response?.data?.detail || err?.response?.data?.message || err?.message || 'Unknown error';
     throw new Error(`Upload confirmation failed: ${msg}`);

@@ -58,14 +58,14 @@ export const RegisterForm: React.FC = () => {
           </div>
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">Account Created</h2>
+          <h2 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">{t('auth.register.success_title')}</h2>
           <p className="text-sm text-zinc-muted max-w-[280px] mx-auto leading-relaxed">
-            Your account has been successfully initialized. Welcome to the ecosystem.
+            {t('auth.register.success_desc')}
           </p>
         </div>
         <Link href="/login" className="inline-block mt-4">
           <AmberButton variant="primary" size="lg" className="px-12 h-14 bg-brand text-obsidian-outer">
-            Proceed to Login
+            {t('auth.register.proceed_login')}
           </AmberButton>
         </Link>
       </motion.div>

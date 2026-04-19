@@ -95,4 +95,56 @@ export const settings = {
   "settings.firstName": "الاسم الأول",
   "settings.lastName": "اسم العائلة",
   "settings.notifications": "الإشعارات",
+
+  // Settings sub-pages
+  "settings.language_title": "اللغة والمنطقة",
+  "settings.language_desc": "اختر لغتك المفضلة",
+  "settings.preferences_title": "التفضيلات",
+  "settings.preferences_desc": "تخصيص تجربة التطبيق",
+  "settings.profile_title": "إعدادات الملف الشخصي",
+  "settings.profile_desc": "تحديث معلوماتك الشخصية",
+  "settings.lang_selector_title": "اللغة / Language / زمان",
+  "settings.lang_selector_desc": "اختر لغتك المفضلة",
+  "settings.lang_active": "نشط",
+
+  // Settings page - General tab
+  "settings.protocol_support": "دعم البروتوكول",
+  "settings.protocol_support_desc": "هل تحتاج مساعدة تقنية في تكوين المحرك؟ تواصل مع مركز الدعم المتكامل لدينا.",
+  "settings.documentation": "التوثيق",
+  "settings.instance_identity": "هوية النسخة",
+  "settings.domain_display_name": "اسم النطاق المعروض",
+  "settings.technical_contact_email": "البريد الإلكتروني التقني للتواصل",
+  "settings.regional_locale": "المنطقة اللغوية",
+  "settings.base_currency_unit": "وحدة العملة الأساسية",
+  "settings.system_diagnostics": "تشخيصات النظام",
+  "settings.protocol_response": "استجابة البروتوكول",
+  "settings.protocol_latency": "زمن الاستجابة: 24 مللي ثانية (طبيعي)",
+  "settings.mobile_sync_protocol": "بروتوكول مزامنة الجوال",
+  "settings.mobile_sync_version": "الإصدار 4.2.1-مستقر",
+
+  // Settings page - Auction tab
+  "settings.engine_calibration": "معايرة المحرك",
+  "settings.global_min_bid_increment": "الحد الأدنى العالمي لزيادة المزايدة",
+  "settings.anti_sniper_buffer": "مهلة الحماية من المزايدين الآليين",
+  "settings.bid_cooldown_period": "فترة انتظار المزايدة",
+  "settings.verification_requirement": "متطلبات التحقق",
+  "settings.critical_safety": "بروتوكول السلامة الحرجة",
+  "settings.critical_safety_desc": "سيؤدي بدء إعادة معايرة المحرك إلى تعليق جميع خيوط المزايدة النشطة مؤقتاً. تم تسجيل هذا الإجراء وتجهيله لعمليات التدقيق.",
+  "settings.request_sync_auth": "طلب تفويض المزامنة",
+
+  // Settings page - Payments tab
+  "settings.financial_bridge": "تكوين الجسر المالي",
+  "settings.active_gateway_profile": "ملف بوابة الدفع النشط",
+  "settings.global_protocol_fee": "رسوم البروتوكول العالمي (%)",
+  "settings.min_payout_threshold": "الحد الأدنى للدفع",
+  "settings.dispute_cooldown": "فترة انتظار النزاعات",
+  "settings.tls_encryption": "تشفير TLS 1.3 نشط",
+  "settings.tls_encryption_desc": "البيانات المالية مشفرة من طرف إلى طرف ولا يتم تخزينها محلياً.",
+
+  // Settings page - Shipping tab
+  "settings.logistics_routing": "توجيه اللوجستيات",
+  "settings.primary_fulfilment_node": "عقدة التوصيل الأساسية",
+  "settings.auto_tracking_sync": "مزامنة التتبع التلقائية",
+  "settings.avg_lead_time_min": "متوسط وقت التوصيل (الحد الأدنى)",
+  "settings.avg_lead_time_max": "متوسط وقت التوصيل (الحد الأقصى)",
 } as const;

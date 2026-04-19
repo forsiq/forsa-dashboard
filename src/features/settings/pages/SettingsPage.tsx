@@ -41,11 +41,11 @@ export const SettingsPage = () => {
   const isRTL = dir === 'rtl';
 
   const tabs: Tab[] = [
-    { id: 'general', label: t('settings.general') || 'General', icon: Settings2 },
-    { id: 'auction', label: t('settings.auction') || 'Auction Engine', icon: Gavel },
-    { id: 'payments', label: t('settings.payments') || 'Financial Gateway', icon: CreditCard },
-    { id: 'shipping', label: t('settings.shipping') || 'Logistics Hub', icon: Truck },
-    { id: 'notifications', label: t('settings.notifications') || 'Alert System', icon: Bell },
+    { id: 'general', label: t('settings.general'), icon: Settings2 },
+    { id: 'auction', label: t('settings.auction'), icon: Gavel },
+    { id: 'payments', label: t('settings.payments'), icon: CreditCard },
+    { id: 'shipping', label: t('settings.shipping'), icon: Truck },
+    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
   ];
 
   const handleSave = () => {
@@ -83,7 +83,7 @@ export const SettingsPage = () => {
             {isSaving ? (
               <span className="flex items-center gap-2 text-black">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {t('common.saving') || 'Saving...'}
+                {t('common.saving')}
               </span>
             ) : (
               <>
@@ -130,13 +130,13 @@ export const SettingsPage = () => {
               <div className="p-2 bg-[var(--color-brand)]/10 rounded-lg">
                 <Info className="w-5 h-5 text-[var(--color-brand)]" />
               </div>
-              <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest">Protocol Support</h4>
+              <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('settings.protocol_support')}</h4>
             </div>
             <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase italic">
-              Need technical assistance with engine configuration? Contact our systems integrated support hub.
+              {t('settings.protocol_support_desc')}
             </p>
             <button className="mt-4 text-xs font-black text-[var(--color-brand)] uppercase tracking-widest hover:underline transition-all">
-              Documentation →
+              {t('settings.documentation')} →
             </button>
           </Card>
         </div>
@@ -147,14 +147,14 @@ export const SettingsPage = () => {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
-                  Instance Identity
+                  {t('settings.instance_identity')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <AmberInput label="Domain Display Name" defaultValue="ZoneVast Neural Base" />
-                  <AmberInput label="Technical Contact Email" defaultValue="admin@zonevast.systems" />
+                  <AmberInput label={t('settings.domain_display_name')} defaultValue="ZoneVast Neural Base" />
+                  <AmberInput label={t('settings.technical_contact_email')} defaultValue="admin@zonevast.systems" />
                   <div className="space-y-2">
                     <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
-                      Regional Locale
+                      {t('settings.regional_locale')}
                     </label>
                     <AmberDropdown
                       options={[
@@ -168,7 +168,7 @@ export const SettingsPage = () => {
                   </div>
                   <div className="space-y-2">
                     <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
-                      Base Currency Unit
+                      {t('settings.base_currency_unit')}
                     </label>
                     <AmberDropdown
                       options={[
@@ -186,7 +186,7 @@ export const SettingsPage = () => {
 
               <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
-                   System Diagnostics
+                   {t('settings.system_diagnostics')}
                 </h3>
                 <div className="space-y-6">
                    <div className="flex items-center justify-between p-5 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl">
@@ -195,8 +195,8 @@ export const SettingsPage = () => {
                           <Globe className="w-6 h-6 text-[var(--color-success)]" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">Protocol Response</p>
-                          <p className="text-xs font-medium text-zinc-secondary uppercase">Latency: 24ms (Nominal)</p>
+                          <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">{t('settings.protocol_response')}</p>
+                          <p className="text-xs font-medium text-zinc-secondary uppercase">{t('settings.protocol_latency')}</p>
                         </div>
                       </div>
                       <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-success)] animate-pulse shadow-lg shadow-[var(--color-success)]/50" />
@@ -207,8 +207,8 @@ export const SettingsPage = () => {
                           <Smartphone className="w-6 h-6 text-[var(--color-info)]" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">Mobile Sync Protocol</p>
-                          <p className="text-xs font-medium text-zinc-secondary uppercase">Version 4.2.1-stable</p>
+                          <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">{t('settings.mobile_sync_protocol')}</p>
+                          <p className="text-xs font-medium text-zinc-secondary uppercase">{t('settings.mobile_sync_version')}</p>
                         </div>
                       </div>
                       <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-info)] shadow-lg shadow-[var(--color-info)]/50" />
@@ -222,15 +222,15 @@ export const SettingsPage = () => {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
-                  Engine Calibration
+                  {t('settings.engine_calibration')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <AmberInput label="Global Minimum Bid Increment" type="number" defaultValue="50" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
-                  <AmberInput label="Anti-Sniper Buffer" type="number" defaultValue="30" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
-                  <AmberInput label="Bid Cooldown Period" type="number" defaultValue="5" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
+                  <AmberInput label={t('settings.global_min_bid_increment')} type="number" defaultValue="50" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
+                  <AmberInput label={t('settings.anti_sniper_buffer')} type="number" defaultValue="30" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
+                  <AmberInput label={t('settings.bid_cooldown_period')} type="number" defaultValue="5" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
                   <div className="space-y-2">
                     <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
-                      Verification Requirement
+                      {t('settings.verification_requirement')}
                     </label>
                     <AmberDropdown
                       options={[
@@ -252,12 +252,12 @@ export const SettingsPage = () => {
                       <AlertCircle className="w-7 h-7 text-[var(--color-danger)]" />
                    </div>
                    <div className="space-y-2">
-                       <h4 className="text-sm font-black text-[var(--color-danger)] uppercase tracking-widest italic">Critical Safety Protocol</h4>
+                       <h4 className="text-sm font-black text-[var(--color-danger)] uppercase tracking-widest italic">{t('settings.critical_safety')}</h4>
                        <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase italic">
-                          INITIALIZING ENGINE RECALIBRATION WILL TEMPORARILY SUSPEND ALL ACTIVE BIDDING THREADS. THIS ACTION IS LOGGED AND ANONYMIZED FOR COMPLIANCE AUDITS.
+                          {t('settings.critical_safety_desc')}
                        </p>
                        <button className="text-xs font-black text-[var(--color-danger)] uppercase tracking-widest border-b-2 border-[var(--color-danger)]/30 pb-0.5 hover:text-[var(--color-danger)] hover:border-[var(--color-danger)] transition-all mt-3">
-                          Request Sync Authorization
+                          {t('settings.request_sync_auth')}
                        </button>
                    </div>
                 </div>
@@ -269,12 +269,12 @@ export const SettingsPage = () => {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
-                  Financial Bridge Config
+                  {t('settings.financial_bridge')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
-                      Active Gateway Profile
+                      {t('settings.active_gateway_profile')}
                     </label>
                     <AmberDropdown
                       options={[
@@ -287,9 +287,9 @@ export const SettingsPage = () => {
                       className="w-full h-11"
                     />
                   </div>
-                  <AmberInput label="Global Protocol Fee (%)" type="number" defaultValue="2.5" />
-                  <AmberInput label="Minimum Payout Threshold" type="number" defaultValue="500" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
-                  <AmberInput label="Dispute Cooldown" type="number" defaultValue="7" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
+                  <AmberInput label={t('settings.global_protocol_fee')} type="number" defaultValue="2.5" />
+                  <AmberInput label={t('settings.min_payout_threshold')} type="number" defaultValue="500" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
+                  <AmberInput label={t('settings.dispute_cooldown')} type="number" defaultValue="7" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
                 </div>
               </Card>
               
@@ -300,8 +300,8 @@ export const SettingsPage = () => {
                       <Shield className="w-6 h-6 text-[var(--color-brand)]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">TLS 1.3 Encryption Active</p>
-                      <p className="text-xs font-medium text-zinc-secondary uppercase italic tracking-tight">Financial data is end-to-end encrypted and never stored locally.</p>
+                      <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">{t('settings.tls_encryption')}</p>
+                      <p className="text-xs font-medium text-zinc-secondary uppercase italic tracking-tight">{t('settings.tls_encryption_desc')}</p>
                     </div>
                   </div>
                   <CheckCircle className="w-6 h-6 text-[var(--color-success)]" />
@@ -314,12 +314,12 @@ export const SettingsPage = () => {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
-                  Logistics Routing
+                  {t('settings.logistics_routing')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-2">
                     <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
-                      Primary Fulfilment Node
+                      {t('settings.primary_fulfilment_node')}
                     </label>
                     <AmberDropdown
                       options={[
@@ -332,9 +332,9 @@ export const SettingsPage = () => {
                       className="w-full h-11"
                     />
                   </div>
-                  <AmberInput label="Automatic Tracking Sync" defaultValue="https://api.zonevast.track/v1" />
-                  <AmberInput label="Average Lead Time (Min)" type="number" defaultValue="3" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
-                  <AmberInput label="Average Lead Time (Max)" type="number" defaultValue="7" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
+                  <AmberInput label={t('settings.auto_tracking_sync')} defaultValue="https://api.zonevast.track/v1" />
+                  <AmberInput label={t('settings.avg_lead_time_min')} type="number" defaultValue="3" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
+                  <AmberInput label={t('settings.avg_lead_time_max')} type="number" defaultValue="7" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
                 </div>
               </Card>
             </div>

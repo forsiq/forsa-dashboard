@@ -184,6 +184,33 @@ export const misc = {
   // Status
   "status.pending": "قيد الانتظار",
 
+  // Error pages
+  "error.404_title": "تائه في الشبكة",
+  "error.404_desc": "العقدة التي تبحث عنها تم نقلها أو حذفها أو لم تكن موجودة في هذا القطاع.",
+  "error.go_back": "العودة",
+  "error.dashboard": "لوحة التحكم",
+
+  // Server error page
+  "error.500_title": "عطل في النظام",
+  "error.500_subtitle": "خطأ 500 • استثناء حرج",
+  "error.diagnostic": "تشخيص النظام",
+  "error.initiating_recovery": "جاري بدء بروتوكول الاسترداد...",
+  "error.upstream_timeout": "خطأ: انتهت مهلة التبعية العلوية.",
+  "error.trace_prefix": "معرف التتبع:",
+  "error.contact_admin": "يرجى الاتصال بالمسؤول إذا استمرت المشكلة.",
+  "error.reload_system": "إعادة تحميل النظام",
+  "error.return_base": "العودة للقاعدة",
+  "error.zonevast_enterprise": "ZoneVast Enterprise",
+
+  // Network error page
+  "error.network_title": "فقدان الاتصال",
+  "error.network_desc": "غير قادر على إنشاء اتصال مع عقدة الخادم الرئيسية.",
+  "error.diagnostic_advice": "نصائح تشخيصية",
+  "error.check_network": "تحقق من اتصال الشبكة المحلية.",
+  "error.check_vpn": "تحقق من إعدادات VPN أو البروكسي.",
+  "error.server_maintenance": "قد يكون الخادم تحت الصيانة.",
+  "error.reconnect": "إعادة الاتصال",
+
   "search.placeholder": "بحث...",
   "search.recent": "عمليات بحث حديثة",
   "search.suggested": "مقترحة",

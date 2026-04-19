@@ -37,8 +37,10 @@ export const auth = {
   "auth.register.submit": "إنشاء حساب",
   "auth.register.has_account": "لديك حساب بالفعل؟",
   "auth.register.login": "تسجيل الدخول",
-
   "validation.password_too_short": "كلمة المرور قصيرة جداً",
+  "auth.register.success_title": "تم إنشاء الحساب",
+  "auth.register.success_desc": "تم تهيئة حسابك بنجاح. مرحباً بك في المنظومة.",
+  "auth.register.proceed_login": "المتابعة لتسجيل الدخول",
 
   // Marketing Showcase
   "auth.marketing.title": "تحكم بالكامل في أعمالك",

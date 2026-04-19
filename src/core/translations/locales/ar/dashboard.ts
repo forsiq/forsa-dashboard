@@ -13,6 +13,7 @@ export const dashboard = {
   "dash.recent_signals": "الإشارات الأخيرة",
   "dash.refresh": "تحديث",
   "dash.export": "تصدير",
+  "dash.loading": "جاري تحميل لوحة التحكم...",
   "dash.view_terminal": "عرض الطرفية",
   "dash.sync_title": "مزامنة البيانات",
   "dash.from_last_month": "من الشهر الماضي",

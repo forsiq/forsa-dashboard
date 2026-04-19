@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { AlertCircle, ArrowLeft, Home } from 'lucide-react';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const NotFoundPage = () => {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -25,10 +27,10 @@ export const NotFoundPage = () => {
 
       <div className="text-center max-w-md space-y-4 mb-10">
         <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic">
-          Lost in the Grid
+          {t('error.404_title')}
         </h1>
         <p className="text-sm font-medium text-zinc-muted leading-relaxed">
-          The node you are looking for has been moved, deleted, or never existed in this sector.
+          {t('error.404_desc')}
         </p>
       </div>
 
@@ -38,7 +40,7 @@ export const NotFoundPage = () => {
           className="flex items-center justify-center gap-2 p-4 bg-obsidian-panel border border-white/10 rounded-sm hover:border-brand/30 hover:bg-white/5 transition-all group"
         >
            <ArrowLeft className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
-           <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest">Go Back</span>
+           <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest">{t('error.go_back')}</span>
         </button>
 
         <Link
@@ -46,7 +48,7 @@ export const NotFoundPage = () => {
           className="flex items-center justify-center gap-2 p-4 bg-obsidian-panel border border-white/10 rounded-sm hover:border-brand/30 hover:bg-white/5 transition-all group"
         >
            <Home className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
-           <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest">Dashboard</span>
+           <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest">{t('error.dashboard')}</span>
         </Link>
       </div>
     </div>

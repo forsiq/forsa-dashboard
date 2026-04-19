@@ -284,4 +284,31 @@ export const misc = {
 
   // Additional status
   "status.pending": "Pending",
+
+  // Error pages
+  "error.404_title": "Lost in the Grid",
+  "error.404_desc": "The node you are looking for has been moved, deleted, or never existed in this sector.",
+  "error.go_back": "Go Back",
+  "error.dashboard": "Dashboard",
+
+  // Server error page
+  "error.500_title": "System Malfunction",
+  "error.500_subtitle": "Error 500 • Critical Exception",
+  "error.diagnostic": "System Diagnostic",
+  "error.initiating_recovery": "Initiating recovery protocol...",
+  "error.upstream_timeout": "Error: Upstream dependency timeout.",
+  "error.trace_prefix": "Trace ID:",
+  "error.contact_admin": "Please contact your administrator if this persists.",
+  "error.reload_system": "Reload System",
+  "error.return_base": "Return to Base",
+  "error.zonevast_enterprise": "ZoneVast Enterprise",
+
+  // Network error page
+  "error.network_title": "Connection Lost",
+  "error.network_desc": "Unable to establish uplink with the main server node.",
+  "error.diagnostic_advice": "Diagnostic Advice",
+  "error.check_network": "Check your local network connection.",
+  "error.check_vpn": "Verify VPN or proxy settings.",
+  "error.server_maintenance": "The server might be undergoing maintenance.",
+  "error.reconnect": "Reconnect",
 } as const;

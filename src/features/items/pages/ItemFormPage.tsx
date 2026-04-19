@@ -80,9 +80,9 @@ export const ItemFormPage: React.FC = () => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name?.trim()) newErrors.name = 'Name is required';
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.startingBid || formData.startingBid <= 0) newErrors.startingBid = 'Bid must be > 0';
+    if (!formData.name?.trim()) newErrors.name = t('items.form.name_required');
+    if (!formData.category) newErrors.category = t('items.form.category_required');
+    if (!formData.startingBid || formData.startingBid <= 0) newErrors.startingBid = t('items.form.bid_gt_0');
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -124,10 +124,10 @@ export const ItemFormPage: React.FC = () => {
              </div>
              <div>
                 <h1 className="text-3xl font-black text-zinc-text tracking-tight uppercase">
-                    {isEdit ? 'Modify Asset' : 'Initialize Asset'}
+                    {isEdit ? t('items.form.modify_asset') : t('items.form.initialize_asset')}
                 </h1>
                 <p className="text-sm text-zinc-secondary font-bold">
-                    {isEdit ? 'Update metadata for system node ' + id : 'Phase 1: Configure new inventory unit'}
+                    {isEdit ? `${t('items.form.update_metadata')} ${id}` : t('items.form.configure_new_unit')}
                 </p>
              </div>
           </div>
@@ -145,15 +145,15 @@ export const ItemFormPage: React.FC = () => {
           <Card className="!p-8 bg-obsidian-card border-border">
             <div className="flex items-center gap-3 mb-8 border-b border-border pb-4">
               <FileText className="w-5 h-5 text-brand" />
-              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">Basic Specifications</h2>
+              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">{t('items.form.basic_specs')}</h2>
             </div>
 
             <div className="space-y-6">
               <AmberInput 
-                label="Item Designation"
+                label={t('items.form.item_designation')}
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="e.g., Quantum Processor V2"
+                placeholder={t('items.form.item_designation_placeholder')}
                 error={errors.name}
                 required
               />
@@ -161,7 +161,7 @@ export const ItemFormPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1 italic">
-                        Classification Category
+                        {t('items.form.classification_category')}
                     </label>
                     <AmberDropdown 
                         options={[
@@ -177,7 +177,7 @@ export const ItemFormPage: React.FC = () => {
                     />
                 </div>
                 <AmberInput 
-                    label="Serial Access Key (SKU)"
+                    label={t('items.form.serial_access_key')}
                     value={formData.sku}
                     onChange={(e) => handleChange('sku', e.target.value)}
                     placeholder="SY-NODE-999"
@@ -186,13 +186,13 @@ export const ItemFormPage: React.FC = () => {
 
               <div>
                 <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1 italic">
-                    Technical Abstract (Description)
+                    {t('items.form.technical_abstract')}
                 </label>
                 <textarea 
                   value={formData.description}
                   onChange={(e) => handleChange('description', e.target.value)}
                   className="w-full bg-obsidian-outer border border-border rounded-xl p-4 text-sm text-zinc-text placeholder:text-zinc-muted/30 min-h-[120px] focus:outline-none focus:border-brand/30 transition-all font-bold italic"
-                  placeholder="Detail the item characteristics and origin..."
+                  placeholder={t('items.form.technical_abstract_placeholder')}
                 />
               </div>
             </div>
@@ -201,12 +201,12 @@ export const ItemFormPage: React.FC = () => {
           <Card className="!p-8 bg-obsidian-card border-border">
             <div className="flex items-center gap-3 mb-8 border-b border-border pb-4">
               <DollarSign className="w-5 h-5 text-brand" />
-              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">Financial Protocol</h2>
+              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">{t('items.form.financial_protocol')}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                <AmberInput 
-                  label="Baseline Bid (USD)"
+                  label={t('items.form.baseline_bid')}
                   type="number"
                   value={formData.startingBid}
                   onChange={(e) => handleChange('startingBid', Number(e.target.value))}
@@ -216,7 +216,7 @@ export const ItemFormPage: React.FC = () => {
                />
                <div>
                     <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-2 px-1 italic">
-                        Network Status
+                        {t('items.form.network_status')}
                     </label>
                     <AmberDropdown 
                         options={[
@@ -237,23 +237,23 @@ export const ItemFormPage: React.FC = () => {
           <Card className="!p-8 bg-obsidian-card border-border">
             <div className="flex items-center gap-3 mb-8 border-b border-border pb-4">
               <Maximize className="w-5 h-5 text-brand" />
-              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">Technical Dimensions</h2>
+              <h2 className="text-xl font-black text-zinc-text uppercase tracking-tighter italic">{t('items.form.technical_dimensions')}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                <AmberInput 
-                  label="Dimensions"
-                  placeholder="12 x 8 x 4 in"
+                  label={t('items.form.dimensions')}
+                  placeholder={t('items.form.dimensions_placeholder')}
                   icon={<Maximize className="w-4 h-4" />}
                />
                <AmberInput 
-                  label="Net Weight"
-                  placeholder="2.5 kg"
+                  label={t('items.form.net_weight')}
+                  placeholder={t('items.form.net_weight_placeholder')}
                   icon={<Scale className="w-4 h-4" />}
                />
                <AmberInput 
-                  label="Origin Source"
-                  placeholder="Switzerland"
+                  label={t('items.form.origin_source')}
+                  placeholder={t('items.form.origin_source_placeholder')}
                   icon={<Globe className="w-4 h-4" />}
                />
             </div>
@@ -265,7 +265,7 @@ export const ItemFormPage: React.FC = () => {
           <Card className="!p-6 bg-obsidian-card border-border">
             <div className="flex items-center gap-3 mb-6">
               <Settings2 className="w-4 h-4 text-brand" />
-              <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">Actions</h3>
+              <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">{t('items.form.actions')}</h3>
             </div>
             
             <AmberButton 
@@ -274,12 +274,12 @@ export const ItemFormPage: React.FC = () => {
               disabled={createMutation.isPending || updateMutation.isPending}
             >
               {(createMutation.isPending || updateMutation.isPending) ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-              {isEdit ? 'Overwrite Node' : 'Deploy Asset'}
+              {isEdit ? t('items.form.overwrite_node') : t('items.form.deploy_asset')}
             </AmberButton>
             
             <Link href="/items">
               <AmberButton variant="outline" className="w-full mt-4 h-12 border-border font-bold">
-                Abort
+                {t('items.form.abort')}
               </AmberButton>
             </Link>
           </Card>
@@ -287,12 +287,12 @@ export const ItemFormPage: React.FC = () => {
           <Card className="!p-6 bg-obsidian-card border-border">
             <div className="flex items-center gap-3 mb-6">
                <Box className="w-4 h-4 text-brand" />
-               <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">Visual Identity</h3>
+               <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">{t('items.form.visual_identity')}</h3>
             </div>
 
             <div className="space-y-4">
               <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1 italic">
-                 Asset Visualization
+                 {t('items.form.asset_visualization')}
               </label>
               <AmberImageUpload 
                 value={formData.image || ''}
@@ -310,10 +310,10 @@ export const ItemFormPage: React.FC = () => {
           <Card className="bg-info/5 border-info/20 !p-6 shadow-sm">
              <div className="flex items-center gap-2 mb-4 text-info">
                <AlertCircle className="w-4 h-4" />
-               <span className="text-[10px] font-black uppercase tracking-widest italic">Deployment Strategy</span>
+               <span className="text-[10px] font-black uppercase tracking-widest italic">{t('items.form.deployment_strategy')}</span>
              </div>
              <p className="text-xs font-bold text-zinc-muted italic leading-relaxed">
-               Ensure all technical specifications are audited before deployment. High-value assets require full origin documentation.
+               {t('items.form.deployment_strategy_desc')}
              </p>
           </Card>
         </div>

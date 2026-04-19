@@ -40,6 +40,9 @@ export const auth = {
   "auth.register.has_account": "Already have an account?",
   "auth.register.login": "Login",
   "validation.password_too_short": "Password is too short",
+  "auth.register.success_title": "Account Created",
+  "auth.register.success_desc": "Your account has been successfully initialized. Welcome to the ecosystem.",
+  "auth.register.proceed_login": "Proceed to Login",
 
   // Marketing Showcase
   "auth.marketing.title": "Master the Global Marketplace",

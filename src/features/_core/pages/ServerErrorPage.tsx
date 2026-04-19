@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ServerCrash, RefreshCcw, Home, Terminal } from 'lucide-react';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const ServerErrorPage = () => {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
   const [traceId, setTraceId] = useState('');
 
@@ -29,22 +31,22 @@ export const ServerErrorPage = () => {
         </div>
 
         <h1 className="text-5xl font-black text-zinc-text tracking-tighter uppercase italic mb-2">
-          System <span className="text-danger">Malfunction</span>
+          {t('error.500_title')}
         </h1>
         <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.4em] mb-8">
-          Error 500 • Critical Exception
+          {t('error.500_subtitle')}
         </p>
 
         <div className="max-w-md mx-auto bg-obsidian-panel border border-white/5 rounded-sm p-6 mb-8 text-left">
            <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
               <Terminal className="w-4 h-4 text-zinc-muted" />
-              <span className="text-[10px] font-mono text-zinc-muted">System Diagnostic</span>
+              <span className="text-[10px] font-mono text-zinc-muted">{t('error.diagnostic')}</span>
            </div>
            <div className="space-y-2 font-mono text-[10px] text-zinc-secondary">
-              <p>&gt; Initiating recovery protocol...</p>
-              <p className="text-danger">&gt; Error: Upstream dependency timeout.</p>
-              <p>&gt; Trace ID: <span className="text-zinc-text font-bold">{traceId}</span></p>
-              <p>&gt; Please contact your administrator if this persists.</p>
+              <p>&gt; {t('error.initiating_recovery')}</p>
+              <p className="text-danger">&gt; {t('error.upstream_timeout')}</p>
+              <p>&gt; {t('error.trace_prefix')} <span className="text-zinc-text font-bold">{traceId}</span></p>
+              <p>&gt; {t('error.contact_admin')}</p>
            </div>
         </div>
 
@@ -53,19 +55,19 @@ export const ServerErrorPage = () => {
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-brand text-obsidian-outer rounded-sm text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
           >
-            <RefreshCcw className="w-3.5 h-3.5" /> Reload System
+            <RefreshCcw className="w-3.5 h-3.5" /> {t('error.reload_system')}
           </button>
           <button
             onClick={() => router.push('/portal')}
             className="px-6 py-3 bg-white/5 border border-white/10 text-zinc-text rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2"
           >
-            <Home className="w-3.5 h-3.5" /> Return to Base
+            <Home className="w-3.5 h-3.5" /> {t('error.return_base')}
           </button>
         </div>
       </div>
 
       <div className="absolute bottom-6 left-0 right-0 text-center">
-         <p className="text-[9px] font-mono text-zinc-muted/40 uppercase">ZoneVast Enterprise • {traceId}</p>
+         <p className="text-[9px] font-mono text-zinc-muted/40 uppercase">{t('error.zonevast_enterprise')} • {traceId}</p>
       </div>
     </div>
   );
