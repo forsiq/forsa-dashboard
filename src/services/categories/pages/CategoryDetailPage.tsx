@@ -21,6 +21,7 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useGetCategory, useDeleteCategoryMutation } from '../hooks';
 import type { Category } from '../types';
 
@@ -32,6 +33,7 @@ export function CategoryDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const [isClient, setIsClient] = useState(false);
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   useEffect(() => {
     setIsClient(true);
@@ -50,14 +52,14 @@ export function CategoryDetailPage() {
   });
 
   const handleDelete = () => {
-    if (
-      typeof window !== 'undefined' &&
-      window.confirm(
-        t('category.delete_confirm') || 'Are you sure you want to delete this category?'
-      )
-    ) {
-      deleteMutation.mutate((id as string)!);
-    }
+    openConfirm({
+      title: t('category.delete') || 'حذف الفئة',
+      message: t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟',
+      variant: 'destructive',
+      onConfirm: () => {
+        deleteMutation.mutate((id as string)!);
+      },
+    });
   };
 
   if (!isClient) return null;
@@ -282,6 +284,8 @@ export function CategoryDetailPage() {
           </AmberCard>
         </div>
       </div>
+
+      <ConfirmModal />
     </div>
   );
 }

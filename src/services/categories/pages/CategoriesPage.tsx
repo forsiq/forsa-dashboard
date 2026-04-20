@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers } from 'lucide-react';
+import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers, Power, PowerOff } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { cn } from '../../../core/lib/utils/cn';
@@ -11,7 +11,9 @@ import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberTableSkeleton } from '../../../core/components/Loading/AmberTableSkeleton';
 import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
-import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation } from '../hooks';
+import { getIconByName } from '../../../core/components/IconPicker';
+import { useConfirmModal } from '../../../core/components/Feedback/AmberConfirmModal';
+import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUpdateCategoryMutation } from '../hooks';
 import type { Category } from '../types';
 
 // Simple debounce hook
@@ -82,6 +84,7 @@ export function CategoriesPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
   const [isClient, setIsClient] = useState(false);
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   useEffect(() => {
     setIsClient(true);
@@ -117,21 +120,49 @@ export function CategoriesPage() {
     router.push(`/categories/${category.id}/edit`);
   };
 
+  // Toggle category active status
+  const updateMutation = useUpdateCategoryMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const handleToggleStatus = (category: Category) => {
+    const newStatus = !category.isActive;
+    const statusText = newStatus
+      ? (t('category.activated') || 'مفعّلة')
+      : (t('category.deactivated') || 'معطّلة');
+
+    openConfirm({
+      title: t('category.status') || 'تغيير الحالة',
+      message: `${t('category.toggle_status_confirm') || 'هل تريد تغيير حالة الفئة إلى'} ${statusText}?\n\n"${category.name}"`,
+      variant: 'warning',
+      confirmText: statusText,
+      onConfirm: () => {
+        updateMutation.mutate({ id: category.id, isActive: newStatus });
+      },
+    });
+  };
+
   // Table columns
   const columns = [
     {
       key: 'name',
       label: t('category.name') || 'Name',
-      render: (category: Category) => (
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
-            <LayoutGrid className="w-4 h-4 text-zinc-muted" />
+      render: (category: Category) => {
+        const IconComponent = category.icon ? getIconByName(category.icon) : null;
+        const Icon = IconComponent || LayoutGrid;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
+              <Icon className="w-4 h-4 text-zinc-muted" />
+            </div>
+            <span className="text-sm font-bold text-zinc-text tracking-tight uppercase">
+              {category.name}
+            </span>
           </div>
-          <span className="text-sm font-bold text-zinc-text tracking-tight uppercase">
-            {category.name}
-          </span>
-        </div>
-      ),
+        );
+      },
       sortable: true,
     },
     {
@@ -184,12 +215,25 @@ export function CategoriesPage() {
       onClick: (category: Category) => handleEdit(category),
     },
     {
+      label: (category: Category) => category.isActive
+        ? (t('category.deactivate') || 'تعطيل')
+        : (t('category.activate') || 'تفعيل'),
+      icon: (category: Category) => category.isActive ? PowerOff : Power,
+      onClick: (category: Category) => handleToggleStatus(category),
+    },
+    {
       label: t('common.delete') || 'حذف',
       icon: Trash2,
+      variant: 'danger' as const,
       onClick: (category: Category) => {
-        if (typeof window !== 'undefined' && window.confirm(`${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${category.name}"`)) {
-          handleDelete(category.id, category.name);
-        }
+        openConfirm({
+          title: t('category.delete') || 'حذف الفئة',
+          message: `${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${category.name}"`,
+          variant: 'destructive',
+          onConfirm: () => {
+            handleDelete(category.id, category.name);
+          },
+        });
       },
     },
   ];
@@ -341,6 +385,7 @@ export function CategoriesPage() {
         )}
       </div>
 
+      <ConfirmModal />
     </div>
   );
 }

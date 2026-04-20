@@ -24,7 +24,9 @@ export const SessionExpiredDialog: React.FC = () => {
 
   const handleLogin = useCallback(() => {
     setIsOpen(false);
-    window.location.href = '/login?expired=true';
+    const currentPath = window.location.pathname + window.location.search;
+    const returnUrl = encodeURIComponent(currentPath);
+    window.location.href = `/login?expired=true&from=${returnUrl}`;
   }, []);
 
   const handleClose = useCallback(() => {

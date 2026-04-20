@@ -132,6 +132,7 @@ export const common = {
   "common.pending": "Pending",
   "common.choose_file": "Choose file",
   "common.delete_confirm": "Are you sure you want to delete this?",
+  "common.confirm_delete": "Confirm Delete",
   "common.fix_errors": "Please fix the errors above before submitting.",
   "common.invalid_format": "invalid format",
   "common.is_required": "is required",

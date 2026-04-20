@@ -31,8 +31,8 @@ export interface Column<T = any> {
 }
 
 export interface Action<T = any> {
-  label: string;
-  icon?: React.ElementType;
+  label: string | ((row: T) => string);
+  icon?: React.ElementType | ((row: T) => React.ElementType);
   onClick: (row: T) => void;
   variant?: 'default' | 'danger' | 'success';
 }
@@ -349,24 +349,28 @@ export function DataTable<T extends Record<string, any>>({
                                 "absolute top-0 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100",
                                 dir === 'rtl' ? "left-8 origin-top-left" : "right-8 origin-top-right"
                               )}>
-                                {rowActions.map((action, i) => (
-                                  <button
-                                    key={i}
-                                    onClick={() => {
-                                      action.onClick(row);
-                                      setOpenActionId(null);
-                                    }}
-                                    className={cn(
-                                      "w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
-                                      action.variant === 'danger'
-                                        ? "text-danger hover:bg-danger/10"
-                                        : "text-zinc-text hover:bg-white/5"
-                                    )}
-                                  >
-                                    {action.icon && <action.icon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-                                    {action.label}
-                                  </button>
-                                ))}
+                                {rowActions.map((action, i) => {
+                                  const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
+                                  const ActionIcon = action.icon ? (typeof action.icon === 'function' ? action.icon(row) : action.icon) : null;
+                                  return (
+                                    <button
+                                      key={i}
+                                      onClick={() => {
+                                        action.onClick(row);
+                                        setOpenActionId(null);
+                                      }}
+                                      className={cn(
+                                        "w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
+                                        action.variant === 'danger'
+                                          ? "text-danger hover:bg-danger/10"
+                                          : "text-zinc-text hover:bg-white/5"
+                                      )}
+                                    >
+                                      {ActionIcon && <ActionIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
+                                      {actionLabel}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -546,6 +550,8 @@ export function DataTable<T extends Record<string, any>>({
           {rowActions.map((action, i) => {
             const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
             if (!row) return null;
+            const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
+            const ActionIcon = action.icon ? (typeof action.icon === 'function' ? action.icon(row) : action.icon) : null;
             return (
               <button
                 key={i}
@@ -560,8 +566,8 @@ export function DataTable<T extends Record<string, any>>({
                     : "text-zinc-text hover:bg-white/5"
                 )}
               >
-                {action.icon && <action.icon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-                {action.label}
+                {ActionIcon && <ActionIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
+                {actionLabel}
               </button>
             );
           })}

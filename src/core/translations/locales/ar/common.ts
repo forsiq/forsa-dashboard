@@ -112,6 +112,7 @@ export const common = {
   "common.pending": "معلق",
   "common.choose_file": "اختر ملفاً",
   "common.delete_confirm": "هل أنت متأكد من الحذف؟",
+  "common.confirm_delete": "تأكيد الحذف",
   "common.fix_errors": "يرجى تصحيح الأخطاء أعلاه قبل الإرسال.",
   "common.invalid_format": "صيغة غير صالحة",
   "common.is_required": "مطلوب",

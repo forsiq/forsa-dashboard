@@ -57,4 +57,10 @@ export const categories = {
   "category.icon": "الأيقونة",
   "category.icon_placeholder": "اختر أيقونة",
   "category.icon_search": "البحث عن أيقونة...",
+  "category.deactivate": "تعطيل",
+  "category.activate": "تفعيل",
+  "category.activated": "مفعّلة",
+  "category.deactivated": "معطّلة",
+  "category.toggle_status_confirm": "هل تريد تغيير حالة الفئة إلى",
+  "category.delete": "حذف الفئة",
 } as const;

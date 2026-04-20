@@ -57,4 +57,10 @@ export const categories = {
   "category.icon": "Icon",
   "category.icon_placeholder": "Select an icon",
   "category.icon_search": "Search icons...",
+  "category.deactivate": "Deactivate",
+  "category.activate": "Activate",
+  "category.activated": "Active",
+  "category.deactivated": "Inactive",
+  "category.toggle_status_confirm": "Are you sure you want to change the category status to",
+  "category.delete": "Delete Category",
 } as const;

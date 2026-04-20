@@ -28,6 +28,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { cn } from '../../lib/utils/cn';
 import { AmberButton } from '../AmberButton';
+import { useConfirmModal } from '../Feedback/AmberConfirmModal';
 
 // ============================================================================
 // Types
@@ -145,6 +146,7 @@ export function DetailPageLayout({
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(defaultTab || tabs?.[0]?.id || '');
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const handleEdit = () => {
     if (editHref) {
@@ -155,9 +157,14 @@ export function DetailPageLayout({
   };
 
   const handleDelete = () => {
-    if (window.confirm(t('common.delete_confirm') || 'Are you sure?')) {
-      onDelete?.();
-    }
+    openConfirm({
+      title: t('common.confirm_delete') || 'Confirm Delete',
+      message: t('common.delete_confirm') || 'Are you sure you want to delete this item?',
+      variant: 'destructive',
+      onConfirm: () => {
+        onDelete?.();
+      },
+    });
   };
 
   // Default action buttons
@@ -286,6 +293,8 @@ export function DetailPageLayout({
           children
         )}
       </div>
+
+      <ConfirmModal />
     </div>
   );
 }

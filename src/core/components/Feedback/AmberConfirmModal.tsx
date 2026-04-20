@@ -150,13 +150,13 @@ export const AmberConfirmModal = React.forwardRef<HTMLDivElement, AmberConfirmMo
                 onClick={onClose}
                 disabled={isConfirming || isLoading}
                 className={cn(
-                  'absolute top-4 right-4 p-1.5 rounded-lg text-zinc-muted',
-                  'hover:text-zinc-text hover:bg-white/5',
-                  'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-                  dir === 'rtl' && 'left-4 right-auto'
+                  'absolute top-3 p-2 rounded-lg text-zinc-muted',
+                  'hover:text-zinc-text hover:bg-white/10',
+                  'transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10',
+                  dir === 'rtl' ? 'left-3' : 'right-3'
                 )}
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
 
               <div className="p-6">

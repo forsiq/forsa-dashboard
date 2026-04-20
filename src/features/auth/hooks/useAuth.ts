@@ -35,6 +35,14 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getRedirectPath = useCallback((): string => {
+    const from = router.query.from as string;
+    if (from && from !== '/login' && from !== '/register') {
+      return from;
+    }
+    return '/dashboard';
+  }, [router.query.from]);
+
   const handleAuthSuccess = useCallback((response: AuthResponse) => {
     setAccessToken(response.access);
     setRefreshToken(response.refresh);
@@ -54,7 +62,7 @@ export const useAuth = () => {
     try {
       const response = await authApi.login(credentials);
       handleAuthSuccess(response);
-      router.push('/dashboard');
+      router.push(getRedirectPath());
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -62,7 +70,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router, handleAuthSuccess]);
+  }, [router, handleAuthSuccess, getRedirectPath]);
 
   const register = useCallback(async (data: RegisterData) => {
     setIsLoading(true);
@@ -70,7 +78,7 @@ export const useAuth = () => {
     try {
       const response = await authApi.register(data);
       handleAuthSuccess(response);
-      router.push('/dashboard');
+      router.push(getRedirectPath());
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -78,7 +86,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router, handleAuthSuccess]);
+  }, [router, handleAuthSuccess, getRedirectPath]);
 
   const verifyOTP = useCallback(async (data: OTPData) => {
     setIsLoading(true);
@@ -86,7 +94,7 @@ export const useAuth = () => {
     try {
       const response = await authApi.verifyOTP(data);
       handleAuthSuccess(response);
-      router.push('/dashboard');
+      router.push(getRedirectPath());
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP verification failed');
@@ -94,7 +102,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router, handleAuthSuccess]);
+  }, [router, handleAuthSuccess, getRedirectPath]);
 
   const logout = useCallback(async () => {
     setIsLoading(true);

@@ -50,4 +50,10 @@ export const categories = {
   "category.icon": "ئایکۆن",
   "category.icon_placeholder": "ئایکۆنێک هەڵبژێرە",
   "category.icon_search": "گەڕان بۆ ئایکۆن...",
+  "category.deactivate": "ناچالاککردن",
+  "category.activate": "چالاککردن",
+  "category.activated": "چالاک",
+  "category.deactivated": "ناچالاک",
+  "category.toggle_status_confirm": "ئایا دڵنیایت کە دەتەوێت دۆخی هاوپۆلەکە بگۆڕیت بۆ",
+  "category.delete": "سڕینەوەی هاوپۆل",
 } as const;

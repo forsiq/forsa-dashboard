@@ -9,6 +9,8 @@ export const common = {
   "common.create": "درووستکردن",
   "common.edit": "دەستکاری",
   "common.delete": "سڕینەوە",
+  "common.delete_confirm": "ئایا دڵنیایت کە دەتەوێت ئەمە بسڕیتەوە؟",
+  "common.confirm_delete": "دڵنیاکردنەوەی سڕینەوە",
   "common.save": "خەزنکردن",
   "common.cancel": "پاشگەزبوونەوە",
   "common.submit": "ناردن",
