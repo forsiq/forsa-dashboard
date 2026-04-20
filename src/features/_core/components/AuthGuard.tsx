@@ -15,7 +15,7 @@ interface AuthGuardProps {
  * 1. If auth feature is disabled → bypass auth, check project only
  * 2. Check auth token
  * 3. Check project selection (auto-loaded from config)
- * 4. If no project configured and auth is enabled → redirect to login
+ * 4. If no token → redirect to login (initial access, not session expiry)
  */
 export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
@@ -33,7 +33,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   // Check auth (using token in cookie or localStorage)
   const checkAuthToken = (): boolean => {
     if (typeof window === 'undefined') return false;
-    
+
     // Check cookie first
     const cookies = document.cookie.split(';');
     const hasAccessCookie = cookies.some(c => c.trim().startsWith('access='));
@@ -47,15 +47,11 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const isAuthValid = checkAuthToken();
 
   useEffect(() => {
-    // Only redirect if:
-    // 1. Component is mounted (isClient)
-    // 2. Auth is globally enabled
-    // 3. Current session is invalid
-    // 4. We aren't already on a public route (handled by _app.tsx but as a safety)
+    // Only redirect if user has NO token at all (not logged in).
+    // Session expiry during active use is handled by API interceptor → SessionExpiredDialog.
     if (isClient && isAuthEnabled && !isAuthValid) {
       const publicPaths = ['/login', '/register', '/otp', '/404'];
       if (!publicPaths.includes(router.pathname)) {
-        console.warn('[AuthGuard] Unauthorized access to', router.pathname, '- Redirecting to login');
         router.replace({
           pathname: fallback,
           query: { from: router.asPath }
@@ -66,12 +62,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 
   // Handle Hydration: On server and first client render, show a consistent state
   if (!isClient) {
-    // If auth is disabled globally, we might want to render children on server for SEO
-    // but usually AuthGuard implies client-side logic. 
-    // To match server exactly, we return a loading state if we're not sure.
-    // However, if we know auth is disabled, we could render children.
-    // The safest is to only render children once isClient is true.
-    return null; 
+    return null;
   }
 
   // If auth feature is disabled, bypass auth check

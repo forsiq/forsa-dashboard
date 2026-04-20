@@ -49,4 +49,9 @@ export const auth = {
   "auth.marketing.feature1.value": "فوري",
   "auth.marketing.feature2.label": "طبقة الحماية",
   "auth.marketing.feature2.value": "مؤسسي",
+
+  // Session expired
+  "auth.session_expired": "انتهت صلاحية الجلسة",
+  "auth.session_expired_desc": "جلستك الحالية منتهية الصلاحية. يرجى تسجيل الدخول مرة أخرى للمتابعة.",
+  "auth.login_again": "تسجيل الدخول",
 } as const;

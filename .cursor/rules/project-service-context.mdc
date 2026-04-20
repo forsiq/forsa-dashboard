@@ -1,0 +1,163 @@
+---
+description: Project service context - paths, deployment, attachments API, models, and how to use online
+alwaysApply: true
+---
+
+# Project Service (zv-project-service) - Project Context
+
+## Service Location
+
+- **Local Path**: `/home/yousef/Documents/workspace/zonevast/services/zv-project-service/`
+- **Framework**: Django + Django REST Framework
+- **Database**: PostgreSQL (`dev0`), shared DB with other services
+- **Port**: `8070` (local development)
+
+## Deployment
+
+| Environment | URL / Lambda Name |
+|---|---|
+| **Test (dev)** | `https://test.zonevast.com/api/v1/project/project/` |
+| **Prod** | `https://api.zonevast.com/api/v1/project/project/` |
+| **Lambda dev** | `zonevast-project-service-dev` |
+| **Local** | `http://localhost:8070/api/v1/project/project/` |
+
+### Deploy Commands
+
+```bash
+cd /home/yousef/Documents/workspace/zonevast/services/zv-project-service/
+
+# Deploy to dev (test.zonevast.com)
+zappa deploy dev       # First time
+zappa update dev       # Subsequent updates
+
+# Deploy to prod
+zappa update prod
+
+# View logs
+zappa tail dev
+zappa tail prod
+```
+
+### Deploy Config
+
+| Config | Value |
+|---|---|
+| AWS Region | `eu-central-1` |
+| S3 Bucket | `zonevast-zappa-deployments-eu-central-1` |
+| Runtime | `python3.11` |
+| Memory (dev) | 512MB |
+| Memory (prod) | 1024MB |
+| S3 File Bucket | `file-zonevast-eu` |
+| CloudFront Domain | `file.zonevast.com` |
+| Tool | Zappa (serverless Django) |
+
+## How to Access Online
+
+### Test Environment
+- **API Root**: `https://test.zonevast.com/api/v1/project/project/`
+- **Swagger**: `https://test.zonevast.com/swagger/`
+
+### Required Headers
+```
+Authorization: Bearer <access_token>
+X-Project-ID: 11
+Content-Type: application/json
+```
+
+## API Endpoints
+
+All endpoints under `/api/v1/project/project/`:
+
+### Attachments (File Upload)
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `attachment/` | List attachments (filtered by project) |
+| POST | `attachment/presigned-url/` | Get presigned S3 URL for upload |
+| POST | `attachment/direct-upload/` | Direct upload (for testing) |
+| POST | `attachment/confirm-upload/` | Confirm presigned upload completed |
+| GET | `attachment/<id>/` | Get attachment details |
+| DELETE | `attachment/<id>/delete/` | Delete attachment + S3 object |
+
+### Projects
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `projects/` | List projects |
+| POST | `projects/` | Create project |
+| GET | `projects/<id>/` | Get project details |
+| GET | `projects/by-username/<username>/` | Lookup project by username |
+
+### Project Settings
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `<username>/settings/` | Get/set project settings |
+
+### Sub-apps
+| Prefix | Description |
+|---|---|
+| `account/` | Project accounts |
+| `feature/` | Project features |
+| `language/` | Supported languages |
+| `report/` | Reports |
+| `review/` | Reviews |
+
+## File Upload Flow
+
+### Method 1: Presigned URL (Recommended for production)
+1. `POST attachment/presigned-url/` with `{file_name, content_type, file_size, base_path, entity_type}`
+2. Get back `upload_url`, `fields`, `attachment_id`, `s3_key`
+3. Upload file directly to S3 using the presigned URL
+4. `POST attachment/confirm-upload/` with `{attachment_id}`
+5. Server verifies file in S3 and marks as `completed`
+
+### Method 2: Direct Upload (Simpler, for testing)
+1. `POST attachment/direct-upload/` with multipart form data
+2. File goes: API Gateway → Lambda → Django → S3
+3. Limitation: Max ~10MB (API Gateway payload limit)
+
+### File URL Format
+- **Production**: `https://file.zonevast.com/<s3_key>`
+- **Dev**: Same CloudFront domain
+
+## Models
+
+### Attachment
+- `original_name`, `file_name`, `type` (image/video/audio/document/other)
+- `mime_type`, `size`, `s3_key`, `base_path`
+- `upload_status` (pending/completed/failed)
+- `hash` (SHA-256 for deduplication)
+- `entity_type` (product, order, profile, etc.)
+- `tenant_project_id` (multi-tenant)
+
+### Project
+- `title`, `description` (translatable via django-parler)
+- `username` (unique), `unique_identifier`, `template`
+- `owner_id`, `logo` (FK to ProjectAttachment)
+- `features` (M2M), `supported_languages` (M2M)
+- `settings` (via ProjectSetting: key-value pairs)
+
+### ProjectSetting
+- `project` (FK), `key`, `value`
+
+## Where to Review / Edit
+
+| What | File Path |
+|---|---|
+| URLs routing | `zv_project_service/urls.py` |
+| Attachment URLs | `apps/attachment/urls.py` |
+| Attachment views | `apps/attachment/views.py` |
+| Attachment model | `apps/attachment/models.py` |
+| Project URLs | `apps/project/urls.py` |
+| Project views | `apps/project/views.py` |
+| Project model | `apps/project/models.py` |
+| Project middleware | `apps/project/middleware.py` |
+| JWT auth | `zv_project_service/custom_jwt_auth.py` |
+| Settings | `zv_project_service/settings.py` |
+| Deploy config | `zappa_settings.json` |
+
+## Integration Notes
+
+- This service handles ALL file attachments across ZoneVast
+- Attachments are multi-tenant: filtered by `tenant_project_id`
+- CloudFront (`file.zonevast.com`) serves files publicly after upload
+- Content deduplication: send `file_hash` (SHA-256) with presigned URL request
+- Auth uses `JWTAuthenticationWithoutDB` (no DB lookup per request in Lambda)

@@ -51,4 +51,9 @@ export const auth = {
   "auth.marketing.feature1.value": "Instant",
   "auth.marketing.feature2.label": "Security Layer",
   "auth.marketing.feature2.value": "Enterprise",
+
+  // Session expired
+  "auth.session_expired": "Session Expired",
+  "auth.session_expired_desc": "Your current session has expired. Please log in again to continue.",
+  "auth.login_again": "Login Again",
 } as const;

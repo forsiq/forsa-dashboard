@@ -6,6 +6,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
+import { emitSessionExpired } from '../lib/session/sessionEvents';
 
 // ============================================================================
 // Configuration
@@ -84,15 +85,27 @@ function getProjectId(): string {
  */
 function clearAuthSession(): void {
   try {
-    Cookies.remove('access', { path: '/' });
-    Cookies.remove('refresh', { path: '/' });
+    // Must match the same options used when setting cookies in cookieStorage.ts
+    const cookieDomain = getCookieDomain();
+    const removeOpts = { path: '/', ...(cookieDomain ? { domain: cookieDomain } : {}) };
+    Cookies.remove('access', removeOpts);
+    Cookies.remove('refresh', removeOpts);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     localStorage.removeItem('zv_project');
-  } catch {
-    // Ignore
+  } catch (e) {
+    console.warn('[API] Failed to clear auth session:', e);
   }
+}
+
+function getCookieDomain(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return undefined;
+  const parts = hostname.split('.');
+  if (parts.length >= 2) return `.${parts.slice(-2).join('.')}`;
+  return undefined;
 }
 
 /**
@@ -112,6 +125,8 @@ function createBaseInstance(baseURL: string): AxiosInstance {
       const token = getAuthToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else if (!token) {
+        console.warn('[API] No auth token found for request:', config.method?.toUpperCase(), config.url);
       }
       // Add project ID header
       if (config.headers) {
@@ -164,11 +179,12 @@ function createBaseInstance(baseURL: string): AxiosInstance {
             const newAccess = refreshResponse.data?.access;
             const newRefresh = refreshResponse.data?.refresh;
             if (newAccess) {
-              // Update both cookie (primary) and localStorage (fallback)
-              Cookies.set('access', newAccess, { path: '/', sameSite: 'Lax' });
+              // Use same cookie options as cookieStorage for consistency
+              const cookieOpts = { path: '/', sameSite: 'Lax' as const };
+              Cookies.set('access', newAccess, cookieOpts);
               localStorage.setItem('access_token', newAccess);
               if (newRefresh) {
-                Cookies.set('refresh', newRefresh, { path: '/', sameSite: 'Lax' });
+                Cookies.set('refresh', newRefresh, cookieOpts);
                 localStorage.setItem('refresh_token', newRefresh);
               }
               if (originalRequest.headers) {
@@ -178,33 +194,18 @@ function createBaseInstance(baseURL: string): AxiosInstance {
             }
             return Promise.reject(apiError);
           }).catch((refreshErr) => {
-            // Refresh failed - DON'T auto-redirect for data endpoints
-            // Only redirect for critical auth-check endpoints
-            const isCriticalAuthCheck = requestUrl.includes('/auth/user/') || requestUrl.includes('/auth/me');
-            if (isCriticalAuthCheck) {
-              console.warn('[API] Auth check failed after refresh. Redirecting.');
-              clearAuthSession();
-              window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
-            } else {
-              // For data endpoints (auctions, items, etc.) - just clear stale tokens
-              // and let the component handle the error (show error message, retry button, etc.)
-              console.warn('[API] Token refresh failed for:', requestUrl, '- Component will handle.');
-              clearAuthSession();
-            }
+            // Refresh failed - notify the user via SessionExpiredDialog
+            console.warn('[API] Token refresh failed for:', requestUrl);
+            clearAuthSession();
+            emitSessionExpired();
             return Promise.reject(apiError);
           });
         }
 
-        // No refresh token available
-        if (!currentRefreshToken) {
-          // Only redirect for critical auth endpoints, not for regular data fetching
-          const isCriticalAuthCheck = requestUrl.includes('/auth/user/') || requestUrl.includes('/auth/me');
-          if (isCriticalAuthCheck) {
-            console.warn('[API] No refresh token for auth check. Redirecting.');
-            window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
-          }
-          // For non-critical endpoints, just reject and let the component handle it
-        }
+        // No refresh token available - notify via SessionExpiredDialog
+        console.warn('[API] No refresh token for:', requestUrl);
+        clearAuthSession();
+        emitSessionExpired();
       } else if (error.response?.status && error.response.status !== 401) {
         console.error(`[API] ${error.response.status} Error:`, error.config?.url, apiError);
       }

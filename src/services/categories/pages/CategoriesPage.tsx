@@ -87,10 +87,10 @@ export function CategoriesPage() {
     setIsClient(true);
   }, []);
 
-  // Fetch categories - unwrap .data from response
+  // Fetch categories - map status filter to isActive
   const { data, isLoading, error, refetch } = useGetCategories({
     search: debouncedSearch || undefined,
-    status: statusFilter === 'all' ? undefined : statusFilter,
+    isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
     page: 1,
     limit: 50,
   });
@@ -158,19 +158,19 @@ export function CategoriesPage() {
       label: t('category.status') || 'Status',
       render: (category: Category) => (
         <StatusBadge
-          status={category.status === 'active' ? (t('category.active') || 'Active') : (t('category.inactive') || 'Inactive')}
-          variant={category.status === 'active' ? 'success' : 'inactive'}
+          status={category.isActive ? (t('category.active') || 'Active') : (t('category.inactive') || 'Inactive')}
+          variant={category.isActive ? 'success' : 'inactive'}
           size="sm"
         />
       ),
       align: 'center' as const,
     },
     {
-      key: 'order',
+      key: 'sortOrder',
       label: t('category.order') || 'Order',
       render: (category: Category) => (
         <span className="text-sm text-zinc-text font-bold">
-          {category.order ?? 0}
+          {category.sortOrder ?? 0}
         </span>
       ),
       align: 'center' as const,

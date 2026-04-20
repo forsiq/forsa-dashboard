@@ -42,7 +42,7 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
               </div>
            </div>
 
-           <div className="max-w-xl animate-fade-in translate-y-[-20%]">
+           <div className="max-w-xl animate-fade-in pt-10">
               <h2 className="text-5xl lg:text-7xl font-black text-zinc-text tracking-tighter leading-[0.9] uppercase italic mb-8" 
                   dangerouslySetInnerHTML={{ __html: t('auth.marketing.title').replace(' ', '<br />') }} />
               <p className="text-lg font-medium text-zinc-muted leading-relaxed max-w-md mb-12">

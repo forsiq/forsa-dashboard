@@ -8,6 +8,7 @@ import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
 import { Toast } from '@core/components/Feedback/Toast';
+import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { AuthGuard } from '@features/_core/components/AuthGuard';
 import { AmberDashboardLayout } from '@core/layout/AmberDashboardLayout';
 import { useRouter } from 'next/router';
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                 <ProjectProvider>
                   <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">BOOTING SYSTEM...</div>}>
                     <Toast />
+                    <SessionExpiredDialog />
                     {isPublicRoute ? (
                       <Component {...pageProps} />
                     ) : (

@@ -9,21 +9,20 @@ import { cn } from '../../../core/lib/utils/cn';
 import { AmberInput } from '../../../core/components/AmberInput';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberCard } from '../../../core/components/AmberCard';
-import { AmberImageUpload } from '../../../core/components/AmberImageUpload';
 import { AmberDropdown } from '../../../core/components/AmberDropdown';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 
 // --- Validation Schema ---
+// Must match auction-service CreateCategoryDto / UpdateCategoryDto
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   nameAr: z.string().optional(),
   slug: z.string().optional(),
   description: z.string().optional(),
-  parentId: z.string().optional(),
-  status: z.enum(['active', 'inactive']),
-  order: z.number().optional(),
-  image: z.string().optional(),
+  icon: z.string().optional(),
+  sortOrder: z.number().optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
@@ -39,18 +38,6 @@ interface CategoryFormProps {
 
 // --- Form Component ---
 
-/**
- * CategoryForm - Form for creating/editing categories
- *
- * @example
- * <CategoryForm
- *   initialData={category}
- *   onSubmit={async (data) => {
- *     await updateCategory(data);
- *   }}
- *   parentCategories={categories}
- * />
- */
 export function CategoryForm({
   initialData,
   onSubmit,
@@ -77,23 +64,21 @@ export function CategoryForm({
     defaultValues: initialData
       ? {
           name: initialData.name,
-          nameAr: initialData.nameAr || '',
+          nameAr: initialData.nameAr || initialData.translations?.ar?.name || '',
           slug: initialData.slug || '',
           description: initialData.description || '',
-          parentId: initialData.parentId || '',
-          status: initialData.status,
-          order: initialData.order,
-          image: initialData.image || '',
+          icon: initialData.icon || '',
+          sortOrder: initialData.sortOrder ?? 0,
+          isActive: initialData.isActive ?? true,
         }
       : {
           name: '',
           nameAr: '',
           slug: '',
           description: '',
-          parentId: '',
-          status: 'active',
-          order: 0,
-          image: '',
+          icon: '',
+          sortOrder: 0,
+          isActive: true,
         },
   });
 
@@ -113,10 +98,20 @@ export function CategoryForm({
   const handleFormSubmit = async (data: CategoryFormData) => {
     try {
       setErrors({});
+      // Build payload matching backend CreateCategoryDto exactly
+      const payload: any = {
+        name: data.name,
+        slug: data.slug || undefined,
+        description: data.description || undefined,
+        icon: data.icon || undefined,
+        sortOrder: data.sortOrder ?? 0,
+        isActive: data.isActive ?? true,
+      };
+
       if (initialData) {
-        await onSubmit({ ...data, id: initialData.id });
+        await onSubmit({ ...payload, id: initialData.id });
       } else {
-        await onSubmit(data as CreateCategoryInput);
+        await onSubmit(payload as CreateCategoryInput);
       }
     } catch (err: any) {
       if (err.details) {
@@ -178,70 +173,43 @@ export function CategoryForm({
             {...register('slug')}
           />
 
-          {/* Status */}
-          <AmberDropdown 
-            label={t('category.status')}
+          {/* Status (mapped to isActive) */}
+          <AmberDropdown
+            label={t('category.status') || 'Status'}
             options={[
               { label: t('status.active') || 'نشط', value: 'active' },
               { label: t('status.inactive') || 'غير نشط', value: 'inactive' },
             ]}
-            value={watch('status') || 'active'}
-            onChange={val => setValue('status', val as any)}
+            value={watch('isActive') ? 'active' : 'inactive'}
+            onChange={val => setValue('isActive', val === 'active')}
           />
 
-          {/* Parent Category */}
-          <AmberDropdown 
-            label={t('category.parent')}
-            options={[
-              { label: t('category.no_parent') || 'لا يوجد أصل', value: '' },
-              ...parentCategories
-                .filter(c => c.id !== initialData?.id)
-                .map(category => ({
-                  label: category.name,
-                  value: String(category.id)
-                }))
-            ]}
-            value={watch('parentId') || ''}
-            onChange={val => setValue('parentId', val)}
-          />
-
-          {/* Order */}
+          {/* Sort Order */}
           <AmberInput
             type="number"
             label={t('category.order') || 'Display Order'}
             placeholder="0"
-            {...register('order', { valueAsNumber: true })}
+            {...register('sortOrder', { valueAsNumber: true })}
+          />
+
+          {/* Icon */}
+          <AmberInput
+            label={t('category.icon') || 'Icon'}
+            placeholder="icon-name"
+            {...register('icon')}
           />
         </div>
 
         {/* Description */}
         <div className="mt-6">
-          <AmberInput 
-            label={t('category.description')}
+          <AmberInput
+            label={t('category.description') || 'Description'}
             multiline
             rows={3}
             placeholder={t('category.description_placeholder') || 'وصف التصنيف...'}
             {...register('description')}
           />
         </div>
-      </AmberCard>
-
-      {/* Image Upload */}
-      <AmberCard>
-        <div className="mb-6">
-          <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-            {t('category.image') || 'Category Image'}
-          </h3>
-        </div>
-        <AmberImageUpload
-          value={watch('image')}
-          onChange={(files) => {
-            // In a real app, you'd upload the file first
-            const imageUrl = URL.createObjectURL(files[0]);
-            setValue('image', imageUrl);
-          }}
-          onRemove={() => setValue('image', '')}
-        />
       </AmberCard>
 
       {/* Actions */}
@@ -274,6 +242,6 @@ export function CategoryForm({
       </div>
     </form>
   );
-}
+};
 
 export default CategoryForm;

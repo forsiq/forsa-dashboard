@@ -1,42 +1,50 @@
 // --- Category Types ---
+// Must match the auction-service NestJS backend DTO
 
 export interface Category {
   id: string;
   name: string;
   slug?: string;
   description?: string;
-  parentId?: string;
-  parent?: Category;
+  icon?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  projectId?: number;
+  translations?: Record<string, Record<string, string>>;
   createdAt: string;
-  // Fields not in remote schema - kept for local compatibility
-  nameAr?: string;
-  status?: 'active' | 'inactive';
-  order?: number;
-  image?: string;
-  productCount?: number;
   updatedAt?: string;
+  deletedAt?: string | null;
+  // Computed fields for frontend display
+  productCount?: number;
+  // Legacy compat - mapped from translations in frontend
+  nameAr?: string;
 }
 
 export interface CreateCategoryInput {
   name: string;
   slug?: string;
   description?: string;
-  parentId?: string;
-  // Optional fields not in remote schema
+  icon?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  // Arabic name stored in translations
   nameAr?: string;
-  status?: 'active' | 'inactive';
-  order?: number;
-  image?: string;
 }
 
-export interface UpdateCategoryInput extends Partial<CreateCategoryInput> {
+export interface UpdateCategoryInput {
   id: string;
+  name?: string;
+  slug?: string;
+  description?: string;
+  icon?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  nameAr?: string;
 }
 
 export interface CategoryFilters {
   search?: string;
-  status?: 'active' | 'inactive' | 'all';
-  parentId?: string | 'all' | 'none';
+  isActive?: boolean | 'all';
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -69,6 +77,9 @@ export interface ApiError {
 
 export interface ApiResponse<T> {
   data: T;
+  total?: number;
+  success?: boolean;
+  message?: string;
   error?: ApiError;
 }
 

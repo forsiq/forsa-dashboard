@@ -19,10 +19,9 @@ export function CategoryAddPage() {
     setIsClient(true);
   }, []);
 
-  // Fetch categories for parent selection
+  // Fetch categories for list
   const { data: categoriesData } = useGetCategories({
     limit: 100,
-    status: 'active',
   });
 
   // Create mutation

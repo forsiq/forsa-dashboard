@@ -28,7 +28,6 @@ export function CategoryEditPage() {
   // Fetch categories for parent selection
   const { data: categoriesData } = useGetCategories({
     limit: 100,
-    status: 'active',
   });
 
   // Update mutation

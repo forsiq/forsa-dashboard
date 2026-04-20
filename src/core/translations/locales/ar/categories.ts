@@ -51,4 +51,7 @@ export const categories = {
   "category.not_found_desc": "الفئة المطلوبة غير موجودة",
   "category.no_results": "لا توجد فئات تطابق بحثك",
   "category.search_placeholder": "البحث في الفئات...",
+  "category.details": "تفاصيل الفئة",
+  "category.status_info": "معلومات الحالة",
+  "category.updated_at": "تاريخ التحديث",
 } as const;

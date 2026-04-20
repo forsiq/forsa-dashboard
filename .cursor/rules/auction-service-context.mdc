@@ -1,0 +1,87 @@
+---
+description: Auction service context - paths, deployment, modules, and API endpoints for forsa mobile project
+alwaysApply: true
+---
+
+# Auction Service - Project Context
+
+This mobile app (Forsa) connects to the **auction-service** backend. All relevant paths, deployment info, and module structure are recorded here.
+
+## Service Location
+
+- **Local Path**: `/home/yousef/Documents/workspace/zonevast/services/auction-service/`
+- **Framework**: NestJS (TypeScript)
+- **Database**: PostgreSQL with TypeORM, schema: `auction`
+
+## Deployment URLs
+
+| Environment | URL |
+|---|---|
+| **Test (dev)** | `https://test.zonevast.com/forsa` |
+| **Local dev** | `http://localhost:3000/api/v1/` |
+| **Lambda dev** | `auction-service-dev` on `eu-central-1` |
+
+- **AWS Region**: `eu-central-1` (Frankfurt)
+- **S3 Bucket**: `zonevast-zappa-deployments-eu-central-1`
+- **API Prefix**: `api/v1`
+- **Project ID**: `11`
+
+## Deployment Commands
+
+```bash
+cd /home/yousef/Documents/workspace/zonevast/services/auction-service/
+
+# Deploy to dev (test.zonevast.com)
+npm run deploy:dev
+
+# Deploy to prod
+npm run deploy:prod
+
+# Or manual:
+./deployment/build.sh dev && ./deployment/deploy.sh dev
+```
+
+## Backend Modules Structure
+
+| Module | Path | Purpose |
+|---|---|---|
+| Auth | `src/modules/auth/` | JWT authentication |
+| Auction | `src/modules/auction/` | Auction CRUD, listing |
+| Bid | `src/modules/bid/` | Bidding system |
+| Category | `src/modules/category/` | Auction categories |
+| GroupBuying | `src/modules/group-buying/` | Group deals |
+| Engagement | `src/modules/engagement/` | Reviews, favorites |
+| User | `src/modules/user/` | User profiles, stats |
+| Notifications | `src/modules/notifications/` | FCM push notifications |
+| WebSocket | `src/modules/websocket/` | Real-time auction gateway |
+| Compat | `src/modules/compat/` | Compatibility endpoints |
+
+## Key API Endpoints
+
+All endpoints prefixed with `api/v1`:
+
+- `POST /auth/login` - User login
+- `GET /auctions` - List auctions
+- `POST /auctions` - Create auction
+- `GET /auctions/:id` - Get auction details
+- `POST /bids` - Place a bid
+- `GET /categories` - List categories
+- `GET /group-buying` - Group deals
+- `POST /engagement/favorite` - Toggle favorite
+- `POST /notifications/register-token` - Register FCM token
+
+## Integration Notes
+
+- JWT auth: token in `Authorization: Bearer <token>` header
+- Cross-service calls: Order service via `ORDER_SERVICE_URL`, File attachments via `ATTACHMENT_SERVICE_URL`
+- Firebase FCM for push notifications (project: `zonevast-a0ad6`)
+- WebSocket for real-time bidding (disabled on Lambda, enabled locally)
+
+## Config Files
+
+| File | Purpose |
+|---|---|
+| `zvs.config.json` | Lambda deployment config |
+| `deployment/config/dev.json` | Dev environment variables |
+| `deployment/config/prod.json` | Prod environment variables |
+| `.env` | Local environment overrides |

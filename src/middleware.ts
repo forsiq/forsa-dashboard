@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 /**
  * Next.js Middleware for Route Protection
- * 
+ *
  * Logic:
  * 1. Define public paths that don't need auth
  * 2. Check for 'access' cookie
@@ -13,9 +13,9 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Define public routes
-  const isPublicPath = 
-    pathname === '/login' || 
-    pathname === '/register' || 
+  const isPublicPath =
+    pathname === '/login' ||
+    pathname === '/register' ||
     pathname === '/otp' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/public') ||
@@ -41,16 +41,8 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

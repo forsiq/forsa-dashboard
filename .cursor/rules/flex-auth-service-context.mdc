@@ -1,0 +1,191 @@
+---
+description: Flex Auth service context - authentication API endpoints, JWT structure, OTP flow, and integration guide for zv-flex-auth-service
+alwaysApply: true
+---
+
+# Flex Auth Service - Project Context
+
+This mobile app (Forsa) uses **zv-flex-auth-service** for all authentication operations. It is a NestJS (TypeScript) service deployed on AWS Lambda.
+
+## Service Location
+
+- **Local Path**: `/home/yousef/Documents/workspace/zonevast/services/zv-flex-auth-service/`
+- **Framework**: NestJS (TypeScript) on AWS Lambda
+- **Database**: PostgreSQL (TypeORM), database: `zv_phone_auth`
+
+## Deployment URLs
+
+| Environment | URL |
+|---|---|
+| **Test (dev)** | `https://test.zonevast.com/auth/api/v2/auth/` |
+| **Local dev** | `http://localhost:8015/api/v1/auth/` |
+| **Lambda dev** | `zv-flex-auth-service-dev` on `eu-central-1` |
+
+- **AWS Region**: `eu-central-1` (Frankfurt)
+- **API Prefix (dev)**: `api/v2/auth`
+- **API Prefix (local)**: `api/v1/auth`
+
+## Deployment Commands
+
+```bash
+cd /home/yousef/Documents/workspace/zonevast/services/zv-flex-auth-service/
+
+# Deploy to dev (test.zonevast.com)
+npm run deploy:dev
+
+# Deploy to prod
+npm run deploy:prod
+
+# Or manual:
+npm run build && npm run deploy:dev
+```
+
+## Authentication Methods
+
+This service supports two login methods per project (configured via `auth_configs`):
+
+1. **Phone + Password** - Traditional login
+2. **Phone + OTP** - Passwordless via WhatsApp/SMS
+
+Each project controls which methods are enabled via `auth_configs.loginMethods`.
+
+## Key API Endpoints
+
+### Public (no token required)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/register-init` | Start registration - sends OTP to verify phone |
+| `POST` | `/register-verify` | Complete registration with OTP verification |
+| `POST` | `/register` | Direct registration (legacy, no verification) |
+| `POST` | `/login` | Login with phone + password |
+| `POST` | `/send-otp` | Send OTP for passwordless login |
+| `POST` | `/login-otp` | Login with phone + OTP |
+| `POST` | `/refresh` | Refresh access token |
+| `POST` | `/password/reset/init` | Start password reset (sends OTP) |
+| `POST` | `/password/reset/confirm` | Confirm password reset with OTP |
+| `GET` | `/config/:projectId/public` | Get public auth config for a project |
+
+### Authenticated (JWT + `X-Project-ID` header required)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/profile` | Get current user profile |
+| `PUT` | `/profile` | Update profile (name, email, etc.) |
+| `POST` | `/avatar` | Upload profile avatar |
+| `PUT` | `/password` | Change password |
+| `PUT` | `/language` | Change language preference |
+| `GET` | `/settings` | Get user settings |
+| `PUT` | `/settings` | Update user settings |
+
+## JWT Token Structure
+
+```json
+{
+  "sub": "user-uuid",
+  "user_id": "uuid",
+  "phone": "+966500000000",
+  "projectId": 11,
+  "project_id": 11,
+  "role": "customer",
+  "roles": ["customer"],
+  "userType": "phone"
+}
+```
+
+## Authentication Flows
+
+### Registration Flow (Phone + OTP)
+
+```
+1. POST /register-init  { phone, password?, projectId }
+   → Sends OTP via WhatsApp/SMS
+   → Returns { message, cooldownSeconds? }
+
+2. POST /register-verify { phone, otp, firstName?, lastName? }
+   → Creates user + returns tokens
+   → Returns { user, tokens: { accessToken, refreshToken } }
+```
+
+### Login Flow (Password)
+
+```
+1. POST /login { phone, password }
+   → Returns { user, tokens: { accessToken, refreshToken } }
+   → After 5 failed attempts: 15-minute lockout
+```
+
+### Login Flow (OTP)
+
+```
+1. POST /send-otp { phone, projectId }
+   → Sends OTP with tiered cooldown:
+     1st: immediate, 2nd: 1min, 3rd: 5min, 4th+: 24h
+   → Returns { message, cooldownSeconds? }
+
+2. POST /login-otp { phone, otp, projectId }
+   → Returns { user, tokens: { accessToken, refreshToken } }
+   → If user not registered: error (redirect to registration)
+```
+
+### Token Refresh
+
+```
+POST /refresh { refresh_token }
+→ Returns { accessToken, refreshToken }
+```
+
+## Request Headers
+
+```typescript
+// All authenticated requests must include:
+headers: {
+  'Authorization': `Bearer ${accessToken}`,
+  'X-Project-ID': projectId.toString(),
+}
+```
+
+## User Model Fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `phone` | string | Required, unique per project |
+| `email` | string? | Optional, unique |
+| `username` | string? | Optional, unique |
+| `role` | enum | `customer`, `driver`, `staff`, `admin`, `pending` |
+| `status` | enum | `active`, `inactive`, `suspended`, `deleted` |
+| `firstName` | string? | Optional |
+| `lastName` | string? | Optional |
+| `avatar` | string? | URL to profile image |
+| `language` | string | Default: `'en'` |
+| `phoneVerified` | boolean | Set true after OTP verification |
+| `projectId` | number | Project isolation |
+
+## Integration Notes
+
+- **Project Isolation**: All users are scoped to `projectId`. Always send `X-Project-ID` header.
+- **Seed Phones**: Test numbers (`+9647500000001`, `+9647500000002`) use fixed OTP `123456`.
+- **OTP Providers**: StandingTech (WhatsApp/SMS, primary) → Wasender (WhatsApp, fallback).
+- **Token Expiry**: Access token `60m`, Refresh token `7d`.
+- **Rate Limiting**: 10 requests/minute globally; OTP endpoints have additional tiered limits.
+
+## Backend Source Structure
+
+| Path | Purpose |
+|---|---|
+| `src/auth/` | Auth controller, service, guards, strategies |
+| `src/auth/auth-config.service.ts` | Per-project auth config management |
+| `src/users/` | User CRUD, OTP code management |
+| `src/sms/` | SMS/WhatsApp providers with fallback |
+| `src/database/` | TypeORM + AWS Secrets Manager |
+| `src/common/` | Decorators (`@IsPublic`, `@ProjectId`), guards |
+
+## Config Files
+
+| File | Purpose |
+|---|---|
+| `zvs.config.json` | Lambda deployment config |
+| `deployment/config/dev.json` | Dev environment variables |
+| `deployment/config/prod.json` | Prod environment variables |
+| `.env` | Local environment overrides |

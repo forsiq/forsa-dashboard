@@ -5,4 +5,9 @@ export const auth = {
   "auth.register.success_title": "هەژمار دروست کرا",
   "auth.register.success_desc": "هەژمارەکەت بە سەرکەوتوویی ئامادە کرا. بەخێربێیت بۆ سیستەمەکە.",
   "auth.register.proceed_login": "بەردەوام بوون بۆ چوونەژوورەوە",
+
+  // Session expired
+  "auth.session_expired": "بەکارهێنان کۆتایی هات",
+  "auth.session_expired_desc": "بەکارهێنانی ئێستات کۆتایی هات. تکایە دوبارە بچۆ ژوورەوە.",
+  "auth.login_again": "چوونەژوورەوە",
 } as const;

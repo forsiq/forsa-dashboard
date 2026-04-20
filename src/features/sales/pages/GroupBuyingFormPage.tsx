@@ -267,7 +267,6 @@ export const GroupBuyingFormPage: React.FC = () => {
                                 ]}
                                 value={String(formData.productId || '')}
                                 onChange={(val) => handleChange('productId', val)}
-                                className="h-12 w-full bg-obsidian-outer border-border rounded-xl"
                              />
                              {errors.productId && <p className={`text-[10px] text-danger font-black uppercase px-1 ${isRTL ? 'text-right' : ''}`}>{errors.productId}</p>}
                         </div>
@@ -281,7 +280,6 @@ export const GroupBuyingFormPage: React.FC = () => {
                                 ]}
                                 value={formData.categoryId || '1'}
                                 onChange={(val) => handleChange('categoryId', val)}
-                                className="h-12 w-full bg-obsidian-outer border-border rounded-xl"
                             />
                         </div>
                     </div>

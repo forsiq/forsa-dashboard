@@ -51,4 +51,7 @@ export const categories = {
   "category.not_found_desc": "The requested category could not be found",
   "category.no_results": "No categories match your search",
   "category.search_placeholder": "Search categories...",
+  "category.details": "Category Details",
+  "category.status_info": "Status Info",
+  "category.updated_at": "Updated At",
 } as const;

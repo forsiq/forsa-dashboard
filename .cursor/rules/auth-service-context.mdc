@@ -1,0 +1,144 @@
+---
+description: Auth service context - paths, deployment, API endpoints, models, and how to use online
+alwaysApply: true
+---
+
+# Auth Service (zv-auth-service) - Project Context
+
+## Service Location
+
+- **Local Path**: `/home/yousef/Documents/workspace/zonevast/services/zv-auth-service/`
+- **Framework**: Django + Django REST Framework
+- **Database**: PostgreSQL (`dev0`), shared DB with other services
+- **Port**: `8010` (local development)
+
+## Deployment
+
+| Environment | URL / Lambda Name |
+|---|---|
+| **Test (dev)** | `https://test.zonevast.com/api/v1/auth/auth/` |
+| **Prod** | `https://api.zonevast.com/api/v1/auth/auth/` |
+| **Lambda dev** | `zonevast-auth-service-dev` |
+| **Local** | `http://localhost:8010/api/v1/auth/auth/` |
+
+### Deploy Commands
+
+```bash
+cd /home/yousef/Documents/workspace/zonevast/services/zv-auth-service/
+
+# Deploy to dev (test.zonevast.com)
+zappa deploy dev       # First time
+zappa update dev       # Subsequent updates
+
+# Deploy to prod
+zappa update prod
+
+# View logs
+zappa tail dev
+zappa tail prod
+```
+
+### Deploy Config
+
+| Config | Value |
+|---|---|
+| AWS Region | `eu-central-1` |
+| S3 Bucket | `zonevast-zappa-deployments-eu-central-1` |
+| Runtime | `python3.11` |
+| Memory (dev) | 512MB |
+| Memory (prod) | 1024MB |
+| Tool | Zappa (serverless Django) |
+
+## How to Access Online
+
+### Test Environment (Swagger UI)
+- **Swagger**: `https://test.zonevast.com/api/v1/auth/auth/` (root shows endpoints)
+- **Direct API**: Use `https://test.zonevast.com/api/v1/auth/auth/token/` for login
+
+### Required Headers
+```
+Authorization: Bearer <access_token>
+X-Project-ID: 11
+Content-Type: application/json
+```
+
+## API Endpoints
+
+All endpoints under `/api/v1/auth/auth/`:
+
+### Authentication
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `token/` | JWT login (returns access + refresh) |
+| POST | `token/refresh/` | Refresh access token |
+| POST | `token/change_project/` | Switch project context |
+| POST | `login/` | Legacy token+session login |
+| POST | `logout/` | Logout |
+
+### Registration & Verification
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `register/` | Register new user (sends OTP) |
+| POST | `send-otp/` | Resend OTP to email |
+| POST | `verify-otp/` | Verify OTP to activate account |
+| POST | `password/reset/` | Reset password with OTP |
+| POST | `password/change/` | Change password (needs current) |
+
+### User Management
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/PATCH | `user/` | Get/update current user details |
+| POST | `user/upload-image/` | Upload profile image |
+| POST | `user/language/` | Update language (en/ar) |
+
+### User Profile & Data
+| Method | Endpoint | Description |
+|---|---|---|
+| CRUD | `profile/` | User profile (bio, gender, birth_date, etc.) |
+| CRUD | `payment-card/` | Payment cards |
+| CRUD | `address/` | User addresses |
+| GET | `country/` | List countries |
+| GET | `region/<slug>/` | Regions by country |
+
+### Dev Only
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `test-users/` | Create test users (dev/test only) |
+
+## Models
+
+### User (AbstractUser)
+- `language` (en/ar), `phone`, `orders_count`, `wins_count`
+- Standard Django user fields: username, email, first_name, etc.
+
+### UserProfile
+- `profile_picture`, `bio`, `phone`, `birth_date`, `gender`
+- `company_name`, `position_title`
+
+### Address
+- `address_type` (home/work/other), `street_address`, `city`, `governorate`
+- `postal_code`, `country`, `nearest_landmark`
+
+### PaymentCard
+- `provider`, `card_number`, `cardholder_name`, `cvv`, `expire_date`
+
+## Auth Flow for Mobile App (Forsa)
+
+1. **Register**: `POST register/` → creates inactive user + sends OTP
+2. **Verify OTP**: `POST verify-otp/` → activates user (dev mode: bypassed)
+3. **Login**: `POST token/` → returns `access` + `refresh` JWT tokens
+4. **Use Token**: Add `Authorization: Bearer <access>` to all requests
+5. **Refresh**: `POST token/refresh/` when access token expires
+
+## Where to Review / Edit
+
+| What | File Path |
+|---|---|
+| URLs routing | `zv_auth_service/urls.py` |
+| User endpoints | `apps/users/urls.py` |
+| Views logic | `apps/users/views.py` |
+| Models | `apps/users/models.py` |
+| Serializers | `apps/users/serializers.py` |
+| JWT config | `zv_auth_service/custom_jwt_views.py` |
+| Settings | `zv_auth_service/settings.py` |
+| Deploy config | `zappa_settings.json` |
