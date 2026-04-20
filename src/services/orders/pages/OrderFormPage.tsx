@@ -16,6 +16,7 @@ export const OrderFormPage = () => {
   const [isClient, setIsClient] = useState(false);
   const { t } = useLanguage();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [comingSoon, setComingSoon] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -62,17 +63,9 @@ export const OrderFormPage = () => {
   });
 
   const onSubmit = async (data: CreateOrderInput) => {
-    try {
-      setSubmitError(null);
-      if (isEdit) {
-        await updateMutation.mutateAsync({ id: id as string, ...data });
-      } else {
-        await createMutation.mutateAsync(data);
-      }
-    } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t?.('error.save_failed') || 'Failed to save order. Please try again.';
-      setSubmitError(errorMessage);
-    }
+    // Backend POST /orders endpoint does not exist yet
+    setComingSoon(true);
+    setSubmitError('This feature is coming soon. Backend endpoint is not available yet.');
   };
 
   if (!isClient) return null;

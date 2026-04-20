@@ -54,4 +54,7 @@ export const categories = {
   "category.details": "Category Details",
   "category.status_info": "Status Info",
   "category.updated_at": "Updated At",
+  "category.icon": "Icon",
+  "category.icon_placeholder": "Select an icon",
+  "category.icon_search": "Search icons...",
 } as const;

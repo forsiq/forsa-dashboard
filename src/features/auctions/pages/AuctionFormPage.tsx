@@ -53,7 +53,7 @@ export const AuctionFormPage: React.FC = () => {
   const createMutation = useCreateAuction();
   const updateMutation = useUpdateAuction();
 
-  const [formData, setFormData] = useState<Partial<AuctionCreateInput>>({
+  const [formData, setFormData] = useState<Partial<AuctionCreateInput> & { productId?: number }>({
     title: '',
     description: '',
     startPrice: 0,
@@ -64,6 +64,7 @@ export const AuctionFormPage: React.FC = () => {
     bidIncrement: 10,
     categoryId: 1,
     images: [],
+    productId: undefined,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -142,8 +143,10 @@ export const AuctionFormPage: React.FC = () => {
           return;
         }
       }
+      // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
+      const { productId, ...formPayload } = formData;
       const payload: any = {
-        ...formData,
+        ...formPayload,
       };
       if (uploadedAttachmentId) {
         payload.mainAttachmentId = uploadedAttachmentId;

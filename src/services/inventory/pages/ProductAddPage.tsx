@@ -61,6 +61,7 @@ export const ProductAddPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [comingSoonShown, setComingSoonShown] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -116,10 +117,11 @@ export const ProductAddPage = () => {
   const handleSubmit = async () => {
     if (!validate()) return;
     
+    // Backend POST /inventory endpoint does not exist yet
     setIsSubmitting(true);
+    setComingSoonShown(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      router.back();
     }, 1500);
   };
 
@@ -127,6 +129,16 @@ export const ProductAddPage = () => {
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
+      {/* Coming Soon Banner */}
+      {comingSoonShown && (
+        <div className="bg-info/10 border border-info/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-info shrink-0" />
+          <p className="text-sm text-info font-medium">{t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.'}</p>
+          <button onClick={() => setComingSoonShown(false)} className="ml-auto text-info/60 hover:text-info">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className={cn(
         "flex flex-col sm:flex-row sm:items-start justify-between gap-6",

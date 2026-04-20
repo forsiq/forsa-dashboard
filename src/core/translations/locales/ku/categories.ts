@@ -44,4 +44,10 @@ export const categories = {
   "category.not_found_desc": "هاوپۆلی داواکراو نەدۆزراوە",
   "category.no_results": "هیچ هاوپۆلێک گەڕانەکەت ناگونجێت",
   "category.search_placeholder": "گەڕان لە هاوپۆلەکان...",
+  "category.details": "ووردەکارییەکانی هاوپۆل",
+  "category.status_info": "زانیاری دۆخ",
+  "category.updated_at": "نوێ کراوەتەوە لە",
+  "category.icon": "ئایکۆن",
+  "category.icon_placeholder": "ئایکۆنێک هەڵبژێرە",
+  "category.icon_search": "گەڕان بۆ ئایکۆن...",
 } as const;

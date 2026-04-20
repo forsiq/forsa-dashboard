@@ -32,6 +32,8 @@ export const auctionKeys = {
   bids: (auctionId: number | string, page = 1, limit = 20) =>
     [...auctionKeys.all, 'bids', auctionId, page, limit] as const,
   myBids: (page: number, limit: number) => [...auctionKeys.all, 'my-bids', page, limit] as const,
+  watched: () => [...auctionKeys.all, 'watched'] as const,
+  slug: (slug: string) => [...auctionKeys.all, 'slug', slug] as const,
 };
 
 // ============================================================================
@@ -103,6 +105,7 @@ export function useGetAuctionStats(): UseQueryResult<AuctionStats> {
     queryKey: auctionKeys.stats(),
     queryFn: auctionApi.getStats,
     staleTime: 2 * 60 * 1000,
+    refetchInterval: 60 * 1000,
   });
 
   useErrorHandler(query.error, 'Failed to load auction stats');

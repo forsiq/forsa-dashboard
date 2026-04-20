@@ -89,18 +89,8 @@ export const ItemFormPage: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
     
-    try {
-      setSubmitError(null);
-      if (isEdit && id) {
-        await updateMutation.mutateAsync({ id: id as string, input: formData });
-      } else {
-        await createMutation.mutateAsync(formData);
-      }
-      router.push('/items');
-    } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Failed to save. Please try again.';
-      setSubmitError(errorMessage);
-    }
+    // Backend POST /items endpoint does not exist yet
+    setSubmitError(t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.');
   };
 
   if (!isClient) return null;

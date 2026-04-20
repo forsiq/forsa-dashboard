@@ -145,15 +145,17 @@ export const GroupBuyingFormPage: React.FC = () => {
           return;
         }
       }
+      // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
+      const { productId, ...formPayload } = formData;
       const input = {
-          ...formData,
-          productId: Number(formData.productId),
-          originalPrice: Number(formData.originalPrice),
-          dealPrice: Number(formData.dealPrice),
-          minParticipants: Number(formData.minParticipants),
-          maxParticipants: Number(formData.maxParticipants),
-          startTime: new Date(formData.startTime).toISOString(),
-          endTime: new Date(formData.endTime).toISOString(),
+          ...formPayload,
+          categoryId: formPayload.categoryId ? Number(formPayload.categoryId) : undefined,
+          originalPrice: Number(formPayload.originalPrice),
+          dealPrice: Number(formPayload.dealPrice),
+          minParticipants: Number(formPayload.minParticipants),
+          maxParticipants: Number(formPayload.maxParticipants),
+          startTime: new Date(formPayload.startTime).toISOString(),
+          endTime: new Date(formPayload.endTime).toISOString(),
       } as any;
       if (uploadedAttachmentId) {
         input.mainAttachmentId = uploadedAttachmentId;

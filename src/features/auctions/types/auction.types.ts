@@ -59,7 +59,8 @@ export interface AuctionCreateInput {
   bidIncrement: number;
   categoryId: number;
   images: string[];
-  productId?: number;
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
 }
 
 export interface AuctionUpdateInput extends Partial<AuctionCreateInput> {

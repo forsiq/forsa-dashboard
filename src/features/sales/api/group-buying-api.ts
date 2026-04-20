@@ -17,8 +17,8 @@ import type {
  * Base Group Buying API implementation
  */
 export const groupBuyingBaseApi = createApiClient<GroupBuying, GroupBuyingCreateInput, GroupBuyingUpdateInput, GroupBuyingFilters>({
-  serviceName: 'group-buying',
-  endpoint: '/group-buying',
+  serviceName: 'group-deals',
+  endpoint: '/group-deals',
 });
 
 /**

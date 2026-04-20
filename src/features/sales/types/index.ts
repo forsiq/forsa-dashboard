@@ -40,7 +40,6 @@ export interface GroupBuyingCreateInput {
   title: string;
   description?: string;
   slug?: string;
-  productId?: number;
   categoryId?: string;
   originalPrice: number;
   dealPrice: number;
@@ -49,6 +48,8 @@ export interface GroupBuyingCreateInput {
   startTime: string; // ISO datetime
   endTime: string; // ISO datetime
   autoCreateOrder?: boolean;
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
 }
 
 export interface GroupBuyingUpdateInput extends Partial<GroupBuyingCreateInput> {

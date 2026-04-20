@@ -54,4 +54,7 @@ export const categories = {
   "category.details": "تفاصيل الفئة",
   "category.status_info": "معلومات الحالة",
   "category.updated_at": "تاريخ التحديث",
+  "category.icon": "الأيقونة",
+  "category.icon_placeholder": "اختر أيقونة",
+  "category.icon_search": "البحث عن أيقونة...",
 } as const;

@@ -10,6 +10,7 @@ import { AmberInput } from '../../../core/components/AmberInput';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberDropdown } from '../../../core/components/AmberDropdown';
+import { IconPicker } from '../../../core/components/IconPicker';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 
 // --- Validation Schema ---
@@ -193,10 +194,12 @@ export function CategoryForm({
           />
 
           {/* Icon */}
-          <AmberInput
+          <IconPicker
+            value={watch('icon') || ''}
+            onChange={val => setValue('icon', val)}
             label={t('category.icon') || 'Icon'}
-            placeholder="icon-name"
-            {...register('icon')}
+            placeholder={t('category.icon_placeholder') || 'Select an icon'}
+            searchPlaceholder={t('category.icon_search') || 'Search icons...'}
           />
         </div>
 

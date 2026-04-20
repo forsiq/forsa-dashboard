@@ -80,19 +80,8 @@ export function CustomerFormPage() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    try {
-      setSubmitError(null);
-      if (isEditMode) {
-        await updateMutation.mutateAsync({ id: id as string, ...formData } as any);
-        router.push(`/customers/${id}`);
-      } else {
-        await createMutation.mutateAsync(formData as any);
-        router.push('/customers');
-      }
-    } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Failed to save. Please try again.';
-      setSubmitError(errorMessage);
-    }
+    // Backend POST /customers endpoint does not exist yet
+    setSubmitError(t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.');
   };
 
   useEffect(() => {
