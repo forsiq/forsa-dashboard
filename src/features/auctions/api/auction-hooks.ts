@@ -4,8 +4,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { useRef, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
+import { useErrorHandler } from '@core/hooks';
 import { auctionApi, bidApi } from './auction-api';
 import type {
   Auction,
@@ -35,32 +35,6 @@ export const auctionKeys = {
   watched: () => [...auctionKeys.all, 'watched'] as const,
   slug: (slug: string) => [...auctionKeys.all, 'slug', slug] as const,
 };
-
-// ============================================================================
-// Helper Hooks
-// ============================================================================
-
-/**
- * Hook to show error toast only once per unique error
- */
-function useErrorHandler(error: any, messagePrefix: string) {
-  const { error: toastError } = useToast();
-  const lastErrorRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (error) {
-      const errorMsg = error.message || (error as any).error || 'Unknown error';
-      const errorKey = `${messagePrefix}:${errorMsg}`;
-      // Only show toast if this is a new error
-      if (lastErrorRef.current !== errorKey) {
-        lastErrorRef.current = errorKey;
-        toastError(`${messagePrefix}: ${errorMsg}`, 8000);
-      }
-    } else {
-      lastErrorRef.current = null;
-    }
-  }, [error, messagePrefix, toastError]);
-}
 
 // ============================================================================
 // Query Hooks
@@ -242,10 +216,46 @@ export function useToggleWatch() {
       auctionApi.toggleWatch(auctionId, isLiked),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(variables.auctionId) });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.watched() });
       toast.success(variables.isLiked ? 'Removed from watchlist' : 'Added to watchlist');
     },
     onError: (error: any) => {
       toast.error(`Failed to update watchlist: ${error.message || 'Unknown error'}`, 8000);
     },
   });
+}
+
+// ============================================================================
+// Additional Hooks (merged from useAuctions.ts)
+// ============================================================================
+
+/**
+ * Get auction by slug
+ */
+export function useAuctionBySlug(slug: string) {
+  const query = useQuery({
+    queryKey: auctionKeys.slug(slug),
+    queryFn: () => auctionApi.getBySlug(slug),
+    enabled: !!slug,
+    staleTime: 10 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load auction');
+
+  return query;
+}
+
+/**
+ * Get watched auctions
+ */
+export function useWatchedAuctions() {
+  const query = useQuery({
+    queryKey: auctionKeys.watched(),
+    queryFn: () => auctionApi.getWatched(),
+    staleTime: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load watched auctions');
+
+  return query;
 }

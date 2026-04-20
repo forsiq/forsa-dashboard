@@ -14,6 +14,8 @@ export {
   useDeleteAuction,
   usePlaceBid,
   useToggleWatch,
+  useAuctionBySlug,
+  useWatchedAuctions,
 } from './auction-hooks';
 
 // API Client

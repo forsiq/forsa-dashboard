@@ -1,16 +1,26 @@
-/** Categories Hooks - Using REST */
+/** Categories Hooks - Using CrudServiceFactory + custom list hook */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
-import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters } from '../types';
+import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse } from '../types';
 
+const categoryService = createCrudService<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
+  name: 'categories',
+  endpoint: '/categories',
+});
+
+export const categoryKeys = api.categoryKeys;
+
+// Use custom list hook to preserve CategoriesResponse shape
 export const useList = (filters: CategoryFilters = {} as any) => {
-  return useQuery({
+  return useQuery<CategoriesResponse>({
     queryKey: api.categoryKeys.list(filters),
     queryFn: () => api.getCategories(filters),
   });
 };
 
-export const useById = (id: string, enabled = true) => {
+export const useById = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: api.categoryKeys.detail(id),
     queryFn: () => api.getCategory(id),
@@ -69,4 +79,3 @@ export const useGetCategoryStats = useStats;
 export const useCreateCategoryMutation = useCreate;
 export const useUpdateCategoryMutation = useUpdate;
 export const useDeleteCategoryMutation = useDelete;
-

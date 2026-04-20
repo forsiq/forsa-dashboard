@@ -350,9 +350,22 @@ export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = 
 
     /**
      * Bulk delete entities
+     * Sends a single DELETE request with all IDs for efficiency.
+     * Falls back to individual deletes if the batch endpoint is not available.
      */
     async bulkDelete(ids: string[]): Promise<void> {
-      await Promise.all(ids.map(id => this.delete(id)));
+      if (ids.length === 0) return;
+
+      try {
+        await client.delete(endpoints.base + '/', { data: { ids } });
+      } catch {
+        // Fallback: delete individually with concurrency limit of 5
+        const batchSize = 5;
+        for (let i = 0; i < ids.length; i += batchSize) {
+          const batch = ids.slice(i, i + batchSize);
+          await Promise.all(batch.map(id => this.delete(id)));
+        }
+      }
     },
 
     /**

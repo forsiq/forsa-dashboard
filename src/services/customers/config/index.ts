@@ -27,6 +27,15 @@ export type { Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilter
 export { customerEntityMeta, customerListConfig, customerFormConfig };
 
 // GraphQL API and hooks are exported from ../graphql/
-// REST API and hooks
-export * from '../api/customers';
+// REST API and hooks (exclude customerKeys - already in hooks)
+export {
+  customerBaseApi,
+  getCustomers,
+  getCustomer,
+  getCustomerStats,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+  updateCustomerStatus,
+} from '../api/customers';
 export * from '../hooks';

@@ -8,23 +8,21 @@ export type * from './types/auction.types';
 // API
 export { auctionApi, bidApi } from './api/auction-api';
 
+// Query Keys
+export { auctionKeys } from './api/auction-hooks';
+
 // Hooks
 export {
-  auctionKeys,
-  useAuctions,
-  useAuction,
-  useAuctionBySlug,
+  useGetAuctions,
+  useGetAuction,
+  useGetAuctionStats,
+  useGetAuctionBids,
+  useGetMyBids,
   useCreateAuction,
   useUpdateAuction,
   useDeleteAuction,
-  useAuctionStats,
-  useWatchedAuctions,
-  useToggleWatch,
-  useAuctionBids,
   usePlaceBid,
-} from './hooks/useAuctions';
-
-// Components - will be added as we create them
-// export { default as AuctionCard } from './components/AuctionCard';
-// export { default as AuctionTimer } from './components/AuctionTimer';
-// etc.
+  useToggleWatch,
+  useAuctionBySlug,
+  useWatchedAuctions,
+} from './api/auction-hooks';

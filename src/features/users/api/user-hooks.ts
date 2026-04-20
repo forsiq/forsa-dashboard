@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from './user-api';
-import type { User, UserCreateInput, UserUpdateInput, UserFilters } from '../types';
+import type { User, UserCreateInput, UserUpdateInput, UserFilters, UsersResponse, UserStats } from '../types';
 
 export const userKeys = {
   all: ['users'] as const,
@@ -16,14 +16,15 @@ export const userKeys = {
 };
 
 export const useGetUsers = (filters: UserFilters = {}) => {
-  return useQuery({
+  return useQuery<UsersResponse>({
     queryKey: userKeys.list(filters),
     queryFn: () => userApi.list(filters),
   });
 };
 
-export const useGetUser = (id: string, enabled = true) => {
-  return useQuery({
+export const useGetUser = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
+  return useQuery<User>({
     queryKey: userKeys.detail(id),
     queryFn: () => userApi.get(id),
     enabled: enabled && !!id,
@@ -31,7 +32,7 @@ export const useGetUser = (id: string, enabled = true) => {
 };
 
 export const useGetUserStats = () => {
-  return useQuery({
+  return useQuery<UserStats>({
     queryKey: userKeys.stats(),
     queryFn: userApi.getStats,
   });

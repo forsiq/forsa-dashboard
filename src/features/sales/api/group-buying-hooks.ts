@@ -28,7 +28,8 @@ export const useGetGroupBuyings = (filters: GroupBuyingFilters = {}) => {
   });
 };
 
-export const useGetGroupBuying = (id: string, enabled = true) => {
+export const useGetGroupBuying = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: groupBuyingKeys.detail(id),
     queryFn: () => groupBuyingApi.get(id),

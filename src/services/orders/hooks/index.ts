@@ -1,16 +1,19 @@
-/** Orders Hooks - Using REST */
+/** Orders Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/orders';
-import type { CreateOrderInput, UpdateOrderInput, OrderFilters } from '../types';
+import type { OrderFilters, OrdersResponse } from '../types';
+
+export const orderKeys = api.orderKeys;
 
 export const useList = (filters: OrderFilters = {} as any) => {
-  return useQuery({
+  return useQuery<OrdersResponse>({
     queryKey: api.orderKeys.list(filters),
     queryFn: () => api.getOrders(filters),
   });
 };
 
-export const useById = (id: string, enabled = true) => {
+export const useById = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: api.orderKeys.detail(id),
     queryFn: () => api.getOrder(id),
@@ -28,7 +31,7 @@ export const useStats = () => {
 export const useCreate = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateOrderInput) => api.createOrder(input),
+    mutationFn: (input: any) => api.createOrder(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
     },
@@ -38,7 +41,7 @@ export const useCreate = () => {
 export const useUpdate = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateOrderInput) => api.updateOrder(input),
+    mutationFn: (input: any) => api.updateOrder(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });

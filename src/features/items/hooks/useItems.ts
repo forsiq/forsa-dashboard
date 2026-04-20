@@ -1,7 +1,9 @@
-/** Items Hooks - Using REST */
+/** Items Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/items';
 import type { ItemFilters } from '../types';
+
+export const itemKeys = api.itemKeys;
 
 export const useGetItems = (filters: ItemFilters = {} as any) => {
   return useQuery({
@@ -10,7 +12,8 @@ export const useGetItems = (filters: ItemFilters = {} as any) => {
   });
 };
 
-export const useGetItem = (id: string, enabled = true) => {
+export const useGetItem = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: api.itemKeys.detail(id),
     queryFn: () => api.getItem(id),
@@ -50,4 +53,3 @@ export const useDeleteItemMutation = (options?: { onSuccess?: () => void }) => {
     },
   });
 };
-

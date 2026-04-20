@@ -1,16 +1,19 @@
-/** Customers Hooks - Using REST */
+/** Customers Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/customers';
-import type { CreateCustomerInput, UpdateCustomerInput, CustomerFilters, Customer } from '../types';
+import type { Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilters, CustomersResponse } from '../types';
+
+export const customerKeys = api.customerKeys;
 
 export const useGetCustomers = (filters: CustomerFilters = {} as any) => {
-  return useQuery({
+  return useQuery<CustomersResponse>({
     queryKey: api.customerKeys.list(filters),
     queryFn: () => api.getCustomers(filters),
   });
 };
 
-export const useGetCustomer = (id: string, enabled = true) => {
+export const useGetCustomer = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: api.customerKeys.detail(id),
     queryFn: () => api.getCustomer(id),
@@ -59,7 +62,7 @@ export const useDeleteCustomer = () => {
 export const useUpdateCustomerStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Customer['status'] }) => 
+    mutationFn: ({ id, status }: { id: string; status: Customer['status'] }) =>
       api.updateCustomerStatus(id, status),
     onSuccess: (data: Customer) => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.detail(String(data.id)) });
@@ -68,7 +71,6 @@ export const useUpdateCustomerStatus = () => {
   });
 };
 
-// Prefetch for optimization
 export const prefetchCustomer = async (queryClient: any, id: string) => {
   await queryClient.prefetchQuery({
     queryKey: api.customerKeys.detail(id),
@@ -80,5 +82,3 @@ export const prefetchCustomer = async (queryClient: any, id: string) => {
 export const useCreateCustomerMutation = useCreateCustomer;
 export const useUpdateCustomerMutation = useUpdateCustomer;
 export const useDeleteCustomerMutation = useDeleteCustomer;
-
-

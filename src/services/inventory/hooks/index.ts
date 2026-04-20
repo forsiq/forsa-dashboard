@@ -1,16 +1,19 @@
-/** Inventory Hooks - Using REST */
+/** Inventory Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/products';
-import type { CreateProductInput, UpdateProductInput, ProductFilters } from '../types';
+import type { ProductFilters, ProductsResponse } from '../types';
+
+export const inventoryKeys = api.inventoryKeys;
 
 export const useList = (filters: ProductFilters = {} as any) => {
-  return useQuery({
+  return useQuery<ProductsResponse>({
     queryKey: api.inventoryKeys.list(filters),
     queryFn: () => api.getProducts(filters),
   });
 };
 
-export const useById = (id: string, enabled = true) => {
+export const useById = (id: string, enabledOrOptions?: boolean | { enabled?: boolean }) => {
+  const enabled = typeof enabledOrOptions === 'boolean' ? enabledOrOptions : enabledOrOptions?.enabled ?? true;
   return useQuery({
     queryKey: api.inventoryKeys.detail(id),
     queryFn: () => api.getProduct(id),
@@ -28,7 +31,7 @@ export const useStats = () => {
 export const useCreate = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateProductInput) => api.createProduct(input),
+    mutationFn: (input: any) => api.createProduct(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
     },
@@ -38,7 +41,7 @@ export const useCreate = () => {
 export const useUpdate = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateProductInput) => api.updateProduct(input),
+    mutationFn: (input: any) => api.updateProduct(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });

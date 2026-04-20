@@ -97,7 +97,7 @@ const ICON_LIST: IconOption[] = [
   { name: 'wrench', icon: LucideIcons.Wrench, category: 'Tools' },
   { name: 'hammer', icon: LucideIcons.Hammer, category: 'Tools' },
   { name: 'cog', icon: LucideIcons.Cog, category: 'Tools' },
-  { name: 'screwdriver', icon: LucideIcons.Screwdriver, category: 'Tools' },
+  { name: 'drill', icon: LucideIcons.Drill, category: 'Tools' },
   { name: 'ruler', icon: LucideIcons.Ruler, category: 'Tools' },
 
   // Transport

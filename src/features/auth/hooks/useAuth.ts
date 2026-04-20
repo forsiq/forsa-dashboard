@@ -11,13 +11,18 @@ import {
   isAuthenticated as checkAuthenticated
 } from '@core/lib';
 
+interface AuthResponse {
+  access: string;
+  refresh: string;
+  user: { id: string; username: string; email?: string };
+}
+
 export const useAuth = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUserState] = useState<{ id: string; username: string; email?: string } | null>(null);
 
-  // Initialize user from cookie or localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedUser = getUser() || (() => {
@@ -30,25 +35,25 @@ export const useAuth = () => {
     }
   }, []);
 
+  const handleAuthSuccess = useCallback((response: AuthResponse) => {
+    setAccessToken(response.access);
+    setRefreshToken(response.refresh);
+    setUser(response.user);
+    setUserState(response.user);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('access_token', response.access);
+      localStorage.setItem('refresh_token', response.refresh);
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
+  }, []);
+
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authApi.login(credentials);
-
-      // Store in cookies (priority)
-      setAccessToken(response.access);
-      setRefreshToken(response.refresh);
-      setUser(response.user);
-      setUserState(response.user);
-
-      // Also store in localStorage as fallback
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access_token', response.access);
-        localStorage.setItem('refresh_token', response.refresh);
-        localStorage.setItem('user', JSON.stringify(response.user));
-      }
-
+      handleAuthSuccess(response);
       router.push('/dashboard');
       return response;
     } catch (err) {
@@ -57,27 +62,14 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, handleAuthSuccess]);
 
   const register = useCallback(async (data: RegisterData) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authApi.register(data);
-
-      // Store in cookies (priority)
-      setAccessToken(response.access);
-      setRefreshToken(response.refresh);
-      setUser(response.user);
-      setUserState(response.user);
-
-      // Also store in localStorage as fallback
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access_token', response.access);
-        localStorage.setItem('refresh_token', response.refresh);
-        localStorage.setItem('user', JSON.stringify(response.user));
-      }
-
+      handleAuthSuccess(response);
       router.push('/dashboard');
       return response;
     } catch (err) {
@@ -86,27 +78,14 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, handleAuthSuccess]);
 
   const verifyOTP = useCallback(async (data: OTPData) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authApi.verifyOTP(data);
-
-      // Store in cookies (priority)
-      setAccessToken(response.access);
-      setRefreshToken(response.refresh);
-      setUser(response.user);
-      setUserState(response.user);
-
-      // Also store in localStorage as fallback
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('access_token', response.access);
-        localStorage.setItem('refresh_token', response.refresh);
-        localStorage.setItem('user', JSON.stringify(response.user));
-      }
-
+      handleAuthSuccess(response);
       router.push('/dashboard');
       return response;
     } catch (err) {
@@ -115,15 +94,13 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, handleAuthSuccess]);
 
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Clear cookies (priority)
       clearAuthCookies();
 
-      // Also clear localStorage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -132,8 +109,7 @@ export const useAuth = () => {
 
       setUserState(null);
       router.push('/login');
-      
-      // Attempt backend logout if possible
+
       try {
         await authApi.logout();
       } catch (e) {
