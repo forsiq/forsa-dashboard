@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Plus, Search, Mail, Phone, Building2, User } from 'lucide-react';
+import { Plus, Search, Mail, Phone, Building2, User, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { cn } from '../../../core/lib/utils/cn';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberInput } from '../../../core/components/AmberInput';
+import { StatsGrid } from '../../../core/components/Layout/StatsGrid';
 import { AmberAvatar } from '../../../core/components/AmberAvatar';
 import { AmberTableSkeleton } from '../../../core/components/Loading/AmberTableSkeleton';
 import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { AmberCard as Card } from '../../../core/components/AmberCard';
-import { useGetCustomers, useGetCustomerStats, useDeleteCustomer } from '../hooks';
+import { useConfirmModal } from '../../../core/components/Feedback/AmberConfirmModal';
+import { useGetCustomers, useGetCustomerStats, useDeleteCustomer, useUpdateCustomerStatus } from '../hooks';
 import type { Customer } from '../types';
 
 // Simple debounce hook
@@ -41,6 +43,7 @@ export function CustomersPage() {
   const [isClient, setIsClient] = useState(false);
 
   const isRTL = dir === 'rtl';
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   useEffect(() => {
     setIsClient(true);
@@ -56,11 +59,28 @@ export function CustomersPage() {
   const { data: stats } = useGetCustomerStats();
 
   const deleteMutation = useDeleteCustomer();
+  const updateStatusMutation = useUpdateCustomerStatus();
 
-  // Refetch customers after successful delete
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, name: string) => {
     await deleteMutation.mutateAsync(id);
     refetch();
+  };
+
+  const handleToggleStatus = (customer: Customer) => {
+    const newStatus = customer.status === 'active' ? 'inactive' : 'active';
+    const statusText = newStatus === 'active'
+      ? (t('customer.activated') || 'مفعّل')
+      : (t('customer.deactivated') || 'معطّل');
+
+    openConfirm({
+      title: t('customer.change_status') || 'تغيير الحالة',
+      message: `${t('customer.toggle_status_confirm') || 'هل تريد تغيير حالة العميل إلى'} ${statusText}?\n\n"${customer.name}"`,
+      variant: 'warning',
+      confirmText: statusText,
+      onConfirm: () => {
+        updateStatusMutation.mutate({ id: customer.id, status: newStatus as Customer['status'] });
+      },
+    });
   };
 
   const columns = [
@@ -133,6 +153,34 @@ export function CustomersPage() {
     },
   ];
 
+  const rowActions = [
+    {
+      label: t('common.edit') || 'تعديل',
+      icon: Edit,
+      onClick: (customer: Customer) => router.push(`/customers/${customer.id}/edit`),
+    },
+    {
+      label: (customer: Customer) => customer.status === 'active'
+        ? (t('customer.deactivate') || 'تعطيل')
+        : (t('customer.activate') || 'تفعيل'),
+      icon: (customer: Customer) => customer.status === 'active' ? PowerOff : Power,
+      onClick: (customer: Customer) => handleToggleStatus(customer),
+    },
+    {
+      label: t('common.delete') || 'حذف',
+      icon: Trash2,
+      variant: 'danger' as const,
+      onClick: (customer: Customer) => {
+        openConfirm({
+          title: t('customer.delete') || 'حذف العميل',
+          message: `${t('customer.delete_confirm') || 'هل أنت متأكد من حذف هذا العميل؟'}\n\n"${customer.name}"`,
+          variant: 'destructive',
+          onConfirm: () => handleDelete(customer.id, customer.name),
+        });
+      },
+    },
+  ];
+
   if (!isClient) return null;
 
   return (
@@ -160,76 +208,55 @@ export function CustomersPage() {
 
       {/* Statistics Grid */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('common.total') || 'Aggregated Total'}
-              </span>
-              <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
-                {stats.total ?? 0}
-              </span>
-            </div>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-[var(--color-brand)]/10 transition-colors" />
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-success)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('status.active') || 'Operational Nodes'}
-              </span>
-              <span className="text-3xl font-black text-[var(--color-success)] tracking-tight italic tabular-nums leading-none">
-                {stats.active ?? 0}
-              </span>
-            </div>
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                 {t('customer.new_this_month') || 'Monthly Iterations'}
-              </span>
-              <span className="text-3xl font-black text-[var(--color-brand)] tracking-tight italic tabular-nums leading-none">
-                {stats.newThisMonth ?? 0}
-              </span>
-            </div>
-          </Card>
-
-          <Card className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative flex flex-col justify-between">
-            <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block mb-3">
-               {t('customer.top_spenders') || 'Priority Accounts'}
-            </span>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex -space-x-3 rtl:space-x-reverse">
-                  {((stats.topSpenders as any) || []).slice(0, 4).map((c: any, index: number) => (
-                    <AmberAvatar 
-                      key={c.id || `top-spender-${index}`} 
-                      src={c.avatar} 
-                      fallback={c.name || 'U'} 
-                      size="sm" 
-                      className="ring-4 ring-[var(--color-obsidian-card)] group-hover:ring-[var(--color-brand)]/20 transition-all"
-                      title={c.name}
-                    />
-                  ))}
-                  {((stats.topSpenders as any) || []).length === 0 && (
-                    <span className="text-2xl font-black text-zinc-muted/30 italic">0</span>
+        <StatsGrid
+          stats={[
+            {
+              label: t('common.total') || 'Aggregated Total',
+              value: stats.total ?? 0,
+              color: 'brand',
+            },
+            {
+              label: t('status.active') || 'Operational Nodes',
+              value: stats.active ?? 0,
+              color: 'success',
+            },
+            {
+              label: t('customer.new_this_month') || 'Monthly Iterations',
+              value: stats.newThisMonth ?? 0,
+              color: 'brand',
+            },
+            {
+              label: t('customer.top_spenders') || 'Priority Accounts',
+              value: ((stats.topSpenders || []) as any).length,
+              color: 'brand',
+              footer: (
+                <>
+                  {((stats.topSpenders as any) || []).length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex -space-x-3 rtl:space-x-reverse">
+                          {((stats.topSpenders as any) || []).slice(0, 4).map((c: any, index: number) => (
+                            <AmberAvatar
+                              key={c.id || `top-spender-${index}`}
+                              src={c.avatar}
+                              fallback={c.name || 'U'}
+                              size="sm"
+                              className="ring-4 ring-[var(--color-obsidian-card)]"
+                              title={c.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-bold text-brand/80 uppercase tracking-widest truncate">
+                        {((stats.topSpenders as any) || []).map((c: any) => c.name?.split(' ')[0]).filter(Boolean).join(', ')}
+                      </p>
+                    </div>
                   )}
-                </div>
-                {((stats.topSpenders as any) || []).length > 0 && (
-                  <span className="text-2xl font-black text-zinc-text tracking-tight tabular-nums leading-none">
-                    {((stats.topSpenders as any) || []).length}
-                  </span>
-                )}
-              </div>
-              {((stats.topSpenders as any) || []).length > 0 && (
-                <p className="text-[10px] font-bold text-[var(--color-brand)]/80 uppercase tracking-widest truncate mt-1">
-                   {((stats.topSpenders as any) || []).map((c: any) => c.name?.split(' ')[0]).filter(Boolean).join(', ')}
-                </p>
-              )}
-            </div>
-          </Card>
-        </div>
+                </>
+              ),
+            },
+          ]}
+        />
       )}
 
       {/* Interactive Controls */}
@@ -312,10 +339,13 @@ export function CustomersPage() {
             pagination
             pageSize={10}
             selectable
+            rowActions={rowActions}
             onRowClick={(row) => router.push(`/customers/${row.id}`)}
           />
         )}
       </div>
+
+      <ConfirmModal />
     </div>
   );
 }

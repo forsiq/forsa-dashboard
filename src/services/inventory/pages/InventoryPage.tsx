@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
 
@@ -103,10 +104,10 @@ export const InventoryPage = () => {
   }, [data]);
 
   const stats = [
-    { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'text-brand', trend: '+4% ' + t('common.this_month') },
-    { label: t('inventory.low_stock'), value: lowStockAlerts.length.toString(), icon: AlertCircle, color: 'text-danger', trend: t('inventory.needs_review') },
-    { label: t('inventory.warehouses'), value: '3', icon: Warehouse, color: 'text-info', trend: t('inventory.global_dist') },
-    { label: t('inventory.total_value'), value: '$' + data.reduce((sum, p) => sum + (p.price * p.stock), 0).toLocaleString(), icon: TrendingUp, color: 'text-success', trend: '+12.4% vs LY' },
+    { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'brand' as const, description: '+4% ' + t('common.this_month') },
+    { label: t('inventory.low_stock'), value: lowStockAlerts.length.toString(), icon: AlertCircle, color: 'danger' as const, description: t('inventory.needs_review') },
+    { label: t('inventory.warehouses'), value: '3', icon: Warehouse, color: 'info' as const, description: t('inventory.global_dist') },
+    { label: t('inventory.total_value'), value: '$' + data.reduce((sum, p) => sum + (p.price * p.stock), 0).toLocaleString(), icon: TrendingUp, color: 'success' as const, description: '+12.4% vs LY' },
   ];
 
   // --- Table Configuration ---
@@ -244,43 +245,15 @@ export const InventoryPage = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <Card key={i} className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="flex items-start justify-between relative z-10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                  {stat.label}
-                </span>
-                <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
-                  {stat.value}
-                </span>
-                <div className="mt-2 flex items-center gap-1.5">
-                  <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-widest",
-                    stat.color === 'text-brand' && "text-[var(--color-brand)]",
-                    stat.color === 'text-danger' && "text-[var(--color-danger)]",
-                    stat.color === 'text-info' && "text-[var(--color-info)]",
-                    stat.color === 'text-success' && "text-[var(--color-success)]"
-                  )}>
-                    {stat.trend}
-                  </span>
-                </div>
-              </div>
-              <div className={cn(
-                "p-3 rounded-xl border-none shadow-sm flex-shrink-0",
-                stat.color === 'text-brand' && "bg-[var(--color-brand)]/10 text-[var(--color-brand)]",
-                stat.color === 'text-danger' && "bg-[var(--color-danger)]/10 text-[var(--color-danger)]",
-                stat.color === 'text-info' && "bg-[var(--color-info)]/10 text-[var(--color-info)]",
-                stat.color === 'text-success' && "bg-[var(--color-success)]/10 text-[var(--color-success)]"
-              )}>
-                <stat.icon className="w-5 h-5 stroke-[2.5]" />
-              </div>
-            </div>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-[var(--color-brand)]/10 transition-colors" />
-          </Card>
-        ))}
-      </div>
+      <StatsGrid
+        stats={stats.map(s => ({
+          label: s.label,
+          value: s.value,
+          icon: s.icon,
+          color: s.color,
+          description: s.description,
+        }))}
+      />
 
       {/* Filters & Search Row */}
       <div className={cn(

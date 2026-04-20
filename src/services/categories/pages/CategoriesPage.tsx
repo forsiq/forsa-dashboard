@@ -11,6 +11,7 @@ import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberTableSkeleton } from '../../../core/components/Loading/AmberTableSkeleton';
 import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
+import { StatsGrid } from '../../../core/components/Layout/StatsGrid';
 import { getIconByName } from '../../../core/components/IconPicker';
 import { useConfirmModal } from '../../../core/components/Feedback/AmberConfirmModal';
 import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUpdateCategoryMutation } from '../hooks';
@@ -31,48 +32,7 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-// Stats Card Component
-interface StatCardProps {
-  label: string;
-  value: number;
-  icon: React.ElementType;
-  className?: string;
-  iconClassName?: string;
-  isLoading?: boolean;
-}
-
-function StatCard({ label, value, icon: Icon, className, iconClassName, isLoading }: StatCardProps) {
-  return (
-    <AmberCard className={cn(
-      "!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-white/10 transition-all group overflow-hidden relative",
-      className?.includes('text-') && className.split(' ').find(c => c.startsWith('text-'))
-    )}>
-      <div className="flex items-start justify-between relative z-10">
-        <div className="space-y-1">
-          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em] block">
-            {label}
-          </span>
-          {isLoading ? (
-            <div className="h-8 w-12 bg-zinc-card/50 rounded animate-pulse mt-1" />
-          ) : (
-            <span className="text-3xl font-black text-zinc-text tracking-tight tabular-nums leading-none">
-              {value}
-            </span>
-          )}
-        </div>
-        <div className={cn(
-          'p-3 rounded-xl flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg',
-          className
-        )}>
-          <Icon className={cn('w-5 h-5', iconClassName)} />
-        </div>
-      </div>
-      
-      {/* Background Polish - Inherits color via bg-current */}
-      <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-current opacity-[0.05] rounded-full blur-3xl group-hover:opacity-[0.1] transition-all duration-500" />
-    </AmberCard>
-  );
-}
+// Stats are now handled by StatsGrid component
 
 /**
  * CategoriesPage - Main categories list page
@@ -264,40 +224,34 @@ export function CategoriesPage() {
       </div>
 
       {/* Statistics Grid */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t('category.total') || 'Total Categories'}
-          value={stats?.total ?? 0}
-          icon={LayoutGrid}
-          className="bg-warning/10 text-warning shadow-[0_0_20px_rgba(245,158,11,0.05)]"
-          iconClassName="text-warning"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label={t('category.active') || 'Active'}
-          value={stats?.active ?? 0}
-          icon={Activity}
-          className="bg-success/10 text-success shadow-[0_0_20px_rgba(16,185,129,0.05)]"
-          iconClassName="text-success"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label={t('category.inactive') || 'Inactive'}
-          value={stats?.inactive ?? 0}
-          icon={Ban}
-          className="bg-danger/10 text-danger shadow-[0_0_20px_rgba(239,68,68,0.05)]"
-          iconClassName="text-danger"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label={t('category.main') || 'Main Categories'}
-          value={stats?.withParent ?? 0}
-          icon={Layers}
-          className="bg-info/10 text-info shadow-[0_0_20px_rgba(59,130,246,0.05)]"
-          iconClassName="text-info"
-          isLoading={statsLoading}
-        />
-      </div>
+      <StatsGrid
+        stats={[
+          {
+            label: t('category.total') || 'Total Categories',
+            value: stats?.total ?? 0,
+            icon: LayoutGrid,
+            color: 'warning',
+          },
+          {
+            label: t('category.active') || 'Active',
+            value: stats?.active ?? 0,
+            icon: Activity,
+            color: 'success',
+          },
+          {
+            label: t('category.inactive') || 'Inactive',
+            value: stats?.inactive ?? 0,
+            icon: Ban,
+            color: 'danger',
+          },
+          {
+            label: t('category.main') || 'Main Categories',
+            value: stats?.withParent ?? 0,
+            icon: Layers,
+            color: 'info',
+          },
+        ]}
+      />
 
       <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
         {/* Status Tabs */}

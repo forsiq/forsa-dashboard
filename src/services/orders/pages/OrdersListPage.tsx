@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { getOrders, getOrderStats, orderKeys } from '../api/orders';
 import type { Order, OrderFilters, OrderStats } from '../types';
@@ -17,6 +18,20 @@ import {
 import { Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
 
+// Simple debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export const OrdersListPage = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
@@ -29,6 +44,7 @@ export const OrdersListPage = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'delivered' | 'cancelled'>('all');
+  const [debouncedSearch] = useDebounce(searchQuery, 300);
   const [filters, setFilters] = useState<OrderFilters>({
     page: 1,
     limit: 20,
@@ -37,8 +53,8 @@ export const OrdersListPage = () => {
 
   // Fetch orders
   const { data: ordersData, isLoading: isLoadingOrders, refetch } = useQuery({
-    queryKey: orderKeys.list({ ...filters, status: statusFilter, search: searchQuery }),
-    queryFn: () => getOrders({ ...filters, status: statusFilter, search: searchQuery }),
+    queryKey: orderKeys.list({ ...filters, status: statusFilter, search: debouncedSearch }),
+    queryFn: () => getOrders({ ...filters, status: statusFilter, search: debouncedSearch || undefined }),
     enabled: isClient,
   });
 
@@ -61,10 +77,10 @@ export const OrdersListPage = () => {
     {
       key: 'customerName',
       label: t('orders.table.customer') || 'Customer',
-      render: (order) => (
+      render: (order: any) => (
         <div className="space-y-0.5">
-          <div className="text-sm font-bold text-zinc-text">{order.customerName}</div>
-          <div className="text-xs font-medium text-zinc-muted">{order.customerEmail}</div>
+          <div className="text-sm font-bold text-zinc-text">{order.customerName || '-'}</div>
+          {order.customerEmail && <div className="text-xs font-medium text-zinc-muted">{order.customerEmail}</div>}
         </div>
       ),
       sortable: true,
@@ -72,9 +88,9 @@ export const OrdersListPage = () => {
     {
       key: 'total',
       label: t('orders.table.total') || 'Total',
-      render: (order) => (
+      render: (order: any) => (
         <span className="text-zinc-text font-black tabular-nums">
-          {order.currency} {order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          ${(order.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
       ),
       sortable: true,
@@ -83,44 +99,41 @@ export const OrdersListPage = () => {
     {
       key: 'status',
       label: t('orders.table.status') || 'Status',
-      render: (order) => (
-        <StatusBadge
-          status={t(`orders.status.${order.status}`) || order.status}
-          variant={
-            order.status === 'delivered' ? 'success' :
-            order.status === 'shipped' ? 'info' :
-            order.status === 'processing' ? 'warning' :
-            order.status === 'cancelled' ? 'failed' :
-            'pending'
-          }
-          showDot
-          className="font-black"
-        />
-      ),
+      render: (order: any) => {
+        const statusKey = `orders.status.${order.status}`;
+        const statusLabel = t(statusKey) || order.status;
+        return (
+          <StatusBadge
+            status={statusLabel}
+            variant={
+              order.status === 'delivered' ? 'success' :
+              order.status === 'shipped' ? 'info' :
+              order.status === 'processing' ? 'warning' :
+              order.status === 'cancelled' ? 'failed' :
+              'pending'
+            }
+            showDot
+            className="font-black"
+          />
+        );
+      },
       sortable: true,
       align: 'center',
     },
     {
-      key: 'paymentStatus',
-      label: t('orders.table.payment') || 'Payment',
-      render: (order) => (
-        <StatusBadge 
-          status={t(`common.${order.paymentStatus}`) || order.paymentStatus || t('common.pending')}
-          variant={order.paymentStatus === 'paid' ? 'success' : 'warning'}
-          className="font-black"
-        />
-      ),
-      sortable: true,
-      align: 'center',
-    },
-    {
-      key: 'createdAt',
+      key: 'date',
       label: t('orders.table.date') || 'Date',
-      render: (order) => (
-        <span className="text-zinc-muted text-sm font-medium">
-          {new Date(order.createdAt).toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-US')}
-        </span>
-      ),
+      render: (order: any) => {
+        const dateStr = order.date || order.createdAt;
+        if (!dateStr) return <span className="text-zinc-muted text-sm">-</span>;
+        const date = new Date(dateStr);
+        const isValid = !isNaN(date.getTime());
+        return (
+          <span className="text-zinc-muted text-sm font-medium">
+            {isValid ? date.toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-US') : '-'}
+          </span>
+        );
+      },
       sortable: true,
       align: 'center',
     },
@@ -132,12 +145,12 @@ export const OrdersListPage = () => {
 
   if (!isClient) return null;
 
-  const stats = [
-    { label: t('orders.stat.total'), value: statsData?.total.toString() || '0', color: 'text-brand', icon: Search },
-    { label: t('orders.stat.revenue'), value: '$' + (statsData?.totalRevenue.toLocaleString() || '0'), color: 'text-success', icon: Plus },
-    { label: t('orders.stat.pending'), value: statsData?.pending.toString() || '0', color: 'text-warning', icon: Filter },
-    { label: t('orders.stat.active'), value: statsData?.todayOrders.toString() || '0', color: 'text-info', icon: Search },
-  ];
+  const statsColorMap: Record<string, 'brand' | 'success' | 'warning' | 'info'> = {
+    'text-brand': 'brand',
+    'text-success': 'success',
+    'text-warning': 'warning',
+    'text-info': 'info',
+  };
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
@@ -157,32 +170,14 @@ export const OrdersListPage = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <Card key={i} className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-brand)]/30 transition-all cursor-default group overflow-hidden relative">
-            <div className="flex items-start justify-between relative z-10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
-                  {stat.label}
-                </span>
-                <span className="text-3xl font-black text-zinc-text tracking-tight italic tabular-nums leading-none">
-                  {stat.value}
-                </span>
-              </div>
-              <div className={cn(
-                "p-3 rounded-xl border-none shadow-sm flex-shrink-0",
-                stat.color === 'text-brand' && "bg-[var(--color-brand)]/10 text-[var(--color-brand)]",
-                stat.color === 'text-warning' && "bg-[var(--color-warning)]/10 text-[var(--color-warning)]",
-                stat.color === 'text-info' && "bg-[var(--color-info)]/10 text-[var(--color-info)]",
-                stat.color === 'text-success' && "bg-[var(--color-success)]/10 text-[var(--color-success)]"
-              )}>
-                <stat.icon className="w-5 h-5 stroke-[2.5]" />
-              </div>
-            </div>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-[var(--color-brand)]/10 transition-colors" />
-          </Card>
-        ))}
-      </div>
+      <StatsGrid
+        stats={[
+          { label: t('orders.stat.total'), value: statsData?.total.toString() || '0', icon: Package, color: 'brand' },
+          { label: t('orders.stat.revenue'), value: '$' + (statsData?.totalRevenue?.toLocaleString() || '0'), icon: DollarSign, color: 'success' },
+          { label: t('orders.stat.pending'), value: statsData?.pending?.toString() || '0', icon: AlertCircle, color: 'warning' },
+          { label: t('orders.stat.active'), value: statsData?.todayOrders?.toString() || '0', icon: TrendingUp, color: 'info' },
+        ]}
+      />
 
       {/* Toolbar */}
       <div className={cn(

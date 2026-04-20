@@ -65,4 +65,11 @@ export const customers = {
   "customer.registered": "Registered",
   "customer.street": "Street",
   "customer.timezone": "Timezone",
+  "customer.delete": "Delete Customer",
+  "customer.activate": "Activate",
+  "customer.deactivate": "Deactivate",
+  "customer.activated": "Active",
+  "customer.deactivated": "Inactive",
+  "customer.change_status": "Change Status",
+  "customer.toggle_status_confirm": "Are you sure you want to change the customer status to",
 } as const;

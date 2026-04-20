@@ -157,25 +157,25 @@ export function UsersListPage() {
               label: t('user.stats.total'),
               value: stats?.total || 0,
               icon: User,
-              color: 'text-blue-400',
+              color: 'info',
             },
             {
               label: t('user.stats.active'),
               value: stats?.active || 0,
               icon: UserCheck,
-              color: 'text-green-400',
+              color: 'success',
             },
             {
               label: t('user.stats.inactive'),
               value: stats?.inactive || 0,
               icon: UserX,
-              color: 'text-red-400',
+              color: 'danger',
             },
             {
               label: t('user.stats.admins'),
               value: stats?.admins || 0,
               icon: Shield,
-              color: 'text-purple-400',
+              color: 'primary',
             },
           ]}
         />

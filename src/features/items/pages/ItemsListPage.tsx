@@ -31,6 +31,20 @@ import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConf
 /**
  * ItemsListPage - Premium Items Management
  */
+// Simple debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export const ItemsListPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
@@ -41,6 +55,7 @@ export const ItemsListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [isClient, setIsClient] = useState(false);
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
     id: null
@@ -53,7 +68,7 @@ export const ItemsListPage: React.FC = () => {
   const isRTL = dir === 'rtl';
 
   const { data, isLoading, refetch } = useGetItems({
-    search: searchQuery,
+    search: debouncedSearch || undefined,
     categoryId: categoryFilter === 'All' ? undefined : Number(categoryFilter),
     status: statusFilter,
     page,

@@ -41,4 +41,11 @@ export const customers = {
   "customer.contact": "پەیوەندی",
   "customer.orders": "داواکارییەکان",
   "customer.error_loading": "هەڵە لە باردەکردنی مشترییەکان",
+  "customer.delete": "سڕینەوەی مشتری",
+  "customer.activate": "چالاککردن",
+  "customer.deactivate": "ناچالاککردن",
+  "customer.activated": "چالاک",
+  "customer.deactivated": "ناچالاک",
+  "customer.change_status": "گۆڕینی دۆخ",
+  "customer.toggle_status_confirm": "ئایا دڵنیایت کە دەتەوێت دۆخی مشترییەکە بگۆڕیت بۆ",
 } as const;

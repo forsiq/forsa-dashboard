@@ -65,4 +65,11 @@ export const customers = {
   "customer.registered": "تاريخ التسجيل",
   "customer.street": "الشارع",
   "customer.timezone": "المنطقة الزمنية",
+  "customer.delete": "حذف العميل",
+  "customer.activate": "تفعيل",
+  "customer.deactivate": "تعطيل",
+  "customer.activated": "مفعّل",
+  "customer.deactivated": "معطّل",
+  "customer.change_status": "تغيير الحالة",
+  "customer.toggle_status_confirm": "هل تريد تغيير حالة العميل إلى",
 } as const;

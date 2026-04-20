@@ -278,33 +278,33 @@ export const AuctionDetails: React.FC = () => {
         </div>
 
         {/* Strategic Control Surface & Intelligence */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Tactical Bidding Logic */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-2xl relative overflow-hidden">
+          <Card className="!p-6 bg-obsidian-card border-border shadow-2xl relative overflow-hidden">
             {/* Dynamic Background Effect */}
             <div className={cn(
               "absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-brand to-transparent transition-all duration-1000",
               isEndingSoon ? "opacity-100" : "opacity-0"
             )} />
 
-            <div className="space-y-8 relative">
+            <div className="space-y-6 relative">
               {/* Value Telemetry */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="flex flex-col gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1">{t('auction.detail.current_premium')}</span>
                   <div className="flex items-baseline gap-1 text-brand">
-                    <span className="text-4xl font-black tabular-nums leading-none tracking-tighter">
+                    <span className="text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tighter">
                       ${(auction.currentBid || auction.startPrice).toLocaleString()}
                     </span>
                   </div>
                 </div>
-                <div className="text-right space-y-1">
+                <div className="space-y-1">
                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auction.detail.target_window')}</span>
                   <div className={cn(
-                    "flex items-center justify-end gap-2 text-2xl font-black tabular-nums transition-colors duration-500 tracking-tighter leading-none",
+                    "flex items-center gap-2 text-xl sm:text-2xl font-black tabular-nums transition-colors duration-500 tracking-tighter leading-none",
                     isEndingSoon ? "text-danger" : "text-warning"
                   )}>
-                    <Timer className="w-5 h-5" />
+                    <Timer className="w-5 h-5 flex-shrink-0" />
                     {getCountdown(auction.endTime)}
                   </div>
                 </div>
@@ -313,8 +313,8 @@ export const AuctionDetails: React.FC = () => {
               <div className="h-px bg-white/[0.03]" />
 
               {/* Control Input Cluster */}
-              <div className="space-y-6">
-                <div className="space-y-3">
+              <div className="space-y-4">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
                      <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.base_progression')}</label>
                      <span className="text-[9px] font-black text-zinc-muted uppercase tracking-tighter">{t('auction.detail.min_step')}: ${(auction.bidIncrement || 0).toLocaleString()}</span>
@@ -323,8 +323,8 @@ export const AuctionDetails: React.FC = () => {
                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted group-focus-within:text-brand transition-colors" />
                      <AmberInput 
                       type="number"
-                      placeholder={`Authorize ${nextMinBid.toLocaleString()} or above...`}
-                      className="h-14 bg-obsidian-outer border-border pl-12 pr-4 text-lg font-black tabular-nums placeholder:text-zinc-muted/30"
+                      placeholder={`${nextMinBid.toLocaleString()}+`}
+                      className="h-12 bg-obsidian-outer border-border pl-12 pr-4 text-lg font-black tabular-nums placeholder:text-zinc-muted/30"
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
                       disabled={auction.status !== 'active' || placeBid.isPending}
@@ -333,7 +333,7 @@ export const AuctionDetails: React.FC = () => {
                 </div>
 
                 <AmberButton 
-                  className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-2xl shadow-[0_10px_40px_rgba(245,196,81,0.1)] active:scale-95 transition-all text-sm relative group overflow-hidden gap-3"
+                  className="w-full h-12 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-2xl shadow-[0_10px_40px_rgba(245,196,81,0.1)] active:scale-95 transition-all text-sm relative group overflow-hidden gap-3"
                   disabled={auction.status !== 'active' || placeBid.isPending || !bidAmount || parseFloat(bidAmount) < nextMinBid}
                   onClick={handlePlaceBid}
                 >
@@ -364,43 +364,43 @@ export const AuctionDetails: React.FC = () => {
           </Card>
 
           {/* Operational Node Info */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          <Card className="!p-6 bg-obsidian-card border-border shadow-xl space-y-5">
+            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4">
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.detail.infrastructure_logistics')}</h3>
             </div>
             
-            <div className="space-y-5">
-               <div className="flex items-center justify-between group">
-                 <div className="flex items-center gap-3">
-                   <Calendar className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
+            <div className="space-y-4">
+               <div className="flex items-start justify-between gap-3">
+                 <div className="flex items-center gap-2.5 flex-shrink-0">
+                   <Calendar className="w-4 h-4 text-zinc-muted" />
                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.temporal_start')}</span>
                  </div>
-                 <span className="text-xs font-black text-zinc-text uppercase tracking-tight">{new Date(auction.startTime).toLocaleString()}</span>
+                 <span className="text-xs font-bold text-zinc-text text-left break-words">{new Date(auction.startTime).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between group">
-                 <div className="flex items-center gap-3">
-                   <Clock className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
+              <div className="flex items-start justify-between gap-3">
+                 <div className="flex items-center gap-2.5 flex-shrink-0">
+                   <Clock className="w-4 h-4 text-zinc-muted" />
                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.node_termination')}</span>
                  </div>
-                 <span className="text-xs font-black text-zinc-text uppercase tracking-tight">{new Date(auction.endTime).toLocaleString()}</span>
+                 <span className="text-xs font-bold text-zinc-text text-left break-words">{new Date(auction.endTime).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between group">
-                 <div className="flex items-center gap-3">
-                   <TrendingUp className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
+              <div className="flex items-center justify-between gap-3">
+                 <div className="flex items-center gap-2.5 flex-shrink-0">
+                   <TrendingUp className="w-4 h-4 text-zinc-muted" />
                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.progression_delta')}</span>
                  </div>
-                 <span className="text-xs font-black text-zinc-text uppercase tracking-tight">${(auction.bidIncrement || 0).toLocaleString()}</span>
+                 <span className="text-xs font-bold text-zinc-text">${(auction.bidIncrement || 0).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between group">
-                 <div className="flex items-center gap-3">
-                   <Users className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
+              <div className="flex items-center justify-between gap-3">
+                 <div className="flex items-center gap-2.5 flex-shrink-0">
+                   <Users className="w-4 h-4 text-zinc-muted" />
                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.asset_custodian')}</span>
                  </div>
-                 <span className="text-xs font-black text-zinc-text uppercase tracking-tight">{auction.winnerName || t('auction.detail.default_custodian')}</span>
+                 <span className="text-xs font-bold text-zinc-text">{auction.winnerName || t('auction.detail.default_custodian')}</span>
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
               <AmberButton variant="secondary" className="w-full gap-2 font-black uppercase tracking-widest text-[10px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all">
                  {t('auction.detail.download_manifest')}
               </AmberButton>

@@ -13,7 +13,12 @@ import {
   Loader2,
   X,
   Copy,
-  Check
+  Check,
+  Edit,
+  Trash2,
+  Eye,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { cn } from '../../lib/utils/cn';
@@ -28,6 +33,16 @@ export interface Column<T = any> {
   align?: 'left' | 'center' | 'right';
   width?: string;
   className?: string;
+  /** Hide this column in card/grid view */
+  hideInCard?: boolean;
+  /** Render as the card title in grid view (only one column should have this) */
+  cardTitle?: boolean;
+  /** Render as card subtitle in grid view */
+  cardSubtitle?: boolean;
+  /** Render as card image/media in grid view */
+  cardMedia?: boolean;
+  /** Render as a badge/tag in grid view */
+  cardBadge?: boolean;
 }
 
 export interface Action<T = any> {
@@ -43,6 +58,8 @@ export interface BulkAction<T = any> {
   onClick: (selectedIds: string[], selectedRows: T[]) => void;
   variant?: 'default' | 'danger' | 'success';
 }
+
+export type ViewMode = 'table' | 'grid';
 
 interface DataTableProps<T> {
   columns: Column<T>[];
@@ -61,6 +78,16 @@ interface DataTableProps<T> {
   expandComponent?: (row: T) => React.ReactNode;
   emptyMessage?: string;
   className?: string;
+  /** View mode: 'table' (default) or 'grid' for card layout */
+  viewMode?: ViewMode;
+  /** Show view mode toggle button (table/grid switch) */
+  showViewToggle?: boolean;
+  /** Called when view mode changes (for external state management) */
+  onViewModeChange?: (mode: ViewMode) => void;
+  /** Grid columns config for card view (default: 'auto') */
+  gridCols?: 1 | 2 | 3 | 4 | 'auto';
+  /** Custom card render function - overrides default card rendering */
+  renderCard?: (row: T, columns: Column<T>[], actions?: Action<T>[]) => React.ReactNode;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -79,11 +106,18 @@ export function DataTable<T extends Record<string, any>>({
   bulkActions,
   expandComponent,
   emptyMessage = "No data available",
-  className
+  className,
+  viewMode: externalViewMode,
+  showViewToggle = false,
+  onViewModeChange,
+  gridCols = 'auto',
+  renderCard
 }: DataTableProps<T>) {
   const { t, dir } = useLanguage();
   const rows = Array.isArray(data) ? data : [];
   // --- State ---
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('table');
+  const viewMode = externalViewMode ?? internalViewMode;
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -91,6 +125,11 @@ export function DataTable<T extends Record<string, any>>({
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; rowId: string; selectedValue?: string } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setInternalViewMode(mode);
+    onViewModeChange?.(mode);
+  };
 
   // Close context menu on scroll or click outside
   useEffect(() => {

@@ -27,6 +27,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useGetAuctions, useGetAuctionStats, useDeleteAuction } from '../api';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
@@ -152,67 +153,38 @@ export const AuctionsList: React.FC = () => {
             </div>
 
             {/* Telemetry Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest font-bold">{t('auction.metrics.active_engines')}</span>
-                            <h3 className="text-3xl font-black text-zinc-text tracking-tighter tabular-nums">{stats?.activeAuctions || 0}</h3>
-                        </div>
-                        <div className="p-3 bg-brand/10 text-brand rounded-xl border border-brand/20">
-                            <Gavel className="w-5 h-5" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-brand mt-4 uppercase tracking-widest">
-                        <span>{t('auction.metrics.live_liquidations')}</span>
-                    </div>
-                </Card>
-
-                <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-bold">{t('auction.metrics.bid_velocity')}</span>
-                            <h3 className="text-3xl font-black text-emerald-400 tracking-tighter tabular-nums">{stats?.totalBids || 0}</h3>
-                        </div>
-                        <div className="p-3 bg-emerald-400/10 text-emerald-400 rounded-xl border border-emerald-400/20">
-                            <TrendingUp className="w-5 h-5" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
-                        <span>{t('auction.metrics.interaction_throughput')}</span>
-                    </div>
-                </Card>
-
-                <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black text-info uppercase tracking-widest font-bold">{t('auction.metrics.projected_revenue')}</span>
-                            <h3 className="text-3xl font-black text-info tracking-tighter tabular-nums">${stats?.totalRevenue?.toLocaleString() || '0'}</h3>
-                        </div>
-                        <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
-                            <DollarSign className="w-5 h-5" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
-                        <span>{t('auction.equitable_distribution')}</span>
-                    </div>
-                </Card>
-
-                <Card className="!p-5 bg-obsidian-card border-border relative overflow-hidden group">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black text-warning uppercase tracking-widest font-bold">{t('auction.critical_termination')}</span>
-                            <h3 className="text-3xl font-black text-warning tracking-tighter tabular-nums">{stats?.scheduledAuctions || 0}</h3>
-                        </div>
-                        <div className="p-3 bg-warning/10 text-warning rounded-xl border border-warning/20">
-                            <Clock className="w-5 h-5" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4 uppercase tracking-widest">
-                        <span>{t('auction.concluding_soon')}</span>
-                    </div>
-                </Card>
-            </div>
+            <StatsGrid
+                stats={[
+                    {
+                        label: t('auction.metrics.active_engines'),
+                        value: stats?.activeAuctions || 0,
+                        icon: Gavel,
+                        color: 'brand',
+                        description: t('auction.metrics.live_liquidations'),
+                    },
+                    {
+                        label: t('auction.metrics.bid_velocity'),
+                        value: stats?.totalBids || 0,
+                        icon: TrendingUp,
+                        color: 'success',
+                        description: t('auction.metrics.interaction_throughput'),
+                    },
+                    {
+                        label: t('auction.metrics.projected_revenue'),
+                        value: `$${stats?.totalRevenue?.toLocaleString() || '0'}`,
+                        icon: DollarSign,
+                        color: 'info',
+                        description: t('auction.equitable_distribution'),
+                    },
+                    {
+                        label: t('auction.critical_termination'),
+                        value: stats?.scheduledAuctions || 0,
+                        icon: Clock,
+                        color: 'warning',
+                        description: t('auction.concluding_soon'),
+                    },
+                ]}
+            />
 
             {/* Asset Distribution Grid */}
             <div className="space-y-6">
