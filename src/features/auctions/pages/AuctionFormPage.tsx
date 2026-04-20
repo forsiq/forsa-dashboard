@@ -364,28 +364,10 @@ export const AuctionFormPage: React.FC = () => {
                         }}
                         multiple={true}
                         disabled={isUploading}
+                        isUploading={isUploading}
+                        uploadProgress={uploadProgress}
+                        uploadError={uploadError}
                     />
-                    {/* Upload Progress */}
-                    {isUploading && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                          <span className="text-brand">{t('auction.form.uploading') || 'Uploading...'}</span>
-                          <span className="text-zinc-muted">{uploadProgress}%</span>
-                        </div>
-                        <div className="h-1.5 bg-white/[0.03] rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-brand rounded-full transition-all duration-300"
-                            style={{ width: `${uploadProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {uploadError && !submitError && (
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-danger/10 border border-danger/20">
-                        <AlertCircle className="w-3 h-3 text-danger shrink-0" />
-                        <p className="text-[10px] text-danger font-medium">{uploadError}</p>
-                      </div>
-                    )}
                     <p className="text-[9px] text-zinc-muted font-bold text-center uppercase tracking-widest italic">{t('auction.form.imagery_format_note')}</p>
                 </div>
             </Card>

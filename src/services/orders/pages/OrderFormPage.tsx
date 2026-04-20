@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, X } from 'lucide-react';
 import { getOrder, createOrder, updateOrder, orderKeys } from '../api/orders';
 import type { CreateOrderInput, UpdateOrderInput, Order } from '../types';
 import { AmberButton, AmberCard, AmberInput } from '@core/components';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const OrderFormPage = () => {
   const router = useRouter();
@@ -13,6 +14,8 @@ export const OrderFormPage = () => {
   const queryClient = useQueryClient();
   const isEdit = !!id;
   const [isClient, setIsClient] = useState(false);
+  const { t } = useLanguage();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -60,13 +63,15 @@ export const OrderFormPage = () => {
 
   const onSubmit = async (data: CreateOrderInput) => {
     try {
+      setSubmitError(null);
       if (isEdit) {
         await updateMutation.mutateAsync({ id: id as string, ...data });
       } else {
         await createMutation.mutateAsync(data);
       }
     } catch (err: any) {
-      // Error handled by mutation hooks via toast
+      const errorMessage = err?.message || err?.details?.[0] || t?.('error.save_failed') || 'Failed to save order. Please try again.';
+      setSubmitError(errorMessage);
     }
   };
 
@@ -74,6 +79,16 @@ export const OrderFormPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Submission Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-4">
         <AmberButton

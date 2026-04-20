@@ -25,12 +25,12 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
+import { useFileUpload } from '@core/hooks/useFileUpload';
 import { 
   useGetGroupBuying, 
   useCreateGroupBuying, 
   useUpdateGroupBuying 
 } from '../api';
-import { uploadAttachmentAndGetId } from '../../auctions/utils/auction-utils';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 
@@ -73,6 +73,8 @@ export const GroupBuyingFormPage: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Sync when editing
   useEffect(() => {
@@ -135,9 +137,13 @@ export const GroupBuyingFormPage: React.FC = () => {
     if (!validate()) return;
 
     try {
+      setSubmitError(null);
       let uploadedAttachmentId: number | null = null;
       if (selectedImageFile) {
-        uploadedAttachmentId = await uploadAttachmentAndGetId(selectedImageFile);
+        uploadedAttachmentId = await uploadFile(selectedImageFile);
+        if (!uploadedAttachmentId) {
+          return;
+        }
       }
       const input = {
           ...formData,
@@ -160,8 +166,9 @@ export const GroupBuyingFormPage: React.FC = () => {
         await createMutation.mutateAsync(input);
       }
       router.push('/group-buying');
-    } catch (err) {
-      console.error('Campaign synchronization defect:', err);
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Submission failed. Please try again.';
+      setSubmitError(errorMessage);
     }
   };
 
@@ -182,6 +189,16 @@ export const GroupBuyingFormPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 animate-in fade-in duration-700" dir={dir}>
+      {/* Submission Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Strategic Header Cluster */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -210,9 +227,9 @@ export const GroupBuyingFormPage: React.FC = () => {
            <AmberButton 
                 className="h-12 bg-brand hover:bg-brand text-black font-black rounded-xl px-10 shadow-[0_10px_40px_rgba(245,196,81,0.1)] border-none active:scale-95 transition-all gap-3"
                 onClick={handleSubmit}
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploading}
            >
-                {(createMutation.isPending || updateMutation.isPending) ? (
+                {(createMutation.isPending || updateMutation.isPending || isUploading) ? (
                     <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                     <Save className="w-5 h-5" />
@@ -349,6 +366,10 @@ export const GroupBuyingFormPage: React.FC = () => {
                       setSelectedImageFile(files[0]);
                     }
                   }}
+                  isUploading={isUploading}
+                  uploadProgress={uploadProgress}
+                  uploadError={uploadError}
+                  disabled={createMutation.isPending || updateMutation.isPending}
                 />
             </Card>
 
@@ -436,7 +457,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 <AmberButton 
                     className="w-full h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-[0_15px_50px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm group"
                     onClick={handleSubmit}
-                    disabled={createMutation.isPending || updateMutation.isPending}
+                    disabled={createMutation.isPending || updateMutation.isPending || isUploading}
                 >
                     <span className="group-hover:tracking-[0.4em] transition-all duration-500">{t('groupBuying.form.commence_execution')}</span>
                 </AmberButton>

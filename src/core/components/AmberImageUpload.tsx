@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Upload, X, Image as ImageIcon, Loader2, AlertCircle, ZoomIn, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils/cn';
-import { AmberButton } from './AmberButton';
 
 // --- Types ---
 
@@ -15,43 +14,130 @@ export interface AmberImageUploadProps {
   accept?: string;
   preview?: boolean;
   disabled?: boolean;
-  maxSize?: number; // in bytes
+  maxSize?: number;
   className?: string;
+  /** External upload progress 0-100 (from useFileUpload hook) */
+  uploadProgress?: number;
+  /** Whether an upload is in progress */
+  isUploading?: boolean;
+  /** Upload error message */
+  uploadError?: string | null;
 }
 
 export interface FileWithPreview extends File {
   preview?: string;
 }
 
+// --- Image Preview Modal ---
+
+interface PreviewModalProps {
+  images: string[];
+  initialIndex: number;
+  onClose: () => void;
+}
+
+function ImagePreviewModal({ images, initialIndex, onClose }: PreviewModalProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [loaded, setLoaded] = useState(false);
+  const { dir } = useLanguage();
+  const isRTL = dir === 'rtl';
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') navigate(isRTL ? -1 : 1);
+      if (e.key === 'ArrowLeft') navigate(isRTL ? 1 : -1);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [currentIndex, isRTL]);
+
+  const navigate = (delta: number) => {
+    setLoaded(false);
+    setCurrentIndex(prev => {
+      const next = prev + delta;
+      if (next < 0) return images.length - 1;
+      if (next >= images.length) return 0;
+      return next;
+    });
+  };
+
+  if (images.length === 0) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200" />
+
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-center w-full h-full p-4 sm:p-8">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Image counter */}
+        <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-bold">
+          {currentIndex + 1} / {images.length}
+        </div>
+
+        {/* Previous button */}
+        {images.length > 1 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); navigate(isRTL ? 1 : -1); }}
+            className="absolute left-4 z-20 p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Image */}
+        <div
+          className="relative max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {!loaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
+            </div>
+          )}
+          <img
+            src={images[currentIndex]}
+            alt={`Preview ${currentIndex + 1}`}
+            onLoad={() => setLoaded(true)}
+            className={cn(
+              'max-w-full max-h-[85vh] object-contain rounded-lg transition-opacity duration-300',
+              loaded ? 'opacity-100' : 'opacity-0'
+            )}
+          />
+        </div>
+
+        {/* Next button */}
+        {images.length > 1 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); navigate(isRTL ? -1 : 1); }}
+            className="absolute right-4 z-20 p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // --- Image Upload Component ---
 
-/**
- * AmberImageUpload - File upload with drag and drop and preview
- *
- * @example
- * // Single file
- * <AmberImageUpload
- *   value={imageUrl}
- *   onChange={(files) => handleUpload(files[0])}
- * />
- *
- * @example
- * // Multiple files
- * <AmberImageUpload
- *   multiple
- *   maxFiles={5}
- *   value={imageUrls}
- *   onChange={(files) => handleUpload(files)}
- * />
- *
- * @example
- * // With custom max size (5MB)
- * <AmberImageUpload
- *   maxSize={5 * 1024 * 1024}
- *   onChange={handleChange}
- *   onError={(err) => setError(err.message)}
- * />
- */
 export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploadProps>(
   (
     {
@@ -63,49 +149,50 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       accept = 'image/*',
       preview = true,
       disabled = false,
-      maxSize = 5 * 1024 * 1024, // 5MB default
+      maxSize = 5 * 1024 * 1024,
       className,
+      uploadProgress,
+      isUploading = false,
+      uploadError,
     },
     ref
   ) => {
     const { t, dir } = useLanguage();
     const inputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-    const [errors, setErrors] = useState<string[]>([]);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+    const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
 
-    // Convert string URLs to FileWithPreview objects
-    const files: FileWithPreview[] = Array.isArray(value)
-      ? value.map((url, i) => ({
-          name: `image-${i}`,
-          size: 0,
-          type: 'image',
-          preview: url,
-        } as FileWithPreview))
+    // Convert string URLs to display items
+    const displayItems: { url: string; name: string; size: number }[] = Array.isArray(value)
+      ? value.map((url, i) => ({ url, name: `image-${i + 1}`, size: 0 }))
       : value
-        ? [{
-            name: 'image',
-            size: 0,
-            type: 'image',
-            preview: value,
-          } as FileWithPreview]
+        ? [{ url: value, name: 'image', size: 0 }]
         : [];
+
+    // All valid image URLs for the preview modal
+    const previewableImages = displayItems
+      .filter((_, i) => !imageLoadErrors.has(i))
+      .map(item => item.url);
+
+    // Reset image errors when value changes
+    useEffect(() => {
+      setImageLoadErrors(new Set());
+    }, [value]);
 
     // Validate file
     const validateFile = (file: File): string | null => {
       if (!file.type.startsWith('image/')) {
         return t('upload.error_invalid_type') || 'Only image files are allowed';
       }
-
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / 1024 / 1024).toFixed(1);
         return `File must be smaller than ${maxSizeMB}MB`;
       }
-
       return null;
     };
 
-    // Handle file selection
     const handleFiles = useCallback(
       (selectedFiles: FileList | File[]) => {
         const newErrors: string[] = [];
@@ -120,8 +207,7 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
           }
         });
 
-        setErrors(newErrors);
-
+        setValidationErrors(newErrors);
         if (validFiles.length > 0) {
           onChange?.(validFiles);
         }
@@ -129,20 +215,17 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       [maxSize, onChange]
     );
 
-    // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         handleFiles(e.target.files);
       }
-      // Reset input so same file can be selected again
       e.target.value = '';
     };
 
-    // Handle drag events
     const handleDragEnter = (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!disabled) setIsDragging(true);
+      if (!disabled && !isUploading) setIsDragging(true);
     };
 
     const handleDragLeave = (e: React.DragEvent) => {
@@ -160,30 +243,30 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
-
-      if (disabled) return;
-
+      if (disabled || isUploading) return;
       const droppedFiles = e.dataTransfer.files;
       if (droppedFiles && droppedFiles.length > 0) {
         handleFiles(droppedFiles);
       }
     };
 
-    // Handle click on upload area
     const handleClick = () => {
-      if (!disabled) {
+      if (!disabled && !isUploading) {
         inputRef.current?.click();
       }
     };
 
-    // Handle remove
-    const handleRemove = (index: number) => {
+    const handleRemove = (e: React.MouseEvent, index: number) => {
+      e.stopPropagation();
       onRemove?.(index);
     };
 
-    // Format file size
+    const handleImageError = (index: number) => {
+      setImageLoadErrors(prev => new Set(prev).add(index));
+    };
+
     const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return '0 Bytes';
+      if (bytes === 0) return '';
       const k = 1024;
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -193,7 +276,7 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
     return (
       <div ref={ref} className={cn('space-y-3', className)}>
         {/* Upload Area */}
-        {(multiple ? files.length < maxFiles : files.length === 0) && (
+        {(multiple ? displayItems.length < maxFiles : displayItems.length === 0) && (
           <div
             onClick={handleClick}
             onDragEnter={handleDragEnter}
@@ -202,12 +285,12 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
             onDrop={handleDrop}
             className={cn(
               'relative flex flex-col items-center justify-center',
-              'px-6 py-8 border-2 border-dashed rounded-lg',
-              'transition-colors cursor-pointer',
+              'px-6 py-8 border-2 border-dashed rounded-xl',
+              'transition-all cursor-pointer',
               isDragging
-                ? 'border-brand bg-brand/5'
+                ? 'border-brand bg-brand/5 scale-[1.01]'
                 : 'border-white/10 hover:border-white/20 hover:bg-white/[0.02]',
-              disabled && 'opacity-50 cursor-not-allowed'
+              (disabled || isUploading) && 'opacity-50 cursor-not-allowed'
             )}
           >
             <input
@@ -217,10 +300,25 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
               multiple={multiple}
               onChange={handleInputChange}
               className="sr-only"
-              disabled={disabled}
+              disabled={disabled || isUploading}
             />
 
-            {/* Icon */}
+            {/* Upload progress overlay */}
+            {isUploading && uploadProgress !== undefined && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-obsidian-card/90 rounded-xl z-10 gap-3">
+                <Loader2 className="w-6 h-6 text-brand animate-spin" />
+                <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-brand rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest">
+                  {uploadProgress}%
+                </p>
+              </div>
+            )}
+
             <div className={cn(
               'p-3 rounded-full mb-3',
               isDragging ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-muted'
@@ -228,7 +326,6 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
               <Upload className="w-6 h-6" />
             </div>
 
-            {/* Text */}
             <div className="text-center space-y-1">
               <p className="text-sm font-bold text-zinc-text">
                 {t('upload.click_or_drag') || 'Click to upload or drag and drop'}
@@ -245,83 +342,123 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
           </div>
         )}
 
-        {/* Errors */}
-        {errors.length > 0 && (
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
             <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
             <ul className="text-xs text-danger space-y-1">
-              {errors.map((error, i) => (
+              {validationErrors.map((error, i) => (
                 <li key={i}>{error}</li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* Preview */}
-        {preview && files.length > 0 && (
+        {/* Upload Error */}
+        {uploadError && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
+            <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+            <p className="text-xs text-danger">{uploadError}</p>
+          </div>
+        )}
+
+        {/* Preview Grid */}
+        {preview && displayItems.length > 0 && (
           <div className={cn(
             'grid gap-3',
             multiple ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' : 'grid-cols-1'
           )}>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className={cn(
-                  'relative group overflow-hidden rounded-lg border border-white/10',
-                  'bg-obsidian-card'
-                )}
-              >
-                {/* Image Preview */}
-                <div className="aspect-square overflow-hidden">
-                  {file.preview ? (
-                    <img
-                      src={file.preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                      <ImageIcon className="w-8 h-8 text-zinc-muted/50" />
+            {displayItems.map((item, index) => {
+              const hasError = imageLoadErrors.has(index);
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    'relative group overflow-hidden rounded-xl border',
+                    hasError ? 'border-danger/30' : 'border-white/10',
+                    'bg-obsidian-card'
+                  )}
+                >
+                  {/* Image */}
+                  <div className="aspect-square overflow-hidden">
+                    {!hasError ? (
+                      <img
+                        src={item.url}
+                        alt={`Preview ${index + 1}`}
+                        onError={() => handleImageError(index)}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-white/[0.02] gap-2">
+                        <AlertCircle className="w-6 h-6 text-danger/50" />
+                        <p className="text-[9px] text-danger/50 font-bold uppercase">Load Failed</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hover overlay with actions */}
+                  {!disabled && !isUploading && !hasError && (
+                    <div className={cn(
+                      'absolute inset-0 flex items-center justify-center gap-2',
+                      'bg-black/0 group-hover:bg-black/50 transition-all duration-200',
+                      'opacity-0 group-hover:opacity-100'
+                    )}>
+                      {/* Preview button */}
+                      <button
+                        type="button"
+                        onClick={() => setPreviewIndex(index)}
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/25 text-white transition-all scale-90 group-hover:scale-100"
+                        title="Preview"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleRemove(e, index)}
+                        className="p-2.5 rounded-xl bg-danger/50 hover:bg-danger text-white transition-all scale-90 group-hover:scale-100"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
-                </div>
 
-                {/* Remove Button */}
-                {!disabled && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(index)}
-                    className={cn(
-                      'absolute top-2 right-2 p-1.5 rounded-lg',
-                      'bg-black/50 hover:bg-danger text-white',
-                      'opacity-0 group-hover:opacity-100 transition-opacity'
-                    )}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Upload Progress */}
-                {uploadProgress[file.name] !== undefined && uploadProgress[file.name] < 100 && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                  </div>
-                )}
-
-                {/* File Info */}
-                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                  <p className="text-[10px] text-white truncate">
-                    {file.name}
-                  </p>
-                  {file.size > 0 && (
-                    <p className="text-[9px] text-white/70">
-                      {formatFileSize(file.size)}
-                    </p>
+                  {/* Upload progress overlay on specific image */}
+                  {isUploading && uploadProgress !== undefined && index === displayItems.length - 1 && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 gap-2">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      <div className="w-20 h-1 bg-white/20 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-brand rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
                   )}
+
+                  {/* File info bar */}
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-white/80 truncate">{item.name}</p>
+                      {!disabled && !isUploading && !hasError && (
+                        <ZoomIn className="w-3 h-3 text-white/40 group-hover:text-white/80 transition-colors" />
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {previewIndex !== null && previewableImages.length > 0 && (
+          <ImagePreviewModal
+            images={previewableImages}
+            initialIndex={Math.min(previewIndex, previewableImages.length - 1)}
+            onClose={() => setPreviewIndex(null)}
+          />
         )}
       </div>
     );
@@ -337,16 +474,6 @@ export interface AmberAvatarUploadProps extends Omit<AmberImageUploadProps, 'mul
   name?: string;
 }
 
-/**
- * AmberAvatarUpload - Avatar upload with circular preview
- *
- * @example
- * <AmberAvatarUpload
- *   value={avatarUrl}
- *   onChange={(files) => uploadAvatar(files[0])}
- *   name="John Doe"
- * />
- */
 export const AmberAvatarUpload = React.forwardRef<
   HTMLDivElement,
   AmberAvatarUploadProps
@@ -361,6 +488,7 @@ export const AmberAvatarUpload = React.forwardRef<
   };
 
   const hasImage = !!value;
+  const imageSrc = typeof value === 'string' ? value : (Array.isArray(value) ? value[0] : '') || '';
 
   const handleClick = () => {
     if (!disabled) {
@@ -370,7 +498,6 @@ export const AmberAvatarUpload = React.forwardRef<
 
   return (
     <div ref={ref} className={cn('flex items-center gap-4', className)}>
-      {/* Avatar Preview */}
       <div className="relative group">
         <div
           className={cn(
@@ -380,7 +507,7 @@ export const AmberAvatarUpload = React.forwardRef<
         >
           {hasImage ? (
             <img
-              src={typeof value === 'string' ? value : value[0] || ''}
+              src={imageSrc}
               alt={t('upload.avatar_preview') || 'Avatar preview'}
               className="w-full h-full object-cover"
             />
@@ -391,7 +518,6 @@ export const AmberAvatarUpload = React.forwardRef<
           )}
         </div>
 
-        {/* Overlay on hover */}
         {!disabled && (
           <div
             onClick={handleClick}
@@ -404,7 +530,6 @@ export const AmberAvatarUpload = React.forwardRef<
           </div>
         )}
 
-        {/* Remove Button */}
         {!disabled && hasImage && (
           <button
             type="button"
@@ -416,7 +541,6 @@ export const AmberAvatarUpload = React.forwardRef<
         )}
       </div>
 
-      {/* Labels */}
       <div className="space-y-1">
         <p className="text-sm font-bold text-zinc-text">
           {name || t('upload.profile_photo') || 'Profile Photo'}

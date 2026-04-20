@@ -133,63 +133,80 @@ function createBaseInstance(baseURL: string): AxiosInstance {
         details: (error.response?.data as any)?.details,
       };
 
-        // Handle 401 - unauthorized
-        if (error.response?.status === 401 && typeof window !== 'undefined') {
-          const isLoginPath = window.location.pathname.includes('/login');
-          const isRegisterPath = window.location.pathname.includes('/register');
-          const isAuthTokenEndpoint = error.config?.url?.includes('/auth/token/');
-          const isRefreshEndpoint = error.config?.url?.includes('/auth/token/refresh/');
+      // Handle 401 - unauthorized
+      if (error.response?.status === 401 && typeof window !== 'undefined') {
+        const requestUrl = error.config?.url || '';
+        const isLoginPath = window.location.pathname.includes('/login');
+        const isRegisterPath = window.location.pathname.includes('/register');
+        const isAuthTokenEndpoint = requestUrl.includes('/auth/token/');
+        const isRefreshEndpoint = requestUrl.includes('/auth/token/refresh/');
 
-          console.error('[API] 401 Unauthorized detected:', error.config?.url);
+        console.warn('[API] 401 on:', requestUrl);
 
-          // Only attempt refresh if NOT on auth pages and NOT already a token/refresh endpoint
-          if (!isLoginPath && !isRegisterPath && !isAuthTokenEndpoint && !isRefreshEndpoint) {
-            const currentRefreshToken = getRefreshToken();
-            const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+        // Skip 401 handling entirely for auth pages and token endpoints
+        if (isLoginPath || isRegisterPath || isAuthTokenEndpoint || isRefreshEndpoint) {
+          return Promise.reject(apiError);
+        }
 
-            // If we haven't retried yet and have a refresh token, try refreshing
-            if (!originalRequest._retry && currentRefreshToken) {
-              originalRequest._retry = true;
-              console.log('[API] Attempting token refresh...');
+        const currentRefreshToken = getRefreshToken();
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-              return axios.post(`${API_ORIGIN}/api/v1/auth/token/refresh/`, {
-                refresh: currentRefreshToken
-              }, {
-                headers: { 'Content-Type': 'application/json' }
-              }).then((refreshResponse) => {
-                const newAccess = refreshResponse.data?.access;
-                const newRefresh = refreshResponse.data?.refresh;
-                if (newAccess) {
-                  // Update both cookie (primary) and localStorage (fallback)
-                  Cookies.set('access', newAccess, { path: '/', sameSite: 'Lax' });
-                  localStorage.setItem('access_token', newAccess);
-                  if (newRefresh) {
-                    Cookies.set('refresh', newRefresh, { path: '/', sameSite: 'Lax' });
-                    localStorage.setItem('refresh_token', newRefresh);
-                  }
-                  if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-                  }
-                  return instance(originalRequest);
-                }
-                return Promise.reject(apiError);
-              }).catch(() => {
-                // Refresh failed - clear session and redirect
-                console.warn('[API] Token refresh failed. Performing emergency logout.');
-                clearAuthSession();
-                window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
-                return Promise.reject(apiError);
-              });
+        // If we haven't retried yet and have a refresh token, try refreshing
+        if (!originalRequest._retry && currentRefreshToken) {
+          originalRequest._retry = true;
+          console.log('[API] Attempting token refresh...');
+
+          return axios.post(`${API_ORIGIN}/api/v1/auth/token/refresh/`, {
+            refresh: currentRefreshToken
+          }, {
+            headers: { 'Content-Type': 'application/json' }
+          }).then((refreshResponse) => {
+            const newAccess = refreshResponse.data?.access;
+            const newRefresh = refreshResponse.data?.refresh;
+            if (newAccess) {
+              // Update both cookie (primary) and localStorage (fallback)
+              Cookies.set('access', newAccess, { path: '/', sameSite: 'Lax' });
+              localStorage.setItem('access_token', newAccess);
+              if (newRefresh) {
+                Cookies.set('refresh', newRefresh, { path: '/', sameSite: 'Lax' });
+                localStorage.setItem('refresh_token', newRefresh);
+              }
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+              }
+              return instance(originalRequest);
             }
+            return Promise.reject(apiError);
+          }).catch((refreshErr) => {
+            // Refresh failed - DON'T auto-redirect for data endpoints
+            // Only redirect for critical auth-check endpoints
+            const isCriticalAuthCheck = requestUrl.includes('/auth/user/') || requestUrl.includes('/auth/me');
+            if (isCriticalAuthCheck) {
+              console.warn('[API] Auth check failed after refresh. Redirecting.');
+              clearAuthSession();
+              window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
+            } else {
+              // For data endpoints (auctions, items, etc.) - just clear stale tokens
+              // and let the component handle the error (show error message, retry button, etc.)
+              console.warn('[API] Token refresh failed for:', requestUrl, '- Component will handle.');
+              clearAuthSession();
+            }
+            return Promise.reject(apiError);
+          });
+        }
 
-            // No refresh token available - redirect
-            console.warn('[API] No refresh token. Redirecting to login.');
-            clearAuthSession();
+        // No refresh token available
+        if (!currentRefreshToken) {
+          // Only redirect for critical auth endpoints, not for regular data fetching
+          const isCriticalAuthCheck = requestUrl.includes('/auth/user/') || requestUrl.includes('/auth/me');
+          if (isCriticalAuthCheck) {
+            console.warn('[API] No refresh token for auth check. Redirecting.');
             window.location.href = `/login?expired=true&from=${encodeURIComponent(window.location.pathname)}`;
           }
-        } else if (error.response?.status !== 401) {
-        // Log other errors for debugging
-        console.error(`[API] ${error.response?.status || 'Network'} Error:`, error.config?.url, apiError);
+          // For non-critical endpoints, just reject and let the component handle it
+        }
+      } else if (error.response?.status && error.response.status !== 401) {
+        console.error(`[API] ${error.response.status} Error:`, error.config?.url, apiError);
       }
 
       return Promise.reject(apiError);
