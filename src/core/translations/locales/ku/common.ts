@@ -57,6 +57,8 @@ export const common = {
   "common.saving": "خەزنکردن...",
   "common.selected": "دیاریکراو",
   "common.showing": "پیشاندان",
+  "common.table_view": "بینینی خشتە",
+  "common.grid_view": "بینینی کارتی",
   "common.toggle_columns": "گۆڕینی ستونان",
   "common.update": "نوێکردن",
   "common.view": "بینین",

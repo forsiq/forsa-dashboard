@@ -109,6 +109,7 @@ export function CategoriesPage() {
     {
       key: 'name',
       label: t('category.name') || 'Name',
+      cardTitle: true,
       render: (category: Category) => {
         const IconComponent = category.icon ? getIconByName(category.icon) : null;
         const Icon = IconComponent || LayoutGrid;
@@ -128,6 +129,7 @@ export function CategoriesPage() {
     {
       key: 'slug',
       label: t('category.slug') || 'Slug',
+      hideInCard: true,
       render: (category: Category) => (
         <span className="text-sm text-zinc-text font-medium uppercase tracking-tight">
           {category.slug || '-'}
@@ -147,6 +149,7 @@ export function CategoriesPage() {
     {
       key: 'status',
       label: t('category.status') || 'Status',
+      cardBadge: true,
       render: (category: Category) => (
         <StatusBadge
           status={category.isActive ? (t('category.active') || 'Active') : (t('category.inactive') || 'Inactive')}
@@ -335,6 +338,7 @@ export function CategoriesPage() {
             rowActions={rowActions}
             pagination
             pageSize={10}
+            showViewToggle
           />
         )}
       </div>

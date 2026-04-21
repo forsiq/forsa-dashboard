@@ -221,11 +221,242 @@ export function DataTable<T extends Record<string, any>>({
     );
   }
 
+  // --- Grid Cols Class ---
+  const gridColsClass = useMemo(() => {
+    if (gridCols === 1) return 'grid-cols-1';
+    if (gridCols === 2) return 'grid-cols-1 sm:grid-cols-2';
+    if (gridCols === 3) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+    if (gridCols === 4) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+  }, [gridCols]);
+
+  // --- Card Fields ---
+  const cardFields = useMemo(() => columns.filter(c => !c.hideInCard), [columns]);
+  const titleCol = cardFields.find(c => c.cardTitle);
+  const subtitleCol = cardFields.find(c => c.cardSubtitle);
+  const mediaCol = cardFields.find(c => c.cardMedia);
+  const badgeCols = cardFields.filter(c => c.cardBadge);
+  const detailCols = cardFields.filter(c => !c.cardTitle && !c.cardSubtitle && !c.cardMedia && !c.cardBadge);
+
+  // --- Render Card ---
+  const renderDefaultCard = (row: T) => {
+    const id = String(row[keyField as keyof T]);
+    const isSelected = selectedIds.has(id);
+
+    return (
+      <div
+        key={id}
+        className={cn(
+          "group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] p-5 transition-all duration-300 overflow-hidden",
+          "hover:border-white/10 hover:shadow-md",
+          onRowClick && "cursor-pointer",
+          isSelected && "ring-1 ring-brand/30 border-brand/20"
+        )}
+        onClick={() => onRowClick?.(row)}
+      >
+        {/* Selection Checkbox */}
+        {selectable && (
+          <div className="absolute top-3 start-3 z-10" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => handleSelectRow(id)}
+              className={cn(
+                "transition-colors",
+                isSelected ? "text-brand" : "text-zinc-muted hover:text-zinc-text opacity-0 group-hover:opacity-100"
+              )}
+            >
+              {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+            </button>
+          </div>
+        )}
+
+        {/* Media */}
+        {mediaCol && mediaCol.render && (
+          <div className="mb-4 rounded-lg overflow-hidden bg-obsidian-outer/50 aspect-video flex items-center justify-center">
+            {mediaCol.render(row)}
+          </div>
+        )}
+
+        {/* Title Row */}
+        {(titleCol || rowActions) && (
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex-1 min-w-0">
+              {titleCol && (
+                <h3 className="text-sm font-bold text-zinc-text truncate">
+                  {titleCol.render ? titleCol.render(row) : row[titleCol.key]}
+                </h3>
+              )}
+              {subtitleCol && (
+                <p className="text-xs text-zinc-muted mt-0.5 truncate">
+                  {subtitleCol.render ? subtitleCol.render(row) : row[subtitleCol.key]}
+                </p>
+              )}
+            </div>
+
+            {/* Card Actions */}
+            {rowActions && (
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                {rowActions.slice(0, 3).map((action, i) => {
+                  const ResolvedIcon = action.icon
+                    ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon)
+                    : null;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => action.onClick(row)}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        action.variant === 'danger'
+                          ? "text-danger/60 hover:text-danger hover:bg-danger/10"
+                          : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
+                      )}
+                      title={typeof action.label === 'function' ? action.label(row) : action.label}
+                    >
+                      {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5" />}
+                    </button>
+                  );
+                })}
+                {rowActions.length > 3 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenActionId(openActionId === id ? null : id);
+                    }}
+                    className="p-1.5 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/5 transition-all"
+                  >
+                    <MoreVertical className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Badges */}
+        {badgeCols.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {badgeCols.map((col) => (
+              <span key={col.key}>
+                {col.render ? col.render(row) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/5 text-zinc-muted border border-white/5">
+                    {row[col.key]}
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Detail Fields */}
+        {detailCols.length > 0 && (
+          <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
+            {detailCols.map((col) => {
+              const label = typeof col.label === 'string' ? col.label : col.key;
+              return (
+                <div key={col.key} className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-muted shrink-0">
+                    {label}
+                  </span>
+                  <span className="text-xs font-semibold text-zinc-text text-end truncate">
+                    {col.render ? col.render(row) : row[col.key]}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Extra actions dropdown for >3 actions */}
+        {rowActions && rowActions.length > 3 && openActionId === id && (
+          <div className={cn(
+            "absolute top-12 end-3 w-40 bg-obsidian-card border border-white/10 rounded-lg shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100"
+          )} onClick={(e) => e.stopPropagation()}>
+            {rowActions.slice(3).map((action, i) => {
+              const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
+              const ResolvedIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    action.onClick(row);
+                    setOpenActionId(null);
+                  }}
+                  className={cn(
+                    "w-full text-start px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
+                    action.variant === 'danger'
+                      ? "text-danger hover:bg-danger/10"
+                      : "text-zinc-text hover:bg-white/5"
+                  )}
+                >
+                  {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
+                  {actionLabel}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={cn("flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm", className)}>
 
-      {/* Table Container */}
-      <div className={cn("flex-1 min-h-[200px]", openActionId ? "overflow-visible" : "overflow-x-auto")}>
+      {/* View Toggle Header */}
+      {showViewToggle && (
+        <div className="flex items-center justify-end px-4 py-3 border-b border-white/5">
+          <div className="flex items-center bg-obsidian-outer/50 rounded-lg p-0.5 border border-white/5">
+            <button
+              onClick={() => handleViewModeChange('table')}
+              className={cn(
+                "p-2 rounded-md transition-all",
+                viewMode === 'table'
+                  ? "bg-white/10 text-zinc-text shadow-sm"
+                  : "text-zinc-muted hover:text-zinc-text"
+              )}
+              title={t('common.table_view') || 'Table View'}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleViewModeChange('grid')}
+              className={cn(
+                "p-2 rounded-md transition-all",
+                viewMode === 'grid'
+                  ? "bg-white/10 text-zinc-text shadow-sm"
+                  : "text-zinc-muted hover:text-zinc-text"
+              )}
+              title={t('common.grid_view') || 'Grid View'}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Grid View */}
+      {viewMode === 'grid' ? (
+        <div className="p-4">
+          {paginatedData.length > 0 ? (
+            <div className={cn("grid gap-4", gridColsClass)}>
+              {paginatedData.map((row) => {
+                const id = String(row[keyField as keyof T]);
+                return renderCard ? (
+                  <div key={id}>{renderCard(row, cardFields, rowActions)}</div>
+                ) : (
+                  renderDefaultCard(row)
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-zinc-muted opacity-50">
+              <Search className="w-12 h-12 mb-3 stroke-1" />
+              <p className="text-xs uppercase tracking-widest font-bold">{emptyMessage}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div className={cn("flex-1 min-h-[200px]", openActionId ? "overflow-visible" : "overflow-x-auto")}>
         <table className="w-full text-start border-collapse min-w-[800px]">
           <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
             <tr>
@@ -390,7 +621,7 @@ export function DataTable<T extends Record<string, any>>({
                               )}>
                                 {rowActions.map((action, i) => {
                                   const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
-                                  const ActionIcon = action.icon ? (typeof action.icon === 'function' ? action.icon(row) : action.icon) : null;
+                                  const ActionIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
                                   return (
                                     <button
                                       key={i}
@@ -444,7 +675,8 @@ export function DataTable<T extends Record<string, any>>({
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      )}
 
       {/* Pagination Footer */}
       {pagination && paginatedData.length > 0 && (
@@ -590,7 +822,7 @@ export function DataTable<T extends Record<string, any>>({
             const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
             if (!row) return null;
             const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
-            const ActionIcon = action.icon ? (typeof action.icon === 'function' ? action.icon(row) : action.icon) : null;
+            const ActionIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
             return (
               <button
                 key={i}

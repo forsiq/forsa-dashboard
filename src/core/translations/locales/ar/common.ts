@@ -60,6 +60,8 @@ export const common = {
   "common.saving": "جاري الحفظ...",
   "common.selected": "المحدد",
   "common.showing": "يظهر",
+  "common.table_view": "عرض جدول",
+  "common.grid_view": "عرض بطاقات",
   "common.toggle_columns": "تبديل الأعمدة",
   "common.update": "تحديث",
   "common.view": "عرض",

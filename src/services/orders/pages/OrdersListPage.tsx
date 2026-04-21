@@ -69,6 +69,7 @@ export const OrdersListPage = () => {
     {
       key: 'orderNumber',
       label: t('orders.table.id') || 'Order #',
+      cardTitle: true,
       render: (order) => (
         <span className="font-bold text-zinc-text">#{order.orderNumber}</span>
       ),
@@ -77,6 +78,7 @@ export const OrdersListPage = () => {
     {
       key: 'customerName',
       label: t('orders.table.customer') || 'Customer',
+      cardSubtitle: true,
       render: (order: any) => (
         <div className="space-y-0.5">
           <div className="text-sm font-bold text-zinc-text">{order.customerName || '-'}</div>
@@ -99,6 +101,7 @@ export const OrdersListPage = () => {
     {
       key: 'status',
       label: t('orders.table.status') || 'Status',
+      cardBadge: true,
       render: (order: any) => {
         const statusKey = `orders.status.${order.status}`;
         const statusLabel = t(statusKey) || order.status;
@@ -250,6 +253,7 @@ export const OrdersListPage = () => {
             onRowClick={handleRowClick}
             pagination
             pageSize={filters.limit}
+            showViewToggle
           />
         )}
       </div>

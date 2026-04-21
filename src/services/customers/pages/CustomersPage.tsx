@@ -87,6 +87,8 @@ export function CustomersPage() {
     {
       key: 'name',
       label: t('customer.name') || 'Entity Name',
+      cardTitle: true,
+      cardSubtitle: true,
       render: (customer: any) => {
         const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || 'N/A';
         return (
@@ -109,6 +111,7 @@ export function CustomersPage() {
     {
       key: 'type',
       label: t('customer.type') || 'Classification',
+      cardBadge: true,
       render: (customer: any) => (
         <div className="flex items-center gap-2">
           {customer.type === 'business' ? (
@@ -125,6 +128,7 @@ export function CustomersPage() {
     {
       key: 'phone',
       label: t('customer.contact') || 'Comms Channel',
+      hideInCard: true,
       render: (customer: Customer) => (
         <div className="flex items-center gap-4 text-sm font-bold text-zinc-text tabular-nums">
           {customer.phone && <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[var(--color-brand)]" />{customer.phone}</span>}
@@ -143,6 +147,7 @@ export function CustomersPage() {
     {
       key: 'status',
       label: t('common.status') || 'Protocol State',
+      cardBadge: true,
       render: (customer: any) => (
         <StatusBadge
           status={t(`status.${customer.status}`) || (customer.status || 'unknown').toUpperCase()}
@@ -341,6 +346,7 @@ export function CustomersPage() {
             selectable
             rowActions={rowActions}
             onRowClick={(row) => router.push(`/customers/${row.id}`)}
+            showViewToggle
           />
         )}
       </div>

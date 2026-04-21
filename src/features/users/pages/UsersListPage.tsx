@@ -10,13 +10,14 @@ import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from
 
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
-import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { cn } from '@core/lib/utils/cn';
 import { Search, Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
 import type { UserFilters } from '../types';
 
@@ -65,15 +66,6 @@ export function UsersListPage() {
     }));
   };
 
-  // Handle pagination
-  const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
-    // Scroll to top
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
   // Handle user actions
   const handleView = (id: string) => {
     router.push(`/users/${id}`);
@@ -119,11 +111,97 @@ export function UsersListPage() {
     return new Date(dateString).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US');
   };
 
+  // Table columns
+  const columns: Column<any>[] = [
+    {
+      key: 'userName',
+      label: t('user.username') || 'Username',
+      cardTitle: true,
+      render: (user: any) => (
+        <span className="text-sm font-medium text-white">{user.userName}</span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'fullName',
+      label: t('user.full_name') || 'Full Name',
+      cardSubtitle: true,
+      render: (user: any) => (
+        <span className="text-sm text-zinc-300">{user.fullName}</span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'email',
+      label: t('user.email') || 'Email',
+      hideInCard: true,
+      render: (user: any) => (
+        <span className="text-sm text-zinc-400">{user.email || '-'}</span>
+      ),
+    },
+    {
+      key: 'role',
+      label: t('user.role') || 'Role',
+      cardBadge: true,
+      render: (user: any) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+          {t(`user.role.${user.role}`)}
+        </span>
+      ),
+    },
+    {
+      key: 'isActive',
+      label: t('user.is_active') || 'Status',
+      cardBadge: true,
+      render: (user: any) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleStatus(String(user.id), user.isActive);
+          }}
+          className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
+            user.isActive
+              ? 'bg-green-500/20 text-green-300 border-green-500/30'
+              : 'bg-red-500/20 text-red-300 border-red-500/30'
+          }`}
+        >
+          {t(user.isActive ? 'user.status.active' : 'user.status.inactive')}
+        </button>
+      ),
+    },
+    {
+      key: 'createdAt',
+      label: t('user.created_at') || 'Created',
+      render: (user: any) => (
+        <span className="text-sm text-zinc-400">{formatDate(user.createdAt)}</span>
+      ),
+      sortable: true,
+      align: 'center',
+    },
+  ];
+
+  const rowActions: Action<any>[] = [
+    {
+      label: t('user.view') || 'View',
+      icon: Eye,
+      onClick: (user: any) => handleView(String(user.id)),
+    },
+    {
+      label: t('user.edit') || 'Edit',
+      icon: Edit,
+      onClick: (user: any) => handleEdit(String(user.id)),
+    },
+    {
+      label: t('user.delete') || 'Delete',
+      icon: Trash2,
+      variant: 'danger',
+      onClick: (user: any) => handleDelete(String(user.id), user.fullName),
+    },
+  ];
+
   if (!isClient) return null;
 
   const users = usersData?.users || [];
-  const total = usersData?.total || 0;
-  const totalPages = usersData?.totalPages || 1;
 
   return (
     <div className="flex flex-col gap-4 p-4 pt-0">
@@ -147,7 +225,7 @@ export function UsersListPage() {
       {isLoadingStats ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <AmberCard key={i} className="h-24 animate-pulse bg-white/5" />
+            <div key={i} className="h-24 animate-pulse bg-white/5 rounded-xl" />
           ))}
         </div>
       ) : (
@@ -182,46 +260,50 @@ export function UsersListPage() {
       )}
 
       {/* Filters */}
-      <AmberCard className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className={`absolute top-1/2 -translate-y-1/2 ${dir === 'rtl' ? 'right' : 'left'}-3 h-4 w-4 text-zinc-400`} />
-            <AmberInput
-              placeholder={t('user.search_placeholder')}
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className={`py-2 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`}
-            />
-          </div>
-
-          {/* Role Filter */}
-          <select
-            value={filters.role}
-            onChange={(e) => handleFilterChange('role', e.target.value)}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white shadow-sm"
-          >
-            <option value="all">{t('user.filter.all_roles')}</option>
-            <option value="manager">{t('user.role.manager')}</option>
-            <option value="admin">{t('user.role.admin')}</option>
-            <option value="user">{t('user.role.user')}</option>
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white shadow-sm"
-          >
-            <option value="all">{t('user.filter.all_status')}</option>
-            <option value="active">{t('user.status.active')}</option>
-            <option value="inactive">{t('user.status.inactive')}</option>
-          </select>
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        {/* Search */}
+        <div className="relative flex-1 max-w-sm w-full">
+          <Search className={cn(
+            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted",
+            dir === 'rtl' ? 'left-3' : 'right-3'
+          )} />
+          <AmberInput
+            placeholder={t('user.search_placeholder')}
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            className={cn(
+              "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
+              dir === 'rtl' ? 'pl-10 pr-4 text-right' : 'pr-10 pl-4 text-left'
+            )}
+          />
         </div>
-      </AmberCard>
 
-      {/* Users Table */}
-      <AmberCard className="overflow-hidden">
+        {/* Role Filter */}
+        <select
+          value={filters.role}
+          onChange={(e) => handleFilterChange('role', e.target.value)}
+          className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
+        >
+          <option value="all">{t('user.filter.all_roles') || 'All Roles'}</option>
+          <option value="manager">{t('user.role.manager') || 'Manager'}</option>
+          <option value="admin">{t('user.role.admin') || 'Admin'}</option>
+          <option value="user">{t('user.role.user') || 'User'}</option>
+        </select>
+
+        {/* Status Filter */}
+        <select
+          value={filters.status}
+          onChange={(e) => handleFilterChange('status', e.target.value)}
+          className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
+        >
+          <option value="all">{t('user.filter.all_status') || 'All Status'}</option>
+          <option value="active">{t('user.status.active') || 'Active'}</option>
+          <option value="inactive">{t('user.status.inactive') || 'Inactive'}</option>
+        </select>
+      </div>
+
+      {/* Users DataTable */}
+      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {isLoadingUsers ? (
           <AmberTableSkeleton columns={7} rows={5} />
         ) : users.length === 0 ? (
@@ -243,127 +325,18 @@ export function UsersListPage() {
             </AmberButton>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/5">
-                <tr>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.username')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.full_name')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.email')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.role')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.is_active')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    {t('user.created_at')}
-                  </th>
-                  <th className={`px-4 py-3 text-right text-sm font-medium text-zinc-400 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
-                    {t('common.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                    <td className={`px-4 py-3 text-sm font-medium text-white ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      {user.userName}
-                    </td>
-                    <td className={`px-4 py-3 text-sm text-zinc-300 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      {user.fullName}
-                    </td>
-                    <td className={`px-4 py-3 text-sm text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      {user.email || '-'}
-                    </td>
-                    <td className={`px-4 py-3 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
-                        {t(`user.role.${user.role}`)}
-                      </span>
-                    </td>
-                    <td className={`px-4 py-3 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      <button
-                        onClick={() => handleToggleStatus(String(user.id), user.isActive)}
-                        className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
-                          user.isActive
-                            ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                            : 'bg-red-500/20 text-red-300 border-red-500/30'
-                        }`}
-                      >
-                        {t(user.isActive ? 'user.status.active' : 'user.status.inactive')}
-                      </button>
-                    </td>
-                    <td className={`px-4 py-3 text-sm text-zinc-400 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      {formatDate(user.createdAt)}
-                    </td>
-                    <td className={`px-4 py-3 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleView(String(user.id))}
-                          className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
-                          title={t('user.view')}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(String(user.id))}
-                          className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
-                          title={t('user.edit')}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(String(user.id), user.fullName)}
-                          className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-zinc-400 hover:text-red-400"
-                          title={t('user.delete')}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={users}
+            keyField="id"
+            rowActions={rowActions}
+            onRowClick={(row) => handleView(String(row.id))}
+            pagination
+            pageSize={filters.limit}
+            showViewToggle
+          />
         )}
-      </AmberCard>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-400">
-            {`${t('user.showing') || 'Showing'} ${(filters.page! - 1) * filters.limit! + 1}-${Math.min(filters.page! * filters.limit!, total)} ${t('user.of') || 'of'} ${total}`}
-          </p>
-          <div className="flex gap-2">
-            <AmberButton
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(filters.page! - 1)}
-              disabled={filters.page === 1}
-            >
-              {t('pagination.previous')}
-            </AmberButton>
-            <span className="px-4 py-2 text-sm text-zinc-400">
-              {filters.page} / {totalPages}
-            </span>
-            <AmberButton
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(filters.page! + 1)}
-              disabled={filters.page === totalPages}
-            >
-              {t('pagination.next')}
-            </AmberButton>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -116,6 +116,8 @@ export const InventoryPage = () => {
     {
       key: 'item',
       label: t('inventory.table.item'),
+      cardTitle: true,
+      cardMedia: true,
       render: (row) => (
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
@@ -139,6 +141,7 @@ export const InventoryPage = () => {
     {
       key: 'category',
       label: t('inventory.table.category'),
+      cardBadge: true,
       render: (row) => (
         <span className="text-sm font-medium text-zinc-secondary">
           {row.category}
@@ -170,6 +173,7 @@ export const InventoryPage = () => {
     {
       key: 'status',
       label: t('common.status'),
+      cardBadge: true,
       render: (row) => (
         <StatusBadge 
           status={row.stock > 5 ? t('inventory.stock_in_stock') : row.stock > 0 ? t('inventory.stock_low') : t('inventory.stock_out')}
@@ -183,6 +187,7 @@ export const InventoryPage = () => {
     {
       key: 'warehouse',
       label: t('inventory.table.warehouse'),
+      hideInCard: true,
       render: (row) => (
         <span className="text-sm font-medium text-zinc-muted">
           {row.warehouse}
@@ -327,6 +332,7 @@ export const InventoryPage = () => {
               selectable
               rowActions={rowActions}
               emptyMessage={t('inventory.empty')}
+              showViewToggle
             />
           </div>
         </div>

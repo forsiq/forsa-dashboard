@@ -60,6 +60,8 @@ export const common = {
   "common.saving": "Saving...",
   "common.selected": "Selected",
   "common.showing": "Showing",
+  "common.table_view": "Table View",
+  "common.grid_view": "Grid View",
   "common.toggle_columns": "Toggle Columns",
   "common.update": "Update",
   "common.view": "View",
