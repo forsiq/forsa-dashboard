@@ -110,4 +110,15 @@ export const groupBuying = {
   "groupBuying.validation.consolidated_price_below_base": "نرخی گرێبەست دەبێت کەمتر بێت لە نرخی ئەسڵی",
   "groupBuying.category": "جۆر",
   "groupBuying.select_category": "جۆر هەڵبژێرە",
+
+  // Status translations
+  "groupBuying.status.all": "هەمووی",
+  "groupBuying.status.active": "چالاک",
+  "groupBuying.status.scheduled": "بەرنامەڕێزیکراو",
+  "groupBuying.status.completed": "تەواوبوو",
+  "groupBuying.status.cancelled": "هەڵوەشاوەتەوە",
+  "groupBuying.status.expired": "بەسەرچوو",
+  "groupBuying.status.draft": "ڕەشنووس",
+  "groupBuying.status.unlocked": "کراوەتەوە",
+  "groupBuying.status.pending": "چاوەڕێ",
 } as const;

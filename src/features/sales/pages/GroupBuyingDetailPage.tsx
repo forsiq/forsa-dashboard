@@ -1,28 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { 
- Users, 
- Clock, 
- DollarSign, 
- ArrowLeft, 
- Heart, 
- Share2, 
- TrendingUp, 
- ShieldCheck,
- AlertCircle,
- History,
- Timer,
- ChevronRight,
- Eye,
- Activity,
- Calendar,
- Zap,
- Target,
- Package,
- CheckCircle2,
- Lock,
- Unlock
+import {
+  Users,
+  Clock,
+  DollarSign,
+  ArrowLeft,
+  Share2,
+  TrendingUp,
+  ShieldCheck,
+  AlertCircle,
+  History,
+  Timer,
+  Eye,
+  Activity,
+  Calendar,
+  Zap,
+  Target,
+  Package,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -30,17 +27,13 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { 
- useGetGroupBuying, 
- useGetGroupBuyingParticipants,
- useJoinGroupBuying
+import {
+  useGetGroupBuying,
+  useGetGroupBuyingParticipants,
+  useJoinGroupBuying
 } from '../api';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 
-
-/**
- * GroupBuyingDetailPage - Cinematic Campaign Monitoring & Participation Interface
- */
 export const GroupBuyingDetailPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -59,7 +52,6 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Sync timer for precise countdowns
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -68,9 +60,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const handleJoin = async () => {
     try {
       await joinMutation.mutateAsync({ id: campaignId, quantity: 1 });
-
     } catch (err) {
-      console.error('Participation rejection:', err);
+      console.error('Join failed:', err);
     }
   };
 
@@ -78,14 +69,11 @@ export const GroupBuyingDetailPage: React.FC = () => {
     if (!endTimeStr) return 'TBD';
     const end = new Date(endTimeStr);
     const diff = end.getTime() - currentTime.getTime();
-    
-    if (diff <= 0) return 'TERMINATED';
-    
+    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
     if (days > 0) return `${days}d ${hours}h ${mins}m`;
     return `${hours}:${mins}:${secs < 10 ? '0' + secs : secs}`;
   };
@@ -94,9 +82,17 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
   if (campaignLoading || !router.isReady) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-        <p className="text-zinc-muted font-black uppercase tracking-[0.3em] animate-pulse">{t('groupBuying.scanning_node') || 'Scanning Campaign Node...'}</p>
+      <div className="max-w-[1600px] mx-auto p-6 space-y-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-white/5 rounded w-1/3" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-[500px] bg-white/[0.02] rounded-xl border border-white/[0.05]" />
+            <div className="space-y-4">
+              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
+              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -110,357 +106,329 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <p className="text-zinc-muted font-bold uppercase tracking-tight text-sm">{t('groupBuying.node_desync_desc')}</p>
         </div>
         <AmberButton onClick={() => router.push('/group-buying')} variant="secondary" className="px-8 h-12 uppercase font-black">
-          {t('common.back')}
+          {t('common.back') || 'Back'}
         </AmberButton>
       </Card>
     );
   }
 
   const participants = participantsData?.participants || [];
-  const progress = (campaign.currentParticipants / campaign.maxParticipants) * 100;
+  const progress = campaign.maxParticipants > 0 ? (campaign.currentParticipants / campaign.maxParticipants) * 100 : 0;
   const isUnlocked = campaign.currentParticipants >= campaign.minParticipants;
-  const isEndingSoon = new Date(campaign.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 60 * 24; // 24 hours
+  const isEndingSoon = new Date(campaign.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
+
+  const detailRows = [
+    { icon: Calendar, label: t('groupBuying.node_initialization') || 'Start', value: new Date(campaign.startTime).toLocaleString() },
+    { icon: Clock, label: t('groupBuying.temporal_termination') || 'End', value: new Date(campaign.endTime).toLocaleString() },
+    { icon: Package, label: t('groupBuying.asset_identifier') || 'Product ID', value: `#${campaign.productId || 'N/A'}` },
+    { icon: Target, label: t('groupBuying.min_threshold') || 'Min Threshold', value: `${campaign.minParticipants} participants` },
+  ];
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 space-y-8 animate-in fade-in duration-700" dir={dir}>
-      {/* Navigational Control & Status */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+    <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
-          <button 
+          <button
             onClick={() => router.push('/group-buying')}
-            className="w-12 h-12 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
+            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
           >
-            <ArrowLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
+            <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
           </button>
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-brand uppercase tracking-widest">{campaign.category?.name || (t('groupBuying.general_collaboration') || 'GENERAL COLLABORATION')}</span>
-              <div className="w-1 h-1 rounded-full bg-zinc-muted/30" />
-              <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.protocol_node') || 'Protocol Node'}: {campaign.id}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <StatusBadge
+                status={t(`groupBuying.status.${campaign.status.toLowerCase()}`) || campaign.status}
+                variant={campaign.status === 'active' ? 'success' : campaign.status === 'completed' ? 'warning' : 'info'}
+                size="sm"
+              />
+              <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">#{campaign.id}</span>
             </div>
-            <h1 className="text-4xl font-black text-zinc-text tracking-tighter uppercase leading-none mt-1">{campaign.title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-black text-zinc-text tracking-tight uppercase leading-tight mt-1 truncate">
+              {campaign.title}
+            </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <AmberButton 
-            variant="secondary" 
-            className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center active:scale-95 transition-all text-zinc-muted"
-          >
-            <Share2 className="w-5 h-5" />
-          </AmberButton>
+        <div className="flex items-center gap-2 shrink-0">
+          <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
+            <Share2 className="w-4 h-4" />
+          </button>
           <Link href={`/group-buying/${campaign.id}/edit`}>
-            <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all shadow-xl">
-              {t('common.edit')}
+            <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs">
+              {t('common.edit') || 'Edit'}
             </AmberButton>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Visual Telemetry & Operational Flow */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Primary Asset Visualizer */}
-          <Card className="!p-0 border-border bg-black overflow-hidden relative group h-[500px] shadow-2xl rounded-3xl">
-             <AuctionImage
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Image + Participants */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Image */}
+          <div className="relative rounded-xl border border-white/5 bg-black overflow-hidden group h-[300px] lg:h-[460px]">
+            <AuctionImage
               auction={{
-               imageUrl: (campaign.item as any)?.imageUrl || (campaign as any).imageUrl,
-               images: (campaign.item as any)?.images || (campaign as any).images,
-               mainAttachmentId: (campaign.item as any)?.mainAttachmentId || (campaign as any).mainAttachmentId,
-               attachmentIds: (campaign.item as any)?.attachmentIds || (campaign as any).attachmentIds,
+                imageUrl: (campaign.item as any)?.imageUrl || (campaign as any).imageUrl,
+                images: (campaign.item as any)?.images || (campaign as any).images,
+                mainAttachmentId: (campaign.item as any)?.mainAttachmentId || (campaign as any).mainAttachmentId,
+                attachmentIds: (campaign.item as any)?.attachmentIds || (campaign as any).attachmentIds,
               }}
               alt={campaign.title}
-              className="w-full h-full"
-              fallbackClassName="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-1000"
-             />
-
-             {/* High-Level Overlays */}
-             <div className="absolute top-8 left-8 flex items-center gap-4">
-               <StatusBadge 
-                status={campaign.status.toUpperCase()} 
-                variant={campaign.status === 'active' ? 'active' : 'warning'}
-                className="font-black tracking-[0.2em] border-none bg-black/60 backdrop-blur-xl px-5 py-2.5 shadow-2xl"
-               />
-               <div className="bg-black/60 backdrop-blur-xl border border-white/5 px-5 py-2.5 rounded-xl flex items-center gap-3 shadow-2xl">
-                 {isUnlocked ? <Unlock className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4 text-warning" />}
-                 <span className={cn(
-                   "text-xs font-black tracking-tighter",
-                   isUnlocked ? "text-emerald-400" : "text-warning"
-                 )}>
-                   {isUnlocked ? (t('groupBuying.unlocked') || 'THRESHOLD UNLOCKED') : (t('groupBuying.pending_sync') || 'SYNCHRONIZATION PENDING')}
-                 </span>
-               </div>
-             </div>
-
-             <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/40 to-transparent">
-               <div className="space-y-4 max-w-3xl">
-                 <div className="flex items-center gap-3">
-                   <div className="w-12 h-1 bg-brand rounded-full" />
-                   <span className="text-xs font-black text-white uppercase tracking-[0.3em]">{t('groupBuying.operational_narrative') || 'Operational Asset narrative'}</span>
-                 </div>
-                 <h2 className="text-2xl font-black text-white uppercase tracking-tight leading-tight line-clamp-2">
-                   {campaign.description}
-                 </h2>
-               </div>
-             </div>
-          </Card>
-
-          {/* Participation Matrix (Milestones) */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-10">
-            <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-inner">
-                  <Target className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.threshold_sync') || 'Campaign reach synchronization'}</h3>
+              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700"
+            />
+            {/* Top overlay */}
+            <div className="absolute top-4 start-4 flex items-center gap-2">
+              <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                {isUnlocked ? <Unlock className="w-3.5 h-3.5 text-emerald-400" /> : <Lock className="w-3.5 h-3.5 text-warning" />}
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                  {isUnlocked ? (t('groupBuying.unlocked') || 'Unlocked') : (t('groupBuying.locked') || 'Locked')}
+                </span>
               </div>
-              <div className="flex items-center gap-8 text-right">
-                <div>
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.current_reach') || 'Current Node Reach'}</span>
-                  <p className="text-2xl font-black text-zinc-text tracking-tighter leading-none mt-1">{campaign.currentParticipants}</p>
+            </div>
+            {/* Bottom overlay */}
+            <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+              <span className="text-[10px] font-bold text-brand uppercase tracking-widest">{campaign.category?.name || 'General'}</span>
+              <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{campaign.description}</h2>
+            </div>
+          </div>
+
+          {/* Progress Section */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                  <Target className="w-4 h-4" />
                 </div>
-                <div className="w-px h-10 bg-white/5" />
-                <div>
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.target_threshold') || 'Target Threshold'}</span>
-                  <p className="text-2xl font-black text-brand tracking-tighter leading-none mt-1">{campaign.maxParticipants}</p>
+                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.participation_progress') || 'Participation Progress'}</h3>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-end">
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Joined</span>
+                  <p className="text-lg font-black text-zinc-text leading-none mt-0.5">{campaign.currentParticipants}</p>
+                </div>
+                <div className="w-px h-8 bg-white/5" />
+                <div className="text-end">
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Target</span>
+                  <p className="text-lg font-black text-brand leading-none mt-0.5">{campaign.maxParticipants}</p>
                 </div>
               </div>
             </div>
 
-            {/* Visual Milestone Progress */}
-            <div className="relative pt-4 pb-8 px-4">
-               <AmberProgress 
-                value={progress} 
-                variant={isUnlocked ? 'success' : 'primary'} 
-                className="h-4 bg-white/[0.03] rounded-full border border-white/5 shadow-inner" 
-               />
-               
-               {/* Tactical Milestone Markers */}
-               <div className="absolute inset-x-4 top-2 bottom-6 pointer-events-none">
-                 {/* Startup Marker */}
-                 <div className="absolute left-0 -translate-x-1/2 flex flex-col items-center gap-2">
-                   <div className="w-1 h-8 bg-white/20" />
-                   <span className="text-[8px] font-black text-zinc-muted uppercase bg-black px-2 py-1 border border-white/10 rounded-md">{t('groupBuying.initialize') || 'INITIALIZE'}</span>
-                 </div>
-                 
-                 {/* Activation Threshold */}
-                 <div 
-                  className="absolute -translate-x-1/2 flex flex-col items-center gap-2"
-                  style={{ left: `${(campaign.minParticipants / campaign.maxParticipants) * 100}%` }}
-                 >
-                   <div className={cn("w-1 h-8 transition-colors duration-500", isUnlocked ? "bg-emerald-500" : "bg-warning/40")} />
-                   <span className={cn(
-                     "text-[8px] font-black uppercase px-2 py-1 border rounded-md transition-all",
-                     isUnlocked ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-black text-zinc-muted border-white/10"
-                   )}>{t('groupBuying.activation') || 'ACTIVATION'}</span>
-                 </div>
-
-                 {/* Final Resolution */}
-                 <div className="absolute right-0 translate-x-1/2 flex flex-col items-center gap-2">
-                   <div className="w-1 h-8 bg-zinc-muted/20" />
-                   <span className="text-[8px] font-black text-zinc-muted uppercase bg-black px-2 py-1 border border-white/10 rounded-md">{t('groupBuying.resolution') || 'RESOLUTION'}</span>
-                 </div>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-                <div className="flex items-center gap-2 opacity-60">
-                  <Users className="w-4 h-4 text-brand" />
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Core nodes'}</span>
-                </div>
-                <p className="text-xl font-black text-zinc-text tracking-tighter uppercase tabular-nums">{campaign.currentParticipants} {t('common.joined') || 'Joined'}</p>
-              </div>
-              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-                <div className="flex items-center gap-2 opacity-60">
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.min_reach') || 'Minimum Reach'}</span>
-                </div>
-                <p className="text-xl font-black text-zinc-text tracking-tighter uppercase tabular-nums">{campaign.minParticipants} {t('common.required') || 'Required'}</p>
-              </div>
-              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-                <div className="flex items-center gap-2 opacity-60">
-                  <Activity className="w-4 h-4 text-info" />
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.capacity_cap') || 'Capacity Cap'}</span>
-                </div>
-                <p className="text-xl font-black text-zinc-text tracking-tighter uppercase tabular-nums">{campaign.maxParticipants} {t('common.max') || 'Max'}</p>
+            {/* Progress Bar */}
+            <div className="py-2">
+              <AmberProgress
+                value={progress}
+                variant={isUnlocked ? 'success' : 'primary'}
+                className="h-3 bg-white/[0.03] rounded-full border border-white/5"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">0</span>
+                <span className={cn(
+                  "text-[9px] font-bold uppercase tracking-widest",
+                  isUnlocked ? "text-emerald-400" : "text-warning"
+                )}>
+                  Min: {campaign.minParticipants}
+                </span>
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{campaign.maxParticipants}</span>
               </div>
             </div>
-          </Card>
 
-          {/* High-Resolution Participation Log */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-8">
-             <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-inner">
-                  <History className="w-5 h-5" />
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3 h-3 text-brand" />
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Joined</span>
                 </div>
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.interaction_sequence')}</h3>
+                <p className="text-lg font-black text-zinc-text tabular-nums">{campaign.currentParticipants}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3 h-3 text-emerald-400" />
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Min</span>
+                </div>
+                <p className="text-lg font-black text-zinc-text tabular-nums">{campaign.minParticipants}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Activity className="w-3 h-3 text-info" />
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Max</span>
+                </div>
+                <p className="text-lg font-black text-zinc-text tabular-nums">{campaign.maxParticipants}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Participants List */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <History className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.participants') || 'Participants'}</h3>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-end">
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Total</span>
+                  <p className="text-lg font-black text-zinc-text leading-none mt-0.5">{participants.length}</p>
+                </div>
               </div>
             </div>
 
             {participantsLoading ? (
-               <div className="space-y-4 py-8 text-center animate-pulse">
-                <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs text-zinc-muted font-black uppercase tracking-widest">{t('groupBuying.parsing_interactions') || 'Parsing node interactions...'}</p>
+              <div className="py-12 text-center">
+                <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest mt-3">Loading...</p>
               </div>
             ) : participants.length === 0 ? (
-              <div className="py-20 text-center space-y-5 bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
-                <Users className="w-12 h-12 text-zinc-muted/20 mx-auto" />
-                <div className="space-y-1">
-                  <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.2em]">{t('groupBuying.no_active_nodes')}</p>
-                  <p className="text-[10px] text-zinc-muted/50 font-bold uppercase">{t('groupBuying.initialize_sequence')}</p>
-                </div>
+              <div className="py-12 text-center space-y-3 bg-white/[0.02] rounded-xl border border-dashed border-white/5">
+                <Users className="w-10 h-10 text-zinc-muted/20 mx-auto" />
+                <p className="text-xs font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.no_active_nodes') || 'No participants yet'}</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {participants.map((p, idx) => (
-                  <div key={p.id} className="flex items-center justify-between p-5 rounded-2xl border border-white/5 bg-obsidian-panel/40 hover:bg-white/[0.03] transition-all group">
-                     <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-full bg-obsidian-outer border border-white/10 flex items-center justify-center text-lg font-black text-zinc-text group-hover:border-brand transition-colors shadow-inner">
-                         {p.userName?.[0] || 'U'}
-                       </div>
-                       <div>
-                         <div className="flex items-center gap-2">
-                         <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{p.userName || t('groupBuying.anonymous_participant')}</p>
-                           <StatusBadge status={t('groupBuying.verified_node') || "VERIFIED NODE"} variant="success" size="sm" className="h-4 text-[7px] tracking-widest px-2" />
-                         </div>
-                         <div className="flex items-center gap-2 text-[9px] font-black text-zinc-muted uppercase tracking-widest mt-1">
-                           <Clock className="w-3 h-3" strokeWidth={3} />
-                           {new Date(p.joinedAt).toLocaleString()}
-                         </div>
-                       </div>
-                     </div>
-                     <div className="text-right">
-                       <div className="flex items-center gap-2 justify-end mb-1">
-                         <Package className="w-3.5 h-3.5 text-brand" />
-                         <span className="text-sm font-black text-zinc-text tabular-nums tracking-tighter">x{p.quantity} {t('groupBuying.unit_allocation') || 'Unit Allocation'}</span>
-                       </div>
-                       <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mt-0.5">{t('groupBuying.sequence_verified') || 'Sequence Hash Verification Confirmed'}</p>
-                     </div>
+              <div className="space-y-3">
+                {participants.map((p, index) => (
+                  <div
+                    key={p.id}
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-xl border transition-all hover:bg-white/[0.02]",
+                      index === 0 ? "bg-brand/5 border-brand/10" : "bg-obsidian-panel/30 border-white/5"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full border flex items-center justify-center text-sm font-bold",
+                        index === 0 ? "bg-brand text-black border-none" : "bg-obsidian-outer border-white/10 text-zinc-text"
+                      )}>
+                        {p.userName?.[0] || 'U'}
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text uppercase tracking-tight">{p.userName || 'Anonymous'}</span>
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
+                          <Clock className="w-3 h-3" />
+                          {new Date(p.joinedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <Package className="w-3.5 h-3.5 text-brand" />
+                        <span className="text-sm font-black text-zinc-text tabular-nums">x{p.quantity}</span>
+                      </div>
+                      <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mt-0.5">#{participants.length - index}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </div>
 
-        {/* Tactical Control Surface & Bidding Analytics */}
-        <div className="space-y-8">
-           {/* Bidding Control Panel */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-2xl relative overflow-hidden group">
-            {/* Dynamic Activation Effect */}
-            <div className={cn(
-              "absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-brand to-transparent transition-all duration-1000",
-              isEndingSoon ? "opacity-100" : "opacity-0"
-            )} />
+        {/* Right Column - Join + Info */}
+        <div className="space-y-6">
 
-            <div className="space-y-8 relative">
-              {/* Value Matrix */}
-              <div className="grid grid-cols-2 gap-6 pb-2 border-b border-white/[0.03]">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] font-bold">{t('groupBuying.deal_allocation') || 'Deal Allocation'}</span>
-                  <p className="text-4xl font-black text-brand tabular-nums leading-none tracking-tighter mt-1">
-                    ${campaign.dealPrice.toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-right space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] font-bold">{t('groupBuying.standard_value') || 'Standard Value'}</span>
-                  <p className="text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tighter mt-1">
-                    ${campaign.originalPrice.toLocaleString()}
-                  </p>
-                </div>
+          {/* Join Panel */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5 relative overflow-hidden">
+            {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
+
+            {/* Price + Timer */}
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
+                <p className="text-3xl font-black text-brand tabular-nums leading-none tracking-tight">
+                  ${campaign.dealPrice.toLocaleString()}
+                </p>
               </div>
+              <div className="space-y-1 text-end">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
+                <p className="text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
+                  ${campaign.originalPrice.toLocaleString()}
+                </p>
+              </div>
+            </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center justify-between text-warning">
-                  <div className="flex items-center gap-2">
-                    <Timer className="w-5 h-5 shadow-sm" />
-                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">{t('groupBuying.horizon') || 'Campaign Horizon'}</span>
+            {/* Savings */}
+            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.savings') || 'Savings'}</span>
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              </div>
+              <p className="text-xl font-black text-emerald-400 tabular-nums leading-none">
+                ${((campaign.originalPrice - campaign.dealPrice) || 0).toLocaleString()}
+              </p>
+            </div>
+
+            {/* Timer */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
+              <div className="flex items-center gap-2">
+                <Timer className="w-4 h-4 text-warning" />
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.time_left') || 'Time Left'}</span>
+              </div>
+              <span className={cn(
+                "text-lg font-black tabular-nums leading-none tracking-tight",
+                isEndingSoon ? "text-danger animate-pulse" : "text-warning"
+              )}>
+                {getCountdown(campaign.endTime)}
+              </span>
+            </div>
+
+            {/* Join Button */}
+            <AmberButton
+              className="w-full h-11 bg-brand hover:bg-brand text-black font-bold uppercase tracking-wider rounded-xl active:scale-95 transition-all text-xs"
+              disabled={campaign.status !== 'active' || joinMutation.isPending || (campaign.maxParticipants > 0 && campaign.currentParticipants >= campaign.maxParticipants)}
+              onClick={handleJoin}
+            >
+              {joinMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : (
+                t('groupBuying.join_campaign') || 'Join Campaign'
+              )}
+            </AmberButton>
+
+            {/* Trust */}
+            <div className="flex items-center gap-2.5 p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
+              <ShieldCheck className="w-4 h-4 text-zinc-muted shrink-0" />
+              <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-wider">{t('groupBuying.secure_transaction') || 'Secure Transaction'}</span>
+            </div>
+          </div>
+
+          {/* Info Panel */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
+              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                <Package className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
+            </div>
+
+            <div className="space-y-3">
+              {detailRows.map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 group/row">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <item.icon className="w-3.5 h-3.5 text-zinc-muted group-hover/row:text-brand transition-colors" />
+                    <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{item.label}</span>
                   </div>
-                  <span className={cn(
-                    "text-2xl font-black tabular-nums tracking-tighter leading-none",
-                    isEndingSoon ? "text-danger animate-pulse" : "text-warning"
-                  )}>
-                    {getCountdown(campaign.endTime)}
-                  </span>
-                </div>
-
-                <div className="h-px bg-white/[0.05]" />
-
-                <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4 shadow-inner">
-                   <div className="flex items-center justify-between">
-                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.advantage') || 'Acquisition Advantage'}</span>
-                     <StatusBadge status="HIGH YIELD" variant="success" size="sm" className="h-4 text-[7px]" />
-                   </div>
-                   <div className="flex items-baseline gap-2">
-                     <TrendingUp className="w-4 h-4 text-emerald-400" />
-                     <span className="text-2xl font-black text-zinc-text tracking-tighter tabular-nums leading-none whitespace-nowrap">
-                       {t('groupBuying.save_per_node', { amount: (campaign.originalPrice - campaign.dealPrice).toLocaleString() }) || `SAVE $${(campaign.originalPrice - campaign.dealPrice).toLocaleString()} PER NODE`}
-                     </span>
-                   </div>
-                </div>
-
-                <AmberButton 
-                  className="w-full h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-[0_15px_40px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm relative group overflow-hidden"
-                  disabled={campaign.status !== 'active' || joinMutation.isPending || (campaign.maxParticipants > 0 && campaign.currentParticipants >= campaign.maxParticipants)}
-                  onClick={handleJoin}
-                >
-                   <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                   {joinMutation.isPending ? (
-                     <div className="w-6 h-6 border-3 border-black border-t-transparent rounded-full animate-spin" />
-                   ) : (
-                     <span className="relative z-10 group-hover:tracking-[0.4em] transition-all duration-500">{t('groupBuying.authorize_allocation') || 'Authorize Allocation'}</span>
-                   )}
-                </AmberButton>
-              </div>
-
-              {/* Trust Indicator */}
-              <div className="p-4 rounded-xl bg-obsidian-panel/60 border border-white/5 flex items-center gap-3 shadow-inner">
-                 <ShieldCheck className="w-5 h-5 text-zinc-muted" />
-                 <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.1em]">{t('groupBuying.consensus_escrow') || 'Collective Consensus and Escrow Protection Enabled'}</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Operational Logistics Node */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.deployment_specifications') || 'Deployment Specifications'}</h3>
-            </div>
-            
-            <div className="space-y-6">
-              {[
-                { label: 'Node Initialization', value: new Date(campaign.startTime).toLocaleString(), icon: Calendar },
-                { label: 'Temporal Termination', value: new Date(campaign.endTime).toLocaleString(), icon: Clock },
-                { label: 'Asset Identifier', value: `ZVB-${campaign.productId || 'GEN'}`, icon: Package },
-                { label: 'Protocol Controller', value: 'Asset Management Div 11', icon: ShieldCheck },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between group">
-                   <div className="flex items-center gap-4">
-                     <item.icon className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
-                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{item.label}</span>
-                   </div>
-                   <span className="text-xs font-black text-zinc-text uppercase tracking-tight">{item.value}</span>
+                  <span className="text-xs font-bold text-zinc-text text-end truncate">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="pt-4">
-              <AmberButton variant="secondary" className="w-full gap-2 font-black uppercase tracking-widest text-[10px] h-12 bg-obsidian-panel border-border active:scale-95 transition-all rounded-xl shadow-md">
-                 {t('groupBuying.deployment_manifest') || 'Generate Deployment Manifest'}
-              </AmberButton>
-            </div>
-          </Card>
+            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-[10px] h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+              {t('groupBuying.download_report') || 'Download Report'}
+            </AmberButton>
+          </div>
 
-          {/* Operational Alert Cluster */}
+          {/* Activation Alert */}
           {!isUnlocked && (
-            <div className="p-6 rounded-3xl bg-warning/5 border border-warning/10 space-y-4 animate-pulse shadow-inner">
-              <div className="flex items-center gap-3 text-warning">
-                <AlertCircle className="w-5 h-5" />
-                <h4 className="text-xs font-black uppercase tracking-widest">{t('groupBuying.activation_pending') || 'Activation Threshold Pending'}</h4>
+            <div className="p-5 rounded-xl bg-warning/5 border border-warning/10 space-y-3">
+              <div className="flex items-center gap-2 text-warning">
+                <AlertCircle className="w-4 h-4" />
+                <h4 className="text-[10px] font-bold uppercase tracking-widest">{t('groupBuying.activation_pending') || 'Activation Pending'}</h4>
               </div>
-              <p className="text-[11px] text-warning/80 font-bold uppercase tracking-tight leading-relaxed">
-                {t('groupBuying.activation_desc', { amount: campaign.minParticipants - campaign.currentParticipants }) || `Current campaign reach is below synchronization target. Successful asset acquisition requires activation of ${campaign.minParticipants - campaign.currentParticipants} more nodes.`}
+              <p className="text-[10px] text-warning/70 font-bold leading-relaxed">
+                {t('groupBuying.activation_desc', { amount: campaign.minParticipants - campaign.currentParticipants }) || `${campaign.minParticipants - campaign.currentParticipants} more participants needed to unlock the deal.`}
               </p>
             </div>
           )}

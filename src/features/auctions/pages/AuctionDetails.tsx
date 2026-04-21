@@ -2,26 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
- Clock,
- Users,
- DollarSign,
- ArrowLeft,
- Heart,
- Share2,
- TrendingUp,
- ShieldCheck,
- AlertCircle,
- History,
- Timer,
- ChevronRight,
- Eye,
- Activity,
- Calendar
+  Clock,
+  Users,
+  DollarSign,
+  ArrowLeft,
+  Heart,
+  Share2,
+  TrendingUp,
+  ShieldCheck,
+  AlertCircle,
+  History,
+  Timer,
+  Eye,
+  Activity,
+  Calendar,
+  Gavel,
+  User,
+  Tag
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
-import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
@@ -29,7 +30,7 @@ import { useGetAuction, useGetAuctionBids, usePlaceBid } from '../api';
 import { AuctionImage } from '../components/AuctionImage';
 
 /**
- * AuctionDetails - Cinematic Asset Monitoring & Bidding Interface
+ * AuctionDetails - Unified Detail Layout
  */
 export const AuctionDetails: React.FC = () => {
   const router = useRouter();
@@ -46,7 +47,6 @@ export const AuctionDetails: React.FC = () => {
   const [bidAmount, setBidAmount] = useState<string>('');
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Sync timer for precise countdowns
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -59,7 +59,7 @@ export const AuctionDetails: React.FC = () => {
         await placeBid.mutateAsync({ auctionId, amount });
         setBidAmount('');
       } catch (err) {
-        console.error('Bid rejection detected:', err);
+        console.error('Bid failed:', err);
       }
     }
   };
@@ -68,14 +68,11 @@ export const AuctionDetails: React.FC = () => {
     if (!endTimeStr) return 'TBD';
     const end = new Date(endTimeStr);
     const diff = end.getTime() - currentTime.getTime();
-    
-    if (diff <= 0) return t('TIME.ENDED');
-    
+    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
     if (days > 0) return `${days}d ${hours}h ${mins}m`;
     return `${hours}:${mins}:${secs < 10 ? '0' + secs : secs}`;
   };
@@ -85,11 +82,11 @@ export const AuctionDetails: React.FC = () => {
       <div className="max-w-[1600px] mx-auto p-6 space-y-8">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-white/5 rounded w-1/3" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 h-96 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-[500px] bg-white/[0.02] rounded-xl border border-white/[0.05]" />
             <div className="space-y-4">
-              <div className="h-40 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
-              <div className="h-40 bg-white/[0.02] rounded-2xl border border-white/[0.05]" />
+              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
+              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
             </div>
           </div>
         </div>
@@ -102,310 +99,257 @@ export const AuctionDetails: React.FC = () => {
       <Card className="max-w-2xl mx-auto !p-12 text-center space-y-6 bg-obsidian-card border-danger/20">
         <AlertCircle className="w-16 h-16 text-danger mx-auto" />
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-zinc-text uppercase tracking-tighter">{t('auction.detail.node_desynchronization')}</h2>
-          <p className="text-zinc-muted font-bold uppercase tracking-tight text-sm">{t('auction.detail.node_not_found')}</p>
+          <h2 className="text-2xl font-black text-zinc-text uppercase tracking-tighter">{t('auction.detail.node_not_found')}</h2>
+          <p className="text-zinc-muted font-bold uppercase tracking-tight text-sm">Auction not found</p>
         </div>
         <AmberButton onClick={() => router.push('/auctions')} variant="secondary" className="px-8 h-12 uppercase font-black">
-          {t('auction.detail.return_infrastructure')}
+          {t('common.back') || 'Back'}
         </AmberButton>
       </Card>
     );
   }
 
   const nextMinBid = (auction.currentBid || auction.startPrice) + auction.bidIncrement;
-  const isEndingSoon = new Date(auction.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30; // 30 mins
+  const isEndingSoon = new Date(auction.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
+
+  // Detail rows data
+  const detailRows = [
+    { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
+    { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
+    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: `$${(auction.bidIncrement || 0).toLocaleString()}` },
+    { icon: Tag, label: 'Category', value: auction.categoryName || t('common.general_asset') || 'General' },
+    { icon: User, label: 'Winner', value: auction.winnerName || t('auction.detail.default_custodian') || 'No winner yet' },
+  ];
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 space-y-8 animate-in fade-in duration-700" dir={dir}>
-      {/* Navigational Control & Status */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+    <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
-          <button 
+          <button
             onClick={() => router.push('/auctions')}
-            className="w-12 h-12 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
+            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
           >
-            <ArrowLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
+            <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
           </button>
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-brand uppercase tracking-widest">{auction.categoryName || t('common.general_asset')}</span>
-              <div className="w-1 h-1 rounded-full bg-zinc-muted/30" />
-              <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Node ID: {auction.id}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <StatusBadge
+                status={t(`auction.status.${auction.status.toLowerCase()}`) || auction.status}
+                variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
+                size="sm"
+              />
+              <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">#{auction.id}</span>
             </div>
-            <h1 className="text-4xl font-black text-zinc-text tracking-tighter uppercase leading-none mt-1">{auction.title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-black text-zinc-text tracking-tight uppercase leading-tight mt-1 truncate">
+              {auction.title}
+            </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <AmberButton 
-            variant="secondary" 
-            className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center hover:text-danger active:scale-95 transition-all"
-            onClick={() => {}}
-          >
-            <Heart className={cn("w-5 h-5", auction.isWatched && "fill-danger text-danger")} />
-          </AmberButton>
-          <AmberButton 
-            variant="secondary" 
-            className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center active:scale-95 transition-all"
-          >
-            <Share2 className="w-5 h-5 text-zinc-muted" />
-          </AmberButton>
+        <div className="flex items-center gap-2 shrink-0">
+          <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-danger hover:border-danger/20 transition-all">
+            <Heart className={cn("w-4 h-4", auction.isWatched && "fill-danger text-danger")} />
+          </button>
+          <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
+            <Share2 className="w-4 h-4" />
+          </button>
           <Link href={`/auctions/edit/${auction.id}`}>
-            <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all">
-              {t('auction.detail.modify_node')}
+            <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs">
+              {t('common.edit') || 'Edit'}
             </AmberButton>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Visual Telemetry & Narrative Coverage */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Primary Asset Visualizer */}
-          <Card className="!p-0 border-border bg-black overflow-hidden relative group aspect-video lg:aspect-auto h-[600px] shadow-2xl">
-             <AuctionImage
-               auction={auction}
-               alt={auction.title}
-               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-1000"
-             />
-             {/* Visual Overlays */}
-             <div className="absolute top-6 left-6 flex items-center gap-3">
-               <StatusBadge 
-                status={auction.status.toUpperCase()} 
-                variant={auction.status === 'active' ? 'success' : 'warning'}
-                className="font-black tracking-[0.2em] border-none bg-black/60 backdrop-blur-xl px-4 py-2"
-               />
-               <div className="bg-black/60 backdrop-blur-xl border border-white/5 px-4 py-2 rounded-lg flex items-center gap-2">
-                 <Eye className="w-4 h-4 text-brand" />
-                 <span className="text-xs font-black text-white tracking-tighter">{t('auction.detail.live_monitoring')}</span>
-               </div>
-             </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Image + Bids */}
+        <div className="lg:col-span-2 space-y-6">
 
-             <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/40 to-transparent">
-               <div className="flex items-end justify-between gap-6">
-                 <div className="space-y-4 max-w-2xl">
-                   <div className="flex items-center gap-3">
-                     <div className="w-12 h-1 bg-brand rounded-full" />
-                     <span className="text-xs font-black text-white uppercase tracking-[0.3em]">{t('auction.detail.physical_specification')}</span>
-                   </div>
-                   <h2 className="text-2xl font-black text-white uppercase tracking-tight leading-tight line-clamp-2">
-                     {auction.description}
-                   </h2>
-                 </div>
-                 <div className="hidden md:flex gap-2">
-                   {[1,2,3].map(i => (
-                     <AuctionImage
-                       key={i}
-                       auction={auction}
-                       fallbackClassName="w-full h-full object-cover"
-                     />
-                   ))}
-                 </div>
-               </div>
-             </div>
-          </Card>
-
-          {/* Operational Telemetry (Bid History) */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-            <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                  <History className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.detail.high_frequency_telemetry')}</h3>
+          {/* Image */}
+          <div className="relative rounded-xl border border-white/5 bg-black overflow-hidden group h-[300px] lg:h-[460px]">
+            <AuctionImage
+              auction={auction}
+              alt={auction.title}
+              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-700"
+            />
+            {/* Top overlay */}
+            <div className="absolute top-4 start-4 flex items-center gap-2">
+              <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                <Eye className="w-3.5 h-3.5 text-brand" />
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t('auction.detail.live_monitoring') || 'Live'}</span>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.total_cycles')}</span>
-                  <p className="text-xl font-black text-zinc-text leading-none mt-1">{auction.totalBids || 0}</p>
+            </div>
+            {/* Bottom overlay */}
+            <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+              <span className="text-[10px] font-bold text-brand uppercase tracking-widest">{auction.categoryName || 'General'}</span>
+              <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
+            </div>
+          </div>
+
+          {/* Bid History */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <History className="w-4 h-4" />
                 </div>
-                <div className="w-px h-8 bg-white/5" />
-                <div className="text-right">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.velocity_status')}</span>
-                  <p className="text-xl font-black text-emerald-400 leading-none mt-1 uppercase tracking-tighter">{t('auction.detail.stable')}</p>
+                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.high_frequency_telemetry') || 'Bid History'}</h3>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-end">
+                  <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">Total Bids</span>
+                  <p className="text-lg font-black text-zinc-text leading-none mt-0.5">{auction.totalBids || 0}</p>
                 </div>
               </div>
             </div>
 
             {bidsLoading ? (
-              <div className="space-y-4 py-8 text-center">
-                <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs text-zinc-muted font-black uppercase tracking-widest">{t('auction.detail.parsing_history')}</p>
+              <div className="py-12 text-center">
+                <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest mt-3">Loading...</p>
               </div>
             ) : bids?.length === 0 ? (
-              <div className="py-16 text-center space-y-4 bg-white/[0.02] rounded-2xl border border-dashed border-white/5">
-                <Activity className="w-12 h-12 text-zinc-muted/20 mx-auto" />
-                <p className="text-sm font-bold text-zinc-muted uppercase tracking-widest">{t('auction.detail.no_interactions')}</p>
+              <div className="py-12 text-center space-y-3 bg-white/[0.02] rounded-xl border border-dashed border-white/5">
+                <Activity className="w-10 h-10 text-zinc-muted/20 mx-auto" />
+                <p className="text-xs font-bold text-zinc-muted uppercase tracking-widest">{t('auction.detail.no_interactions') || 'No bids yet'}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {bids?.map((bid, index) => (
-                  <div 
-                    key={bid.id} 
+                  <div
+                    key={bid.id}
                     className={cn(
-                      "flex items-center justify-between p-5 rounded-2xl border transition-all hover:bg-white/[0.03]",
-                      index === 0 ? "bg-brand/5 border-brand/20 shadow-[0_0_20px_rgba(245,196,81,0.05)]" : "bg-obsidian-panel/40 border-white/5"
+                      "flex items-center justify-between p-4 rounded-xl border transition-all hover:bg-white/[0.02]",
+                      index === 0 ? "bg-brand/5 border-brand/10" : "bg-obsidian-panel/30 border-white/5"
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <div className={cn(
-                        "w-12 h-12 rounded-full border flex items-center justify-center text-lg font-black",
+                        "w-10 h-10 rounded-full border flex items-center justify-center text-sm font-bold",
                         index === 0 ? "bg-brand text-black border-none" : "bg-obsidian-outer border-white/10 text-zinc-text"
                       )}>
                         {bid.bidderName?.[0] || 'A'}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-black text-zinc-text uppercase tracking-tight">{bid.bidderName || t('auction.detail.anonymous')}</span>
-                          {index === 0 && <StatusBadge status="PREMIUM" variant="success" size="sm" className="h-4 text-[7px]" />}
-                        </div>
-                        <div className="flex items-center gap-2 text-[9px] font-black text-zinc-muted uppercase tracking-widest mt-1">
-                          <Clock className="w-3 h-3" strokeWidth={3} />
-                          {new Date(bid.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        <span className="text-sm font-bold text-zinc-text uppercase tracking-tight">{bid.bidderName || t('auction.detail.anonymous') || 'Anonymous'}</span>
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
+                          <Clock className="w-3 h-3" />
+                          {new Date(bid.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xl font-black text-zinc-text tracking-tighter tabular-nums">
+                    <div className="text-end">
+                      <span className="text-lg font-black text-zinc-text tracking-tight tabular-nums">
                         ${bid.amount.toLocaleString()}
                       </span>
-                      <p className="text-[9px] font-black text-brand uppercase tracking-widest mt-0.5">{t('auction.detail.interaction_sequence')} #{bids.length - index}</p>
+                      <p className="text-[9px] font-bold text-brand uppercase tracking-widest mt-0.5">#{bids.length - index}</p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </div>
 
-        {/* Strategic Control Surface & Intelligence */}
+        {/* Right Column - Bidding + Info */}
         <div className="space-y-6">
-          {/* Tactical Bidding Logic */}
-          <Card className="!p-6 bg-obsidian-card border-border shadow-2xl relative overflow-hidden">
-            {/* Dynamic Background Effect */}
-            <div className={cn(
-              "absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-brand to-transparent transition-all duration-1000",
-              isEndingSoon ? "opacity-100" : "opacity-0"
-            )} />
 
-            <div className="space-y-6 relative">
-              {/* Value Telemetry */}
-              <div className="flex flex-col gap-4">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1">{t('auction.detail.current_premium')}</span>
-                  <div className="flex items-baseline gap-1 text-brand">
-                    <span className="text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tighter">
-                      ${(auction.currentBid || auction.startPrice).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auction.detail.target_window')}</span>
-                  <div className={cn(
-                    "flex items-center gap-2 text-xl sm:text-2xl font-black tabular-nums transition-colors duration-500 tracking-tighter leading-none",
-                    isEndingSoon ? "text-danger" : "text-warning"
-                  )}>
-                    <Timer className="w-5 h-5 flex-shrink-0" />
-                    {getCountdown(auction.endTime)}
-                  </div>
-                </div>
+          {/* Bidding Panel */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5 relative overflow-hidden">
+            {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
+
+            {/* Price + Timer */}
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('auction.detail.current_premium') || 'Current Bid'}</span>
+                <p className="text-3xl font-black text-brand tabular-nums leading-none tracking-tight">
+                  ${(auction.currentBid || auction.startPrice).toLocaleString()}
+                </p>
               </div>
-
-              <div className="h-px bg-white/[0.03]" />
-
-              {/* Control Input Cluster */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                     <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.base_progression')}</label>
-                     <span className="text-[9px] font-black text-zinc-muted uppercase tracking-tighter">{t('auction.detail.min_step')}: ${(auction.bidIncrement || 0).toLocaleString()}</span>
-                  </div>
-                  <div className="relative group">
-                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted group-focus-within:text-brand transition-colors" />
-                     <AmberInput 
-                      type="number"
-                      placeholder={`${nextMinBid.toLocaleString()}+`}
-                      className="h-12 bg-obsidian-outer border-border pl-12 pr-4 text-lg font-black tabular-nums placeholder:text-zinc-muted/30"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      disabled={auction.status !== 'active' || placeBid.isPending}
-                     />
-                  </div>
-                </div>
-
-                <AmberButton 
-                  className="w-full h-12 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-2xl shadow-[0_10px_40px_rgba(245,196,81,0.1)] active:scale-95 transition-all text-sm relative group overflow-hidden gap-3"
-                  disabled={auction.status !== 'active' || placeBid.isPending || !bidAmount || parseFloat(bidAmount) < nextMinBid}
-                  onClick={handlePlaceBid}
-                >
-                  <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  {placeBid.isPending && (
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  )}
-                  <span className="relative z-10">{t('auction.detail.authorize_bid')}</span>
-                </AmberButton>
-              </div>
-
-              {/* Strategic Actions */}
-              {auction.buyNowPrice && (
-                <AmberButton 
-                  variant="outline" 
-                  className="w-full h-12 border-emerald-500/20 text-emerald-400 font-black uppercase tracking-widest hover:bg-emerald-500/10 active:scale-95 transition-all"
-                >
-                  {t('auction.detail.instant_acquisition')} (${auction.buyNowPrice.toLocaleString()})
-                </AmberButton>
-              )}
-
-              {/* Integrity Verification */}
-              <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 flex items-center gap-3">
-                 <ShieldCheck className="w-5 h-5 text-zinc-muted" />
-                 <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.1em]">{t('auction.detail.encrypted_infrastructure')}</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Operational Node Info */}
-          <Card className="!p-6 bg-obsidian-card border-border shadow-xl space-y-5">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4">
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.detail.infrastructure_logistics')}</h3>
-            </div>
-            
-            <div className="space-y-4">
-               <div className="flex items-start justify-between gap-3">
-                 <div className="flex items-center gap-2.5 flex-shrink-0">
-                   <Calendar className="w-4 h-4 text-zinc-muted" />
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.temporal_start')}</span>
-                 </div>
-                 <span className="text-xs font-bold text-zinc-text text-left break-words">{new Date(auction.startTime).toLocaleString()}</span>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                 <div className="flex items-center gap-2.5 flex-shrink-0">
-                   <Clock className="w-4 h-4 text-zinc-muted" />
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.node_termination')}</span>
-                 </div>
-                 <span className="text-xs font-bold text-zinc-text text-left break-words">{new Date(auction.endTime).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                 <div className="flex items-center gap-2.5 flex-shrink-0">
-                   <TrendingUp className="w-4 h-4 text-zinc-muted" />
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.progression_delta')}</span>
-                 </div>
-                 <span className="text-xs font-bold text-zinc-text">${(auction.bidIncrement || 0).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                 <div className="flex items-center gap-2.5 flex-shrink-0">
-                   <Users className="w-4 h-4 text-zinc-muted" />
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.detail.asset_custodian')}</span>
-                 </div>
-                 <span className="text-xs font-bold text-zinc-text">{auction.winnerName || t('auction.detail.default_custodian')}</span>
+              <div className="space-y-1 text-end">
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('auction.table.protocol_duration') || 'Time Left'}</span>
+                <p className={cn(
+                  "text-2xl font-black tabular-nums leading-none tracking-tight",
+                  isEndingSoon ? "text-danger animate-pulse" : "text-warning"
+                )}>
+                  {getCountdown(auction.endTime)}
+                </p>
               </div>
             </div>
 
-            <div className="pt-2">
-              <AmberButton variant="secondary" className="w-full gap-2 font-black uppercase tracking-widest text-[10px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all">
-                 {t('auction.detail.download_manifest')}
+            {/* Bid Input */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
+                <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-wider">Min: ${nextMinBid.toLocaleString()}</span>
+              </div>
+              <div className="relative group">
+                <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
+                <AmberInput
+                  type="number"
+                  placeholder={`${nextMinBid.toLocaleString()}+`}
+                  className="h-11 bg-obsidian-outer border-white/5 ps-9 pe-4 text-base font-bold tabular-nums placeholder:text-zinc-muted/30"
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  disabled={auction.status !== 'active' || placeBid.isPending}
+                />
+              </div>
+
+              <AmberButton
+                className="w-full h-11 bg-brand hover:bg-brand text-black font-bold uppercase tracking-wider rounded-xl active:scale-95 transition-all text-xs"
+                disabled={auction.status !== 'active' || placeBid.isPending || !bidAmount || parseFloat(bidAmount) < nextMinBid}
+                onClick={handlePlaceBid}
+              >
+                {placeBid.isPending ? (
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto" />
+                ) : (
+                  t('auction.detail.authorize_bid') || 'Place Bid'
+                )}
               </AmberButton>
             </div>
-          </Card>
+
+            {/* Buy Now */}
+            {auction.buyNowPrice && (
+              <AmberButton
+                variant="outline"
+                className="w-full h-10 border-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider text-xs hover:bg-emerald-500/10 active:scale-95 transition-all rounded-xl"
+              >
+                {t('auction.detail.instant_acquisition') || 'Buy Now'} (${auction.buyNowPrice.toLocaleString()})
+              </AmberButton>
+            )}
+
+            {/* Trust */}
+            <div className="flex items-center gap-2.5 p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
+              <ShieldCheck className="w-4 h-4 text-zinc-muted shrink-0" />
+              <span className="text-[9px] font-bold text-zinc-muted uppercase tracking-wider">{t('auction.detail.encrypted_infrastructure') || 'Secure Transaction'}</span>
+            </div>
+          </div>
+
+          {/* Info Panel */}
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
+              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                <Gavel className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.infrastructure_logistics') || 'Details'}</h3>
+            </div>
+
+            <div className="space-y-3">
+              {detailRows.map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 group/row">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <item.icon className="w-3.5 h-3.5 text-zinc-muted group-hover/row:text-brand transition-colors" />
+                    <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{item.label}</span>
+                  </div>
+                  <span className="text-xs font-bold text-zinc-text text-end truncate">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-[10px] h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+              {t('auction.detail.download_manifest') || 'Download Report'}
+            </AmberButton>
+          </div>
         </div>
       </div>
     </div>

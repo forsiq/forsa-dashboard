@@ -242,12 +242,13 @@ export function DataTable<T extends Record<string, any>>({
   const renderDefaultCard = (row: T) => {
     const id = String(row[keyField as keyof T]);
     const isSelected = selectedIds.has(id);
+    const hasMedia = mediaCol && mediaCol.render;
 
     return (
       <div
         key={id}
         className={cn(
-          "group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] p-5 transition-all duration-300 overflow-hidden",
+          "group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden",
           "hover:border-white/10 hover:shadow-md",
           onRowClick && "cursor-pointer",
           isSelected && "ring-1 ring-brand/30 border-brand/20"
@@ -269,101 +270,120 @@ export function DataTable<T extends Record<string, any>>({
           </div>
         )}
 
-        {/* Media */}
-        {mediaCol && mediaCol.render && (
-          <div className="mb-4 rounded-lg overflow-hidden bg-obsidian-outer/50 aspect-video flex items-center justify-center">
-            {mediaCol.render(row)}
-          </div>
-        )}
-
-        {/* Title Row */}
-        {(titleCol || rowActions) && (
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="flex-1 min-w-0">
-              {titleCol && (
-                <h3 className="text-sm font-bold text-zinc-text truncate">
-                  {titleCol.render ? titleCol.render(row) : row[titleCol.key]}
-                </h3>
-              )}
-              {subtitleCol && (
-                <p className="text-xs text-zinc-muted mt-0.5 truncate">
-                  {subtitleCol.render ? subtitleCol.render(row) : row[subtitleCol.key]}
-                </p>
-              )}
-            </div>
-
-            {/* Card Actions */}
-            {rowActions && (
-              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                {rowActions.slice(0, 3).map((action, i) => {
-                  const ResolvedIcon = action.icon
-                    ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon)
-                    : null;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => action.onClick(row)}
-                      className={cn(
-                        "p-1.5 rounded-lg transition-all",
-                        action.variant === 'danger'
-                          ? "text-danger/60 hover:text-danger hover:bg-danger/10"
-                          : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
-                      )}
-                      title={typeof action.label === 'function' ? action.label(row) : action.label}
-                    >
-                      {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5" />}
-                    </button>
-                  );
-                })}
-                {rowActions.length > 3 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenActionId(openActionId === id ? null : id);
-                    }}
-                    className="p-1.5 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/5 transition-all"
-                  >
-                    <MoreVertical className="w-3.5 h-3.5" />
-                  </button>
-                )}
+        {/* Media - Full bleed top */}
+        {hasMedia && (
+          <div className="relative h-44 bg-obsidian-outer/50 overflow-hidden">
+            {mediaCol!.render(row)}
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-obsidian-card)] via-transparent to-transparent opacity-80" />
+            {/* Badges on media */}
+            {badgeCols.length > 0 && (
+              <div className="absolute top-3 start-3 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {badgeCols.map((col) => (
+                  <span key={col.key}>
+                    {col.render ? col.render(row) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-sm text-zinc-text border border-white/10">
+                        {row[col.key]}
+                      </span>
+                    )}
+                  </span>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        {/* Badges */}
-        {badgeCols.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {badgeCols.map((col) => (
-              <span key={col.key}>
-                {col.render ? col.render(row) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/5 text-zinc-muted border border-white/5">
-                    {row[col.key]}
-                  </span>
+        {/* Card Content */}
+        <div className={cn("p-4", hasMedia && "pt-3")}>
+          {/* Title Row */}
+          {(titleCol || rowActions) && (
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex-1 min-w-0">
+                {titleCol && (
+                  <h3 className="text-sm font-bold text-zinc-text truncate">
+                    {titleCol.render ? titleCol.render(row) : row[titleCol.key]}
+                  </h3>
                 )}
-              </span>
-            ))}
-          </div>
-        )}
+                {subtitleCol && (
+                  <p className="text-xs text-zinc-muted mt-0.5 truncate">
+                    {subtitleCol.render ? subtitleCol.render(row) : row[subtitleCol.key]}
+                  </p>
+                )}
+              </div>
 
-        {/* Detail Fields */}
-        {detailCols.length > 0 && (
-          <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
-            {detailCols.map((col) => {
-              const label = typeof col.label === 'string' ? col.label : col.key;
-              return (
-                <div key={col.key} className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-muted shrink-0">
-                    {label}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-text text-end truncate">
-                    {col.render ? col.render(row) : row[col.key]}
-                  </span>
+              {/* Card Actions */}
+              {rowActions && (
+                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {rowActions.slice(0, 3).map((action, i) => {
+                    const ResolvedIcon = action.icon
+                      ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon)
+                      : null;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => action.onClick(row)}
+                        className={cn(
+                          "p-1.5 rounded-lg transition-all",
+                          action.variant === 'danger'
+                            ? "text-danger/60 hover:text-danger hover:bg-danger/10"
+                            : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
+                        )}
+                        title={typeof action.label === 'function' ? action.label(row) : action.label}
+                      >
+                        {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5" />}
+                      </button>
+                    );
+                  })}
+                  {rowActions.length > 3 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenActionId(openActionId === id ? null : id);
+                      }}
+                      className="p-1.5 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/5 transition-all"
+                    >
+                      <MoreVertical className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+
+          {/* Badges (when no media) */}
+          {!hasMedia && badgeCols.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {badgeCols.map((col) => (
+                <span key={col.key}>
+                  {col.render ? col.render(row) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/5 text-zinc-muted border border-white/5">
+                      {row[col.key]}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Detail Fields */}
+          {detailCols.length > 0 && (
+            <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
+              {detailCols.map((col) => {
+                const label = typeof col.label === 'string' ? col.label : col.key;
+                return (
+                  <div key={col.key} className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-muted shrink-0">
+                      {label}
+                    </span>
+                    <span className="text-xs font-semibold text-zinc-text text-end truncate">
+                      {col.render ? col.render(row) : row[col.key]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Extra actions dropdown for >3 actions */}
         {rowActions && rowActions.length > 3 && openActionId === id && (

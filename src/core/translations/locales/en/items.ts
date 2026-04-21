@@ -48,4 +48,10 @@ export const items = {
   "items.form.name_required": "Name is required",
   "items.form.category_required": "Category is required",
   "items.form.bid_gt_0": "Bid must be > 0",
+
+  // Status translations
+  "items.status.available": "Available",
+  "items.status.in_auction": "In Auction",
+  "items.status.sold": "Sold",
+  "items.status.draft": "Draft",
 } as const;

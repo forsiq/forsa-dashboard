@@ -28,6 +28,17 @@ import { useGetCategories } from '@services/categories';
 import type { Item, ItemStatus } from '../types';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
 
+/** Map status key to its translation key */
+function getItemStatusLabel(status: ItemStatus): string {
+  const map: Record<ItemStatus, string> = {
+    'available': 'items.status.available',
+    'in-auction': 'items.status.in_auction',
+    'sold': 'items.status.sold',
+    'draft': 'items.status.draft',
+  };
+  return map[status] || status;
+}
+
 /**
  * ItemsListPage - Premium Items Management
  */
@@ -147,7 +158,7 @@ export const ItemsListPage: React.FC = () => {
       label: t('items.table.status') || 'Protocol',
       render: (row) => (
         <StatusBadge 
-          status={row.status.toUpperCase()} 
+          status={t(getItemStatusLabel(row.status)) || row.status} 
           variant={row.status === 'available' ? 'success' : row.status === 'in-auction' ? 'warning' : row.status === 'sold' ? 'failed' : 'inactive'}
           size="sm"
         />
@@ -357,7 +368,7 @@ export const ItemsListPage: React.FC = () => {
                             {item.image || <Package className="w-10 h-10 text-zinc-muted/20" />}
                             <div className="absolute top-2 right-2">
                                 <StatusBadge 
-                                    status={item.status.toUpperCase()} 
+                                    status={t(getItemStatusLabel(item.status)) || item.status} 
                                     variant={item.status === 'available' ? 'success' : item.status === 'in-auction' ? 'warning' : 'failed'}
                                     size="sm"
                                 />

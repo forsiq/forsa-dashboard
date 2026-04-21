@@ -50,4 +50,10 @@ export const items = {
   "items.form.name_required": "الاسم مطلوب",
   "items.form.category_required": "الفئة مطلوبة",
   "items.form.bid_gt_0": "المزايدة يجب أن تكون أكبر من 0",
+
+  // Status translations
+  "items.status.available": "متاح",
+  "items.status.in_auction": "في المزاد",
+  "items.status.sold": "مباع",
+  "items.status.draft": "مسودة",
 } as const;

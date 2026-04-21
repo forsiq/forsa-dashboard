@@ -370,7 +370,7 @@ export function CustomerFormPage() {
               {/* Avatar Visualization */}
               <div className="pt-6 border-t border-[var(--color-border)]">
                  <div className="flex flex-col items-center gap-4 p-6 bg-obsidian-outer rounded-2xl border border-[var(--color-border)]">
-                   <AmberAvatar fallback={formData.name || '?'} size="xl" className="ring-4 ring-[var(--color-brand)]/20 shadow-2xl" />
+                   <AmberAvatar fallback={formData.name || '?'} size="xl" className="shadow-2xl" />
                    <div className="text-center">
                      <p className="text-xs font-bold text-zinc-muted">{formData.name || t('customer.name') || 'اسم العميل'}</p>
                    </div>

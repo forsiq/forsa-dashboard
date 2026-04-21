@@ -110,4 +110,15 @@ export const groupBuying = {
   "groupBuying.validation.consolidated_price_below_base": "Deal price must be less than original price",
   "groupBuying.category": "Category",
   "groupBuying.select_category": "Select category",
+
+  // Status translations
+  "groupBuying.status.all": "All",
+  "groupBuying.status.active": "Active",
+  "groupBuying.status.scheduled": "Scheduled",
+  "groupBuying.status.completed": "Completed",
+  "groupBuying.status.cancelled": "Cancelled",
+  "groupBuying.status.expired": "Expired",
+  "groupBuying.status.draft": "Draft",
+  "groupBuying.status.unlocked": "Unlocked",
+  "groupBuying.status.pending": "Pending",
 } as const;

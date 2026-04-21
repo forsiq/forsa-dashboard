@@ -79,7 +79,7 @@ export function CustomerDetailPage() {
               src={customer.avatar} 
               fallback={customer.name} 
               size="xl" 
-              className="ring-4 ring-[var(--color-brand)]/20 shadow-2xl"
+              className="shadow-2xl"
             />
             <div className="space-y-2 text-center md:text-left">
               <div className="flex items-center gap-3 justify-center md:justify-start">

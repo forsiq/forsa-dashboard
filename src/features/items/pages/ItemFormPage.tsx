@@ -223,10 +223,10 @@ export const ItemFormPage: React.FC = () => {
                     </label>
                     <AmberDropdown 
                         options={[
-                            { label: 'Available for Auction', value: 'available' },
-                            { label: 'Active in Bidding', value: 'in-auction' },
-                            { label: 'Sold / Finalized', value: 'sold' },
-                            { label: 'Draft Mode', value: 'draft' },
+                            { label: t('items.status.available') || 'Available', value: 'available' },
+                            { label: t('items.status.in_auction') || 'In Auction', value: 'in-auction' },
+                            { label: t('items.status.sold') || 'Sold', value: 'sold' },
+                            { label: t('items.status.draft') || 'Draft', value: 'draft' },
                         ]}
                         value={formData.status || 'available'}
                         onChange={(val) => handleChange('status', val)}

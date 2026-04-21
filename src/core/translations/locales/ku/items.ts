@@ -48,4 +48,10 @@ export const items = {
   "items.form.name_required": "ناو پێویستە",
   "items.form.category_required": "هاوپۆل پێویستە",
   "items.form.bid_gt_0": "مزاد دەبێت لە ٠ گەورەتر بێت",
+
+  // Status translations
+  "items.status.available": "بەردەست",
+  "items.status.in_auction": "لە مزاد",
+  "items.status.sold": "فرۆشراو",
+  "items.status.draft": "ڕەشنووس",
 } as const;

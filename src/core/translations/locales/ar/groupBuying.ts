@@ -110,4 +110,15 @@ export const groupBuying = {
   "groupBuying.validation.consolidated_price_below_base": "سعر الصفقة يجب أن يكون أقل من السعر الأصلي",
   "groupBuying.category": "التصنيف",
   "groupBuying.select_category": "اختر التصنيف",
+
+  // Status translations
+  "groupBuying.status.all": "الكل",
+  "groupBuying.status.active": "نشط",
+  "groupBuying.status.scheduled": "مجدول",
+  "groupBuying.status.completed": "مكتمل",
+  "groupBuying.status.cancelled": "ملغي",
+  "groupBuying.status.expired": "منتهي",
+  "groupBuying.status.draft": "مسودة",
+  "groupBuying.status.unlocked": "مفتوح",
+  "groupBuying.status.pending": "قيد الانتظار",
 } as const;

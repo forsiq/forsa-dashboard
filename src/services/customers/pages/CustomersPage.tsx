@@ -97,7 +97,7 @@ export function CustomersPage() {
               src={customer.avatar}
               fallback={fullName}
               size="sm"
-              className="ring-2 ring-[var(--color-border)]"
+              className=""
             />
             <div>
               <p className="text-sm font-black text-zinc-text uppercase tracking-tight leading-tight">{fullName}</p>
@@ -238,22 +238,31 @@ export function CustomersPage() {
                 <>
                   {((stats.topSpenders as any) || []).length > 0 && (
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex -space-x-3 rtl:space-x-reverse">
-                          {((stats.topSpenders as any) || []).slice(0, 4).map((c: any, index: number) => (
+                      <div className="flex -space-x-2 rtl:space-x-reverse">
+                        {((stats.topSpenders as any) || []).slice(0, 5).map((c: any, index: number) => (
+                          <button
+                            key={c.id || `top-spender-${index}`}
+                            type="button"
+                            onClick={() => c.id && router.push(`/customers/${c.id}`)}
+                            className="relative group/avatar transition-all duration-200 hover:z-10 hover:scale-110 active:scale-95 focus:outline-none"
+                            title={c.name}
+                          >
                             <AmberAvatar
-                              key={c.id || `top-spender-${index}`}
                               src={c.avatar}
                               fallback={c.name || 'U'}
                               size="sm"
-                              className="ring-4 ring-[var(--color-obsidian-card)]"
-                              title={c.name}
+                              className="ring-2 ring-[var(--color-obsidian-card)] transition-shadow group-hover/avatar:ring-brand/50"
                             />
-                          ))}
-                        </div>
+                            {/* Tooltip on hover */}
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-obsidian-outer border border-white/10 rounded-md text-[9px] font-bold text-zinc-text whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
+                              {c.name?.split(' ')[0]}
+                            </span>
+                          </button>
+                        ))}
                       </div>
                       <p className="text-[10px] font-bold text-brand/80 uppercase tracking-widest truncate">
-                        {((stats.topSpenders as any) || []).map((c: any) => c.name?.split(' ')[0]).filter(Boolean).join(', ')}
+                        {((stats.topSpenders as any) || []).slice(0, 3).map((c: any) => c.name?.split(' ')[0]).filter(Boolean).join(', ')}
+                        {((stats.topSpenders as any) || []).length > 3 && ` +${((stats.topSpenders as any) || []).length - 3}`}
                       </p>
                     </div>
                   )}
