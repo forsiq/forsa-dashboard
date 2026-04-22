@@ -85,9 +85,46 @@ export const auctionApi = {
   /**
    * End auction manually
    */
-  end: async (id: number | string): Promise<void> => {
+  end: async (id: number | string): Promise<Auction> => {
     const client = auctionBaseApi.getInstance();
-    await client.post(`/auctions/${id}/end/`);
+    const response = await client.post(`/auctions/${id}/end/`);
+    return response.data.data;
+  },
+
+  /**
+   * Start auction: draft/scheduled -> active
+   */
+  start: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/start/`);
+    return response.data.data;
+  },
+
+  /**
+   * Pause auction: active -> paused
+   */
+  pause: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/pause/`);
+    return response.data.data;
+  },
+
+  /**
+   * Resume auction: paused -> active
+   */
+  resume: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/resume/`);
+    return response.data.data;
+  },
+
+  /**
+   * Cancel auction: any -> cancelled
+   */
+  cancel: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/cancel/`);
+    return response.data.data;
   },
 
   /**

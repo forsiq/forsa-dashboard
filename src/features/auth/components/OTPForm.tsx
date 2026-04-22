@@ -19,41 +19,47 @@ export const OTPForm: React.FC = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md mx-auto space-y-8"
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full max-w-md mx-auto space-y-12"
     >
-      <div className="flex justify-center mb-2">
-        <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center shadow-[0_0_20px_rgba(255,192,0,0.1)]">
-          <Shield className="w-8 h-8 text-brand" />
+      <div className="flex flex-col items-center gap-6">
+        <div className="w-20 h-20 rounded-[2rem] bg-brand/10 border border-brand/20 flex items-center justify-center shadow-[0_0_30px_rgba(255,192,0,0.15)] ring-1 ring-brand/30 animate-pulse-slow">
+          <Shield className="w-10 h-10 text-brand" />
         </div>
+         <div className="text-center space-y-2">
+            <h3 className="text-lg font-black text-white uppercase tracking-widest italic">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
+            <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
+         </div>
       </div>
 
       <AnimatePresence mode="wait">
         {error && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-danger/10 border border-danger/20 p-5 rounded-3xl flex items-center gap-4 overflow-hidden"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
-            <p className="text-[11px] font-bold text-danger uppercase tracking-wider">
+            <div className="w-2 h-2 rounded-full bg-danger animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+            <p className="text-[12px] font-black text-danger uppercase tracking-[0.1em]">
               {error}
             </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid grid-cols-6 gap-3">
+      <form onSubmit={handleSubmit} className="space-y-12">
+        <div className="grid grid-cols-6 gap-4">
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <input
               key={index}
               type="text"
               inputMode="numeric"
               maxLength={1}
-              className="w-full h-14 text-center text-2xl font-bold bg-white dark:bg-white/[0.02] border border-zinc-200 dark:border-white/10 rounded-xl focus:border-brand/40 dark:focus:bg-white/[0.05] outline-none transition-all text-zinc-text shadow-sm dark:shadow-inner"
+              className="w-full h-14 text-center text-2xl font-black bg-white/[0.03] border border-white/10 rounded-2xl focus:border-brand/50 focus:bg-white/[0.06] outline-none transition-all text-white shadow-2xl placeholder:text-zinc-800"
+              placeholder="•"
               value={code[index] || ''}
               onChange={(e) => {
                 const newCode = code.split('');
@@ -78,27 +84,27 @@ export const OTPForm: React.FC = () => {
           type="submit"
           variant="primary"
           size="lg"
-          className="w-full h-14 bg-brand text-obsidian-outer shadow-xl shadow-brand/10 group overflow-hidden relative"
+          className="w-full h-14 bg-brand text-obsidian-outer shadow-2xl shadow-brand/20 group overflow-hidden relative rounded-[1.25rem]"
           disabled={isLoading || code.length !== 6}
         >
           {isLoading ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="font-black uppercase tracking-[0.2em]">{t('common.loading')}</span>
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="font-black uppercase tracking-[0.3em] text-lg">{t('common.loading')}</span>
             </div>
           ) : (
-            <span className="font-black uppercase tracking-[0.2em]">{t('auth.otp.submit') || 'Verify'}</span>
+            <span className="font-black uppercase tracking-[0.25em] text-base">{t('auth.otp.submit') || 'VERIFY PROTOCOL'}</span>
           )}
-          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+          <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
         </AmberButton>
       </form>
 
-      <div className="text-center pt-2">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/5 to-transparent mb-6" />
-        <p className="text-[11px] font-bold text-zinc-muted dark:text-zinc-muted uppercase tracking-widest leading-relaxed">
-          {t('auth.otp.resend') || "Didn't receive code?"}<br />
-          <button className="text-brand hover:text-brand-light transition-colors mt-2 decoration-brand/30 underline underline-offset-4">
-            {t('auth.otp.resend_button') || 'Resend Code'}
+      <div className="text-center pt-4">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
+        <p className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] leading-relaxed">
+          {t('auth.otp.resend') || "DIDN'T RECEIVE THE CODE?"}<br />
+          <button className="text-brand hover:text-brand-light transition-all mt-4 inline-block decoration-brand/30 underline underline-offset-8 decoration-2 hover:scale-105">
+            {t('auth.otp.resend_button') || 'RESEND REQUEST'}
           </button>
         </p>
       </div>

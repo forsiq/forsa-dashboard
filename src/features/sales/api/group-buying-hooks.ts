@@ -106,3 +106,44 @@ export const useLeaveGroupBuying = () => {
     },
   });
 };
+
+// ============================================================================
+// Lifecycle Hooks
+// ============================================================================
+
+function createGroupBuyingLifecycleHook(
+  action: (id: string) => Promise<GroupBuying>,
+  successMessage: string,
+  errorMessage: string,
+) {
+  return function useLifecycleAction() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+      mutationFn: (id: string) => action(id),
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: groupBuyingKeys.detail(String(data.id)) });
+        queryClient.invalidateQueries({ queryKey: groupBuyingKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: groupBuyingKeys.stats() });
+      },
+    });
+  };
+}
+
+export const useStartGroupBuying = createGroupBuyingLifecycleHook(
+  groupBuyingApi.start.bind(groupBuyingApi),
+  'Group deal started successfully',
+  'Failed to start group deal',
+);
+
+export const useCancelGroupBuying = createGroupBuyingLifecycleHook(
+  groupBuyingApi.cancel.bind(groupBuyingApi),
+  'Group deal cancelled successfully',
+  'Failed to cancel group deal',
+);
+
+export const useCompleteGroupBuying = createGroupBuyingLifecycleHook(
+  groupBuyingApi.complete.bind(groupBuyingApi),
+  'Group deal completed successfully',
+  'Failed to complete group deal',
+);

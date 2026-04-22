@@ -16,6 +16,11 @@ export {
   useToggleWatch,
   useAuctionBySlug,
   useWatchedAuctions,
+  useStartAuction,
+  usePauseAuction,
+  useResumeAuction,
+  useEndAuction,
+  useCancelAuction,
 } from './auction-hooks';
 
 // API Client

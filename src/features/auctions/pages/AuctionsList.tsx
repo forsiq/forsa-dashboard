@@ -13,6 +13,11 @@ import {
   Edit,
   Trash2,
   Layers,
+  Play,
+  Pause,
+  RotateCcw,
+  Square,
+  XCircle,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -25,7 +30,9 @@ import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
-import { useGetAuctions, useGetAuctionStats, useDeleteAuction } from '../api';
+import { useGetAuctions, useGetAuctionStats, useDeleteAuction, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
+import { useConfirmModal } from '@core/hooks/useConfirmModal';
+import { useList as useCategories } from '@services/categories/hooks';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
 
@@ -40,6 +47,7 @@ export const AuctionsList: React.FC = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | AuctionStatus>('all');
+    const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -56,6 +64,7 @@ export const AuctionsList: React.FC = () => {
 
     const { data: auctionsData, isLoading: listLoading } = useGetAuctions({
         status: statusFilter === 'all' ? undefined : statusFilter as AuctionStatus,
+        categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
         search: searchQuery || undefined,
         sortBy: 'endTime',
         sortOrder: 'asc',
@@ -64,7 +73,14 @@ export const AuctionsList: React.FC = () => {
     });
 
     const { data: stats } = useGetAuctionStats();
+    const { data: categoriesData } = useCategories({ limit: 100 });
     const { mutate: deleteAuction } = useDeleteAuction();
+    const startAuction = useStartAuction();
+    const pauseAuction = usePauseAuction();
+    const resumeAuction = useResumeAuction();
+    const endAuction = useEndAuction();
+    const cancelAuction = useCancelAuction();
+    const { openConfirm, ConfirmModal } = useConfirmModal();
 
     const auctions = auctionsData?.data || [];
 
@@ -164,10 +180,68 @@ export const AuctionsList: React.FC = () => {
         onClick: (auction) => router.push(`/auctions/edit/${auction.id}`),
       },
       {
+        label: (auction) => (auction.status === 'draft' || auction.status === 'scheduled') ? (t('auction.lifecycle.start') || 'Start') : null as any,
+        icon: Play,
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.start_title') || 'Start Auction',
+          message: t('auction.lifecycle.start_confirm') || 'Are you sure?',
+          onConfirm: () => startAuction.mutate(auction.id),
+          variant: 'success',
+        }),
+        variant: 'success',
+      },
+      {
+        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null as any,
+        icon: Pause,
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.pause_title') || 'Pause Auction',
+          message: t('auction.lifecycle.pause_confirm') || 'Are you sure?',
+          onConfirm: () => pauseAuction.mutate(auction.id),
+        }),
+      },
+      {
+        label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null as any,
+        icon: RotateCcw,
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.resume_title') || 'Resume Auction',
+          message: t('auction.lifecycle.resume_confirm') || 'Are you sure?',
+          onConfirm: () => resumeAuction.mutate(auction.id),
+          variant: 'success',
+        }),
+        variant: 'success',
+      },
+      {
+        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.end') || 'End') : null as any,
+        icon: Square,
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.end_title') || 'End Auction',
+          message: t('auction.lifecycle.end_confirm') || 'Are you sure?',
+          onConfirm: () => endAuction.mutate(auction.id),
+          variant: 'danger',
+        }),
+        variant: 'danger',
+      },
+      {
+        label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null as any,
+        icon: XCircle,
+        variant: 'danger',
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.cancel_title') || 'Cancel Auction',
+          message: t('auction.lifecycle.cancel_confirm') || 'Are you sure?',
+          onConfirm: () => cancelAuction.mutate(auction.id),
+          variant: 'danger',
+        }),
+      },
+      {
         label: t('common.delete') || 'Delete',
         icon: Trash2,
         variant: 'danger',
-        onClick: (auction) => deleteAuction(auction.id),
+        onClick: (auction) => openConfirm({
+          title: t('common.confirm_delete') || 'Delete Auction',
+          message: t('common.delete_confirm_message') || 'Are you sure you want to delete this auction?',
+          onConfirm: () => deleteAuction(auction.id),
+          variant: 'danger',
+        }),
       },
     ];
 
@@ -337,6 +411,37 @@ export const AuctionsList: React.FC = () => {
                                 className="h-12 w-full"
                             />
                         </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setCategoryIdFilter('all')}
+                                    className={cn(
+                                        "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                                        categoryIdFilter === 'all'
+                                            ? "bg-brand text-black border-brand"
+                                            : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                                    )}
+                                >
+                                    {t('common.all') || 'All'}
+                                </button>
+                                {(categoriesData?.categories || []).map((cat: any) => (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setCategoryIdFilter(cat.id)}
+                                        className={cn(
+                                            "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                                            categoryIdFilter === cat.id
+                                                ? "bg-brand text-black border-brand"
+                                                : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                                        )}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     
                     <div className="pt-8 space-y-3">
@@ -348,6 +453,7 @@ export const AuctionsList: React.FC = () => {
                             className="w-full h-12 font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all"
                             onClick={() => {
                                 setStatusFilter('all');
+                                setCategoryIdFilter('all');
                                 setSearchQuery('');
                                 setIsFilterOpen(false);
                             }}
@@ -357,6 +463,7 @@ export const AuctionsList: React.FC = () => {
                     </div>
                 </div>
             </AmberSlideOver>
+            <ConfirmModal />
         </div>
     );
 };

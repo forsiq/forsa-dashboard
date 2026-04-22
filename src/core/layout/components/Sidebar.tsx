@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
+import { useFeatureConfig } from '../../contexts/FeatureContext';
 import { AmberLogo } from '../../components/AmberLogo';
 import { getSidebarForPath, getServiceIdFromPath, isPortalPath } from '../../../config/sidebarLoader';
 import { resolveIcon } from '../../../config/navigation';
@@ -46,6 +47,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
 }) => {
   const { t, dir } = useLanguage();
   const { activeMode, switchMode } = useNavigation();
+  const { isFeatureEnabled } = useFeatureConfig();
   const router = useRouter();
   const [dynamicSections, setDynamicSections] = useState<MenuSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +92,44 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
   }, [router.pathname, menuSections]);
 
   const sections = dynamicSections;
+
+  /**
+   * Filter sidebar sections based on feature flags.
+   * Maps path prefixes to feature names in zvs.config.json.
+   */
+  const getFeatureForPath = (path: string): string | null => {
+    const featureMap: Record<string, string> = {
+      '/auctions': 'auctions',
+      '/bidding': 'bidding',
+      '/items': 'items',
+      '/group-buying': 'sales',
+      '/sales': 'sales',
+      '/orders': 'orders',
+      '/categories': 'categories',
+      '/customers': 'customers',
+      '/inventory': 'inventory',
+      '/users': 'users',
+      '/reports': 'reports',
+      '/settings': 'settings',
+      '/my-bids': 'bidding',
+      '/watchlist': 'auctions',
+    };
+    for (const [prefix, feature] of Object.entries(featureMap)) {
+      if (path === prefix || path.startsWith(prefix + '/')) return feature;
+    }
+    // Core pages (dashboard, auth) always visible
+    return null;
+  };
+
+  const filteredSections = sections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      const feature = getFeatureForPath(item.path);
+      // If no feature mapping, show the item (e.g. dashboard)
+      if (!feature) return true;
+      return isFeatureEnabled(feature);
+    }),
+  })).filter(section => section.items.length > 0);
 
   // Don't render sidebar on portal or if no sections
   if (isPortalPath(router.pathname)) {
@@ -168,7 +208,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="flex-1 py-6 overflow-y-auto px-0 scrollbar-hide">
-          {sections.map((section, idx) => (
+          {filteredSections.map((section, idx) => (
             <nav key={idx} className="space-y-1 mb-8">
               {!isCollapsed && section.items.length > 0 && (
                 <p className="px-5 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">

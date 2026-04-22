@@ -16,6 +16,9 @@ import {
   Target,
   Zap,
   CheckCircle,
+  Play,
+  XCircle,
+  CheckCheck,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -30,8 +33,13 @@ import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
-  useDeleteGroupBuying
+  useDeleteGroupBuying,
+  useStartGroupBuying,
+  useCancelGroupBuying,
+  useCompleteGroupBuying
 } from '../api';
+import { useConfirmModal } from '@core/hooks/useConfirmModal';
+import { useList as useCategories } from '@services/categories/hooks';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import type { GroupBuying } from '../types';
 
@@ -51,14 +59,21 @@ export const GroupBuyingListPage: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<any>('all');
+  const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
 
   const { data: campaignsData, isLoading: listLoading } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
+    categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
     search: searchQuery || undefined,
   });
 
   const { data: stats } = useGetGroupBuyingStats();
+  const { data: categoriesData } = useCategories({ limit: 100 });
   const { mutate: deleteCampaign } = useDeleteGroupBuying();
+  const startDeal = useStartGroupBuying();
+  const cancelDeal = useCancelGroupBuying();
+  const completeDeal = useCompleteGroupBuying();
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const campaigns = campaignsData?.groupBuyings || [];
 
@@ -182,10 +197,48 @@ export const GroupBuyingListPage: React.FC = () => {
       onClick: (campaign) => router.push(`/group-buying/${campaign.id}/edit`),
     },
     {
+      label: (campaign) => (campaign.status === 'draft' || campaign.status === 'scheduled') ? (t('groupBuying.lifecycle.start') || 'Start') : null as any,
+      icon: Play,
+      onClick: (campaign) => openConfirm({
+        title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
+        message: t('groupBuying.lifecycle.start_confirm') || 'Are you sure?',
+        onConfirm: () => startDeal.mutate(String(campaign.id)),
+        variant: 'success',
+      }),
+      variant: 'success',
+    },
+    {
+      label: (campaign) => (campaign.status === 'unlocked' || campaign.status === 'active') ? (t('groupBuying.lifecycle.complete') || 'Complete') : null as any,
+      icon: CheckCheck,
+      onClick: (campaign) => openConfirm({
+        title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
+        message: t('groupBuying.lifecycle.complete_confirm') || 'Are you sure?',
+        onConfirm: () => completeDeal.mutate(String(campaign.id)),
+        variant: 'success',
+      }),
+      variant: 'success',
+    },
+    {
+      label: (campaign) => !['completed', 'cancelled'].includes(campaign.status) ? (t('groupBuying.lifecycle.cancel') || 'Cancel') : null as any,
+      icon: XCircle,
+      variant: 'danger',
+      onClick: (campaign) => openConfirm({
+        title: t('groupBuying.lifecycle.cancel_title') || 'Cancel Campaign',
+        message: t('groupBuying.lifecycle.cancel_confirm') || 'Are you sure?',
+        onConfirm: () => cancelDeal.mutate(String(campaign.id)),
+        variant: 'danger',
+      }),
+    },
+    {
       label: t('common.delete') || 'Delete',
       icon: Trash2,
       variant: 'danger',
-      onClick: (campaign) => deleteCampaign(campaign.id),
+      onClick: (campaign) => openConfirm({
+        title: t('common.confirm_delete') || 'Delete Campaign',
+        message: t('common.delete_confirm_message') || 'Are you sure you want to delete this campaign?',
+        onConfirm: () => deleteCampaign(String(campaign.id)),
+        variant: 'danger',
+      }),
     },
   ];
 
@@ -360,6 +413,39 @@ export const GroupBuyingListPage: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {(categoriesData?.categories || []).length > 0 && (
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCategoryIdFilter('all')}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                      categoryIdFilter === 'all'
+                        ? "bg-brand text-black border-brand"
+                        : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                    )}
+                  >
+                    {t('common.all') || 'All'}
+                  </button>
+                  {(categoriesData?.categories || []).map((cat: any) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setCategoryIdFilter(String(cat.id))}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                        categoryIdFilter === String(cat.id)
+                          ? "bg-brand text-black border-brand"
+                          : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                      )}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-10 space-y-4">
@@ -371,6 +457,7 @@ export const GroupBuyingListPage: React.FC = () => {
               className="w-full h-12 font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all rounded-xl"
               onClick={() => {
                 setStatusFilter('all');
+                setCategoryIdFilter('all');
                 setSearchQuery('');
                 setIsFilterOpen(false);
               }}
@@ -380,6 +467,7 @@ export const GroupBuyingListPage: React.FC = () => {
           </div>
         </div>
       </AmberSlideOver>
+      <ConfirmModal />
     </div>
   );
 };

@@ -259,3 +259,61 @@ export function useWatchedAuctions() {
 
   return query;
 }
+
+// ============================================================================
+// Lifecycle Hooks
+// ============================================================================
+
+function createLifecycleHook(
+  action: (id: number | string) => Promise<Auction>,
+  successMessage: string,
+  errorMessage: string,
+) {
+  return function useLifecycleAction() {
+    const queryClient = useQueryClient();
+    const toast = useToast();
+
+    return useMutation({
+      mutationFn: (id: number | string) => action(id),
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id) });
+        queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
+        toast.success(successMessage);
+      },
+      onError: (error: any) => {
+        toast.error(`${errorMessage}: ${error.message || 'Unknown error'}`, 8000);
+      },
+    });
+  };
+}
+
+export const useStartAuction = createLifecycleHook(
+  auctionApi.start.bind(auctionApi),
+  'Auction started successfully',
+  'Failed to start auction',
+);
+
+export const usePauseAuction = createLifecycleHook(
+  auctionApi.pause.bind(auctionApi),
+  'Auction paused successfully',
+  'Failed to pause auction',
+);
+
+export const useResumeAuction = createLifecycleHook(
+  auctionApi.resume.bind(auctionApi),
+  'Auction resumed successfully',
+  'Failed to resume auction',
+);
+
+export const useEndAuction = createLifecycleHook(
+  auctionApi.end.bind(auctionApi),
+  'Auction ended successfully',
+  'Failed to end auction',
+);
+
+export const useCancelAuction = createLifecycleHook(
+  auctionApi.cancel.bind(auctionApi),
+  'Auction cancelled successfully',
+  'Failed to cancel auction',
+);

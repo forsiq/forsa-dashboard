@@ -121,4 +121,13 @@ export const groupBuying = {
   "groupBuying.status.draft": "ڕەشنووس",
   "groupBuying.status.unlocked": "کراوەتەوە",
   "groupBuying.status.pending": "چاوەڕێ",
+  "groupBuying.lifecycle.start": "دەستپێکردن",
+  "groupBuying.lifecycle.cancel": "پاشگەزبوونەوە",
+  "groupBuying.lifecycle.complete": "تەواوکردن",
+  "groupBuying.lifecycle.start_title": "دەستپێکردنی کامپەین",
+  "groupBuying.lifecycle.start_confirm": "دڵنیایت لە دەستپێکردنی ئەم کڕینە کۆمەڵەیە؟",
+  "groupBuying.lifecycle.cancel_title": "پاشگەزبوونەوە لە کامپەین",
+  "groupBuying.lifecycle.cancel_confirm": "دڵنیایت لە پاشگەزبوونەوە؟ ئەم کردارە ناگەڕێتەوە.",
+  "groupBuying.lifecycle.complete_title": "تەواوکردنی کامپەین",
+  "groupBuying.lifecycle.complete_confirm": "دڵنیایت لە تەواوکردنی ئەم کڕینە کۆمەڵەیە؟",
 } as const;

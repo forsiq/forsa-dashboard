@@ -9,10 +9,17 @@ const settingsApi = createApiClient<UserProfile, Partial<UserProfile>, Partial<U
   endpoint: '/auth/profile',
 });
 
+const appSettingsApi = createApiClient<any, any, any>({
+  serviceName: 'settings',
+  endpoint: '/settings',
+});
+
 const settingsKeys = {
   all: ['settings'] as const,
   profile: () => [...settingsKeys.all, 'profile'] as const,
   preferences: () => [...settingsKeys.all, 'preferences'] as const,
+  app: () => [...settingsKeys.all, 'app'] as const,
+  appSection: (section: string) => [...settingsKeys.all, 'app', section] as const,
 };
 
 const defaultProfile: UserProfile = {
@@ -28,6 +35,37 @@ const defaultPreferences: UserPreferences = {
   language: 'en',
   notifications: true,
   emailUpdates: false
+};
+
+const defaultAppSettings: Record<string, any> = {
+  general: {
+    siteName: 'Forsa Auction',
+    siteDescription: 'Premium auction platform',
+    currency: 'USD',
+    timezone: 'Asia/Baghdad',
+    language: 'en',
+    maintenanceMode: false,
+  },
+  auctions: {
+    defaultDuration: 7,
+    minBidIncrement: 10,
+    maxBidIncrement: 1000,
+    autoExtendOnBid: true,
+    extendMinutes: 5,
+    requireApproval: false,
+  },
+  notifications: {
+    emailOnBid: true,
+    emailOnOutbid: true,
+    emailOnWin: true,
+    pushOnBid: true,
+  },
+  payments: {
+    currency: 'USD',
+    taxRate: 0,
+    commissionRate: 5,
+    minWithdrawal: 50,
+  },
 };
 
 export const useSettings = () => {
@@ -52,6 +90,19 @@ export const useSettings = () => {
     queryFn: async (): Promise<UserPreferences> => {
       const stored = localStorage.getItem('user_preferences');
       return stored ? JSON.parse(stored) : defaultPreferences;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: appSettings, isLoading: appSettingsLoading } = useQuery({
+    queryKey: settingsKeys.app(),
+    queryFn: async (): Promise<Record<string, any>> => {
+      try {
+        const response = await appSettingsApi.list();
+        return response.data || defaultAppSettings;
+      } catch {
+        return defaultAppSettings;
+      }
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -87,11 +138,30 @@ export const useSettings = () => {
     },
   });
 
+  const updateAppSettingsMutation = useMutation({
+    mutationFn: async (updates: Record<string, any>) => {
+      try {
+        const client = appSettingsApi.getInstance();
+        const response = await client.patch('/settings/', updates);
+        return response.data.data;
+      } catch {
+        const current = appSettings || defaultAppSettings;
+        const updated = { ...current, ...updates };
+        return updated;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.app() });
+    },
+  });
+
   return {
     profile: profile || defaultProfile,
     preferences: preferences || defaultPreferences,
-    isLoading: profileLoading || prefsLoading,
+    appSettings: appSettings || defaultAppSettings,
+    isLoading: profileLoading || prefsLoading || appSettingsLoading,
     updateProfile: updateProfileMutation.mutateAsync,
     updatePreferences: updatePreferencesMutation.mutateAsync,
+    updateAppSettings: updateAppSettingsMutation.mutateAsync,
   };
 };

@@ -121,4 +121,13 @@ export const groupBuying = {
   "groupBuying.status.draft": "Draft",
   "groupBuying.status.unlocked": "Unlocked",
   "groupBuying.status.pending": "Pending",
+  "groupBuying.lifecycle.start": "Start",
+  "groupBuying.lifecycle.cancel": "Cancel",
+  "groupBuying.lifecycle.complete": "Complete",
+  "groupBuying.lifecycle.start_title": "Start Campaign",
+  "groupBuying.lifecycle.start_confirm": "Are you sure you want to start this group deal?",
+  "groupBuying.lifecycle.cancel_title": "Cancel Campaign",
+  "groupBuying.lifecycle.cancel_confirm": "Are you sure you want to cancel this group deal? This action cannot be undone.",
+  "groupBuying.lifecycle.complete_title": "Complete Campaign",
+  "groupBuying.lifecycle.complete_confirm": "Are you sure you want to mark this group deal as completed?",
 } as const;

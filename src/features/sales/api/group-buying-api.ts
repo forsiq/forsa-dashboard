@@ -114,4 +114,31 @@ export const groupBuyingApi = {
       total: response.data.total || 0,
     };
   },
+
+  /**
+   * Start deal: draft/scheduled -> active
+   */
+  start: async (id: string): Promise<GroupBuying> => {
+    const client = groupBuyingBaseApi.getInstance();
+    const response = await client.post(`/group-deals/${id}/start/`);
+    return response.data.data;
+  },
+
+  /**
+   * Cancel deal: any -> cancelled
+   */
+  cancel: async (id: string): Promise<GroupBuying> => {
+    const client = groupBuyingBaseApi.getInstance();
+    const response = await client.post(`/group-deals/${id}/cancel/`);
+    return response.data.data;
+  },
+
+  /**
+   * Complete deal: unlocked/active -> completed
+   */
+  complete: async (id: string): Promise<GroupBuying> => {
+    const client = groupBuyingBaseApi.getInstance();
+    const response = await client.post(`/group-deals/${id}/complete/`);
+    return response.data.data;
+  },
 };

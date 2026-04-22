@@ -30,8 +30,12 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import {
   useGetGroupBuying,
   useGetGroupBuyingParticipants,
-  useJoinGroupBuying
+  useJoinGroupBuying,
+  useStartGroupBuying,
+  useCancelGroupBuying,
+  useCompleteGroupBuying
 } from '../api';
+import { useConfirmModal } from '@core/hooks/useConfirmModal';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 
 export const GroupBuyingDetailPage: React.FC = () => {
@@ -49,6 +53,10 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const { data: campaign, isLoading: campaignLoading } = useGetGroupBuying(campaignId, true);
   const { data: participantsData, isLoading: participantsLoading } = useGetGroupBuyingParticipants(campaignId);
   const joinMutation = useJoinGroupBuying();
+  const startDeal = useStartGroupBuying();
+  const cancelDeal = useCancelGroupBuying();
+  const completeDeal = useCompleteGroupBuying();
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -149,7 +157,51 @@ export const GroupBuyingDetailPage: React.FC = () => {
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {/* Lifecycle Buttons */}
+          {campaign?.status === 'draft' || campaign?.status === 'scheduled' ? (
+            <AmberButton
+              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
+              onClick={() => openConfirm({
+                title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
+                message: t('groupBuying.lifecycle.start_confirm') || 'Are you sure you want to start this campaign?',
+                onConfirm: () => startDeal.mutate(String(campaign.id)),
+                variant: 'success',
+              })}
+              disabled={startDeal.isPending}
+            >
+              {t('groupBuying.lifecycle.start') || 'Start'}
+            </AmberButton>
+          ) : null}
+          {(campaign?.status === 'unlocked' || campaign?.status === 'active') ? (
+            <AmberButton
+              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
+              onClick={() => openConfirm({
+                title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
+                message: t('groupBuying.lifecycle.complete_confirm') || 'Are you sure you want to mark this campaign as completed?',
+                onConfirm: () => completeDeal.mutate(String(campaign.id)),
+                variant: 'success',
+              })}
+              disabled={completeDeal.isPending}
+            >
+              {t('groupBuying.lifecycle.complete') || 'Complete'}
+            </AmberButton>
+          ) : null}
+          {!['completed', 'cancelled'].includes(campaign?.status) ? (
+            <AmberButton
+              className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-danger hover:border-danger/30 active:scale-95 transition-all text-xs"
+              onClick={() => openConfirm({
+                title: t('groupBuying.lifecycle.cancel_title') || 'Cancel Campaign',
+                message: t('groupBuying.lifecycle.cancel_confirm') || 'Are you sure you want to cancel this campaign? This action cannot be undone.',
+                onConfirm: () => cancelDeal.mutate(String(campaign.id)),
+                variant: 'danger',
+              })}
+              disabled={cancelDeal.isPending}
+            >
+              {t('groupBuying.lifecycle.cancel') || 'Cancel'}
+            </AmberButton>
+          ) : null}
+
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>
@@ -434,6 +486,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+      <ConfirmModal />
     </div>
   );
 };

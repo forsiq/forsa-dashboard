@@ -121,4 +121,13 @@ export const groupBuying = {
   "groupBuying.status.draft": "مسودة",
   "groupBuying.status.unlocked": "مفتوح",
   "groupBuying.status.pending": "قيد الانتظار",
+  "groupBuying.lifecycle.start": "تشغيل",
+  "groupBuying.lifecycle.cancel": "إلغاء",
+  "groupBuying.lifecycle.complete": "إتمام",
+  "groupBuying.lifecycle.start_title": "تشغيل الحملة",
+  "groupBuying.lifecycle.start_confirm": "هل أنت متأكد من تشغيل هذه الصفقة الجماعية؟",
+  "groupBuying.lifecycle.cancel_title": "إلغاء الحملة",
+  "groupBuying.lifecycle.cancel_confirm": "هل أنت متأكد من إلغاء هذه الصفقة الجماعية؟ لا يمكن التراجع عن هذا الإجراء.",
+  "groupBuying.lifecycle.complete_title": "إتمام الحملة",
+  "groupBuying.lifecycle.complete_confirm": "هل أنت متأكد من إتمام هذه الصفقة الجماعية؟",
 } as const;
