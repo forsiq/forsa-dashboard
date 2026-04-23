@@ -9,7 +9,7 @@ export const ExampleSettingsPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">
+        <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase">
           Example Settings
         </h1>
         <p className="text-sm text-zinc-muted mt-1">

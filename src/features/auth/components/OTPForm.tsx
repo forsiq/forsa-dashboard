@@ -29,7 +29,7 @@ export const OTPForm: React.FC = () => {
           <Shield className="w-10 h-10 text-brand" />
         </div>
          <div className="text-center space-y-2">
-            <h3 className="text-lg font-black text-white uppercase tracking-widest italic">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
+            <h3 className="text-lg font-black text-white uppercase tracking-widest">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
             <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
          </div>
       </div>

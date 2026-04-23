@@ -235,7 +235,7 @@ export function CustomerFormPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className={cn("text-[9px] font-black text-zinc-muted uppercase tracking-widest block px-1", isRTL ? "text-right" : "text-left")}>
+                <label className={cn("text-[10px] font-black text-zinc-muted uppercase tracking-widest block px-1", isRTL ? "text-right" : "text-left")}>
                   {t('customer.type') || 'نوع العميل'}
                 </label>
                 <AmberDropdown 
@@ -336,7 +336,7 @@ export function CustomerFormPage() {
 
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className={cn("text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block italic", isRTL ? "text-right" : "text-left")}>
+                <label className={cn("text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block", isRTL ? "text-right" : "text-left")}>
                    {t('common.status') || 'Operational Status'}
                 </label>
                 <div className="grid grid-cols-2 gap-3">

@@ -114,7 +114,7 @@ export const Stepper: React.FC<StepperProps> = ({
                     {step.title}
                   </p>
                   {step.description && isActive && (
-                    <p className="text-[9px] font-medium text-zinc-secondary mt-0.5">{step.description}</p>
+                    <p className="text-[10px] font-medium text-zinc-secondary mt-0.5">{step.description}</p>
                   )}
                 </div>
               </div>

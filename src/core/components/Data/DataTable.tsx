@@ -1,8 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-  ChevronLeft,
   ChevronRight,
-  ChevronDown,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -11,84 +9,18 @@ import {
   CheckSquare,
   Square,
   Loader2,
-  X,
-  Copy,
-  Check,
-  Edit,
-  Trash2,
-  Eye,
   LayoutGrid,
-  List
+  List,
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { cn } from '../../lib/utils/cn';
+import type { Column, Action, BulkAction, ViewMode, DataTableProps } from './DataTable.types';
+import { DataCard } from './DataCard';
+import { ContextMenu, useContextMenu } from './ContextMenu';
+import { Pagination } from './Pagination';
+import { BulkActionBar } from './BulkActionBar';
 
-// --- Types ---
-
-export interface Column<T = any> {
-  key: string;
-  label: string | React.ReactNode;
-  render?: (row: T) => React.ReactNode;
-  sortable?: boolean;
-  align?: 'left' | 'center' | 'right';
-  width?: string;
-  className?: string;
-  /** Hide this column in card/grid view */
-  hideInCard?: boolean;
-  /** Render as the card title in grid view (only one column should have this) */
-  cardTitle?: boolean;
-  /** Render as card subtitle in grid view */
-  cardSubtitle?: boolean;
-  /** Render as card image/media in grid view */
-  cardMedia?: boolean;
-  /** Render as a badge/tag in grid view */
-  cardBadge?: boolean;
-}
-
-export interface Action<T = any> {
-  label: string | ((row: T) => string);
-  icon?: React.ElementType | ((row: T) => React.ElementType);
-  onClick: (row: T) => void;
-  variant?: 'default' | 'danger' | 'success';
-}
-
-export interface BulkAction<T = any> {
-  label: string;
-  icon?: React.ElementType;
-  onClick: (selectedIds: string[], selectedRows: T[]) => void;
-  variant?: 'default' | 'danger' | 'success';
-}
-
-export type ViewMode = 'table' | 'grid';
-
-interface DataTableProps<T> {
-  columns: Column<T>[];
-  data: T[];
-  keyField?: keyof T; // Default to 'id'
-  sortable?: boolean;
-  selectable?: boolean;
-  expandable?: boolean;
-  pagination?: boolean;
-  pageSize?: number;
-  loading?: boolean;
-  onRowClick?: (row: T) => void;
-  onSelectionChange?: (selectedIds: string[]) => void;
-  rowActions?: Action<T>[];
-  bulkActions?: BulkAction<T>[];
-  expandComponent?: (row: T) => React.ReactNode;
-  emptyMessage?: string;
-  className?: string;
-  /** View mode: 'table' (default) or 'grid' for card layout */
-  viewMode?: ViewMode;
-  /** Show view mode toggle button (table/grid switch) */
-  showViewToggle?: boolean;
-  /** Called when view mode changes (for external state management) */
-  onViewModeChange?: (mode: ViewMode) => void;
-  /** Grid columns config for card view (default: 'auto') */
-  gridCols?: 1 | 2 | 3 | 4 | 'auto';
-  /** Custom card render function - overrides default card rendering */
-  renderCard?: (row: T, columns: Column<T>[], actions?: Action<T>[]) => React.ReactNode;
-}
+export type { Column, Action, BulkAction, ViewMode, DataTableProps };
 
 export function DataTable<T extends Record<string, any>>({
   columns,
@@ -105,16 +37,17 @@ export function DataTable<T extends Record<string, any>>({
   rowActions,
   bulkActions,
   expandComponent,
-  emptyMessage = "No data available",
+  emptyMessage = 'No data available',
   className,
   viewMode: externalViewMode,
   showViewToggle = false,
   onViewModeChange,
   gridCols = 'auto',
-  renderCard
+  renderCard,
 }: DataTableProps<T>) {
   const { t, dir } = useLanguage();
   const rows = Array.isArray(data) ? data : [];
+
   // --- State ---
   const [internalViewMode, setInternalViewMode] = useState<ViewMode>('table');
   const viewMode = externalViewMode ?? internalViewMode;
@@ -123,33 +56,26 @@ export function DataTable<T extends Record<string, any>>({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [openActionId, setOpenActionId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; rowId: string; selectedValue?: string } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const { contextMenu, setContextMenu } = useContextMenu<T>({ rows, keyField });
 
   const handleViewModeChange = (mode: ViewMode) => {
     setInternalViewMode(mode);
     onViewModeChange?.(mode);
   };
 
-  // Close context menu on scroll or click outside
+  // Click outside to close actions menu
   useEffect(() => {
-    const handleClose = () => setContextMenu(null);
-    window.addEventListener('click', handleClose);
-    window.addEventListener('scroll', handleClose, true);
-    return () => {
-      window.removeEventListener('click', handleClose);
-      window.removeEventListener('scroll', handleClose, true);
-    };
-  }, []);
+    const handleClickOutside = () => setOpenActionId(null);
+    if (openActionId) window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [openActionId]);
 
   // --- Sorting ---
   const sortedData = useMemo(() => {
     if (!sortConfig || !sortable) return rows;
-
     return [...rows].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
-
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -166,13 +92,10 @@ export function DataTable<T extends Record<string, any>>({
   const totalPages = Math.ceil(sortedData.length / pageSize);
 
   // --- Handlers ---
-
   const handleSort = (key: string) => {
     if (!sortable) return;
-    setSortConfig(current => {
-      if (current?.key === key) {
-        return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' };
-      }
+    setSortConfig((current) => {
+      if (current?.key === key) return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' };
       return { key, direction: 'asc' };
     });
   };
@@ -182,7 +105,7 @@ export function DataTable<T extends Record<string, any>>({
       setSelectedIds(new Set());
       onSelectionChange?.([]);
     } else {
-      const allIds = paginatedData.map(row => String(row[keyField as keyof T]));
+      const allIds = paginatedData.map((row) => String(row[keyField as keyof T]));
       setSelectedIds(new Set(allIds));
       onSelectionChange?.(allIds);
     }
@@ -203,15 +126,23 @@ export function DataTable<T extends Record<string, any>>({
     setExpandedIds(newSet);
   };
 
-  // Click outside to close actions menu
-  useEffect(() => {
-    const handleClickOutside = () => setOpenActionId(null);
-    if (openActionId) window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, [openActionId]);
+  // --- Grid helpers ---
+  const gridColsClass = useMemo(() => {
+    if (gridCols === 1) return 'grid-cols-1';
+    if (gridCols === 2) return 'grid-cols-1 sm:grid-cols-2';
+    if (gridCols === 3) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+    if (gridCols === 4) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+  }, [gridCols]);
 
-  // --- Render ---
+  const cardFields = useMemo(() => columns.filter((c) => !c.hideInCard), [columns]);
+  const titleCol = cardFields.find((c) => c.cardTitle);
+  const subtitleCol = cardFields.find((c) => c.cardSubtitle);
+  const mediaCol = cardFields.find((c) => c.cardMedia);
+  const badgeCols = cardFields.filter((c) => c.cardBadge);
+  const detailCols = cardFields.filter((c) => !c.cardTitle && !c.cardSubtitle && !c.cardMedia && !c.cardBadge);
 
+  // --- Loading ---
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-zinc-muted animate-pulse">
@@ -221,236 +152,90 @@ export function DataTable<T extends Record<string, any>>({
     );
   }
 
-  // --- Grid Cols Class ---
-  const gridColsClass = useMemo(() => {
-    if (gridCols === 1) return 'grid-cols-1';
-    if (gridCols === 2) return 'grid-cols-1 sm:grid-cols-2';
-    if (gridCols === 3) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-    if (gridCols === 4) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
-    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-  }, [gridCols]);
+  // --- Empty state ---
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center py-20 text-zinc-muted opacity-50">
+      <Search className="w-12 h-12 mb-3 stroke-1" />
+      <p className="text-xs uppercase tracking-widest font-bold">{emptyMessage}</p>
+    </div>
+  );
 
-  // --- Card Fields ---
-  const cardFields = useMemo(() => columns.filter(c => !c.hideInCard), [columns]);
-  const titleCol = cardFields.find(c => c.cardTitle);
-  const subtitleCol = cardFields.find(c => c.cardSubtitle);
-  const mediaCol = cardFields.find(c => c.cardMedia);
-  const badgeCols = cardFields.filter(c => c.cardBadge);
-  const detailCols = cardFields.filter(c => !c.cardTitle && !c.cardSubtitle && !c.cardMedia && !c.cardBadge);
-
-  // --- Render Card ---
-  const renderDefaultCard = (row: T) => {
-    const id = String(row[keyField as keyof T]);
-    const isSelected = selectedIds.has(id);
-    const hasMedia = mediaCol && mediaCol.render;
-
+  // --- Row Actions Dropdown ---
+  const renderRowActionsDropdown = (id: string, row: T) => {
+    if (!rowActions) return null;
+    const visibleActions = rowActions.filter((a) => {
+      const label = typeof a.label === 'function' ? a.label(row) : a.label;
+      return label != null;
+    });
     return (
-      <div
-        key={id}
-        className={cn(
-          "group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden",
-          "hover:border-white/10 hover:shadow-md",
-          onRowClick && "cursor-pointer",
-          isSelected && "ring-1 ring-brand/30 border-brand/20"
-        )}
-        onClick={() => onRowClick?.(row)}
-      >
-        {/* Selection Checkbox */}
-        {selectable && (
-          <div className="absolute top-3 start-3 z-10" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => handleSelectRow(id)}
+      <td className="px-4 py-3 text-right overflow-visible" onClick={(e) => e.stopPropagation()}>
+        <div className="relative">
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpenActionId(openActionId === id ? null : id); }}
+            className={cn(
+              'p-2 rounded-sm transition-all',
+              openActionId === id ? 'bg-white/10 text-zinc-text' : 'text-zinc-muted hover:text-zinc-text hover:bg-white/5',
+            )}
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+          {openActionId === id && (
+            <div
               className={cn(
-                "transition-colors",
-                isSelected ? "text-brand" : "text-zinc-muted hover:text-zinc-text opacity-0 group-hover:opacity-100"
+                'absolute top-0 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100',
+                dir === 'rtl' ? 'left-8 origin-top-left' : 'right-8 origin-top-right',
               )}
             >
-              {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-            </button>
-          </div>
-        )}
-
-        {/* Media - Full bleed top */}
-        {hasMedia && (
-          <div className="relative h-44 bg-obsidian-outer/50 overflow-hidden">
-            {mediaCol!.render(row)}
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-obsidian-card)] via-transparent to-transparent opacity-80" />
-            {/* Badges on media */}
-            {badgeCols.length > 0 && (
-              <div className="absolute top-3 start-3 flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                {badgeCols.map((col) => (
-                  <span key={col.key}>
-                    {col.render ? col.render(row) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-sm text-zinc-text border border-white/10">
-                        {row[col.key]}
-                      </span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Card Content */}
-        <div className={cn("p-4", hasMedia && "pt-3")}>
-          {/* Title Row */}
-          {(titleCol || rowActions) && (
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div className="flex-1 min-w-0">
-                {titleCol && (
-                  <h3 className="text-sm font-bold text-zinc-text truncate">
-                    {titleCol.render ? titleCol.render(row) : row[titleCol.key]}
-                  </h3>
-                )}
-                {subtitleCol && (
-                  <p className="text-xs text-zinc-muted mt-0.5 truncate">
-                    {subtitleCol.render ? subtitleCol.render(row) : row[subtitleCol.key]}
-                  </p>
-                )}
-              </div>
-
-              {/* Card Actions */}
-              {rowActions && (
-                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  {rowActions.filter((action) => {
-                    const label = typeof action.label === 'function' ? action.label(row) : action.label;
-                    return label != null;
-                  }).slice(0, 3).map((action, i) => {
-                    const ResolvedIcon = action.icon
-                      ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon)
-                      : null;
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => action.onClick(row)}
-                        className={cn(
-                          "p-1.5 rounded-lg transition-all",
-                          action.variant === 'danger'
-                            ? "text-danger/60 hover:text-danger hover:bg-danger/10"
-                            : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
-                        )}
-                        title={typeof action.label === 'function' ? action.label(row) : action.label}
-                      >
-                        {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5" />}
-                      </button>
-                    );
-                  })}
-                  {rowActions.length > 3 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenActionId(openActionId === id ? null : id);
-                      }}
-                      className="p-1.5 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/5 transition-all"
-                    >
-                      <MoreVertical className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Badges (when no media) */}
-          {!hasMedia && badgeCols.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {badgeCols.map((col) => (
-                <span key={col.key}>
-                  {col.render ? col.render(row) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/5 text-zinc-muted border border-white/5">
-                      {row[col.key]}
-                    </span>
-                  )}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Detail Fields */}
-          {detailCols.length > 0 && (
-            <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
-              {detailCols.map((col) => {
-                const label = typeof col.label === 'string' ? col.label : col.key;
+              {visibleActions.map((action, i) => {
+                const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
+                const ActionIcon = action.icon
+                  ? typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon
+                  : null;
                 return (
-                  <div key={col.key} className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-muted shrink-0">
-                      {label}
-                    </span>
-                    <span className="text-xs font-semibold text-zinc-text text-end truncate">
-                      {col.render ? col.render(row) : row[col.key]}
-                    </span>
-                  </div>
+                  <button
+                    key={i}
+                    onClick={() => { action.onClick(row); setOpenActionId(null); }}
+                    className={cn(
+                      'w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors',
+                      action.variant === 'danger' ? 'text-danger hover:bg-danger/10' : 'text-zinc-text hover:bg-white/5',
+                    )}
+                  >
+                    {ActionIcon && <ActionIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
+                    {actionLabel}
+                  </button>
                 );
               })}
             </div>
           )}
         </div>
-
-        {/* Extra actions dropdown for >3 actions */}
-        {rowActions && rowActions.length > 3 && openActionId === id && (
-          <div className={cn(
-            "absolute top-12 end-3 w-40 bg-obsidian-card border border-white/10 rounded-lg shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100"
-          )} onClick={(e) => e.stopPropagation()}>
-            {rowActions.filter((action) => {
-              const label = typeof action.label === 'function' ? action.label(row) : action.label;
-              return label != null;
-            }).slice(3).map((action, i) => {
-              const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
-              const ResolvedIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
-              return (
-                <button
-                  key={i}
-                  onClick={() => {
-                    action.onClick(row);
-                    setOpenActionId(null);
-                  }}
-                  className={cn(
-                    "w-full text-start px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
-                    action.variant === 'danger'
-                      ? "text-danger hover:bg-danger/10"
-                      : "text-zinc-text hover:bg-white/5"
-                  )}
-                >
-                  {ResolvedIcon && <ResolvedIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-                  {actionLabel}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      </td>
     );
   };
 
-  return (
-    <div className={cn("flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm", className)}>
+  // --- Sort Icon ---
+  const SortIcon = ({ colKey }: { colKey: string }) => {
+    if (sortConfig?.key === colKey) {
+      return sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
+    }
+    return <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100" />;
+  };
 
-      {/* View Toggle Header */}
+  return (
+    <div className={cn('flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm', className)}>
+      {/* View Toggle */}
       {showViewToggle && (
         <div className="flex items-center justify-end px-4 py-3 border-b border-white/5">
           <div className="flex items-center bg-obsidian-outer/50 rounded-lg p-0.5 border border-white/5">
             <button
               onClick={() => handleViewModeChange('table')}
-              className={cn(
-                "p-2 rounded-md transition-all",
-                viewMode === 'table'
-                  ? "bg-white/10 text-zinc-text shadow-sm"
-                  : "text-zinc-muted hover:text-zinc-text"
-              )}
+              className={cn('p-2 rounded-md transition-all', viewMode === 'table' ? 'bg-white/10 text-zinc-text shadow-sm' : 'text-zinc-muted hover:text-zinc-text')}
               title={t('common.table_view') || 'Table View'}
             >
               <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleViewModeChange('grid')}
-              className={cn(
-                "p-2 rounded-md transition-all",
-                viewMode === 'grid'
-                  ? "bg-white/10 text-zinc-text shadow-sm"
-                  : "text-zinc-muted hover:text-zinc-text"
-              )}
+              className={cn('p-2 rounded-md transition-all', viewMode === 'grid' ? 'bg-white/10 text-zinc-text shadow-sm' : 'text-zinc-muted hover:text-zinc-text')}
               title={t('common.grid_view') || 'Grid View'}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -463,421 +248,196 @@ export function DataTable<T extends Record<string, any>>({
       {viewMode === 'grid' ? (
         <div className="p-4">
           {paginatedData.length > 0 ? (
-            <div className={cn("grid gap-4", gridColsClass)}>
+            <div className={cn('grid gap-4', gridColsClass)}>
               {paginatedData.map((row) => {
                 const id = String(row[keyField as keyof T]);
                 return renderCard ? (
                   <div key={id}>{renderCard(row, cardFields, rowActions)}</div>
                 ) : (
-                  renderDefaultCard(row)
+                  <DataCard
+                    key={id}
+                    row={row}
+                    id={id}
+                    keyField={keyField}
+                    columns={columns}
+                    cardFields={cardFields}
+                    titleCol={titleCol}
+                    subtitleCol={subtitleCol}
+                    mediaCol={mediaCol}
+                    badgeCols={badgeCols}
+                    detailCols={detailCols}
+                    rowActions={rowActions}
+                    isSelected={selectedIds.has(id)}
+                    openActionId={openActionId}
+                    onRowClick={onRowClick}
+                    onSelectRow={handleSelectRow}
+                    onToggleAction={(id) => setOpenActionId(openActionId === id ? null : id)}
+                  />
                 );
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-zinc-muted opacity-50">
-              <Search className="w-12 h-12 mb-3 stroke-1" />
-              <p className="text-xs uppercase tracking-widest font-bold">{emptyMessage}</p>
-            </div>
+            emptyState
           )}
         </div>
       ) : (
         /* Table View */
-        <div className={cn("flex-1 min-h-[200px]", openActionId ? "overflow-visible" : "overflow-x-auto")}>
-        <table className="w-full text-start border-collapse min-w-[800px]">
-          <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
-            <tr>
-              {/* Checkbox Column */}
-              {selectable && (
-                <th className="w-12 px-6 py-4 text-center">
-                  <button
-                    onClick={handleSelectAll}
-                    className="text-zinc-muted hover:text-brand transition-colors"
-                  >
-                    {paginatedData.length > 0 && selectedIds.size === paginatedData.length
-                      ? <CheckSquare className="w-4 h-4" />
-                      : <Square className="w-4 h-4" />
-                    }
-                  </button>
-                </th>
-              )}
-
-              {/* Expansion Column */}
-              {expandable && <th className="w-10 px-2"></th>}
-
-              {/* Data Columns */}
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className={cn(
-                    "px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group",
-                    col.width,
-                    col.align === 'right' ? 'text-end' :
-                      col.align === 'center' ? 'text-center' :
-                        'text-start',
-                    col.sortable ? 'cursor-pointer hover:text-zinc-text' : '',
-                    col.className
-                  )}
-                  onClick={() => col.sortable && handleSort(col.key)}
-                >
-                  <div className={cn(
-                    "flex items-center gap-2",
-                    col.align === 'right' ? 'justify-end' :
-                      col.align === 'center' ? 'justify-center' :
-                        'justify-start'
-                  )}>
-                    {col.label}
-                    {col.sortable && (
-                      <span className="text-zinc-muted/50 group-hover:text-brand transition-colors">
-                        {sortConfig?.key === col.key ? (
-                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-100" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </th>
-              ))}
-
-              {/* Actions Column */}
-              {rowActions && <th className="w-12 px-4"></th>}
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-white/[0.03]">
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row) => {
-                const id = String(row[keyField as keyof T]);
-                const isSelected = selectedIds.has(id);
-                const isExpanded = expandedIds.has(id);
-
-                return (
-                  <React.Fragment key={id}>
-                    <tr
-                      className={cn(
-                        "group transition-colors overflow-visible border-b border-white/[0.02] last:border-0",
-                        onRowClick ? "cursor-pointer" : "",
-                        isSelected ? "bg-brand/[0.03]" : "hover:bg-white/[0.02]",
-                        isExpanded && "bg-white/[0.02]"
-                      )}
-                      onClick={() => onRowClick?.(row)}
-                      onContextMenu={(e) => {
-                        if (rowActions) {
-                          e.preventDefault();
-                          const target = e.target as HTMLElement;
-                          const selectedValue = target.innerText || target.textContent || undefined;
-                          setContextMenu({
-                            x: e.clientX,
-                            y: e.clientY,
-                            rowId: id,
-                            selectedValue
-                          });
-                        }
-                      }}
-                    >
-                      {/* Checkbox */}
-                      {selectable && (
-                        <td className="px-6 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => handleSelectRow(id)}
-                            className={cn(
-                              "transition-colors",
-                              isSelected ? "text-brand" : "text-zinc-muted hover:text-zinc-text"
-                            )}
-                          >
-                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                          </button>
-                        </td>
-                      )}
-
-                      {/* Expand Toggle */}
-                      {expandable && (
-                        <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => toggleExpand(id)}
-                            className={cn(
-                              "p-1 rounded-sm text-zinc-muted hover:text-brand hover:bg-white/5 transition-all",
-                              isExpanded && "rotate-90 text-brand"
-                            )}
-                          >
-                            <ChevronRight className="w-4 h-4 transition-transform" />
-                          </button>
-                        </td>
-                      )}
-
-                      {/* Data Cells */}
-                      {columns.map((col) => (
-                        <td
-                          key={`${id}-${col.key}`}
-                          className={cn(
-                            "px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight",
-                            col.align === 'right' ? 'text-end' :
-                              col.align === 'center' ? 'text-center' :
-                                'text-start',
-                            col.className
-                          )}
-                        >
-                          {col.render ? col.render(row) : row[col.key]}
-                        </td>
-                      ))}
-
-                      {/* Row Actions */}
-                      {rowActions && (
-                        <td className="px-4 py-3 text-right overflow-visible" onClick={(e) => e.stopPropagation()}>
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenActionId(openActionId === id ? null : id);
-                              }}
-                              className={cn(
-                                "p-2 rounded-sm transition-all",
-                                openActionId === id
-                                  ? "bg-white/10 text-zinc-text"
-                                  : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
-                              )}
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-
-                            {openActionId === id && (
-                              <div className={cn(
-                                "absolute top-0 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100",
-                                dir === 'rtl' ? "left-8 origin-top-left" : "right-8 origin-top-right"
-                              )}>
-                                {rowActions.filter((action) => {
-                                  const label = typeof action.label === 'function' ? action.label(row) : action.label;
-                                  return label != null;
-                                }).map((action, i) => {
-                                  const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
-                                  const ActionIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
-                                  return (
-                                    <button
-                                      key={i}
-                                      onClick={() => {
-                                        action.onClick(row);
-                                        setOpenActionId(null);
-                                      }}
-                                      className={cn(
-                                        "w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
-                                        action.variant === 'danger'
-                                          ? "text-danger hover:bg-danger/10"
-                                          : "text-zinc-text hover:bg-white/5"
-                                      )}
-                                    >
-                                      {ActionIcon && <ActionIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-                                      {actionLabel}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-
-                    {/* Expanded Content */}
-                    {expandable && isExpanded && expandComponent && (
-                      <tr className="bg-obsidian-outer/30 shadow-inner">
-                        <td colSpan={columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0) + 1} className="px-6 py-4 border-b border-white/5">
-                          {expandComponent(row)}
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              // Empty State
+        <div className={cn('flex-1 min-h-[200px]', openActionId ? 'overflow-visible' : 'overflow-x-auto')}>
+          <table className="w-full text-start border-collapse min-w-[800px]">
+            <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
               <tr>
-                <td
-                  colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0)}
-                  className="px-6 py-20 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center text-zinc-muted opacity-50">
-                    <Search className="w-12 h-12 mb-3 stroke-1" />
-                    <p className="text-xs uppercase tracking-widest font-bold">{emptyMessage}</p>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        </div>
-      )}
-
-      {/* Pagination Footer */}
-      {pagination && paginatedData.length > 0 && (
-        <div className="px-6 py-6 border-t border-white/5 bg-obsidian-outer/30 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <p className="text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">
-            {t('common.showing') || 'Showing'} {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, sortedData.length)} {t('common.of') || 'of'} {sortedData.length}
-          </p>
-          <div className="flex gap-3">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              className="px-6 py-2.5 bg-obsidian-card border border-white/5 rounded-xl text-xs font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:border-brand/30 transition-all flex items-center gap-2 shadow-sm"
-            >
-              {dir === 'rtl' ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-              {t('common.previous') || 'Prev'}
-            </button>
-
-            <div className="flex items-center gap-1.5 px-3">
-              {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                let p = i + 1;
-                if (totalPages > 5 && currentPage > 3) {
-                  p = currentPage - 2 + i;
-                }
-                if (p > totalPages) return null;
-
-                return (
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p)}
+                {selectable && (
+                  <th className="w-12 px-6 py-4 text-center">
+                    <button onClick={handleSelectAll} className="text-zinc-muted hover:text-brand transition-colors">
+                      {paginatedData.length > 0 && selectedIds.size === paginatedData.length
+                        ? <CheckSquare className="w-4 h-4" />
+                        : <Square className="w-4 h-4" />}
+                    </button>
+                  </th>
+                )}
+                {expandable && <th className="w-10 px-2"></th>}
+                {columns.map((col) => (
+                  <th
+                    key={col.key}
                     className={cn(
-                      "w-8 h-8 flex items-center justify-center rounded-lg text-[11px] font-black tracking-widest transition-all",
-                      currentPage === p ? "bg-brand text-obsidian-outer shadow-lg shadow-brand/10 scale-110" : "text-zinc-muted hover:bg-white/5"
+                      'px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group',
+                      col.width,
+                      col.align === 'right' ? 'text-end' : col.align === 'center' ? 'text-center' : 'text-start',
+                      col.sortable ? 'cursor-pointer hover:text-zinc-text' : '',
+                      col.className,
                     )}
+                    onClick={() => col.sortable && handleSort(col.key)}
                   >
-                    {p}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              className="px-6 py-2.5 bg-obsidian-card border border-white/5 rounded-xl text-xs font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:border-brand/30 transition-all flex items-center gap-2 shadow-sm"
-            >
-              {t('common.next') || 'Next'}
-              {dir === 'rtl' ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-            </button>
-          </div>
+                    <div className={cn('flex items-center gap-2', col.align === 'right' ? 'justify-end' : col.align === 'center' ? 'justify-center' : 'justify-start')}>
+                      {col.label}
+                      {col.sortable && (
+                        <span className="text-zinc-muted/50 group-hover:text-brand transition-colors">
+                          <SortIcon colKey={col.key} />
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                ))}
+                {rowActions && <th className="w-12 px-4"></th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.03]">
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row) => {
+                  const id = String(row[keyField as keyof T]);
+                  const isSelected = selectedIds.has(id);
+                  const isExpanded = expandedIds.has(id);
+                  return (
+                    <React.Fragment key={id}>
+                      <tr
+                        className={cn(
+                          'group transition-colors overflow-visible border-b border-white/[0.02] last:border-0',
+                          onRowClick ? 'cursor-pointer' : '',
+                          isSelected ? 'bg-brand/[0.03]' : 'hover:bg-white/[0.02]',
+                          isExpanded && 'bg-white/[0.02]',
+                        )}
+                        onClick={() => onRowClick?.(row)}
+                        onContextMenu={(e) => {
+                          if (rowActions) {
+                            e.preventDefault();
+                            const target = e.target as HTMLElement;
+                            setContextMenu({
+                              x: e.clientX,
+                              y: e.clientY,
+                              rowId: id,
+                              selectedValue: target.innerText || target.textContent || undefined,
+                            });
+                          }
+                        }}
+                      >
+                        {selectable && (
+                          <td className="px-6 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleSelectRow(id)}
+                              className={cn('transition-colors', isSelected ? 'text-brand' : 'text-zinc-muted hover:text-zinc-text')}
+                            >
+                              {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                            </button>
+                          </td>
+                        )}
+                        {expandable && (
+                          <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => toggleExpand(id)}
+                              className={cn('p-1 rounded-sm text-zinc-muted hover:text-brand hover:bg-white/5 transition-all', isExpanded && 'rotate-90 text-brand')}
+                            >
+                              <ChevronRight className="w-4 h-4 transition-transform" />
+                            </button>
+                          </td>
+                        )}
+                        {columns.map((col) => (
+                          <td
+                            key={`${id}-${col.key}`}
+                            className={cn(
+                              'px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight',
+                              col.align === 'right' ? 'text-end' : col.align === 'center' ? 'text-center' : 'text-start',
+                              col.className,
+                            )}
+                          >
+                            {col.render ? col.render(row) : row[col.key]}
+                          </td>
+                        ))}
+                        {renderRowActionsDropdown(id, row)}
+                      </tr>
+                      {expandable && isExpanded && expandComponent && (
+                        <tr className="bg-obsidian-outer/30 shadow-inner">
+                          <td colSpan={columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0) + 1} className="px-6 py-4 border-b border-white/5">
+                            {expandComponent(row)}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0)} className="px-6 py-20 text-center">
+                    {emptyState}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
-      {/* Bulk Actions Floating Bar */}
-      {selectedIds.size > 0 && bulkActions && bulkActions.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-8 duration-300">
-          <div className="bg-obsidian-card border border-white/10 rounded-full shadow-2xl py-2 px-6 flex items-center gap-6 backdrop-blur-xl">
-            <div className={cn(
-              "flex items-center gap-3 text-[10px] font-black text-zinc-text uppercase tracking-widest whitespace-nowrap",
-              dir === 'rtl' ? "pl-6 border-l border-white/10" : "pr-6 border-r border-white/10"
-            )}>
-              <span className="flex items-center justify-center min-w-[1.5rem] h-6 rounded-full bg-brand text-slate-900 text-[10px] px-1.5 font-black">
-                {selectedIds.size}
-              </span>
-              <span className="hidden sm:inline">
-                {selectedIds.size === 1 ? (t('common.selected') || 'Selected') : (t('common.items_selected')?.replace('{count}', String(selectedIds.size)) || `${selectedIds.size} Items Selected`)}
-              </span>
-            </div>
 
-            <div className="flex items-center gap-2">
-              {bulkActions.map((action, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    const selectedRows = rows.filter(row => selectedIds.has(String(row[keyField as keyof T])));
-                    action.onClick(Array.from(selectedIds), selectedRows);
-                  }}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:scale-105 active:scale-95 whitespace-nowrap",
-                    action.variant === 'danger'
-                      ? "bg-danger/20 text-danger hover:bg-danger/30"
-                      : action.variant === 'success'
-                        ? "bg-success/20 text-success hover:bg-success/30"
-                        : "bg-white/5 text-zinc-text hover:bg-white/10"
-                  )}
-                >
-                  {action.icon && <action.icon className="w-3.5 h-3.5" />}
-                  {action.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => {
-                setSelectedIds(new Set());
-                onSelectionChange?.([]);
-              }}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-muted hover:text-white hover:bg-white/5 transition-all shrink-0"
-              title={t('common.clear') || 'Clear'}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+      {/* Pagination */}
+      {pagination && paginatedData.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={sortedData.length}
+          onPageChange={setCurrentPage}
+        />
       )}
+
+      {/* Bulk Actions */}
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        bulkActions={bulkActions || []}
+        selectedIds={selectedIds}
+        onClear={() => { setSelectedIds(new Set()); onSelectionChange?.([]); }}
+        onAction={(action) => {
+          const selectedRows = rows.filter((row) => selectedIds.has(String(row[keyField as keyof T])));
+          action.onClick(Array.from(selectedIds), selectedRows);
+        }}
+      />
 
       {/* Context Menu */}
-      {contextMenu && rowActions && (
-        <div
-          className={cn(
-            "fixed bg-obsidian-panel/95 border border-white/10 rounded-sm shadow-2xl z-[110] py-1 backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 min-w-[180px]",
-            dir === 'rtl' ? "text-right" : "text-left"
-          )}
-          style={{
-            top: `${contextMenu.y}px`,
-            left: `${contextMenu.x}px`,
-            transform: dir === 'rtl' ? 'translateX(-100%)' : 'none'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="px-3 py-1.5 border-b border-white/5 mb-1">
-            <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">
-              {t('common.actions') || 'Actions'}
-            </span>
-          </div>
-
-          {contextMenu.selectedValue && (
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(contextMenu.selectedValue!);
-                setCopied(true);
-                setTimeout(() => {
-                  setCopied(false);
-                  setContextMenu(null);
-                }, 1000);
-              }}
-              className="w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors text-zinc-text hover:bg-white/5 border-b border-white/5 mb-1"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-              {copied ? (t('common.done') || 'Done') : (t('common.copy') || 'Copy')}
-            </button>
-          )}
-
-          {rowActions.filter((action) => {
-            const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
-            if (!row) return false;
-            const label = typeof action.label === 'function' ? action.label(row) : action.label;
-            return label != null;
-          }).map((action, i) => {
-            const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
-            if (!row) return null;
-            const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
-            const ActionIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
-            return (
-              <button
-                key={i}
-                onClick={() => {
-                  action.onClick(row);
-                  setContextMenu(null);
-                }}
-                className={cn(
-                  "w-full text-start px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 group/item transition-colors",
-                  action.variant === 'danger'
-                    ? "text-danger hover:bg-danger/10"
-                    : "text-zinc-text hover:bg-white/5"
-                )}
-              >
-                {ActionIcon && <ActionIcon className="w-3.5 h-3.5 opacity-70 group-hover/item:opacity-100" />}
-                {actionLabel}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <ContextMenu
+        contextMenu={contextMenu}
+        rows={rows}
+        keyField={keyField}
+        rowActions={rowActions || []}
+        onAction={(action, row) => action.onClick(row)}
+        onClose={() => setContextMenu(null)}
+      />
     </div>
   );
 }

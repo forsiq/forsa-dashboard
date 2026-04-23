@@ -294,7 +294,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
           <span className="text-sm font-black text-zinc-text uppercase tracking-widest">Filters</span>
           {activeCount > 0 && (
-            <span className="px-2 py-0.5 bg-brand text-obsidian-outer text-[9px] font-bold rounded-full">{activeCount} Active</span>
+            <span className="px-2 py-0.5 bg-brand text-obsidian-outer text-[10px] font-bold rounded-full">{activeCount} Active</span>
           )}
         </div>
         <div className="flex items-center gap-3">
@@ -333,7 +333,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                        {filters.map(f => (
                           <div key={f.key} className="space-y-1.5">
                              {f.type !== 'checkbox' && (
-                                <label className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest px-1 block">{f.label}</label>
+                                <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest px-1 block">{f.label}</label>
                              )}
                              {renderFilterInput(f)}
                           </div>

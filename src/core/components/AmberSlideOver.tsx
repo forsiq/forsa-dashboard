@@ -65,7 +65,7 @@ export const AmberSlideOver: React.FC<SlideOverProps> = ({
             {/* Header */}
             <div className="px-6 py-6 border-b border-white/5 bg-obsidian-outer/20 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-black text-zinc-text uppercase tracking-tight italic">{title}</h2>
+                <h2 className="text-xl font-black text-zinc-text uppercase tracking-tight">{title}</h2>
                 {description && (
                   <p className="text-sm font-medium text-zinc-muted mt-1">{description}</p>
                 )}

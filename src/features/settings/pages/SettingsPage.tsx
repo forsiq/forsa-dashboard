@@ -132,7 +132,7 @@ export const SettingsPage = () => {
               </div>
               <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('settings.protocol_support')}</h4>
             </div>
-            <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase italic">
+            <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase">
               {t('settings.protocol_support_desc')}
             </p>
             <button className="mt-4 text-xs font-black text-[var(--color-brand)] uppercase tracking-widest hover:underline transition-all">
@@ -252,8 +252,8 @@ export const SettingsPage = () => {
                       <AlertCircle className="w-7 h-7 text-[var(--color-danger)]" />
                    </div>
                    <div className="space-y-2">
-                       <h4 className="text-sm font-black text-[var(--color-danger)] uppercase tracking-widest italic">{t('settings.critical_safety')}</h4>
-                       <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase italic">
+                       <h4 className="text-sm font-black text-[var(--color-danger)] uppercase tracking-widest">{t('settings.critical_safety')}</h4>
+                       <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase">
                           {t('settings.critical_safety_desc')}
                        </p>
                        <button className="text-xs font-black text-[var(--color-danger)] uppercase tracking-widest border-b-2 border-[var(--color-danger)]/30 pb-0.5 hover:text-[var(--color-danger)] hover:border-[var(--color-danger)] transition-all mt-3">
@@ -301,7 +301,7 @@ export const SettingsPage = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-zinc-text uppercase tracking-tight">{t('settings.tls_encryption')}</p>
-                      <p className="text-xs font-medium text-zinc-secondary uppercase italic tracking-tight">{t('settings.tls_encryption_desc')}</p>
+                      <p className="text-xs font-medium text-zinc-secondary uppercase tracking-tight">{t('settings.tls_encryption_desc')}</p>
                     </div>
                   </div>
                   <CheckCircle className="w-6 h-6 text-[var(--color-success)]" />
@@ -347,7 +347,7 @@ export const SettingsPage = () => {
       {showSavedToast && (
         <div 
           className={cn(
-            "fixed bottom-8 flex items-center gap-3 px-6 py-4 bg-brand text-slate-900 rounded-lg shadow-2xl shadow-brand/30 animate-in slide-in-from-bottom-10 h-auto z-[200] font-black uppercase tracking-widest text-xs italic",
+            "fixed bottom-8 flex items-center gap-3 px-6 py-4 bg-brand text-slate-900 rounded-lg shadow-2xl shadow-brand/30 animate-in slide-in-from-bottom-10 h-auto z-[200] font-black uppercase tracking-widest text-xs",
             isRTL ? "left-8" : "right-8"
           )}
         >

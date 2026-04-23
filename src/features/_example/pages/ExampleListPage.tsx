@@ -32,7 +32,7 @@ export const ExampleListPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase italic">
+          <h1 className="text-2xl font-black text-zinc-text tracking-tighter uppercase">
             Example Items
           </h1>
           <p className="text-sm text-zinc-muted mt-1">

@@ -33,10 +33,8 @@ import {
 } from '../api';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
-
-/**
- * GroupBuyingFormPage - Professional-grade Campaign Lifecycle Management
- */
+import { useList as useCategories } from '../../../services/categories/hooks';
+import type { GroupBuyingCreateInput, GroupBuyingUpdateInput } from '../types';
 export const GroupBuyingFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
@@ -52,7 +50,12 @@ export const GroupBuyingFormPage: React.FC = () => {
   const campaignId = id as string;
   const { data: existingCampaign, isLoading: campaignLoading } = useGetGroupBuying(campaignId || '', isEdit);
   const { data: inventoryData } = useInventoryList();
+  const { data: categoriesData } = useCategories({ limit: 100 });
   const inventoryItems = (inventoryData as any)?.items || [];
+  const categoryOptions = (categoriesData as any)?.categories?.map((c: any) => ({
+    label: c.name,
+    value: String(c.id)
+  })) || [];
 
   const createMutation = useCreateGroupBuying();
   const updateMutation = useUpdateGroupBuying();
@@ -276,11 +279,10 @@ export const GroupBuyingFormPage: React.FC = () => {
                             <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 ${isRTL ? 'text-right block' : ''}`}>{t('groupBuying.form.tactical_division')}</label>
                             <AmberDropdown 
                                 options={[
-                                    { label: t('groupBuying.form.gen_consolidation'), value: '1' },
-                                    { label: t('groupBuying.form.ent_acquisition'), value: '2' },
-                                    { label: t('groupBuying.form.bulk_scaling'), value: '3' },
+                                    { label: t('groupBuying.form.manual_select') || 'Select Category...', value: '' },
+                                    ...categoryOptions
                                 ]}
-                                value={formData.categoryId || '1'}
+                                value={formData.categoryId || ''}
                                 onChange={(val) => handleChange('categoryId', val)}
                             />
                         </div>
@@ -345,6 +347,24 @@ export const GroupBuyingFormPage: React.FC = () => {
                     <div className="space-y-1">
                         <p className="text-xs font-black text-primary uppercase tracking-widest">{t('groupBuying.form.reach_insight_title')}</p>
                         <p className="text-[11px] text-zinc-muted font-bold tracking-tight uppercase">{t('groupBuying.form.reach_insight_desc')}</p>
+                    </div>
+                </div>
+
+                <div className="h-px bg-white/[0.03]" />
+
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-obsidian-outer border border-white/5 group/toggle cursor-pointer" onClick={() => handleChange('autoCreateOrder', !formData.autoCreateOrder)}>
+                    <div className={cn(
+                        "w-12 h-6 rounded-full p-1 transition-all duration-300 relative",
+                        formData.autoCreateOrder ? "bg-brand" : "bg-zinc-800"
+                    )}>
+                        <div className={cn(
+                            "w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300",
+                            formData.autoCreateOrder ? (isRTL ? "-translate-x-6" : "translate-x-6") : "translate-x-0"
+                        )} />
+                    </div>
+                    <div className="space-y-0.5">
+                        <p className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.form.auto_create_order') || 'Auto-Create Orders'}</p>
+                        <p className="text-[10px] text-zinc-muted font-bold tracking-tight">{t('groupBuying.form.auto_create_order_desc') || 'Automatically generate orders when campaign succeeds'}</p>
                     </div>
                 </div>
             </Card>

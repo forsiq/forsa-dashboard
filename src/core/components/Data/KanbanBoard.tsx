@@ -214,7 +214,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                         <h3 className="text-sm font-black text-zinc-text uppercase tracking-tight">{col.title}</h3>
-                        <span className={cn("text-[9px] font-black px-1.5 py-0.5 rounded-sm bg-white/5", col.color)}>
+                        <span className={cn("text-[10px] font-black px-1.5 py-0.5 rounded-sm bg-white/5", col.color)}>
                             {colItems.length}
                         </span>
                     </div>

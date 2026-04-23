@@ -358,3 +358,9 @@ export const useCancelAuction = createLifecycleHook(
   'Auction cancelled successfully',
   'Failed to cancel auction',
 );
+
+export const useBuyNow = createLifecycleHook(
+  auctionApi.buyNow.bind(auctionApi),
+  'Auction purchased successfully',
+  'Failed to purchase auction',
+);

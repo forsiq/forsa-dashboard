@@ -7,6 +7,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import Cookies from 'js-cookie';
 import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
 import { emitSessionExpired } from '../lib/session/sessionEvents';
+import { getLanguage } from '../lib/utils/cookieStorage';
 
 // ============================================================================
 // Configuration
@@ -131,6 +132,7 @@ function createBaseInstance(baseURL: string): AxiosInstance {
       // Add project ID header
       if (config.headers) {
         config.headers['X-Project-ID'] = getProjectId();
+        config.headers['Accept-Language'] = getLanguage() || 'en';
       }
       return config;
     },

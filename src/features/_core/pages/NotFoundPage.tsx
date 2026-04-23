@@ -26,7 +26,7 @@ export const NotFoundPage = () => {
       </div>
 
       <div className="text-center max-w-md space-y-4 mb-10">
-        <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic">
+        <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase">
           {t('error.404_title')}
         </h1>
         <p className="text-sm font-medium text-zinc-muted leading-relaxed">

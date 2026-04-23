@@ -57,7 +57,7 @@ export const WatchlistPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{auction.title}</p>
-            <p className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
+            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
               {auction.categoryName || 'General'}
             </p>
           </div>

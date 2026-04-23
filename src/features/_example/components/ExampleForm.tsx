@@ -117,7 +117,7 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black uppercase tracking-widest px-1 text-zinc-muted">
+            <label className="text-[10px] font-black uppercase tracking-widest px-1 text-zinc-muted">
               Category
             </label>
             <select
@@ -134,7 +134,7 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black uppercase tracking-widest px-1 text-zinc-muted">
+            <label className="text-[10px] font-black uppercase tracking-widest px-1 text-zinc-muted">
               Status
             </label>
             <select

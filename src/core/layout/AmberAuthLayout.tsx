@@ -52,7 +52,7 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
            </div>
 
            <div className="max-w-2xl pt-12">
-               <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] uppercase italic mb-10 drop-shadow-2xl max-w-lg">
+               <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] uppercase mb-10 drop-shadow-2xl max-w-lg">
                   {t("auth.marketing.title")}
                </h1>
               
@@ -102,7 +102,7 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
            {/* Content Card Wrapper */}
             <div className="w-full max-w-[480px] flex flex-col items-center pt-14 md:pt-0">
               <div className="text-center mb-10 animate-fade-in-down">
-                 <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic drop-shadow-lg">
+                 <h1 className="text-4xl font-black text-white tracking-tighter uppercase drop-shadow-lg">
                     {title || t('login.welcome')}
                  </h1>
                  <p className="text-[11px] font-black text-brand uppercase tracking-[0.3em] mt-3 opacity-90">

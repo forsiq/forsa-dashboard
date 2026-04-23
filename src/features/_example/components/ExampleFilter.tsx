@@ -27,7 +27,7 @@ export const ExampleFilter: React.FC<ExampleFilterProps> = ({ filter, onFilterCh
 
   return (
     <AmberCard className="border-white/5 shadow-lg">
-      <div className="flex items-center gap-3 mb-6 italic border-brand">
+      <div className="flex items-center gap-3 mb-6 border-brand">
         <div className="p-1.5 bg-brand/10 rounded-lg">
           <Filter className="w-3.5 h-3.5 text-brand" />
         </div>
@@ -64,7 +64,7 @@ export const ExampleFilter: React.FC<ExampleFilterProps> = ({ filter, onFilterCh
               value={filter.status || ''}
               onChange={(e) => updateFilter('status', e.target.value || undefined)}
             >
-              <option value="" className="bg-obsidian-panel italic">{t('common.all')}</option>
+              <option value="" className="bg-obsidian-panel">{t('common.all')}</option>
               <option value="active" className="bg-obsidian-panel font-bold">{t('status.active')}</option>
               <option value="inactive" className="bg-obsidian-panel font-bold">{t('status.inactive')}</option>
               <option value="pending" className="bg-obsidian-panel font-bold">{t('status.pending')}</option>
@@ -80,7 +80,7 @@ export const ExampleFilter: React.FC<ExampleFilterProps> = ({ filter, onFilterCh
               value={filter.category || ''}
               onChange={(e) => updateFilter('category', e.target.value || undefined)}
             >
-              <option value="" className="bg-obsidian-panel italic">{t('common.all')}</option>
+              <option value="" className="bg-obsidian-panel">{t('common.all')}</option>
               <option value="Category A" className="bg-obsidian-panel font-bold">Category A</option>
               <option value="Category B" className="bg-obsidian-panel font-bold">Category B</option>
               <option value="Category C" className="bg-obsidian-panel font-bold">Category C</option>

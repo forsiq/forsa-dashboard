@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Gavel } from 'lucide-react';
 import { getAuctionImageUrl, parseAttachmentIds } from '../utils/auction-utils';
-import { ApiClientFactory } from '../../../core/services/ApiClientFactory';
+import { createClient } from '@core/services/ApiClientFactory';
+
+const PROJECT_API_URL = `${new URL(
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1',
+).origin}/api/v1`;
 
 interface AuctionImageProps {
   auction: {
@@ -72,7 +76,7 @@ async function resolveAttachmentFileUrl(attachmentId: number): Promise<string | 
   }
 
   // Use the central ApiClient which handles auth and 401s correctly
-  const apiClient = ApiClientFactory.createClient();
+  const apiClient = createClient(PROJECT_API_URL);
   
   try {
     const response = await apiClient.get(`/project/project/attachment/${attachmentId}/`);

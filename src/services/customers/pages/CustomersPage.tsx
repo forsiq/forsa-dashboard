@@ -254,7 +254,7 @@ export function CustomersPage() {
                               className="ring-2 ring-[var(--color-obsidian-card)] transition-shadow group-hover/avatar:ring-brand/50"
                             />
                             {/* Tooltip on hover */}
-                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-obsidian-outer border border-white/10 rounded-md text-[9px] font-bold text-zinc-text whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-obsidian-outer border border-white/10 rounded-md text-[10px] font-bold text-zinc-text whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
                               {c.name?.split(' ')[0]}
                             </span>
                           </button>

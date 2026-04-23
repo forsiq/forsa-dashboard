@@ -151,7 +151,7 @@ export const AboutPage: React.FC = () => {
                                             {file.fileName}
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[9px] text-zinc-muted/50 font-bold">{file.date}</span>
+                                            <span className="text-[10px] text-zinc-muted/50 font-bold">{file.date}</span>
                                             <span className={cn(
                                                 "text-[8px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter",
                                                 file.type === 'Major' ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-muted/40'
@@ -168,7 +168,7 @@ export const AboutPage: React.FC = () => {
                         </div>
 
                         {/* Folder Status Bar */}
-                        <div className="p-3 border-t border-white/5 text-[9px] font-mono text-zinc-muted/40 text-center uppercase tracking-widest shrink-0">
+                        <div className="p-3 border-t border-white/5 text-[10px] font-mono text-zinc-muted/40 text-center uppercase tracking-widest shrink-0">
                             {sortedVersions.length} {t('about.history.objects_found')}
                         </div>
                     </div>

@@ -42,7 +42,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
   
   return (
     <AmberCard className="border-white/5 shadow-lg">
-      <div className="flex items-center justify-between mb-6 italic border-l-2 border-brand pl-3">
+      <div className="flex items-center justify-between mb-6 border-l-2 border-brand pl-3">
         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
           {t('dash.recent_signals')}
         </h3>

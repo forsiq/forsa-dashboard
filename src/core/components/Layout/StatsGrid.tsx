@@ -148,7 +148,7 @@ function StatCard({
 
   // Size-based configs
   const sizeConfig = {
-    sm: { padding: '!p-4', iconPad: 'p-2', iconSize: 'w-4 h-4', valueSize: 'text-xl', labelSize: 'text-[9px]' },
+    sm: { padding: '!p-4', iconPad: 'p-2', iconSize: 'w-4 h-4', valueSize: 'text-xl', labelSize: 'text-[10px]' },
     md: { padding: '!p-5', iconPad: 'p-3', iconSize: 'w-5 h-5', valueSize: 'text-3xl', labelSize: 'text-[10px]' },
     lg: { padding: '!p-6', iconPad: 'p-4', iconSize: 'w-6 h-6', valueSize: 'text-4xl', labelSize: 'text-xs' },
   }[size];
@@ -168,7 +168,7 @@ function StatCard({
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <p className={cn(
-            'font-black tabular-nums leading-none tracking-tight italic',
+            'font-black tabular-nums leading-none tracking-tight',
             sizeConfig.valueSize,
             valueClassName || 'text-zinc-text'
           )}>

@@ -31,6 +31,13 @@
   --color-success-text: #059669;
   --color-danger-bg: #FFF1F2;
   --color-danger-text: #E11D48;
+
+  /* Chart Colors */
+  --chart-1: #FFC000;
+  --chart-2: #3B82F6;
+  --chart-3: #10B981;
+  --chart-4: #EF4444;
+  --chart-5: #8B5CF6;
 }
 
 .dark {
@@ -144,20 +151,12 @@ body {
   font-weight: 700;
 }
 
-.italic {
-  font-style: normal !important;
-}
-
-/* Global Typography Cleanliness */
-*, ::before, ::after {
+/* RTL Arabic font contamination prevention */
+input, textarea, select, button {
   font-style: normal !important;
 }
 
 ::placeholder {
   font-style: normal !important;
   opacity: 0.5;
-}
-
-input, textarea, select, button {
-  font-style: normal !important;
 }

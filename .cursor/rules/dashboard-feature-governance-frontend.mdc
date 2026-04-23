@@ -1,0 +1,30 @@
+---
+description: Frontend feature governance - verify dashboard control coverage
+alwaysApply: true
+---
+
+# Frontend Must Map To Dashboard Control
+
+When implementing or changing any frontend feature in this project, enforce these checks first:
+
+1. Confirm the feature has a matching control in dashboard/admin panel.
+2. If dashboard control does not exist, do not finish feature silently.
+3. Add the required dashboard control as part of the same task, or mark task blocked until dashboard support is added.
+4. Document control key/name and expected effect on UI behavior.
+
+## Required Workflow
+
+- Identify feature toggle/config source before coding frontend behavior.
+- Verify dashboard can enable/disable or configure the feature.
+- Wire frontend to the control state (API/config/store), not hardcoded flags.
+- Keep behavior backward compatible if control value is missing.
+
+## Example
+
+```ts
+// Bad: hardcoded behavior with no dashboard control
+const showNewBidFlow = true;
+
+// Good: behavior follows dashboard-provided control
+const showNewBidFlow = dashboardConfig?.features?.newBidFlow === true;
+```

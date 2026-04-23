@@ -112,7 +112,7 @@ export const AuctionsList: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{auction.title}</p>
-              <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
+              <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
             </div>
           </div>
         ),
@@ -405,6 +405,8 @@ export const AuctionsList: React.FC = () => {
                                     { label: t('auction.scheduled_deployments'), value: 'scheduled' },
                                     { label: t('auction.concluded_nodes'), value: 'ended' },
                                     { label: t('auction.draft_schema'), value: 'draft' },
+                                    { label: t('auction.lifecycle.paused') || 'Paused', value: 'paused' },
+                                    { label: t('auction.lifecycle.cancelled') || 'Cancelled', value: 'cancelled' },
                                 ]}
                                 value={statusFilter}
                                 onChange={(value: any) => setStatusFilter(value)}

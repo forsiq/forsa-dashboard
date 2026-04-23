@@ -92,7 +92,7 @@ export const PortalPage: React.FC = () => {
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-end gap-1">
               <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em]">{t('portal.operational_status') || 'حالة التشغيل'}</span>
-              <div className="flex items-center gap-2 px-3 py-1 bg-success/5 border border-success/20 rounded-full text-[9px] font-black text-success uppercase tracking-widest animate-pulse-slow">
+              <div className="flex items-center gap-2 px-3 py-1 bg-success/5 border border-success/20 rounded-full text-[10px] font-black text-success uppercase tracking-widest animate-pulse-slow">
                  <div className="w-1.5 h-1.5 bg-success rounded-full" />
                  {t('portal.all_systems_normal') || 'جميع الأنظمة تعمل'}
               </div>
@@ -178,7 +178,7 @@ export const PortalPage: React.FC = () => {
             <Hexagon className="w-8 h-8 text-brand transition-transform group-hover:rotate-180 duration-1000" />
             <div className="text-right">
                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] block leading-none">{t('portal.version') || 'الإصدار'}</span>
-               <span className="text-[9px] font-bold text-zinc-muted/40 uppercase tracking-widest block mt-1 leading-none">1.0.4-LTS</span>
+               <span className="text-[10px] font-bold text-zinc-muted/40 uppercase tracking-widest block mt-1 leading-none">1.0.4-LTS</span>
             </div>
          </div>
       </motion.div>

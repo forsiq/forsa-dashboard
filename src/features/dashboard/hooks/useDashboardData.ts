@@ -75,20 +75,24 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<DashboardStats> => {
-      // Fetch data from multiple services in parallel
-      const [auctionsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.list({ limit: 1 }).catch(() => ({ total: 0 })),
+      const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
+        auctionBaseApi.getStats().catch(() => ({ data: { active: 0, total: 0, revenue: 0 } })),
+        groupBuyingBaseApi.getStats().catch(() => ({ data: { active: 0, total: 0 } })),
         orderBaseApi.getStats().catch(() => ({ data: { total_revenue: 0, total: 0 } })),
       ]);
 
+      const auctionStats = (auctionStatsRes as any).data || {};
+      const groupStats = (groupBuyingStatsRes as any).data || {};
+      const orderStats = (ordersRes as any).data || {};
+
       return {
-        totalRevenue: (ordersRes as any).data?.total_revenue || 0,
+        totalRevenue: orderStats.total_revenue || auctionStats.revenue || 0,
         revenueChange: 0,
-        totalOrders: (auctionsRes as any).total || 0,
+        totalOrders: (auctionStats.active || 0) + (groupStats.active || 0),
         ordersChange: 0,
-        totalProducts: (auctionsRes as any).total || 0,
+        totalProducts: (auctionStats.total || 0) + (groupStats.total || 0),
         productsChange: 0,
-        totalCustomers: 0,
+        totalCustomers: auctionStats.bids || 0,
         customersChange: 0,
       };
     },
@@ -182,7 +186,7 @@ export const useCategoryDistribution = () => {
 
       return categories.slice(0, 5).map((c: any, index: number) => ({
         category: c.name,
-        orders: Math.floor(Math.random() * 100), // Random for visualization if no real count
+        orders: [42, 35, 28, 18, 12][index] || 10, // Mock order counts - replace with real API data when available
         fill: colors[index % colors.length],
       }));
     },
@@ -198,10 +202,10 @@ export const useSalesChartData = () => {
   return useQuery({
     queryKey: dashboardKeys.salesChart(),
     queryFn: async (): Promise<ChartDataPoint[]> => {
-      // Fetch stats which usually includes historical data trends if available
-      // Fallback to generated data for chart visualization
+      // Mock data for chart visualization - replace with real historical API data when available
       const today = new Date();
       const chartData: ChartDataPoint[] = [];
+      const mockRevenue = [420, 580, 390, 670, 510, 830, 720, 640, 910, 560, 780, 650, 890, 430, 750, 620, 980, 540, 810, 470, 690, 860, 530, 740, 610, 870, 500, 760, 920];
 
       for (let i = 29; i >= 0; i--) {
         const date = new Date(today);
@@ -210,8 +214,8 @@ export const useSalesChartData = () => {
 
         chartData.push({
           date: dateStr,
-          revenue: Math.floor(Math.random() * 1000),
-          orders: Math.floor(Math.random() * 10),
+          revenue: mockRevenue[29 - i] || 500,
+          orders: Math.floor((mockRevenue[29 - i] || 500) / 100),
         });
       }
 
@@ -232,6 +236,9 @@ export const useDashboardData = () => {
   const { t } = useLanguage();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
   const { data: recentActivities, isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useRecentOrders();
+  const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
+  const { data: categoryData, isLoading: categoriesLoading } = useCategoryDistribution();
+  const { data: salesChart, isLoading: salesLoading } = useSalesChartData();
 
   const dashboardStats: StatCard[] = [
     {
@@ -242,22 +249,22 @@ export const useDashboardData = () => {
       color: 'brand',
     },
     {
-      id: 'orders',
-      title: t('stats.orders') || 'Active Auctions',
+      id: 'active',
+      title: t('auction.metrics.active_engines') || 'Active (Auctions + Deals)',
       value: (stats?.totalOrders || 0).toString(),
       change: stats?.ordersChange || 0,
       color: 'success',
     },
     {
-      id: 'products',
-      title: t('stats.products') || 'Total Products',
+      id: 'total',
+      title: t('dash.totalItems') || 'Total Auctions & Deals',
       value: (stats?.totalProducts || 0).toString(),
       change: stats?.productsChange || 0,
       color: 'warning',
     },
     {
-      id: 'customers',
-      title: t('stats.customers') || 'Total Customers',
+      id: 'bids',
+      title: t('auction.metrics.bid_velocity') || 'Total Bids',
       value: (stats?.totalCustomers || 0).toString(),
       change: stats?.customersChange || 0,
       color: 'info',
@@ -275,7 +282,10 @@ export const useDashboardData = () => {
   return {
     stats: dashboardStats,
     activities,
-    isLoading: statsLoading || activitiesLoading,
+    topProducts,
+    categoryData,
+    salesChart,
+    isLoading: statsLoading || activitiesLoading || topProductsLoading || categoriesLoading || salesLoading,
     isError: statsError || activitiesError,
     refetch: () => {
       refetchStats();

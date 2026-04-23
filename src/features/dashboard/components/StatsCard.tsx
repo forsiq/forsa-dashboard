@@ -27,7 +27,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stat }) => {
           {stat.title}
         </p>
         <div className="flex items-center justify-between">
-          <p className="text-2xl font-black text-zinc-text tracking-tight italic">
+          <p className="text-2xl font-bold text-zinc-text tracking-tight">
             {stat.value}
           </p>
           {stat.icon && (
@@ -45,7 +45,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stat }) => {
             <TrendingDown className="w-3.5 h-3.5 text-danger" />
           )}
           <span className={cn(
-            'text-[10px] font-black uppercase tracking-widest',
+            'text-[10px] font-semibold tracking-widest',
             stat.change >= 0 ? 'text-success' : 'text-danger'
           )}>
             {Math.abs(stat.change)}% {t('dash.from_last_month')}

@@ -356,7 +356,7 @@ export const InventoryPage = () => {
                 lowStockAlerts.map((alert, i) => (
                   <div key={i} className="group p-4 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
                     <div className="flex items-center justify-between mb-2">
-                       <p className="text-xs font-bold text-zinc-text uppercase tracking-tight italic truncate pr-4">
+                       <p className="text-xs font-bold text-zinc-text uppercase tracking-tight truncate pr-4">
                         {alert.name}
                       </p>
                       <StatusBadge status="LOW" variant="warning" size="sm" />
@@ -396,7 +396,7 @@ export const InventoryPage = () => {
               {MOCK_WAREHOUSES.map((wh, i) => (
                 <div key={i} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-zinc-text uppercase tracking-tighter italic">{wh.name}</p>
+                    <p className="text-sm font-black text-zinc-text uppercase tracking-tighter">{wh.name}</p>
                     <span className={cn(
                       "text-[10px] font-bold px-2 py-0.5 rounded-lg border uppercase tracking-widest shadow-sm",
                       wh.status === 'Near Capacity' ? 'bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/20' : 'bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20'
@@ -464,7 +464,7 @@ export const InventoryPage = () => {
               <div className="p-1.5 bg-brand/10 rounded-sm">
                 <Search className="w-3.5 h-3.5 text-brand" />
               </div>
-              <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest italic">
+              <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
                 {t('inventory.search_label')}
               </label>
             </div>
@@ -476,7 +476,7 @@ export const InventoryPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('inventory.search')}
                 className={cn(
-                  "w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40 italic",
+                  "w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40",
                   isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'
                 )}
               />
@@ -491,7 +491,7 @@ export const InventoryPage = () => {
                 <div className="p-1.5 bg-info/10 rounded-sm">
                   <Package className="w-3.5 h-3.5 text-info" />
                 </div>
-                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest italic">
+                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
                   {t('common.status')}
                 </label>
               </div>
@@ -513,7 +513,7 @@ export const InventoryPage = () => {
                 <div className="p-1.5 bg-success/10 rounded-sm">
                   <Filter className="w-3.5 h-3.5 text-success" />
                 </div>
-                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest italic">
+                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
                   {t('inventory.table.category')}
                 </label>
               </div>

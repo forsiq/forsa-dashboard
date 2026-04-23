@@ -1,0 +1,31 @@
+---
+description: Backend governance for dashboard-driven controls and feature handling
+alwaysApply: true
+---
+
+# Dashboard Controls Must Be Backed By Backend
+
+When a feature is controlled from dashboard/admin panel, backend implementation is mandatory.
+
+## Required Backend Checks
+
+1. Ensure backend has a field, config, or endpoint representing the dashboard control.
+2. Ensure API responses expose the control value needed by frontend.
+3. Ensure backend enforces the control in business logic (not UI only).
+4. Add validation/default handling for missing or invalid control values.
+
+## Implementation Rules
+
+- Do not add frontend-only toggles for business features.
+- Keep control naming consistent across dashboard, backend, and frontend.
+- If control affects permissions or access, enforce it server-side.
+- Update related DTO/schema/serializer/contracts when adding a new control.
+
+## Example
+
+```ts
+// Good: backend enforces dashboard-controlled feature
+if (!projectSettings.features?.newBidFlowEnabled) {
+  throw new ForbiddenException('New bid flow is disabled by dashboard settings');
+}
+```

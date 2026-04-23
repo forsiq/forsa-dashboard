@@ -3,7 +3,8 @@ import { Search, Bell, Menu, ChevronDown, User, LogOut, Moon, Sun, Laptop, Langu
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { AmberLogo } from '../../components/AmberLogo';
-import { SearchModal, ServiceItem } from './SearchModal';
+import { SearchModal } from './SearchModal';
+import { cn } from '../../lib/utils/cn';
 import { getServicesForTopbar, type QuickApp as ConfigQuickApp } from '../../../config/services';
 
 export type Language = 'en' | 'ar' | 'ku';
@@ -146,7 +147,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
             <span className="text-lg font-black tracking-tighter text-zinc-text uppercase brand-slant leading-none block">
               {appLabel || 'ZoneVast'}
             </span>
-            <span className="text-[9px] font-bold text-brand/80 uppercase tracking-[0.4em] mt-1 block">
+            <span className="text-[10px] font-bold text-brand/80 uppercase tracking-[0.4em] mt-1 block">
               {t('header.enterprise') || 'Enterprise Portal'}
             </span>
           </div>
@@ -190,7 +191,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 {services.length === 0 ? (
                   <div className="p-6 text-center">
                     <Package className="w-8 h-8 text-zinc-muted mx-auto mb-2 opacity-50" />
-                    <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">No Services Available</p>
+                    <p className="text-[10px] font-semibold text-zinc-muted tracking-widest">No Services Available</p>
                   </div>
                 ) : (
                   <div className="p-2 grid grid-cols-3 gap-1">
@@ -225,7 +226,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                   <Link
                     href={servicesHref}
                     onClick={() => setActiveDropdown(null)}
-                    className="block border-t border-white/5 text-center text-[10px] font-black text-brand hover:underline uppercase tracking-widest py-3 hover:bg-white/5 transition-colors"
+                    className="block border-t border-white/5 text-center text-[10px] font-semibold text-brand hover:underline tracking-widest py-3 hover:bg-white/5 transition-colors"
                   >
                     View Service Directory
                   </Link>
@@ -256,19 +257,19 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 dir === 'rtl' ? "left-0" : "right-0"
               )}>
                 <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <span className="text-[10px] font-black text-zinc-text uppercase tracking-[0.3em]">
+                  <span className="text-[10px] font-semibold text-zinc-text tracking-[0.3em]">
                     {t('notif.title') || 'Signals & Tasks'}
                   </span>
                 </div>
                 <div className="max-h-[350px] overflow-y-auto">
                   {notifications.map(n => (
                     <div key={n.id} className="px-5 py-4 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/[0.02]">
-                      <p className="text-[11px] font-bold text-zinc-text uppercase tracking-tight leading-tight">{n.text}</p>
-                      <span className="text-[9px] font-black text-zinc-muted uppercase mt-1.5 block opacity-60">{n.time} ago</span>
+                      <p className="text-[11px] font-bold text-zinc-text tracking-tight leading-tight">{n.text}</p>
+                      <span className="text-[10px] font-semibold text-zinc-muted mt-1.5 block opacity-60">{n.time} ago</span>
                     </div>
                   ))}
                 </div>
-                <Link href="/notifications" onClick={() => setActiveDropdown(null)} className="block w-full py-3 text-center text-[10px] font-black text-brand uppercase tracking-widest hover:bg-white/5 transition-colors">
+                <Link href="/notifications" onClick={() => setActiveDropdown(null)} className="block w-full py-3 text-center text-[10px] font-semibold text-brand tracking-widest hover:bg-white/5 transition-colors">
                   View All Signals
                 </Link>
               </div>
@@ -304,14 +305,14 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
             )}>
               {/* User Header */}
               <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
-                <p className="text-xs font-black text-zinc-text uppercase tracking-wide">{displayUser.name}</p>
+                <p className="text-xs font-bold text-zinc-text tracking-wide">{displayUser.name}</p>
                 <p className="text-[10px] text-zinc-muted uppercase tracking-widest mt-1">{displayUser.email}</p>
               </div>
 
               {/* Preferences Section */}
               <div className="p-2 space-y-1 border-b border-white/5">
                 <div className="flex items-center justify-between px-3 py-2 rounded-sm hover:bg-white/5 transition-colors group">
-                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-muted group-hover:text-zinc-text">
+                  <div className="flex items-center gap-3 text-[10px] font-semibold tracking-widest text-zinc-muted group-hover:text-zinc-text">
                     <Laptop className="w-4 h-4" />
                     <span>Interface Theme</span>
                   </div>
@@ -329,7 +330,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between px-3 py-2 rounded-sm hover:bg-white/5 transition-colors group">
-                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-muted group-hover:text-zinc-text">
+                  <div className="flex items-center gap-3 text-[10px] font-semibold tracking-widest text-zinc-muted group-hover:text-zinc-text">
                     <Languages className="w-4 h-4" />
                     <span>Language</span>
                   </div>
@@ -337,7 +338,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                     <button
                       onClick={() => setLanguage('en')}
                       className={cn(
-                        "text-[9px] font-black uppercase px-1.5 py-0.5 rounded-sm transition-colors border",
+                        "text-[10px] font-semibold px-1.5 py-0.5 rounded-sm transition-colors border",
                         language === 'en' ? "bg-brand/10 border-brand/20 text-brand" : "border-transparent text-zinc-muted hover:text-zinc-text"
                       )}
                     >
@@ -346,7 +347,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                     <button
                       onClick={() => setLanguage('ar')}
                       className={cn(
-                        "text-[9px] font-black uppercase px-1.5 py-0.5 rounded-sm transition-colors border",
+                        "text-[10px] font-semibold px-1.5 py-0.5 rounded-sm transition-colors border",
                         language === 'ar' ? "bg-brand/10 border-brand/20 text-brand" : "border-transparent text-zinc-muted hover:text-zinc-text"
                       )}
                     >
@@ -361,7 +362,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 <Link
                   href="/profile"
                   onClick={() => setActiveDropdown(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
                 >
                   <User className="w-4 h-4" />
                   {t('profile.account') || 'Account Profile'}
@@ -369,7 +370,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 <Link
                   href="/settings"
                   onClick={() => setActiveDropdown(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   {t('nav.settings') || 'System Settings'}
@@ -377,7 +378,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 <Link
                   href="/billing"
                   onClick={() => setActiveDropdown(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
                 >
                   <CreditCard className="w-4 h-4" />
                   Billing
@@ -385,7 +386,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 <Link
                   href="/support"
                   onClick={() => setActiveDropdown(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
                 >
                   <LifeBuoy className="w-4 h-4" />
                   Support
@@ -393,7 +394,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
                 <Link
                   href="/help"
                   onClick={() => setActiveDropdown(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-zinc-muted hover:bg-white/5 hover:text-zinc-text rounded-sm transition-colors"
                 >
                   <HelpCircle className="w-4 h-4" />
                   {t('nav.help') || 'Help'}
@@ -404,7 +405,7 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
               <div className="p-2 bg-white/[0.02]">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-danger/80 hover:bg-danger/5 hover:text-danger rounded-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-semibold tracking-widest text-danger/80 hover:bg-danger/5 hover:text-danger rounded-sm transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   {t('profile.logout') || 'Logout Session'}
@@ -432,7 +433,3 @@ export const AmberTopbar: React.FC<AmberTopbarProps> = ({
     </header>
   );
 };
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}

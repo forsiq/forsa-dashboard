@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plus, Settings, Users, BarChart } from 'lucide-react';
+import { Plus, Gavel, Users, BarChart2, ShoppingBag, Tag } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { QuickAction as QuickActionType } from '../types';
 import { cn } from '@core/lib/utils/cn';
@@ -24,10 +24,12 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
   const getActions = () => {
     if (actions && actions.length > 0) return actions;
     return [
-      { id: '1', label: t('common.add'), icon: <Plus className="w-4 h-4" />, path: '/example/new', color: 'brand' },
-      { id: '2', label: t('sidebar.analytics'), icon: <BarChart className="w-4 h-4" />, path: '/example', color: 'info' },
-      { id: '3', label: t('sidebar.customerList'), icon: <Users className="w-4 h-4" />, path: '/example', color: 'success' },
-      { id: '4', label: t('sidebar.settings'), icon: <Settings className="w-4 h-4" />, path: '/example/settings', color: 'warning' }
+      { id: '1', label: t('auction.create_auction') || 'New Auction', icon: <Plus className="w-4 h-4" />, path: '/auctions/add', color: 'brand' },
+      { id: '2', label: t('auction.listings.title') || 'Auctions', icon: <Gavel className="w-4 h-4" />, path: '/auctions', color: 'warning' },
+      { id: '3', label: t('groupBuying.new_campaign') || 'New Deal', icon: <ShoppingBag className="w-4 h-4" />, path: '/group-buying/new', color: 'success' },
+      { id: '4', label: t('groupBuying.campaigns') || 'Group Deals', icon: <Users className="w-4 h-4" />, path: '/group-buying', color: 'info' },
+      { id: '5', label: t('sidebar.categories') || 'Categories', icon: <Tag className="w-4 h-4" />, path: '/categories', color: 'brand' },
+      { id: '6', label: t('sidebar.reports') || 'Reports', icon: <BarChart2 className="w-4 h-4" />, path: '/reports', color: 'warning' },
     ];
   };
 
@@ -35,7 +37,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
 
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80">
-      <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] mb-6 italic border-l-2 border-brand pl-3">
+      <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] mb-6 border-l-2 border-brand pl-3">
         {t('dash.quickActions')}
       </h3>
 
@@ -52,7 +54,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
             <div className="p-3 rounded-full bg-white/5 border border-white/5 shadow-inner group-hover:scale-110 transition-transform">
               {action.icon}
             </div>
-            <span className="text-xs font-black uppercase tracking-widest text-center leading-tight">
+            <span className="text-xs font-bold tracking-widest text-center leading-tight">
               {action.label}
             </span>
           </Link>

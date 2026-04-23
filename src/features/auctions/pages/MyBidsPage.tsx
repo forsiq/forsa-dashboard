@@ -49,7 +49,7 @@ export const MyBidsPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{bid.auctionTitle}</p>
-            <p className="text-[9px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
+            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
           </div>
         </div>
       ),

@@ -21,7 +21,7 @@ export const NetworkErrorPage = () => {
            <WifiOff className="w-8 h-8" />
         </div>
 
-        <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic mb-3">
+        <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase mb-3">
           {t('error.network_title')}
         </h1>
         <p className="text-xs font-bold text-zinc-secondary uppercase tracking-wider mb-8">

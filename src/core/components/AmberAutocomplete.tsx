@@ -50,7 +50,7 @@ export const AmberAutocomplete: React.FC<AutocompleteProps> = ({
   return (
     <div className={cn("relative w-full", className)} ref={containerRef}>
       {label && (
-        <label className="block text-[9px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">
+        <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-widest mb-1.5 px-1">
           {label}
         </label>
       )}
@@ -66,7 +66,7 @@ export const AmberAutocomplete: React.FC<AutocompleteProps> = ({
         }}
       >
         <div className="flex-1 truncate text-xs font-bold text-zinc-text">
-          {selectedOption ? selectedOption.label : <span className="text-zinc-muted font-normal italic">{placeholder}</span>}
+          {selectedOption ? selectedOption.label : <span className="text-zinc-muted font-normal">{placeholder}</span>}
         </div>
         <ChevronDown className="w-3.5 h-3.5 text-zinc-muted" />
       </div>
@@ -106,13 +106,13 @@ export const AmberAutocomplete: React.FC<AutocompleteProps> = ({
                         "text-[10px] font-black uppercase tracking-wide",
                         value === opt.value ? "text-brand" : "text-zinc-secondary group-hover:text-zinc-text"
                       )}>{opt.label}</div>
-                      {opt.subtext && <div className="text-[9px] font-medium text-zinc-muted">{opt.subtext}</div>}
+                      {opt.subtext && <div className="text-[10px] font-medium text-zinc-muted">{opt.subtext}</div>}
                     </div>
                     {value === opt.value && <Check className="w-3 h-3 text-brand" />}
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-4 text-center text-[10px] text-zinc-muted italic">No matches found.</div>
+                <div className="px-3 py-4 text-center text-[10px] text-zinc-muted">No matches found.</div>
               )}
            </div>
         </div>

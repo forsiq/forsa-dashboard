@@ -33,7 +33,7 @@ export const DeleteCardConfirmation: React.FC<DeleteCardConfirmationProps> = ({
               <AlertTriangle className="w-6 h-6 text-danger" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-zinc-text uppercase tracking-tight italic">
+              <h3 className="text-lg font-black text-zinc-text uppercase tracking-tight">
                 {title}
               </h3>
             </div>

@@ -14,7 +14,8 @@ import {
   Info,
   Package,
   Calendar,
-  History
+  History,
+  Copy
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -28,6 +29,7 @@ import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
+import { useList as useCategories } from '../../../services/categories/hooks';
 import type { AuctionCreateInput, AuctionUpdateInput } from '../types/auction.types';
 
 /**
@@ -37,7 +39,9 @@ export const AuctionFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const { id } = router.query;
-  const isEdit = !!id;
+  const isClone = router.pathname.includes('/clone/');
+  const isEdit = !!id && !isClone;
+  const cloneSourceId = isClone ? Number(id) : undefined;
   const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
 
@@ -46,9 +50,14 @@ export const AuctionFormPage: React.FC = () => {
   }, []);
 
   const auctionId = Number(id);
-  const { data: existingAuction, isLoading: auctionLoading } = useGetAuction(auctionId);
+  const { data: existingAuction, isLoading: auctionLoading } = useGetAuction(isClone ? cloneSourceId! : auctionId);
   const { data: inventoryData } = useInventoryList();
+  const { data: categoriesData } = useCategories({ limit: 100 });
   const inventoryItems = (inventoryData as any)?.items || [];
+  const categoryOptions = (categoriesData as any)?.categories?.map((c: any) => ({
+    label: c.name,
+    value: String(c.id)
+  })) || [];
 
   const createMutation = useCreateAuction();
   const updateMutation = useUpdateAuction();
@@ -73,23 +82,24 @@ export const AuctionFormPage: React.FC = () => {
   // File upload hook with presigned URL flow
   const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useFileUpload();
 
-  // Sync with existing auction if editing
+  // Sync with existing auction if editing or cloning
   useEffect(() => {
-    if (isEdit && existingAuction) {
+    if (existingAuction) {
+      const titleSuffix = isClone ? ' (Copy)' : '';
       setFormData({
-        title: existingAuction.title,
+        title: existingAuction.title + titleSuffix,
         description: existingAuction.description,
         startPrice: existingAuction.startPrice,
         buyNowPrice: existingAuction.buyNowPrice,
         reservePrice: existingAuction.reservePrice,
-        startTime: existingAuction.startTime?.split('Z')[0], // Format for datetime-local
-        endTime: existingAuction.endTime?.split('Z')[0],
+        startTime: isClone ? '' : existingAuction.startTime?.split('Z')[0],
+        endTime: isClone ? '' : existingAuction.endTime?.split('Z')[0],
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
         images: existingAuction.images || [],
       });
     }
-  }, [isEdit, existingAuction]);
+  }, [isEdit, isClone, existingAuction]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -159,6 +169,7 @@ export const AuctionFormPage: React.FC = () => {
           id: auctionId
         } as AuctionUpdateInput);
       } else {
+        // Create (also handles clone - always creates new auction)
         await createMutation.mutateAsync(payload as AuctionCreateInput);
       }
       router.push('/auctions');
@@ -170,7 +181,7 @@ export const AuctionFormPage: React.FC = () => {
 
   if (!isClient) return null;
 
-  if (isEdit && (auctionLoading || !router.isReady)) {
+  if ((isEdit || isClone) && (auctionLoading || !router.isReady)) {
       return (
           <div className="max-w-6xl mx-auto p-6 space-y-8">
               <AmberFormSkeleton fields={8} header actions layout="grid" />
@@ -199,11 +210,11 @@ export const AuctionFormPage: React.FC = () => {
              </AmberButton>
           </Link>
           <div>
-            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase italic leading-none">
-              {isEdit ? t('auction.form.header.edit') : t('auction.form.header.create')}
+            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
+              {isClone ? (t('auction.form.header.clone') || 'Clone Auction') : isEdit ? t('auction.form.header.edit') : t('auction.form.header.create')}
             </h1>
             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
-              {isEdit ? t('auction.form.subtitle.edit', { id: String(id) }) : t('auction.form.subtitle.create')}
+              {isClone ? (t('auction.form.subtitle.clone') || `Duplicating auction #${id}`).replace('{id}', String(id)) : isEdit ? t('auction.form.subtitle.edit', { id: String(id) }) : t('auction.form.subtitle.create')}
             </p>
           </div>
         </div>
@@ -225,7 +236,7 @@ export const AuctionFormPage: React.FC = () => {
                 ) : (
                     <Save className="w-5 h-5" />
                 )}
-                 <span>{isEdit ? t('auction.form.action.sync') : t('auction.form.action.deploy')}</span>
+                 <span>{isClone ? (t('auction.form.action.clone') || 'Clone Auction') : isEdit ? t('auction.form.action.sync') : t('auction.form.action.deploy')}</span>
            </AmberButton>
         </div>
       </div>
@@ -238,7 +249,7 @@ export const AuctionFormPage: React.FC = () => {
                    <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
                       <Gavel className="w-5 h-5" />
                    </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">{t('auction.form.section.core')}</h3>
+                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.core')}</h3>
                 </div>
 
                 <div className="space-y-6">
@@ -261,12 +272,11 @@ export const AuctionFormPage: React.FC = () => {
                             <AmberDropdown 
                                 label={t('auction.form.tactical_category')}
                                 options={[
-                                    { label: t('auction.form.general_asset'), value: '1' },
-                                    { label: t('auction.form.critical_hardware'), value: '2' },
-                                    { label: t('auction.form.strategic_resources'), value: '3' },
+                                    { label: t('auction.form.manual_select') || 'Select Category...', value: '' },
+                                    ...categoryOptions
                                 ]}
-                                value={String(formData.categoryId || 1)}
-                                onChange={(val) => handleChange('categoryId', Number(val))}
+                                value={String(formData.categoryId || '')}
+                                onChange={(val) => handleChange('categoryId', val ? Number(val) : undefined)}
                             />
                         </div>
                     </div>
@@ -296,11 +306,11 @@ export const AuctionFormPage: React.FC = () => {
                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
                       <DollarSign className="w-5 h-5" />
                    </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">{t('auction.form.section.pricing')}</h3>
+                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.pricing')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <AmberInput 
+                    <AmberInput
                         label={t('auction.form.fields.start_price')}
                         type="number"
                         value={formData.startPrice}
@@ -308,19 +318,26 @@ export const AuctionFormPage: React.FC = () => {
                         icon={<TrendingUp className="w-4 h-4" />}
                         error={errors.startPrice}
                     />
-                    <AmberInput 
+                    <AmberInput
                         label={t('auction.form.fields.bid_increment')}
                         type="number"
                         value={formData.bidIncrement}
                         onChange={(e) => handleChange('bidIncrement', Number(e.target.value))}
                         icon={<Gavel className="w-4 h-4" />}
                     />
-                    <AmberInput 
+                    <AmberInput
                         label={t('auction.form.fields.buy_now')}
                         type="number"
                         value={formData.buyNowPrice || ''}
                         onChange={(e) => handleChange('buyNowPrice', Number(e.target.value))}
                         icon={<DollarSign className="w-4 h-4" />}
+                    />
+                    <AmberInput
+                        label={t('auction.form.fields.reserve_price') || 'Reserve Price'}
+                        type="number"
+                        value={formData.reservePrice || ''}
+                        onChange={(e) => handleChange('reservePrice', Number(e.target.value))}
+                        icon={<History className="w-4 h-4" />}
                     />
                 </div>
 
@@ -329,7 +346,7 @@ export const AuctionFormPage: React.FC = () => {
                          <Info className="w-4 h-4 text-emerald-400" />
                     </div>
                     <div className="space-y-1">
-                         <p className="text-xs font-black text-emerald-400 uppercase italic">{t('auction.form.pricing_note_title')}</p>
+                         <p className="text-xs font-black text-emerald-400 uppercase">{t('auction.form.pricing_note_title')}</p>
                          <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('auction.form.pricing_note_desc')}</p>
                     </div>
                 </div>
@@ -344,10 +361,10 @@ export const AuctionFormPage: React.FC = () => {
                    <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
                       <ImageIcon className="w-5 h-5" />
                    </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">{t('auction.form.section.visualization')}</h3>
+                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.visualization')}</h3>
                 </div>
                 <div className="space-y-4">
-                    <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1 italic">
+                    <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1">
                         {t('auction.form.imagery_specs')}
                     </label>
                     <AmberImageUpload 
@@ -371,7 +388,7 @@ export const AuctionFormPage: React.FC = () => {
                         uploadProgress={uploadProgress}
                         uploadError={uploadError}
                     />
-                    <p className="text-[9px] text-zinc-muted font-bold text-center uppercase tracking-widest italic">{t('auction.form.imagery_format_note')}</p>
+                    <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest">{t('auction.form.imagery_format_note')}</p>
                 </div>
             </Card>
 
@@ -381,7 +398,7 @@ export const AuctionFormPage: React.FC = () => {
                    <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
                       <Clock className="w-5 h-5" />
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] italic">{t('auction.form.section.temporal')}</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.temporal')}</h3>
                 </div>
                 <div className="space-y-6">
                     <AmberInput 
@@ -404,7 +421,7 @@ export const AuctionFormPage: React.FC = () => {
                 <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 space-y-3">
                      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                          <span className="text-zinc-muted">{t('auction.form.cycle_duration')}</span>
-                         <span className="text-warning italic">{t('auction.form.syncing')}</span>
+                         <span className="text-warning">{t('auction.form.syncing')}</span>
                      </div>
                      <div className="h-1 bg-white/[0.03] rounded-full overflow-hidden">
                          <div className="h-full bg-warning w-[65%]" />
@@ -415,18 +432,18 @@ export const AuctionFormPage: React.FC = () => {
             {/* Deployment Control Surface */}
             <div className="space-y-3">
                 <AmberButton 
-                    className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] italic rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
+                    className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
                     disabled={updateMutation.isPending || createMutation.isPending || isUploading}
                     onClick={handleSubmit}
                 >
                     {(updateMutation.isPending || createMutation.isPending || isUploading) && (
                         <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     )}
-                    {isEdit ? t('auction.form.authorize_sync') : t('auction.form.execute_deployment')}
+                    {isClone ? (t('auction.form.action.clone') || 'Clone Auction') : isEdit ? t('auction.form.authorize_sync') : t('auction.form.execute_deployment')}
                 </AmberButton>
                 <AmberButton 
                     variant="secondary" 
-                    className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest italic rounded-xl border border-white/5 active:scale-95 transition-all"
+                    className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
                     onClick={() => router.push('/auctions')}
                 >
                     {t('auction.form.cancel')}

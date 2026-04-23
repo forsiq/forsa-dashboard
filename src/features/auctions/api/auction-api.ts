@@ -128,6 +128,15 @@ export const auctionApi = {
   },
 
   /**
+   * Buy Now - purchase auction at buyNowPrice
+   */
+  buyNow: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/buy-now/`);
+    return response.data.data;
+  },
+
+  /**
    * Get auction statistics
    */
   getStats: async (): Promise<AuctionStats> => {
@@ -150,16 +159,24 @@ export const auctionApi = {
    */
   toggleWatch: async (auctionId: number, isLiked?: boolean): Promise<void> => {
     const client = auctionBaseApi.getInstance();
-    const endpoint = isLiked ? '/engagement/unlike/' : '/engagement/like/';
-    await client.post(endpoint, { auctionId });
+    if (isLiked) {
+      await client.delete(`/favorites/${auctionId}/auction`);
+      return;
+    }
+
+    await client.post('/favorites', {
+      itemId: auctionId,
+      itemType: 'auction',
+    });
   },
 
   /**
    * Track view
    */
   trackView: async (auctionId: number): Promise<void> => {
-    const client = auctionBaseApi.getInstance();
-    await client.post('/engagement/view/', { auctionId });
+    // No dedicated endpoint exists in auction-service right now.
+    // Keep this as a no-op to avoid 404 noise until backend adds it.
+    return Promise.resolve();
   },
 
   /**
@@ -167,8 +184,12 @@ export const auctionApi = {
    */
   getWatched: async (): Promise<Auction[]> => {
     const client = auctionBaseApi.getInstance();
-    const response = await client.get('/engagement/watched/');
-    return response.data.data || [];
+    const response = await client.get('/favorites', {
+      params: { itemType: 'auction' },
+    });
+
+    const favorites = response.data?.data || [];
+    return favorites.map((favorite: any) => favorite.item).filter(Boolean);
   },
 
   /**

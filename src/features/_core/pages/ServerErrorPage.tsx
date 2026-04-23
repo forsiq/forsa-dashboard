@@ -30,7 +30,7 @@ export const ServerErrorPage = () => {
           <div className="absolute inset-0 border-2 border-danger/20 rounded-full animate-ping opacity-20" />
         </div>
 
-        <h1 className="text-5xl font-black text-zinc-text tracking-tighter uppercase italic mb-2">
+        <h1 className="text-5xl font-black text-zinc-text tracking-tighter uppercase mb-2">
           {t('error.500_title')}
         </h1>
         <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.4em] mb-8">
@@ -67,7 +67,7 @@ export const ServerErrorPage = () => {
       </div>
 
       <div className="absolute bottom-6 left-0 right-0 text-center">
-         <p className="text-[9px] font-mono text-zinc-muted/40 uppercase">{t('error.zonevast_enterprise')} • {traceId}</p>
+         <p className="text-[10px] font-mono text-zinc-muted/40 uppercase">{t('error.zonevast_enterprise')} • {traceId}</p>
       </div>
     </div>
   );

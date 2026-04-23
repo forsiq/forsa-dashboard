@@ -391,7 +391,7 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center bg-white/[0.02] gap-2">
                         <AlertCircle className="w-6 h-6 text-danger/50" />
-                        <p className="text-[9px] text-danger/50 font-bold uppercase">Load Failed</p>
+                        <p className="text-[10px] text-danger/50 font-bold uppercase">Load Failed</p>
                       </div>
                     )}
                   </div>

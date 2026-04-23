@@ -114,7 +114,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={t('search.placeholder') || "Search..."}
-                        className="flex-1 bg-transparent border-none outline-none px-4 text-zinc-text text-lg placeholder-zinc-muted font-medium italic"
+                        className="flex-1 bg-transparent border-none outline-none px-4 text-zinc-text text-lg placeholder-zinc-muted font-medium"
                     />
                     <button onClick={onClose} className="p-1.5 hover:bg-white/5 rounded-sm transition-colors text-zinc-muted">
                         <X className="w-5 h-5" />
@@ -199,7 +199,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                                                             svc.onToggle!(svc.id);
                                                         }}
                                                         className={cn(
-                                                            "px-3 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                                                            "px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
                                                             svc.enabled
                                                                 ? "bg-success/10 text-success border border-success/20 hover:bg-success/20"
                                                                 : "bg-brand/10 text-brand border border-brand/20 hover:bg-brand/20"
@@ -224,7 +224,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                                     <Database className="w-3.5 h-3.5" /> Records & Assets
                                 </h3>
                                 {showNoResults && (
-                                    <p className="text-zinc-muted text-sm italic py-4 text-center">Searching authoritative data sources for <span className="text-brand font-bold">"{query}"</span>...</p>
+                                    <p className="text-zinc-muted text-sm py-4 text-center">Searching authoritative data sources for <span className="text-brand font-bold">"{query}"</span>...</p>
                                 )}
                                 <div className="grid grid-cols-1 gap-2">
                                     {[
@@ -250,12 +250,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                         {t('search.global_title') || "Global Search"}
                     </p>
                     <div className="flex gap-4">
-                        <span className="text-[9px] font-bold text-zinc-muted uppercase hidden sm:flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-zinc-muted uppercase hidden sm:flex items-center gap-1">
                             <kbd className="bg-white/5 px-1 py-0.5 rounded flex items-center gap-0.5">
                                 <Command className="w-2.5 h-2.5" /> K
                             </kbd> Open
                         </span>
-                        <span className="text-[9px] font-bold text-zinc-muted uppercase"><kbd className="bg-white/5 px-1 py-0.5 rounded mr-1">ESC</kbd> Close</span>
+                        <span className="text-[10px] font-bold text-zinc-muted uppercase"><kbd className="bg-white/5 px-1 py-0.5 rounded mr-1">ESC</kbd> Close</span>
                     </div>
                 </div>
             </div>

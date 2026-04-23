@@ -200,15 +200,15 @@ export function CustomerDetailPage() {
               <div className="space-y-6">
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Thread Volume</span>
-                    <span className="text-2xl font-black text-zinc-text tabular-nums italic leading-none">{customer.totalOrders || 0}</span>
+                    <span className="text-2xl font-black text-zinc-text tabular-nums leading-none">{customer.totalOrders || 0}</span>
                  </div>
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Total Expenditure</span>
-                    <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums italic leading-none">BHD {(customer.totalSpent || 0).toLocaleString()}</span>
+                    <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums leading-none">BHD {(customer.totalSpent || 0).toLocaleString()}</span>
                  </div>
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Reliability Index</span>
-                    <span className="text-2xl font-black text-[var(--color-success)] tabular-nums italic leading-none">98.4%</span>
+                    <span className="text-2xl font-black text-[var(--color-success)] tabular-nums leading-none">98.4%</span>
                  </div>
               </div>
            </Card>

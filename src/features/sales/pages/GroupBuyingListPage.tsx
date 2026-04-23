@@ -117,7 +117,7 @@ export const GroupBuyingListPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{campaign.title}</p>
-            <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
+            <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {campaign.category?.name || 'GENERAL'}
             </p>
           </div>
@@ -163,7 +163,7 @@ export const GroupBuyingListPage: React.FC = () => {
           <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
             ${campaign.dealPrice.toLocaleString()}
           </span>
-          <p className="text-[9px] font-black text-zinc-muted line-through mt-0.5">
+          <p className="text-[10px] font-black text-zinc-muted line-through mt-0.5">
             ${campaign.originalPrice.toLocaleString()}
           </p>
         </div>
@@ -397,7 +397,7 @@ export const GroupBuyingListPage: React.FC = () => {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.strategy') || 'Status'}</label>
               <div className="grid grid-cols-2 gap-3">
-                {['all', 'active', 'scheduled', 'completed', 'cancelled'].map((status) => (
+                {['all', 'active', 'scheduled', 'completed', 'cancelled', 'draft', 'unlocked', 'expired'].map((status) => (
                   <button
                     key={status}
                     onClick={() => setStatusFilter(status)}

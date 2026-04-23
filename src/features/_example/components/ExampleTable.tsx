@@ -184,7 +184,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
                       </td>
                       <td className="px-6 py-4">
                         <span className={cn(
-                          "text-[9px] md:text-[10px] font-black px-2 py-1 rounded border uppercase tracking-[0.2em] inline-flex items-center gap-2",
+                          "text-[10px] md:text-[10px] font-black px-2 py-1 rounded border uppercase tracking-[0.2em] inline-flex items-center gap-2",
                           getStatusColor(item.status)
                         )}>
                           {item.status === 'pending' && <AlertTriangle className="w-3 h-3 animate-pulse" />}
@@ -224,18 +224,18 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div className="space-y-2">
                                  <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] font-black">{t('form.resource_desc')}</h4>
-                                 <p className="text-xs text-zinc-muted/80 leading-relaxed font-medium italic">
+                                 <p className="text-xs text-zinc-muted/80 leading-relaxed font-medium">
                                     {item.description || 'No detailed description available for this record.'}
                                  </p>
                               </div>
                               <div className="space-y-4">
                                  <div className="grid grid-cols-2 gap-4">
                                      <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-zinc-muted/40 uppercase tracking-widest">{t('details.uuid')}</p>
+                                        <p className="text-[10px] font-black text-zinc-muted/40 uppercase tracking-widest">{t('details.uuid')}</p>
                                         <p className="text-[10px] font-mono text-zinc-muted">{item.id}</p>
                                      </div>
                                      <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-zinc-muted/40 uppercase tracking-widest">{t('rec.table.date')}</p>
+                                        <p className="text-[10px] font-black text-zinc-muted/40 uppercase tracking-widest">{t('rec.table.date')}</p>
                                         <p className="text-[10px] font-mono text-zinc-muted">{new Date(item.createdAt).toISOString()}</p>
                                      </div>
                                  </div>
@@ -261,7 +261,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
 
         {/* Improved Pagination Footer */}
         <div className="px-6 py-5 border-t border-white/5 bg-obsidian-outer/20 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-black text-zinc-muted/40 uppercase tracking-[0.3em] italic">
+          <p className="text-xs font-black text-zinc-muted/40 uppercase tracking-[0.3em]">
             {t('proj.showing')} 1-10 {t('proj.of')} {data.length} {t('portal.items')}
           </p>
           <div className="flex gap-2">

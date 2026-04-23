@@ -307,7 +307,7 @@ export function IconPicker({
               filteredIcons.some(i => i.category === cat)
             ).map(category => (
               <div key={category}>
-                <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest px-1 mb-2">
+                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest px-1 mb-2">
                   {category}
                 </p>
                 <div className="grid grid-cols-8 gap-1">

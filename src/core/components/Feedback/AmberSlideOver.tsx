@@ -65,12 +65,12 @@ export const AmberSlideOver: React.FC<SlideOverProps> = ({
             <div className="px-6 py-6 border-b border-white/5 bg-obsidian-panel/40 backdrop-blur-md flex items-start justify-between relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/50 to-transparent" />
               <div className="relative z-10">
-                <h2 className="text-xl font-black text-zinc-text uppercase tracking-tight italic flex items-center gap-2">
+                <h2 className="text-xl font-black text-zinc-text uppercase tracking-tight flex items-center gap-2">
                   <span className="w-1.5 h-6 bg-brand rounded-full" />
                   {title}
                 </h2>
                 {description && (
-                  <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mt-1.5 opacity-70 italic">{description}</p>
+                  <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mt-1.5 opacity-70">{description}</p>
                 )}
               </div>
               <button

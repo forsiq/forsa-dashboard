@@ -60,7 +60,7 @@ export const RegisterForm: React.FC = () => {
           </div>
         </div>
         <div className="space-y-4">
-          <h2 className="text-3xl font-black text-white tracking-tighter uppercase italic drop-shadow-lg">
+          <h2 className="text-3xl font-black text-white tracking-tighter uppercase drop-shadow-lg">
              {t('auth.register.success_title')}
           </h2>
           <p className="text-[13px] font-black text-zinc-muted uppercase tracking-[0.2em] max-w-[320px] mx-auto leading-relaxed">

@@ -92,7 +92,7 @@ export const InventoryOverviewPage: React.FC = () => {
         return (
           <div className="flex flex-col items-center">
             <span className={cn(
-              "text-sm font-black tabular-nums tracking-tighter italic",
+              "text-sm font-black tabular-nums tracking-tighter",
               qty <= lowStockThreshold ? "text-danger" : "text-zinc-text"
             )}>
               {qty}
@@ -123,7 +123,7 @@ export const InventoryOverviewPage: React.FC = () => {
       key: 'warehouse',
       label: 'STORAGE NODE',
       render: () => (
-        <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">
+        <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
           {t('inventory.default_warehouse') || 'Primary Vault'}
         </span>
       ),
@@ -146,7 +146,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 <Warehouse className="w-5 h-5" />
              </div>
              <div>
-                <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none uppercase italic">
+                <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
                     {t('inventory.overview') || 'Inventory Management'}
                 </h1>
                 <p className="text-base text-zinc-secondary font-bold tracking-tight uppercase mt-1">
@@ -184,16 +184,16 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-brand/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">
+                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
                       {t('inventory.global_units') || 'Global Inventory Units'}
                     </span>
-                    <h3 className="text-3xl font-black text-zinc-text tracking-tighter italic tabular-nums">{products.length}</h3>
+                    <h3 className="text-3xl font-black text-zinc-text tracking-tighter tabular-nums">{products.length}</h3>
                 </div>
                 <div className="p-3 bg-brand/10 text-brand rounded-xl border border-brand/20">
                     <Package className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-success italic mt-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
                 <TrendingUp className="w-3 h-3" />
                 <span>+12.8% Since Previous Cycle</span>
             </div>
@@ -202,16 +202,16 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-danger/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-danger uppercase tracking-widest italic">
+                    <span className="text-[10px] font-black text-danger uppercase tracking-widest">
                       {t('inventory.critical_alert') || 'Critical Supply Alert'}
                     </span>
-                    <h3 className="text-3xl font-black text-danger tracking-tighter italic tabular-nums">{lowStockItems.length}</h3>
+                    <h3 className="text-3xl font-black text-danger tracking-tighter tabular-nums">{lowStockItems.length}</h3>
                 </div>
                 <div className="p-3 bg-danger/10 text-danger rounded-xl border border-danger/20">
                     <AlertCircle className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-danger italic mt-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-danger mt-4">
                 <ArrowRight className="w-3 h-3" />
                 <span>Requires Immediate Procurement</span>
             </div>
@@ -220,14 +220,14 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-info/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-info uppercase tracking-widest italic">Active Logistics Nodes</span>
-                    <h3 className="text-3xl font-black text-info tracking-tighter italic tabular-nums">{warehouses.length}</h3>
+                    <span className="text-[10px] font-black text-info uppercase tracking-widest">Active Logistics Nodes</span>
+                    <h3 className="text-3xl font-black text-info tracking-tighter tabular-nums">{warehouses.length}</h3>
                 </div>
                 <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
                     <Warehouse className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted italic mt-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4">
                 <span>94% Operational Efficiency</span>
             </div>
           </Card>
@@ -235,8 +235,8 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-success/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-success uppercase tracking-widest italic">Aggregated Fiscal Value</span>
-                    <h3 className="text-3xl font-black text-success tracking-tighter italic tabular-nums">
+                    <span className="text-[10px] font-black text-success uppercase tracking-widest">Aggregated Fiscal Value</span>
+                    <h3 className="text-3xl font-black text-success tracking-tighter tabular-nums">
                         ${products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0).toLocaleString()}
                     </h3>
                 </div>
@@ -244,7 +244,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <TrendingUp className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-success italic mt-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
                 <span>Equity Optimization High</span>
             </div>
           </Card>
@@ -254,7 +254,7 @@ export const InventoryOverviewPage: React.FC = () => {
         {/* Resource Matrix (DataTable) */}
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.2em] italic flex items-center gap-2">
+            <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.2em] flex items-center gap-2">
                <Layers className="w-4 h-4" /> Global Resource Distribution
             </h2>
             <div className="relative group min-w-[280px]">
@@ -264,7 +264,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 )} />
                 <AmberInput 
                     placeholder="Search allocation identifiers..." 
-                    className="h-10 bg-obsidian-card border-border pl-10 pr-4 text-[11px] font-bold italic"
+                    className="h-10 bg-obsidian-card border-border pl-10 pr-4 text-[11px] font-bold"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -293,7 +293,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em] flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-danger animate-pulse" /> Critical Depletion Alerts
                     </h3>
-                    <span className="text-[10px] font-black text-danger bg-danger/10 px-3 py-1 rounded-full border border-danger/30 italic">
+                    <span className="text-[10px] font-black text-danger bg-danger/10 px-3 py-1 rounded-full border border-danger/30">
                         {lowStockItems.length} DETECTED
                     </span>
                 </div>
@@ -303,10 +303,10 @@ export const InventoryOverviewPage: React.FC = () => {
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
                                     <p className="text-xs font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
-                                    <p className="text-[9px] font-bold text-zinc-muted uppercase">Protocol: High Urgency Procurement</p>
+                                    <p className="text-[10px] font-bold text-zinc-muted uppercase">Protocol: High Urgency Procurement</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-black text-danger italic leading-none">{item.inventory_quantity || 0}</p>
+                                    <p className="text-sm font-black text-danger leading-none">{item.inventory_quantity || 0}</p>
                                     <p className="text-[8px] font-black text-zinc-muted uppercase mt-1">Remaining</p>
                                 </div>
                             </div>
@@ -314,13 +314,13 @@ export const InventoryOverviewPage: React.FC = () => {
                     )) : (
                         <div className="py-12 text-center space-y-3 opacity-40">
                              <Box className="w-8 h-8 mx-auto text-zinc-muted" />
-                             <p className="text-[10px] font-black uppercase tracking-widest italic">
+                             <p className="text-[10px] font-black uppercase tracking-widest">
                                {t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}
                              </p>
                         </div>
                     )}
                 </div>
-                <AmberButton variant="outline" className="w-full mt-6 h-11 border-danger/20 text-danger hover:bg-danger/5 font-black uppercase text-[10px] tracking-widest italic">
+                <AmberButton variant="outline" className="w-full mt-6 h-11 border-danger/20 text-danger hover:bg-danger/5 font-black uppercase text-[10px] tracking-widest">
                     {t('inventory.generate_procurement_order') || 'Generate Procurement Order'}
                 </AmberButton>
            </Card>
@@ -329,15 +329,15 @@ export const InventoryOverviewPage: React.FC = () => {
            <Card className="!p-6 bg-obsidian-card border-border shadow-lg">
                 <div className="flex items-center gap-3 mb-8">
                    <Warehouse className="w-4 h-4 text-brand" />
-                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em] italic">Facility Capacity Index</h3>
+                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em]">Facility Capacity Index</h3>
                 </div>
                 <div className="space-y-10">
                    {warehouses.map((wh, i) => (
                        <div key={i} className="group cursor-default">
                            <div className="flex items-center justify-between mb-3 text-[10px] font-black uppercase tracking-widest">
-                               <span className="text-zinc-text group-hover:text-brand transition-colors italic">{wh.name}</span>
+                               <span className="text-zinc-text group-hover:text-brand transition-colors">{wh.name}</span>
                                <span className={cn(
-                                   "px-2 py-0.5 rounded border italic",
+                                   "px-2 py-0.5 rounded border",
                                    wh.used / wh.capacity > 0.8 ? "bg-warning/10 text-warning border-warning/30" : "bg-brand/10 text-brand border-brand/30"
                                )}>
                                    {wh.status}
@@ -348,7 +348,7 @@ export const InventoryOverviewPage: React.FC = () => {
                                 variant={wh.used / wh.capacity > 0.8 ? 'warning' : 'primary'}
                                 className="h-2"
                            />
-                           <div className="flex items-center justify-between mt-3 text-[9px] font-black text-zinc-muted uppercase tracking-[0.2em] italic">
+                           <div className="flex items-center justify-between mt-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">
                                <span>Allocated: {wh.used} units</span>
                                <span>Capacity: {wh.capacity} units</span>
                            </div>
@@ -368,7 +368,7 @@ export const InventoryOverviewPage: React.FC = () => {
       >
           <div className="space-y-8 py-4">
               <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">Global Search</label>
+                  <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Global Search</label>
                   <AmberInput 
                     placeholder="Scan per name or SKU..." 
                     value={searchQuery}
@@ -381,7 +381,7 @@ export const InventoryOverviewPage: React.FC = () => {
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest italic">Operational Status</label>
+                    <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Operational Status</label>
                     <AmberDropdown 
                         options={[
                             { label: 'All Protocols', value: 'all' },
