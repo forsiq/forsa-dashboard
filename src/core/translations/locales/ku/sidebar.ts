@@ -26,4 +26,5 @@ export const sidebar = {
   "sidebar.general": "گشتی",
   "sidebar.warehouses": "کۆگاکان",
   "sidebar.group_review": "پێداچوونەوەی کڕینی کۆمەڵ",
+  "sidebar.live_monitor": "چاودێری ڕاستەوخۆ",
 } as const;

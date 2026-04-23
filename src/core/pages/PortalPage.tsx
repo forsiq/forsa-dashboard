@@ -5,10 +5,10 @@ import {
   Grip,
   ArrowUpRight,
   ExternalLink,
-  Hexagon,
   LogOut
 } from 'lucide-react';
 import { AmberCard } from '../components/AmberCard';
+import { AmberLogo } from '../components/AmberLogo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNavigation } from '../contexts/NavigationContext';
 import { cn } from '../lib/utils/cn';
@@ -84,7 +84,7 @@ export const PortalPage: React.FC = () => {
               <Grip className="w-6 h-6 text-brand" />
             </div>
             <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
-              ZV <span className="text-brand">Gateway</span>
+              {t('portal.title_prefix') || 'بوابة'} <span className="text-brand">{t('portal.title_suffix') || 'زون فاست'}</span>
             </h1>
           </motion.div>
           <p className="text-zinc-muted max-w-xl text-sm font-medium leading-relaxed tracking-tight">
@@ -178,7 +178,7 @@ export const PortalPage: React.FC = () => {
          </button>
          <div className="flex-1" />
          <div className="flex items-center gap-2 group cursor-help">
-            <Hexagon className="w-8 h-8 text-brand transition-transform group-hover:rotate-180 duration-1000" />
+            <AmberLogo className="w-8 h-8 text-brand transition-transform group-hover:rotate-180 duration-1000" />
             <div className="text-right">
                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] block leading-none">{t('portal.version') || 'الإصدار'}</span>
                <span className="text-[10px] font-bold text-zinc-muted/40 uppercase tracking-widest block mt-1 leading-none">1.0.4-LTS</span>

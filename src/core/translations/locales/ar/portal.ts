@@ -3,6 +3,8 @@ export const portal = {
   "portal.title": "بوابة ZoneVast",
   "portal.home": "الرئيسية",
   "portal.gateway_title": "بوابة ZV",
+  "portal.title_prefix": "بوابة",
+  "portal.title_suffix": "زون فاست",
   "portal.subtitle": "بوابة الوصول الموحدة من ZoneVast. اختر خدمة أدناه للانتقال إلى منظومة أعمال محددة أو إدارة مشاريع متعددة المنصات.",
   "portal.operational_status": "حالة التشغيل",
   "portal.all_systems_normal": "جميع الأنظمة تعمل",

@@ -127,6 +127,8 @@ export const portal = {
   "portal.async_queue_length": "Async Queue Length",
   "portal.system_version_history": "System Version History",
   "portal.subtitle": "Unified access gateway for ZoneVast services.",
+  "portal.title_prefix": "ZV",
+  "portal.title_suffix": "Gateway",
   "portal.operational_status": "Operational status",
   "portal.all_systems_normal": "All systems nominal",
   "portal.logout": "Log out",

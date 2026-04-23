@@ -2,20 +2,21 @@ import React from 'react';
 import { Gavel } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { useTickerHistory } from '../../auctions/api/auction-hooks';
-import { cn } from '@core/lib/utils/cn';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const TickerHistoryLoader: React.FC = () => {
   const { data: history, isLoading } = useTickerHistory(50);
+  const { t } = useLanguage();
 
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4 border-l-2 border-brand pl-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
-            Recent Bids
+            {t('live.recentBids')}
           </h3>
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20">
-            Loading...
+            {t('live.loading')}
           </span>
         </div>
       </div>
@@ -31,10 +32,10 @@ export const TickerHistoryLoader: React.FC = () => {
           <div className="flex flex-col items-center justify-center h-40 text-center">
             <Gavel className="w-8 h-8 text-zinc-muted/30 mb-3" />
             <p className="text-sm text-zinc-muted/50 font-bold">
-              No recent bids
+              {t('live.noRecentBids')}
             </p>
             <p className="text-[10px] text-zinc-muted/30 uppercase tracking-widest mt-1">
-              Connect to see live events
+              {t('live.connectToSee')}
             </p>
           </div>
         ) : (
@@ -57,7 +58,7 @@ export const TickerHistoryLoader: React.FC = () => {
                   </span>
                   {item.bidderId && (
                     <span className="text-[10px] text-zinc-muted/60 font-mono">
-                      by {item.bidderId.slice(0, 8)}...
+                      {t('live.by')} {item.bidderId.slice(0, 8)}...
                     </span>
                   )}
                 </div>

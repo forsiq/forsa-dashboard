@@ -67,4 +67,5 @@ export const sidebar = {
   "sidebar.my_bids": "My Bids",
   "sidebar.watchlist": "Watchlist",
   "sidebar.users": "Users",
+  "sidebar.live_monitor": "Live Monitor",
 } as const;

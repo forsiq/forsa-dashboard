@@ -5,8 +5,10 @@ import { LiveStatsBar } from '../components/LiveStatsBar';
 import { GlobalBidTicker } from '../components/GlobalBidTicker';
 import { ActiveAuctionsGrid } from '../components/ActiveAuctionsGrid';
 import { TickerHistoryLoader } from '../components/TickerHistoryLoader';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const LiveMonitorPage = () => {
+  const { t } = useLanguage();
   const { events, isConnected, error, clearEvents } = useGlobalTicker({
     enabled: true,
     maxEvents: 200,
@@ -15,13 +17,13 @@ export const LiveMonitorPage = () => {
   const { data: liveStats, isLoading: statsLoading } = useLiveStats();
 
   return (
-    <div className="space-y-6 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black text-zinc-text tracking-tight leading-none uppercase">
-              Live Monitor
+            <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
+              {t('live.title')}
             </h1>
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
@@ -35,11 +37,11 @@ export const LiveMonitorPage = () => {
                   isConnected ? 'bg-success animate-pulse' : 'bg-danger'
                 }`}
               />
-              {isConnected ? 'Connected' : 'Disconnected'}
+              {isConnected ? t('live.connected') : t('live.disconnected')}
             </span>
           </div>
           <p className="text-sm text-zinc-secondary font-bold uppercase tracking-tight">
-            Real-time auction monitoring and bid ticker
+            {t('live.subtitle')}
           </p>
         </div>
 

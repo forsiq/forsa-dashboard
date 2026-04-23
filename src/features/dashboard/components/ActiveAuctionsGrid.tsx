@@ -13,8 +13,10 @@ import { cn } from '@core/lib/utils/cn';
 import { useGetAuctions, useEndAuction, usePauseAuction, useExtendAuction } from '../../auctions/api/auction-hooks';
 import type { Auction } from '../../auctions/types/auction.types';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const ActiveAuctionsGrid: React.FC = () => {
+  const { t } = useLanguage();
   const { data: auctionsData, isLoading } = useGetAuctions({
     status: 'active',
     limit: 20,
@@ -33,7 +35,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
     const end = new Date(endTime).getTime();
     const diff = end - now;
 
-    if (diff <= 0) return 'Ended';
+    if (diff <= 0) return t('live.endedTime');
 
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -67,10 +69,10 @@ export const ActiveAuctionsGrid: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 border-l-2 border-warning pl-3">
         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
-          Active Auctions
+          {t('live.activeAuctionsTitle')}
         </h3>
         <span className="text-[10px] text-zinc-muted font-mono uppercase tracking-widest">
-          {auctions.length} live
+          {auctions.length} {t('live.liveCount')}
         </span>
       </div>
 
@@ -86,7 +88,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
           <div className="flex flex-col items-center justify-center h-40 text-center">
             <Gavel className="w-8 h-8 text-zinc-muted/30 mb-3" />
             <p className="text-sm text-zinc-muted/50 font-bold">
-              No active auctions
+              {t('live.noActiveAuctions')}
             </p>
           </div>
         ) : (
@@ -99,9 +101,9 @@ export const ActiveAuctionsGrid: React.FC = () => {
               formatTimeRemaining={formatTimeRemaining}
               onEnd={() => {
                 openConfirm({
-                  title: 'End Auction',
+                  title: t('live.endAuction'),
                   message: `End "${auction.title}" now? This cannot be undone.`,
-                  confirmText: 'End Now',
+                  confirmText: t('live.endAuction'),
                   variant: 'danger',
                   onConfirm: () => endAuction.mutate(auction.id),
                 });
@@ -109,9 +111,9 @@ export const ActiveAuctionsGrid: React.FC = () => {
               onPause={() => pauseAuction.mutate(auction.id)}
               onExtend={() => {
                 openConfirm({
-                  title: 'Extend Auction',
+                  title: t('live.extend'),
                   message: `Extend "${auction.title}" by 15 minutes?`,
-                  confirmText: 'Extend 15m',
+                  confirmText: t('live.extend'),
                   variant: 'warning',
                   onConfirm: () => extendAuction.mutate({ id: auction.id, minutes: 15 }),
                 });
@@ -145,6 +147,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   onPause,
   onExtend,
 }) => {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [timeStr, setTimeStr] = useState(formatTimeRemaining(auction.endTime));
 
@@ -180,7 +183,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
               {(auction.currentBid || auction.startPrice).toLocaleString()} IQD
             </span>
             <span className="text-[10px] text-zinc-muted font-mono">
-              {auction.totalBids} bids
+              {auction.totalBids} {t('live.bids')}
             </span>
           </div>
         </div>
@@ -194,7 +197,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
             onClick={() => setExpanded(!expanded)}
             className="mt-1 text-[9px] text-zinc-muted/60 hover:text-zinc-text uppercase tracking-widest font-bold transition-colors flex items-center gap-0.5"
           >
-            actions
+            {t('live.actions')}
             {expanded ? (
               <ChevronUp className="w-3 h-3" />
             ) : (
@@ -211,21 +214,21 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20 hover:bg-warning/20 transition-colors"
           >
             <ArrowUp className="w-3 h-3" />
-            +15m
+            {t('live.extend')}
           </button>
           <button
             onClick={onPause}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
           >
             <Pause className="w-3 h-3" />
-            Pause
+            {t('live.pauseAuction')}
           </button>
           <button
             onClick={onEnd}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
           >
             <Square className="w-3 h-3" />
-            End
+            {t('live.endAuction')}
           </button>
         </div>
       )}
