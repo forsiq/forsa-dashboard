@@ -69,17 +69,15 @@ export const dashboardKeys = {
 // Dashboard Stats Hook
 // ============================================================================
 
-/**
- * Hook to fetch dashboard statistics from multiple sources
- */
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<DashboardStats> => {
-      const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.getStats().catch(() => ({ data: { active: 0, total: 0, revenue: 0 } })),
-        groupBuyingBaseApi.getStats().catch(() => ({ data: { active: 0, total: 0 } })),
-        orderBaseApi.getStats().catch(() => ({ data: { total_revenue: 0, total: 0 } })),
+      const [auctionStatsRes, groupBuyingStatsRes, ordersRes, categoriesRes] = await Promise.all([
+        auctionBaseApi.getStats().catch(() => ({ data: {} })),
+        groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
+        orderBaseApi.getStats().catch(() => ({ data: {} })),
+        categoryBaseApi.getStats().catch(() => ({ data: {} })),
       ]);
 
       const auctionStats = (auctionStatsRes as any).data || {};
@@ -87,13 +85,13 @@ export const useDashboardStats = () => {
       const orderStats = (ordersRes as any).data || {};
 
       return {
-        totalRevenue: orderStats.total_revenue || auctionStats.revenue || 0,
+        totalRevenue: orderStats.total_revenue || auctionStats.totalRevenue || 0,
         revenueChange: 0,
-        totalOrders: (auctionStats.active || 0) + (groupStats.active || 0),
+        totalOrders: orderStats.total || 0,
         ordersChange: 0,
-        totalProducts: (auctionStats.total || 0) + (groupStats.total || 0),
+        totalProducts: (auctionStats.totalAuctions || 0) + (groupStats.active_campaigns || 0),
         productsChange: 0,
-        totalCustomers: auctionStats.bids || 0,
+        totalCustomers: (groupStats.total_participants || 0) + (auctionStats.totalAuctions || 0),
         customersChange: 0,
       };
     },
@@ -109,34 +107,44 @@ export const useRecentOrders = () => {
   return useQuery({
     queryKey: dashboardKeys.recentOrders(),
     queryFn: async (): Promise<RecentOrder[]> => {
-      const [auctionsRes, groupBuyingsRes] = await Promise.all([
-        auctionBaseApi.list({ limit: 5 }).catch(() => ({ data: [] })),
+      const [auctionsRes, groupBuyingsRes, ordersRes] = await Promise.all([
+        auctionBaseApi.list({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' }).catch(() => ({ data: [] })),
         groupBuyingBaseApi.list({ limit: 5 }).catch(() => ({ data: [] })),
+        orderBaseApi.list({ limit: 5 }).catch(() => ({ data: [] })),
       ]);
 
       const auctions = (auctionsRes as any).data || [];
       const groupBuyings = (groupBuyingsRes as any).data || [];
+      const orders = (ordersRes as any).data || [];
 
-      const orders: RecentOrder[] = [
+      const items: RecentOrder[] = [
         ...auctions.map((a: any) => ({
           id: `AUC-${a.id}`,
-          customerName: 'Auction',
-          productName: a.title || 'Product',
-          amount: a.current_bid || 0,
+          customerName: a.sellerId || 'Seller',
+          productName: a.title || 'Auction',
+          amount: parseFloat(a.currentBid || a.startPrice || '0'),
           status: a.status,
-          date: a.created_at || new Date().toISOString(),
+          date: a.createdAt || a.created_at || new Date().toISOString(),
         })),
         ...groupBuyings.map((g: any) => ({
           id: `GB-${g.id}`,
-          customerName: `${g.current_participants || 0} participants`,
-          productName: g.title || 'Group Buying',
-          amount: (g.deal_price || 0) * (g.current_participants || 0),
+          customerName: `${g.currentParticipants || 0} ${typeof window !== 'undefined' ? 'participants' : ''}`,
+          productName: g.title || 'Group Deal',
+          amount: parseFloat(g.dealPrice || '0') * (g.currentParticipants || 0),
           status: g.status,
-          date: g.created_at || new Date().toISOString(),
+          date: g.createdAt || g.created_at || new Date().toISOString(),
+        })),
+        ...orders.map((o: any) => ({
+          id: `ORD-${o.id}`,
+          customerName: o.customerName || o.customer?.name || 'Customer',
+          productName: o.items?.[0]?.productName || `Order #${o.id}`,
+          amount: parseFloat(o.totalAmount || o.total || '0'),
+          status: o.status,
+          date: o.createdAt || o.created_at || new Date().toISOString(),
         })),
       ];
 
-      return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+      return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 8);
     },
     staleTime: 1000 * 60 * 2,
   });
@@ -150,17 +158,27 @@ export const useTopProducts = () => {
   return useQuery({
     queryKey: dashboardKeys.topProducts(),
     queryFn: async (): Promise<TopProduct[]> => {
-      const auctionsRes = await auctionBaseApi.list({ limit: 5 }).catch(() => ({ data: [] }));
-      const products = (auctionsRes as any).data || [];
+      const [auctionsRes, categoriesRes] = await Promise.all([
+        auctionBaseApi.list({ limit: 10, status: 'active', sortBy: 'totalBids', sortOrder: 'desc' }).catch(() => ({ data: [] })),
+        categoryBaseApi.list().catch(() => ({ data: [] })),
+      ]);
 
-      return products.map((p: any, index: number) => ({
-        id: p.id,
-        name: p.title || p.name || `Product ${index + 1}`,
-        category: p.category?.name || 'Uncategorized',
-        sales: p.total_bids || 0,
-        revenue: (p.current_bid || p.start_price || 0) * (p.total_bids || 1),
-        stock: p.stock_quantity || 0,
-      }));
+      const auctions = (auctionsRes as any).data || [];
+      const categories = (categoriesRes as any).data || [];
+
+      const categoryMap = new Map(categories.map((c: any) => [c.id, c.name]));
+
+      return auctions
+        .map((a: any) => ({
+          id: String(a.id),
+          name: a.title || `Auction #${a.id}`,
+          category: categoryMap.get(a.categoryId) || a.category?.name || 'Uncategorized',
+          sales: a.totalBids || 0,
+          revenue: parseFloat(a.currentBid || a.startPrice || '0'),
+          stock: a.viewCount || 0,
+        }))
+        .sort((a: any, b: any) => b.revenue - a.revenue)
+        .slice(0, 5);
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -186,8 +204,8 @@ export const useCategoryDistribution = () => {
       ];
 
       return categories.slice(0, 5).map((c: any, index: number) => ({
-        category: c.name,
-        orders: [42, 35, 28, 18, 12][index] || 10, // Mock order counts - replace with real API data when available
+        category: c.translations?.ar?.name || c.name,
+        orders: c.productCount || 0,
         fill: colors[index % colors.length],
       }));
     },
@@ -203,36 +221,44 @@ export const useSalesChartData = () => {
   return useQuery({
     queryKey: dashboardKeys.salesChart(),
     queryFn: async (): Promise<ChartDataPoint[]> => {
-      // Mock data for chart visualization - replace with real historical API data when available
-      const today = new Date();
-      const chartData: ChartDataPoint[] = [];
-      const mockRevenue = [420, 580, 390, 670, 510, 830, 720, 640, 910, 560, 780, 650, 890, 430, 750, 620, 980, 540, 810, 470, 690, 860, 530, 740, 610, 870, 500, 760, 920];
+      // Fetch recent orders to build chart data
+      const ordersRes = await orderBaseApi.list({ limit: 30 }).catch(() => ({ data: [] }));
+      const orders = (ordersRes as any).data || [];
 
+      // Group orders by date
+      const byDate = new Map<string, { revenue: number; count: number }>();
+
+      const today = new Date();
       for (let i = 29; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
         const dateStr = date.toISOString().split('T')[0];
-
-        chartData.push({
-          date: dateStr,
-          revenue: mockRevenue[29 - i] || 500,
-          orders: Math.floor((mockRevenue[29 - i] || 500) / 100),
-        });
+        byDate.set(dateStr, { revenue: 0, count: 0 });
       }
 
-      return chartData;
+      orders.forEach((o: any) => {
+        const dateStr = (o.createdAt || o.created_at || '').split('T')[0];
+        if (byDate.has(dateStr)) {
+          const existing = byDate.get(dateStr)!;
+          existing.revenue += parseFloat(o.totalAmount || o.total || '0');
+          existing.count += 1;
+        }
+      });
+
+      return Array.from(byDate.entries()).map(([date, data]) => ({
+        date,
+        revenue: data.revenue,
+        orders: data.count,
+      }));
     },
     staleTime: 1000 * 60 * 10,
   });
 };
 
 // ============================================================================
-// Legacy Hook (for backward compatibility)
+// Combined Hook (for backward compatibility)
 // ============================================================================
 
-/**
- * Combined hook for all dashboard data
- */
 export const useDashboardData = () => {
   const { t } = useLanguage();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
@@ -246,39 +272,52 @@ export const useDashboardData = () => {
       id: 'revenue',
       title: t('stats.revenue') || 'Total Revenue',
       value: formatCurrency(stats?.totalRevenue),
-      change: stats?.revenueChange || 0,
+      change: stats?.revenueChange,
       color: 'brand',
     },
     {
-      id: 'active',
-      title: t('auction.metrics.active_engines') || 'Active (Auctions + Deals)',
+      id: 'orders',
+      title: t('dash.total_orders') || 'Total Orders',
       value: (stats?.totalOrders || 0).toString(),
-      change: stats?.ordersChange || 0,
+      change: stats?.ordersChange,
       color: 'success',
     },
     {
       id: 'total',
-      title: t('dash.totalItems') || 'Total Auctions & Deals',
+      title: t('dash.total_items') || 'Auctions & Deals',
       value: (stats?.totalProducts || 0).toString(),
-      change: stats?.productsChange || 0,
+      change: stats?.productsChange,
       color: 'warning',
     },
     {
-      id: 'bids',
-      title: t('auction.metrics.bid_velocity') || 'Total Bids',
+      id: 'participants',
+      title: t('dash.participants') || 'Total Participants',
       value: (stats?.totalCustomers || 0).toString(),
-      change: stats?.customersChange || 0,
+      change: stats?.customersChange,
       color: 'info',
     },
   ];
 
-  const activities: ActivityItem[] = (recentActivities || []).map(order => ({
-    id: order.id,
-    type: order.status === 'active' ? 'success' : 'info',
-    title: order.productName,
-    description: `${order.customerName} - ${formatCurrency(order.amount)}`,
-    timestamp: new Date(order.date).toLocaleString(),
-  }));
+  const activities: ActivityItem[] = (recentActivities || []).map(order => {
+    const statusTypeMap: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+      active: 'success',
+      completed: 'success',
+      delivered: 'success',
+      pending: 'warning',
+      processing: 'info',
+      shipped: 'info',
+      cancelled: 'danger',
+      expired: 'danger',
+      scheduled: 'info',
+    };
+    return {
+      id: order.id,
+      type: statusTypeMap[order.status] || 'info',
+      title: order.productName,
+      description: `${order.customerName} - ${formatCurrency(order.amount)}`,
+      timestamp: new Date(order.date).toLocaleDateString(),
+    };
+  });
 
   return {
     stats: dashboardStats,

@@ -134,7 +134,7 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'Mobile Frequency'}</span>
-                    <p className="text-sm font-bold text-zinc-text">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
+                    <p dir="ltr" className="text-sm font-bold text-zinc-text text-right">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
                  </div>
                </div>
             </Card>

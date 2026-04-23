@@ -66,7 +66,8 @@ export const AuctionDetails: React.FC = () => {
 
   const handlePlaceBid = async () => {
     const amount = parseFloat(bidAmount);
-    if (amount && amount > (auction?.currentBid || 0)) {
+    const minBid = currentBid || startPrice;
+    if (amount && amount > minBid) {
       try {
         await placeBid.mutateAsync({ auctionId, amount });
         setBidAmount('');
@@ -121,19 +122,22 @@ export const AuctionDetails: React.FC = () => {
     );
   }
 
-  const nextMinBid = (auction.currentBid || auction.startPrice) + auction.bidIncrement;
+  const currentBid = parseFloat(auction.currentBid) || 0;
+  const startPrice = parseFloat(auction.startPrice) || 0;
+  const bidIncrement = parseFloat(auction.bidIncrement) || 0;
+  const nextMinBid = (currentBid || startPrice) + bidIncrement;
   const isEndingSoon = new Date(auction.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
 
   // Detail rows data
   const detailRows = [
     { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
     { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
-    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(auction.bidIncrement) },
+    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
     { icon: Tag, label: 'Category', value: auction.categoryName || t('common.general_asset') || 'General' },
     { icon: User, label: 'Winner', value: auction.winnerName || t('auction.detail.default_custodian') || 'No winner yet' },
   ];
 
-  if (auction.reservePrice != null && auction.reservePrice > 0) {
+  if (auction.reservePrice != null && parseFloat(auction.reservePrice) > 0) {
     detailRows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
   }
 
@@ -362,7 +366,7 @@ export const AuctionDetails: React.FC = () => {
               <div className="space-y-1">
                 <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.current_premium') || 'Current Bid'}</span>
                 <p className="text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
-                  {formatCurrency(auction.currentBid || auction.startPrice)}
+                  {formatCurrency(currentBid || startPrice)}
                 </p>
               </div>
               <div className="space-y-1 text-end">

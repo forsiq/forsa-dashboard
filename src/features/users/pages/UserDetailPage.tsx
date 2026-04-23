@@ -142,7 +142,7 @@ export function UserDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-500">{t('user.phone')}</p>
-                  <p className="text-sm text-white">{user.phone ? formatPhone(user.phone) : '-'}</p>
+                  <p className="text-sm text-white" dir="ltr">{user.phone ? formatPhone(user.phone) : '-'}</p>
                 </div>
               </div>
 

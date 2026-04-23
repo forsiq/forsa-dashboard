@@ -182,7 +182,7 @@ export const OrderDetailPage = () => {
             </div>
             <div className="space-y-1 text-sm">
               <div className="text-white">{order.shippingAddress.fullName}</div>
-              <div className="text-zinc-400">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
+              <div className="text-zinc-400" dir="ltr">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
               <div className="text-zinc-400">
                 {order.shippingAddress.street}
                 {order.shippingAddress.building && `, ${order.shippingAddress.building}`}
