@@ -39,40 +39,35 @@ export function AnalyticsPage() {
   const summaryStats = [
     { 
       label: t('report.total_revenue'), 
-      value: analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : formatCurrency(124592), 
-      change: analytics?.totalRevenueChange || '+12.5%', 
+      value: analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : '--', 
+      change: analytics?.totalRevenueChange || '', 
       icon: DollarSign, 
       color: 'text-success' 
     },
     { 
       label: t('report.active_users'), 
-      value: analytics?.activeUsers ? analytics.activeUsers.toLocaleString() : '8,432', 
-      change: analytics?.activeUsersChange || '+5.2%', 
+      value: analytics?.activeUsers ? analytics.activeUsers.toLocaleString() : '--', 
+      change: analytics?.activeUsersChange || '', 
       icon: Users, 
       color: 'text-info' 
     },
     { 
       label: t('report.avg_order'), 
-      value: analytics?.avgOrderValue ? formatCurrency(analytics.avgOrderValue) : formatCurrency(142), 
-      change: analytics?.avgOrderValueChange || '-2.1%', 
+      value: analytics?.avgOrderValue ? formatCurrency(analytics.avgOrderValue) : '--', 
+      change: analytics?.avgOrderValueChange || '', 
       icon: ShoppingCart, 
       color: 'text-warning' 
     },
     { 
       label: t('report.conversion_rate'), 
-      value: analytics?.conversionRate ? `${analytics.conversionRate}%` : '3.2%', 
-      change: analytics?.conversionRateChange || '+0.4%', 
+      value: analytics?.conversionRate ? `${analytics.conversionRate}%` : '--', 
+      change: analytics?.conversionRateChange || '', 
       icon: TrendingUp, 
       color: 'text-brand' 
     },
   ];
 
-  const pieData = [
-    { name: 'Hardware', value: 400 },
-    { name: 'Sensing', value: 300 },
-    { name: 'Energy', value: 300 },
-    { name: 'Security', value: 200 },
-  ];
+  const pieData: { name: string; value: number }[] = [];
 
   if (!isClient) return null;
 

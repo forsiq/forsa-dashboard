@@ -23,4 +23,9 @@ export const sales = {
   "sales.yieldProjection": "توقعات الإيرادات",
   "sales.aggregateNetConsolidation": "إجمالي الإيرادات المتوقعة",
   "sales.generateAnalytics": "إنشاء تقرير التحليلات",
+  "sales.capacityReached": "تم بلوغ السعة القصوى",
+  "sales.thresholdUnlocked": "تم بلوغ الحد الأدنى",
+  "sales.pendingSync": "قيد المزامنة",
+  "sales.assetProtocol": "الحملة",
+  "sales.synced": "متزامن",
 } as const;

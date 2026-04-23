@@ -25,10 +25,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedUser = getUser() || (() => {
-        const userStr = localStorage.getItem('user');
-        return userStr ? JSON.parse(userStr) : null;
-      })();
+      const savedUser = getUser();
       if (savedUser) {
         setUserState(savedUser);
       }
@@ -48,12 +45,6 @@ export const useAuth = () => {
     setRefreshToken(response.refresh);
     setUser(response.user);
     setUserState(response.user);
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', response.access);
-      localStorage.setItem('refresh_token', response.refresh);
-      localStorage.setItem('user', JSON.stringify(response.user));
-    }
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
@@ -108,12 +99,6 @@ export const useAuth = () => {
     setIsLoading(true);
     try {
       clearAuthCookies();
-
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-      }
 
       setUserState(null);
       router.push('/login');

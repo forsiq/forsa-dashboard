@@ -10,11 +10,13 @@ import {
 } from 'lucide-react';
 import { AmberCard } from '../components/AmberCard';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNavigation } from '../contexts/NavigationContext';
 import { cn } from '../lib/utils/cn';
 import { getEnabledServices, resolveServiceIcon } from '../../config/services';
 
 export const PortalPage: React.FC = () => {
   const { t, dir } = useLanguage();
+  const { setSidebarView } = useNavigation();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
@@ -29,6 +31,7 @@ export const PortalPage: React.FC = () => {
     if (service.type === 'external') {
       window.open(service.url, '_blank');
     } else {
+      setSidebarView(service.id === 'reports' ? 'reports' : 'general');
       router.push(service.route || '/');
     }
   };

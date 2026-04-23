@@ -23,4 +23,7 @@ export const sidebar = {
   "sidebar.watchlist": "لیستی چاودێری",
   "sidebar.users": "بەکارهێنەران",
   "sidebar.sales_department": "بەشی فرۆشتن",
+  "sidebar.general": "گشتی",
+  "sidebar.warehouses": "کۆگاکان",
+  "sidebar.group_review": "پێداچوونەوەی کڕینی کۆمەڵ",
 } as const;

@@ -5,6 +5,7 @@ import { ActivityFeed } from '../components/ActivityFeed';
 import { QuickActions } from '../components/QuickActions';
 import { DashboardCharts } from '../components/DashboardCharts';
 import { TopAuctions } from '../components/TopAuctions';
+import { CriticalNodes } from '../components/CriticalNodes';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -65,6 +66,9 @@ export const DashboardHomePage = () => {
           <StatsCard key={stat.id} stat={stat} />
         ))}
       </div>
+
+      {/* Critical Nodes */}
+      <CriticalNodes />
 
       {/* Charts Cluster */}
       <DashboardCharts salesData={salesChart || []} categoryData={categoryData || []} />

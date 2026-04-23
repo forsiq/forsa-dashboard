@@ -23,4 +23,9 @@ export const sales = {
   "sales.yieldProjection": "Revenue Projection",
   "sales.aggregateNetConsolidation": "Total Projected Revenue",
   "sales.generateAnalytics": "Generate Analytics Report",
+  "sales.capacityReached": "Capacity Reached",
+  "sales.thresholdUnlocked": "Threshold Unlocked",
+  "sales.pendingSync": "Pending Synchronization",
+  "sales.assetProtocol": "Campaign",
+  "sales.synced": "Synced",
 } as const;

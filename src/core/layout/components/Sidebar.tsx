@@ -46,7 +46,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
   showExitButton = true
 }) => {
   const { t, dir } = useLanguage();
-  const { activeMode, switchMode } = useNavigation();
+  const { activeMode, sidebarView, switchMode } = useNavigation();
   const { isFeatureEnabled } = useFeatureConfig();
   const router = useRouter();
   const [dynamicSections, setDynamicSections] = useState<MenuSection[]>([]);
@@ -70,7 +70,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
       // Otherwise load dynamically based on path
       setIsLoading(true);
       try {
-        const sections = await getSidebarForPath(router.pathname);
+        const sections = await getSidebarForPath(router.pathname, sidebarView);
         // Resolve icon strings to components
         const resolvedSections = sections.map(section => ({
           ...section,
@@ -89,7 +89,7 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
     };
 
     loadSidebar();
-  }, [router.pathname, menuSections]);
+  }, [router.pathname, menuSections, sidebarView]);
 
   const sections = dynamicSections;
 

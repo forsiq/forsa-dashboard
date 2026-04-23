@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -29,43 +30,12 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
-
-// --- Types ---
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  price: number;
-  stock: number;
-  warehouse: string;
-  lastUpdated: string;
-  image?: string;
-}
-
-// --- Mock Data ---
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: '1', name: 'Neural Core V2', sku: 'NC-V2-001', category: 'Hardware', price: 1200, stock: 45, warehouse: 'Main Hub', lastUpdated: '2024-03-20', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=100&h=100&fit=crop' },
-  { id: '2', name: 'Optic Sensor G3', sku: 'OS-G3-442', category: 'Sensing', price: 450, stock: 3, warehouse: 'Vault A', lastUpdated: '2024-03-21', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&h=100&fit=crop' },
-  { id: '3', name: 'Power Cell Alpha', sku: 'PC-A-90', category: 'Energy', price: 890, stock: 12, warehouse: 'Main Hub', lastUpdated: '2024-03-19', image: 'https://images.unsplash.com/photo-1617791160536-598cf3278827?w=100&h=100&fit=crop' },
-  { id: '4', name: 'Liquid Cooling Kit', sku: 'LCK-01', category: 'Cooling', price: 299, stock: 0, warehouse: 'Backup Node', lastUpdated: '2024-03-18', image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=100&h=100&fit=crop' },
-  { id: '5', name: 'Haptic Glove Pro', sku: 'HGP-X7', category: 'Hardware', price: 1500, stock: 8, warehouse: 'Vault B', lastUpdated: '2024-03-22', image: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=100&h=100&fit=crop' },
-  { id: '6', name: 'Encryption Key V4', sku: 'EK-V4-SEC', category: 'Security', price: 2500, stock: 2, warehouse: 'Central Registry', lastUpdated: '2024-03-15', image: 'https://images.unsplash.com/photo-1633265485768-30691f379654?w=100&h=100&fit=crop' },
-  { id: '7', name: 'Quantum Processor', sku: 'QP-Q1-INF', category: 'Hardware', price: 12500, stock: 1, warehouse: 'Vault A', lastUpdated: '2024-03-10', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop' },
-];
-
-const MOCK_WAREHOUSES = [
-  { name: 'Main Hub', used: 1240, capacity: 5000, status: 'Active' },
-  { name: 'Vault A', used: 840, capacity: 1000, status: 'Near Capacity' },
-  { name: 'Vault B', used: 210, capacity: 2000, status: 'Active' },
-];
+import { useList, useStats } from '../hooks';
 
 export const InventoryPage = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const [data, setData] = useState<Product[]>(MOCK_PRODUCTS);
+  const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -82,13 +52,36 @@ export const InventoryPage = () => {
 
   const isRTL = dir === 'rtl';
 
-  // --- Filtering ---
+  const { data: inventoryData, isLoading } = useList();
+  const { data: statsData } = useStats();
+
+  const products: any[] = (inventoryData as any)?.items || [];
+  const inventoryStats = (statsData as any)?.data || {};
+
+  const data = useMemo(() => {
+    return products.map((p: any) => ({
+      id: String(p.id),
+      name: p.name || p.title || '',
+      sku: p.sku || '',
+      category: p.category?.name || p.category || '',
+      price: parseFloat(p.price) || 0,
+      stock: p.inventory_quantity || p.stock || 0,
+      warehouse: p.warehouse || t('inventory.default_warehouse') || 'Default',
+      lastUpdated: p.updatedAt || p.updated_at || '',
+      image: p.image_url || p.image || '',
+    }));
+  }, [products, t]);
+
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set(data.map(p => p.category).filter(Boolean));
+    return Array.from(cats);
+  }, [data]);
 
   const filteredData = useMemo(() => {
     return data.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            p.sku.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || 
+      const matchesStatus = statusFilter === 'all' ||
                            (statusFilter === 'in_stock' && p.stock > 5) ||
                            (statusFilter === 'low_stock' && p.stock > 0 && p.stock <= 5) ||
                            (statusFilter === 'out_of_stock' && p.stock === 0);
@@ -98,22 +91,22 @@ export const InventoryPage = () => {
     });
   }, [data, searchQuery, statusFilter, categoryFilter]);
 
-  // --- Stats ---
-
   const lowStockAlerts = useMemo(() => {
     return data.filter(p => p.stock <= 5 && p.stock > 0);
   }, [data]);
 
+  const totalValue = useMemo(() => {
+    return data.reduce((sum, p) => sum + (p.price * p.stock), 0);
+  }, [data]);
+
   const stats = [
-    { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'brand' as const, description: '+4% ' + t('common.this_month') },
+    { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'brand' as const, description: '' },
     { label: t('inventory.low_stock'), value: lowStockAlerts.length.toString(), icon: AlertCircle, color: 'danger' as const, description: t('inventory.needs_review') },
-    { label: t('inventory.warehouses'), value: '3', icon: Warehouse, color: 'info' as const, description: t('inventory.global_dist') },
-    { label: t('inventory.total_value'), value: formatCurrency(data.reduce((sum, p) => sum + (p.price * p.stock), 0)), icon: TrendingUp, color: 'success' as const, description: '+12.4% vs LY' },
+    { label: t('inventory.warehouses'), value: '1', icon: Warehouse, color: 'info' as const, description: t('inventory.global_dist') },
+    { label: t('inventory.total_value'), value: formatCurrency(totalValue), icon: TrendingUp, color: 'success' as const, description: '' },
   ];
 
-  // --- Table Configuration ---
-
-  const columns: Column<Product>[] = [
+  const columns: Column<any>[] = [
     {
       key: 'item',
       label: t('inventory.table.item'),
@@ -158,11 +151,11 @@ export const InventoryPage = () => {
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold text-zinc-text">{row.stock}</span>
           <div className="flex-1 max-w-[80px] h-1.5 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
-            <div 
+            <div
               className={cn(
                 "h-full rounded-full transition-all",
                 row.stock > 10 ? "bg-[var(--color-success)]" : row.stock > 0 ? "bg-[var(--color-warning)]" : "bg-[var(--color-danger)]"
-              )} 
+              )}
               style={{ width: `${Math.min((row.stock / 50) * 100, 100)}%` }}
             />
           </div>
@@ -176,7 +169,7 @@ export const InventoryPage = () => {
       label: t('common.status'),
       cardBadge: true,
       render: (row) => (
-        <StatusBadge 
+        <StatusBadge
           status={row.stock > 5 ? t('inventory.stock_in_stock') : row.stock > 0 ? t('inventory.stock_low') : t('inventory.stock_out')}
           variant={row.stock > 5 ? 'success' : row.stock > 0 ? 'warning' : 'failed'}
           size="sm"
@@ -199,20 +192,19 @@ export const InventoryPage = () => {
     },
   ];
 
-
-  const rowActions: Action<Product>[] = [
+  const rowActions: Action<any>[] = [
     {
       label: t('common.view') || 'View Details',
       icon: Eye,
-      onClick: (row) => console.log('View', row.id),
+      onClick: (row) => router.push(`/inventory`),
     },
     {
-      label: t('common.edit') || 'Edit Metadata',
+      label: t('common.edit') || 'Edit',
       icon: Edit,
-      onClick: (row) => console.log('Edit', row.id),
+      onClick: (row) => router.push(`/inventory`),
     },
     {
-      label: t('common.delete') || 'Wipe Entry',
+      label: t('common.delete') || 'Delete',
       icon: Trash2,
       variant: 'danger',
       onClick: (row) => setDeleteModal({ isOpen: true, id: row.id }),
@@ -266,7 +258,6 @@ export const InventoryPage = () => {
         "flex flex-col md:flex-row items-center gap-4 pt-2",
         isRTL ? "text-right" : "text-left"
       )}>
-        {/* Status Tabs */}
         <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
           <button
             onClick={() => setStatusFilter('all')}
@@ -277,7 +268,7 @@ export const InventoryPage = () => {
                 : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
             )}
           >
-            {t('common.all') || 'الكل'}
+            {t('common.all') || 'All'}
           </button>
           <button
             onClick={() => setStatusFilter('in_stock')}
@@ -288,7 +279,7 @@ export const InventoryPage = () => {
                 : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
             )}
           >
-            {t('inventory.stock_in_stock') || 'متوفر'}
+            {t('inventory.stock_in_stock') || 'In Stock'}
           </button>
           <button
             onClick={() => setStatusFilter('low_stock')}
@@ -299,18 +290,17 @@ export const InventoryPage = () => {
                 : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
             )}
           >
-            {t('inventory.stock_low') || 'منخفض'}
+            {t('inventory.stock_low') || 'Low Stock'}
           </button>
         </div>
 
-        {/* Search Input */}
         <div className="relative flex-1 max-w-sm w-full group">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
             isRTL ? 'left-4' : 'right-4'
           )} />
           <AmberInput
-            placeholder={t('inventory.search') || 'البحث في المخزون...'}
+            placeholder={t('inventory.search') || 'Search inventory...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
@@ -324,18 +314,24 @@ export const InventoryPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Table Area */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-            <DataTable
-              columns={columns}
-              data={filteredData}
-              pagination
-              pageSize={10}
-              selectable
-              rowActions={rowActions}
-              emptyMessage={t('inventory.empty')}
-              showViewToggle
-            />
-          </div>
+          {isLoading ? (
+            <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm p-12 text-center">
+              <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : (
+            <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+              <DataTable
+                columns={columns}
+                data={filteredData}
+                pagination
+                pageSize={10}
+                selectable
+                rowActions={rowActions}
+                emptyMessage={t('inventory.empty')}
+                showViewToggle
+              />
+            </div>
+          )}
         </div>
 
         {/* Sidebar Status Info */}
@@ -351,7 +347,7 @@ export const InventoryPage = () => {
                 {lowStockAlerts.length}
               </span>
             </div>
-            
+
             <div className="space-y-4 max-h-[320px] overflow-y-auto custom-scrollbar">
               {lowStockAlerts.length > 0 ? (
                 lowStockAlerts.map((alert, i) => (
@@ -365,10 +361,10 @@ export const InventoryPage = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 pr-4">
                         <div className="h-1.5 bg-obsidian-outer rounded-full overflow-hidden mb-2">
-                          <div className="h-full bg-[var(--color-danger)] animate-shimmer" style={{ width: `${(alert.stock / 5) * 100}%` }} />
+                          <div className="h-full bg-[var(--color-danger)]" style={{ width: `${(alert.stock / 5) * 100}%` }} />
                         </div>
                         <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                          {alert.stock} / 5 UNITS REMAINING
+                          {alert.stock} / 5 {t('inventory.units') || 'units'}
                         </p>
                       </div>
                       <ChevronRight className={cn("w-4 h-4 text-zinc-muted opacity-0 group-hover:opacity-100 transition-all", isRTL ? "rotate-180" : "")} />
@@ -378,53 +374,26 @@ export const InventoryPage = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 opacity-30 text-center">
                   <Package className="w-10 h-10 mb-2 stroke-1" />
-                  <p className="text-xs font-black uppercase tracking-widest">All stock levels nominal</p>
+                  <p className="text-xs font-black uppercase tracking-widest">{t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}</p>
                 </div>
               )}
             </div>
           </Card>
 
-          {/* Infrastructure Health / Warehouses */}
+          {/* Stats Summary */}
           <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <Warehouse className="w-5 h-5 text-[var(--color-info)]" />
+              <TrendingUp className="w-5 h-5 text-[var(--color-success)]" />
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-                {t('inventory.warehouses')}
+                {t('inventory.total_value')}
               </h3>
             </div>
-            
-            <div className="space-y-6">
-              {MOCK_WAREHOUSES.map((wh, i) => (
-                <div key={i} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-zinc-text uppercase tracking-tighter">{wh.name}</p>
-                    <span className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-lg border uppercase tracking-widest shadow-sm",
-                      wh.status === 'Near Capacity' ? 'bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/20' : 'bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20'
-                    )}>
-                      {wh.status}
-                    </span>
-                  </div>
-                  <div className="relative h-2.5 bg-obsidian-outer rounded-full overflow-hidden shadow-inner border border-white/5">
-                    <div 
-                      className={cn(
-                        "absolute top-0 left-0 h-full rounded-full transition-all duration-1000",
-                        wh.used / wh.capacity > 0.85 ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-info)]'
-                      )} 
-                      style={{ width: `${Math.min((wh.used / wh.capacity) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                     <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                      {wh.used.toLocaleString()} <span className="opacity-40">/</span> {wh.capacity.toLocaleString()} SKUs
-                    </p>
-                    <span className="text-xs font-bold text-zinc-muted opacity-50">
-                      {Math.round((wh.used / wh.capacity) * 100)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-3xl font-black text-success tracking-tighter tabular-nums">
+              {formatCurrency(totalValue)}
+            </p>
+            <p className="text-xs text-zinc-muted mt-2">
+              {data.length} {t('inventory.items')}
+            </p>
           </Card>
         </div>
       </div>
@@ -437,9 +406,9 @@ export const InventoryPage = () => {
         description={t('inventory.filter_description')}
         footer={
           <div className="flex gap-3 w-full">
-            <AmberButton 
-              variant="outline" 
-              size="sm" 
+            <AmberButton
+              variant="outline"
+              size="sm"
               className="flex-1"
               onClick={() => {
                 setStatusFilter('all');
@@ -449,8 +418,8 @@ export const InventoryPage = () => {
             >
               {t('common.clear')}
             </AmberButton>
-            <AmberButton 
-              size="sm" 
+            <AmberButton
+              size="sm"
               className="flex-1"
               onClick={() => setIsFilterOpen(false)}
             >
@@ -471,8 +440,8 @@ export const InventoryPage = () => {
             </div>
             <div className="relative group">
               <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand", isRTL ? 'right-3' : 'left-3')} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('inventory.search')}
@@ -496,7 +465,7 @@ export const InventoryPage = () => {
                   {t('common.status')}
                 </label>
               </div>
-              <AmberDropdown 
+              <AmberDropdown
                 options={[
                   { label: t('common.all') || 'All Status', value: 'all' },
                   { label: t('inventory.stock_in_stock'), value: 'in_stock' },
@@ -518,14 +487,10 @@ export const InventoryPage = () => {
                   {t('inventory.table.category')}
                 </label>
               </div>
-              <AmberDropdown 
+              <AmberDropdown
                 options={[
                   { label: t('common.all') || 'All Categories', value: 'all' },
-                  { label: 'Hardware', value: 'Hardware' },
-                  { label: 'Energy', value: 'Energy' },
-                  { label: 'Sensing', value: 'Sensing' },
-                  { label: 'Security', value: 'Security' },
-                  { label: 'Cooling', value: 'Cooling' },
+                  ...uniqueCategories.map(cat => ({ label: cat, value: cat })),
                 ]}
                 value={categoryFilter}
                 onChange={setCategoryFilter}
@@ -537,12 +502,12 @@ export const InventoryPage = () => {
       </AmberSlideOver>
 
       {/* Delete Confirmation */}
-      <DeleteCardConfirmation 
+      <DeleteCardConfirmation
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: null })}
         onConfirm={() => {
           if (deleteModal.id) {
-            setData(prev => prev.filter(p => p.id !== deleteModal.id));
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
             setDeleteModal({ isOpen: false, id: null });
           }
         }}

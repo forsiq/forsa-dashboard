@@ -283,7 +283,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                             <h4 className="text-xs font-black uppercase tracking-[0.2em]">{t('sales.consensusReach')}</h4>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-2xl font-black text-zinc-text tabular-nums tracking-tighter leading-none">84.2%</p>
+                            <p className="text-2xl font-black text-zinc-text tabular-nums tracking-tighter leading-none">--</p>
                             <p className="text-[10px] text-zinc-muted font-bold uppercase">{t('sales.peakParticipation')}</p>
                         </div>
                     </div>

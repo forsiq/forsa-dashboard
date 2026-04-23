@@ -1,18 +1,14 @@
 /** Reports API - Using REST */
 import { auctionBaseApi } from '../../../features/auctions/api/auction-api';
 import { orderBaseApi } from '../../orders/api/orders';
-import type { 
-  ReportData, 
-  AnalyticsData, 
-  SalesReportData 
+import type {
+  ReportData,
+  AnalyticsData,
+  SalesReportData
 } from '../types';
 
-/**
- * Get overall reports summary
- */
 export async function getReports(period = 'monthly'): Promise<ReportData> {
   try {
-    // Ideally we'd have a dedicated analytics API, but as a fallback/interim:
     const [auctionStats, orderStats] = await Promise.all([
       auctionBaseApi.getStats(),
       orderBaseApi.getStats()
@@ -24,7 +20,7 @@ export async function getReports(period = 'monthly'): Promise<ReportData> {
     return {
       totalSales: (oStats.total_revenue as number) || 0,
       totalOrders: (oStats.total as number) || 0,
-      totalCustomers: 0, // Customer stats not aggregated yet
+      totalCustomers: 0,
       averageOrderValue: (oStats.average_order_value as number) || 0,
       growth: 0,
       period,
@@ -42,19 +38,15 @@ export async function getReports(period = 'monthly'): Promise<ReportData> {
   }
 }
 
-/**
- * Get detailed analytics data
- */
 export async function getAnalytics(_service = 'all'): Promise<AnalyticsData> {
   const [auctionStats, orderStats] = await Promise.all([
     auctionBaseApi.getStats(),
     orderBaseApi.getStats()
   ]).catch(() => [{ data: {} }, { data: {} }]);
 
-    const aStats = (auctionStats.data || {}) as any;
-    const oStats = (orderStats.data || {}) as any;
+  const aStats = (auctionStats.data || {}) as any;
+  const oStats = (orderStats.data || {}) as any;
 
-  // Mocking analytics data trend since backend doesn't provide historical data in stats
   const today = new Date();
   const sales: { date: string; value: number }[] = [];
   const orders: { date: string; value: number }[] = [];
@@ -64,16 +56,15 @@ export async function getAnalytics(_service = 'all'): Promise<AnalyticsData> {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split('T')[0];
-
-    sales.push({ date: dateStr, value: Math.floor(Math.random() * 5000) + 1000 });
-    orders.push({ date: dateStr, value: Math.floor(Math.random() * 50) + 10 });
-    visitors.push({ date: dateStr, value: Math.floor(Math.random() * 500) + 200 });
+    sales.push({ date: dateStr, value: 0 });
+    orders.push({ date: dateStr, value: 0 });
+    visitors.push({ date: dateStr, value: 0 });
   }
 
-  const totalRevenue = (oStats.total_revenue as number) || 124592;
-  const activeUsers = (aStats.active_users as number) || 8432;
-  const avgOrderValue = (oStats.average_order_value as number) || 142.10;
-  const conversionRate = 3.2;
+  const totalRevenue = (oStats.total_revenue as number) || 0;
+  const activeUsers = (aStats.active_users as number) || 0;
+  const avgOrderValue = (oStats.average_order_value as number) || 0;
+  const conversionRate = 0;
 
   return {
     sales,
@@ -81,19 +72,16 @@ export async function getAnalytics(_service = 'all'): Promise<AnalyticsData> {
     visitors,
     conversion: conversionRate,
     totalRevenue,
-    totalRevenueChange: '+12.5%',
+    totalRevenueChange: '',
     activeUsers,
-    activeUsersChange: '+5.2%',
+    activeUsersChange: '',
     avgOrderValue,
-    avgOrderValueChange: '-2.1%',
+    avgOrderValueChange: '',
     conversionRate,
-    conversionRateChange: '+0.4%',
+    conversionRateChange: '',
   };
 }
 
-/**
- * Get sales report data
- */
 export async function getSalesReport(period = 'monthly'): Promise<SalesReportData> {
   const [orderStats] = await Promise.all([
     orderBaseApi.getStats()
@@ -101,33 +89,23 @@ export async function getSalesReport(period = 'monthly'): Promise<SalesReportDat
 
   const oStats = (orderStats?.data || {}) as any;
 
-  const grossSales = (oStats.total_revenue as number) || 154200;
-  const taxCollected = Math.floor(grossSales * 0.08) || 12430;
-  const shipping = Math.floor(grossSales * 0.035) || 5200;
-  const netProfit = grossSales - taxCollected - shipping - Math.floor(grossSales * 0.4) || 42500;
+  const grossSales = (oStats.total_revenue as number) || 0;
+  const taxCollected = 0;
+  const shipping = 0;
+  const netProfit = 0;
 
   return {
-    products: [
-      { name: 'Core Processor v9', sales: 450, revenue: 85000 },
-      { name: 'Neural Link S1', sales: 320, revenue: 42000 },
-      { name: 'Optic Sensor A4', sales: 210, revenue: 18000 },
-      { name: 'Power Cell G3', sales: 180, revenue: 9200 },
-    ],
+    products: [],
     categories: [],
-    topCustomers: [
-      { name: 'Yousef Mohammed', email: 'yousef@zonevast.com', spent: 12450 },
-      { name: 'Ahmad Kareem', email: 'ahmad@example.com', spent: 8900 },
-      { name: 'Sara Ali', email: 'sara@example.com', spent: 7200 },
-      { name: 'Zaid Omar', email: 'zaid@example.com', spent: 5400 },
-    ],
+    topCustomers: [],
     grossSales,
-    grossSalesChange: '+14%',
+    grossSalesChange: '',
     netProfit,
-    netProfitChange: '+8%',
+    netProfitChange: '',
     taxCollected,
-    taxCollectedChange: '+12%',
+    taxCollectedChange: '',
     shipping,
-    shippingChange: '+5%',
+    shippingChange: '',
   };
 }
 

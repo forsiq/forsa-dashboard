@@ -4,10 +4,11 @@
  * Form for creating a new auction
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Upload, Plus, X, AlertCircle } from 'lucide-react';
 import { useCreateAuction } from '../api';
+import { useList as useCategories } from '../../../services/categories/hooks';
 
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -44,16 +45,18 @@ export const AuctionAdd = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const categories = [
-    { id: 1, name: t('auction.category.electronics') || 'Electronics', key: 'electronics' },
-    { id: 2, name: t('auction.category.jewelry') || 'Jewelry', key: 'jewelry' },
-    { id: 3, name: t('auction.category.art') || 'Art', key: 'art' },
-    { id: 4, name: t('auction.category.collectibles') || 'Collectibles', key: 'collectibles' },
-    { id: 5, name: t('auction.category.vehicles') || 'Vehicles', key: 'vehicles' },
-    { id: 6, name: t('auction.category.real_estate') || 'Real Estate', key: 'real_estate' },
-    { id: 7, name: t('auction.category.fashion') || 'Fashion', key: 'fashion' },
-    { id: 8, name: t('auction.category.other') || 'Other', key: 'other' },
-  ];
+  const { data: categoriesData } = useCategories({ limit: 100 });
+  const categories = useMemo(() => {
+    const items = (categoriesData as any)?.items || [];
+    if (items.length > 0) {
+      return items.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name || cat.title || '',
+        key: cat.slug || String(cat.id),
+      }));
+    }
+    return [{ id: 1, name: t('auction.category.other') || 'Other', key: 'other' }];
+  }, [categoriesData, t]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

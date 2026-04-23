@@ -40,6 +40,16 @@ export const services: Service[] = [
     enabled: true,
     color: 'from-purple-500 to-purple-600',
   },
+  {
+    id: 'reports',
+    name: 'Reports',
+    description: 'service.reports.description',
+    icon: 'BarChart3',
+    type: 'internal',
+    route: '/reports/sales-overview',
+    enabled: true,
+    color: 'from-emerald-500 to-emerald-600',
+  },
 
   // External Services (Separate Apps) - add as needed
   {

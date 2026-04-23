@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -50,12 +50,16 @@ export const InventoryOverviewPage: React.FC = () => {
   const { data: inventoryData, isLoading: itemsLoading } = useList();
   const products = (inventoryData as any)?.items || [];
 
-  // Mock warehouse data (to match original depth)
-  const warehouses = [
-    { name: 'Central Hub - Dubai', used: 850, capacity: 1000, status: 'Active' },
-    { name: 'Satellite Vault A', used: 120, capacity: 500, status: 'Active' },
-    { name: 'Secure Storage B', used: 450, capacity: 500, status: 'Near Capacity' },
-  ];
+  // Compute warehouse info from real product data
+  const warehouses = useMemo(() => {
+    const totalStock = products.reduce((sum: number, p: any) => sum + (p.inventory_quantity || p.stock || 0), 0);
+    return [{
+      name: t('inventory.default_warehouse') || 'Primary',
+      used: totalStock,
+      capacity: Math.max(totalStock * 1.5, 1000),
+      status: totalStock > 500 ? 'Active' : 'Low Stock',
+    }];
+  }, [products, t]);
 
   const lowStockThreshold = 10;
   const lowStockItems = products.filter((p: any) => (p.inventory_quantity || p.stock || 0) <= lowStockThreshold);

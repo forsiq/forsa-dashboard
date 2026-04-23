@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
+import { getCookieOptions } from '@core/lib/utils/cookieStorage';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -43,20 +44,16 @@ function isTokenExpired(token: string): boolean {
 }
 
 /**
- * Get stored tokens
+ * Get stored tokens (cookie only — shared across subdomains)
  */
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
-  const cookie = Cookies.get('access');
-  if (cookie) return cookie;
-  try { return localStorage.getItem('access_token'); } catch { return null; }
+  return Cookies.get('access') || null;
 }
 
 function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
-  const cookie = Cookies.get('refresh');
-  if (cookie) return cookie;
-  try { return localStorage.getItem('refresh_token'); } catch { return null; }
+  return Cookies.get('refresh') || null;
 }
 
 function getApiOrigin(): string {
@@ -105,12 +102,10 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
       const newRefresh = response.data?.refresh;
 
       if (newAccess) {
-        const cookieOpts = { path: '/', sameSite: 'Lax' as const };
+        const cookieOpts = getCookieOptions();
         Cookies.set('access', newAccess, cookieOpts);
-        localStorage.setItem('access_token', newAccess);
         if (newRefresh) {
           Cookies.set('refresh', newRefresh, cookieOpts);
-          localStorage.setItem('refresh_token', newRefresh);
         }
         console.log('[AuthGuard] Token refreshed successfully');
         return true;

@@ -50,6 +50,11 @@ export const menuSections: MenuSection[] = [
         icon: 'Activity',
         serviceId: 'dashboard',
       },
+      {
+        path: '/live-monitor',
+        label: 'sidebar.live_monitor',
+        icon: 'Radio',
+      },
     ],
   },
   {

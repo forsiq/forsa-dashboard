@@ -34,14 +34,14 @@ export function ReportsPage() {
     {
       title: t('report.total_orders') || 'إجمالي الطلبات',
       value: report?.totalOrders || 0,
-      change: 8.2,
+      change: 0,
       icon: ShoppingCart,
       color: 'primary',
     },
     {
       title: t('report.avg_order') || 'متوسط قيمة الطلب',
       value: report?.averageOrderValue || 0,
-      change: -2.4,
+      change: 0,
       icon: BarChart3,
       color: 'warning',
     },

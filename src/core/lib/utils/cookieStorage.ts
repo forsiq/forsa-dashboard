@@ -1,21 +1,24 @@
 import Cookies from 'js-cookie';
 
 /**
- * Get the cookie domain for cross-app cookie sharing
+ * Get the cookie domain for cross-app cookie sharing.
+ * Matches Portal's cookieUtils.ts exactly to ensure both apps write
+ * cookies that the other can read.
+ *
+ * - localhost / 127.0.0.1 → undefined  (shared across ports automatically)
+ * - *.zonevast.com        → 'zonevast.com'  (js-cookie handles the leading dot)
+ * - fallback              → undefined
  */
-function getCookieDomain(): string | undefined {
+export function getCookieDomain(): string | undefined {
   if (typeof window === 'undefined') return undefined;
   const hostname = window.location.hostname;
 
-  // For localhost, don't set domain
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return undefined;
   }
 
-  // For production, use the parent domain
-  const parts = hostname.split('.');
-  if (parts.length >= 2) {
-    return `.${parts.slice(-2).join('.')}`;
+  if (hostname.endsWith('zonevast.com')) {
+    return 'zonevast.com';
   }
 
   return undefined;
@@ -29,7 +32,7 @@ function getCookieDomain(): string | undefined {
 const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
 // Cookie options for cross-app sharing
-const getCookieOptions = (): Cookies.CookieAttributes => {
+export const getCookieOptions = (): Cookies.CookieAttributes => {
   const cookieDomain = getCookieDomain();
   return {
     path: '/',
@@ -122,8 +125,8 @@ export function clearAuthCookies(): void {
   removeUser();
 }
 
-// Check if user is authenticated (cookie priority, fallback to localStorage)
+// Check if user is authenticated (cookie only — shared across subdomains)
 export function isAuthenticated(): boolean {
   if (typeof window === 'undefined') return false;
-  return getAccessToken() !== undefined || localStorage.getItem('access_token') !== null;
+  return getAccessToken() !== undefined;
 }

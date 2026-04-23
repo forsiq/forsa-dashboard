@@ -12,7 +12,6 @@ import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
 import { useGetAuctions, useEndAuction, usePauseAuction, useExtendAuction } from '../../auctions/api/auction-hooks';
 import type { Auction } from '../../auctions/types/auction.types';
-import { useToast } from '@core/contexts/ToastContext';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 
 export const ActiveAuctionsGrid: React.FC = () => {
@@ -25,8 +24,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
   const endAuction = useEndAuction();
   const pauseAuction = usePauseAuction();
   const extendAuction = useExtendAuction();
-  const toast = useToast();
-  const { confirm, ConfirmModalComponent } = useConfirmModal();
+  const { openConfirm, ConfirmModal: ConfirmModalComponent } = useConfirmModal();
 
   const auctions = auctionsData?.data || [];
 
@@ -99,24 +97,24 @@ export const ActiveAuctionsGrid: React.FC = () => {
               getUrgencyClass={getUrgencyClass}
               getUrgencyDot={getUrgencyDot}
               formatTimeRemaining={formatTimeRemaining}
-              onEnd={async () => {
-                const ok = await confirm({
+              onEnd={() => {
+                openConfirm({
                   title: 'End Auction',
                   message: `End "${auction.title}" now? This cannot be undone.`,
                   confirmText: 'End Now',
                   variant: 'danger',
+                  onConfirm: () => endAuction.mutate(auction.id),
                 });
-                if (ok) endAuction.mutate(auction.id);
               }}
               onPause={() => pauseAuction.mutate(auction.id)}
-              onExtend={async () => {
-                const ok = await confirm({
+              onExtend={() => {
+                openConfirm({
                   title: 'Extend Auction',
                   message: `Extend "${auction.title}" by 15 minutes?`,
                   confirmText: 'Extend 15m',
                   variant: 'warning',
+                  onConfirm: () => extendAuction.mutate({ id: auction.id, minutes: 15 }),
                 });
-                if (ok) extendAuction.mutate({ id: auction.id, minutes: 15 });
               }}
             />
           ))

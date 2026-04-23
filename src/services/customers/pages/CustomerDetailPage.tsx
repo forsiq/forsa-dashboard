@@ -210,7 +210,7 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Reliability Index</span>
-                    <span className="text-2xl font-black text-[var(--color-success)] tabular-nums leading-none">98.4%</span>
+                    <span className="text-2xl font-black text-[var(--color-success)] tabular-nums leading-none">--</span>
                  </div>
               </div>
            </Card>

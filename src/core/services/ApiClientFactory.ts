@@ -7,7 +7,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import Cookies from 'js-cookie';
 import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
 import { emitSessionExpired } from '../lib/session/sessionEvents';
-import { getLanguage } from '../lib/utils/cookieStorage';
+import { getLanguage, getCookieOptions, clearAuthCookies } from '../lib/utils/cookieStorage';
 
 // ============================================================================
 // Configuration
@@ -29,38 +29,19 @@ const API_ORIGIN = getApiOrigin();
 const PROJECT_STORAGE_KEY = 'zv_project';
 
 /**
- * Get auth token from storage (cookie priority, localStorage fallback)
- * Uses js-cookie for reliable cookie reading (handles SameSite, path, etc.)
+ * Get auth token from storage (cookie only — shared across subdomains)
  */
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-
-  // Cookie first (preferred - set by useAuth via js-cookie)
-  const cookieToken = Cookies.get('access');
-  if (cookieToken) return cookieToken;
-
-  // Fallback to localStorage (set by useAuth as backup)
-  try {
-    return localStorage.getItem('access_token');
-  } catch {
-    return null;
-  }
+  return Cookies.get('access') || null;
 }
 
 /**
- * Get refresh token from storage (cookie priority, localStorage fallback)
+ * Get refresh token from storage (cookie only — shared across subdomains)
  */
 function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
-
-  const cookieToken = Cookies.get('refresh');
-  if (cookieToken) return cookieToken;
-
-  try {
-    return localStorage.getItem('refresh_token');
-  } catch {
-    return null;
-  }
+  return Cookies.get('refresh') || null;
 }
 
 /**
@@ -82,31 +63,15 @@ function getProjectId(): string {
 }
 
 /**
- * Clear all auth data from cookie and localStorage
+ * Clear all auth data — delegates to shared cookieStorage
  */
 function clearAuthSession(): void {
+  clearAuthCookies();
   try {
-    // Must match the same options used when setting cookies in cookieStorage.ts
-    const cookieDomain = getCookieDomain();
-    const removeOpts = { path: '/', ...(cookieDomain ? { domain: cookieDomain } : {}) };
-    Cookies.remove('access', removeOpts);
-    Cookies.remove('refresh', removeOpts);
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
     localStorage.removeItem('zv_project');
-  } catch (e) {
-    console.warn('[API] Failed to clear auth session:', e);
+  } catch {
+    // Ignore
   }
-}
-
-function getCookieDomain(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-  const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return undefined;
-  const parts = hostname.split('.');
-  if (parts.length >= 2) return `.${parts.slice(-2).join('.')}`;
-  return undefined;
 }
 
 /**
@@ -181,13 +146,10 @@ function createBaseInstance(baseURL: string): AxiosInstance {
             const newAccess = refreshResponse.data?.access;
             const newRefresh = refreshResponse.data?.refresh;
             if (newAccess) {
-              // Use same cookie options as cookieStorage for consistency
-              const cookieOpts = { path: '/', sameSite: 'Lax' as const };
+              const cookieOpts = getCookieOptions();
               Cookies.set('access', newAccess, cookieOpts);
-              localStorage.setItem('access_token', newAccess);
               if (newRefresh) {
                 Cookies.set('refresh', newRefresh, cookieOpts);
-                localStorage.setItem('refresh_token', newRefresh);
               }
               if (originalRequest.headers) {
                 originalRequest.headers.Authorization = `Bearer ${newAccess}`;

@@ -10,6 +10,7 @@ export const sidebarSections: MenuSection[] = [
     title: 'sidebar.general',
     items: [
       { path: '/dashboard', label: 'sidebar.dashboard', icon: 'Activity' },
+      { path: '/live-monitor', label: 'sidebar.live_monitor', icon: 'Radio' },
       { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
       { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
     ]

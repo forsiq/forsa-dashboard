@@ -57,4 +57,8 @@ export const inventory = {
   "inventory.exhaustedUnits": "نفذ المخزون",
   "inventory.applyConfiguration": "تطبيق الفلاتر",
   "inventory.resourceDistribution": "توزيع الموارد",
+  "inventory.globalResourceDistribution": "التوزيع العالمي للموارد",
+  "inventory.searchAllocation": "البحث في المخزون...",
+  "inventory.criticalDepletionAlerts": "تنبيهات نفاد المخزون الحرجة",
+  "inventory.globalSearch": "بحث شامل",
 } as const;
