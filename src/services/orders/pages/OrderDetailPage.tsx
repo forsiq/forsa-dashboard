@@ -4,6 +4,7 @@ import { ArrowLeft, Edit, Trash2, Package, MapPin, CreditCard, User } from 'luci
 import { getOrder, deleteOrder, updateOrderStatus, orderKeys } from '../api/orders';
 import type { Order } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
+import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useState, useEffect } from 'react';
 
@@ -181,7 +182,7 @@ export const OrderDetailPage = () => {
             </div>
             <div className="space-y-1 text-sm">
               <div className="text-white">{order.shippingAddress.fullName}</div>
-              <div className="text-zinc-400">{order.shippingAddress.phone}</div>
+              <div className="text-zinc-400">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
               <div className="text-zinc-400">
                 {order.shippingAddress.street}
                 {order.shippingAddress.building && `, ${order.shippingAddress.building}`}

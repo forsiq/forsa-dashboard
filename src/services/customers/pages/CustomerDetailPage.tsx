@@ -6,6 +6,7 @@ import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberAvatar } from '../../../core/components/AmberAvatar';
 import { cn } from '../../../core/lib/utils/cn';
 import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
+import { formatPhone } from '../../../core/lib/utils/formatPhone';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { 
   Building2, 
@@ -133,7 +134,7 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'Mobile Frequency'}</span>
-                    <p className="text-sm font-bold text-zinc-text">{customer.phone || 'N/A'}</p>
+                    <p className="text-sm font-bold text-zinc-text">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
                  </div>
                </div>
             </Card>

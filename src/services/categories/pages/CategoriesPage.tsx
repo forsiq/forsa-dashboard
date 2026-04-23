@@ -50,13 +50,32 @@ export function CategoriesPage() {
     setIsClient(true);
   }, []);
 
-  // Fetch categories - map status filter to isActive
+  // Fetch all categories (backend does not support search/isActive filtering yet)
   const { data, isLoading, error, refetch } = useGetCategories({
-    search: debouncedSearch || undefined,
-    isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
     page: 1,
     limit: 50,
   });
+
+  // Client-side filtering since backend ignores search/isActive params
+  const filteredCategories = React.useMemo(() => {
+    let categories = data?.categories || [];
+
+    if (statusFilter !== 'all') {
+      const wantActive = statusFilter === 'active';
+      categories = categories.filter((c: Category) => c.isActive === wantActive);
+    }
+
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      categories = categories.filter((c: Category) =>
+        c.name?.toLowerCase().includes(query) ||
+        c.slug?.toLowerCase().includes(query) ||
+        c.description?.toLowerCase().includes(query)
+      );
+    }
+
+    return categories;
+  }, [data?.categories, statusFilter, debouncedSearch]);
 
   // Fetch stats
   const { data: stats, isLoading: statsLoading } = useGetCategoryStats();
@@ -331,7 +350,7 @@ export function CategoriesPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={data?.categories || []}
+            data={filteredCategories}
             keyField="id"
             sortable
             selectable

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Plus, Search, Mail, Phone, Building2, User, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { cn } from '../../../core/lib/utils/cn';
+import { formatPhone } from '../../../core/lib/utils/formatPhone';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberInput } from '../../../core/components/AmberInput';
 import { StatsGrid } from '../../../core/components/Layout/StatsGrid';
@@ -131,7 +132,12 @@ export function CustomersPage() {
       hideInCard: true,
       render: (customer: Customer) => (
         <div className="flex items-center gap-4 text-sm font-bold text-zinc-text tabular-nums">
-          {customer.phone && <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[var(--color-brand)]" />{customer.phone}</span>}
+          {customer.phone && (
+            <span className="flex items-center gap-1.5" title={formatPhone(customer.phone)}>
+              <Phone className="w-3.5 h-3.5 text-[var(--color-brand)]" />
+              {formatPhone(customer.phone)}
+            </span>
+          )}
         </div>
       ),
     },

@@ -6,6 +6,7 @@
 
 import { useRouter } from 'next/router';
 import { useGetUser } from '../api';
+import { formatPhone } from '@core/lib/utils/formatPhone';
 
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
@@ -141,7 +142,7 @@ export function UserDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-500">{t('user.phone')}</p>
-                  <p className="text-sm text-white">{user.phone || '-'}</p>
+                  <p className="text-sm text-white">{user.phone ? formatPhone(user.phone) : '-'}</p>
                 </div>
               </div>
 
