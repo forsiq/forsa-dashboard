@@ -133,7 +133,7 @@ export function CustomersPage() {
       render: (customer: Customer) => (
         <div className="flex items-center gap-4 text-sm font-bold text-zinc-text tabular-nums">
           {customer.phone && (
-            <span className="flex items-center gap-1.5" title={formatPhone(customer.phone)}>
+            <span dir="ltr" className="flex items-center gap-1.5" title={formatPhone(customer.phone)}>
               <Phone className="w-3.5 h-3.5 text-[var(--color-brand)]" />
               {formatPhone(customer.phone)}
             </span>
