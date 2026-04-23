@@ -106,7 +106,7 @@ export const InventoryOverviewPage: React.FC = () => {
     },
     {
         key: 'status',
-        label: 'PROTOCOLS',
+        label: t('inventory.protocols'),
         render: (row) => {
           const qty = row.inventory_quantity || row.stock || 0;
           return (
@@ -122,7 +122,7 @@ export const InventoryOverviewPage: React.FC = () => {
     },
     {
       key: 'warehouse',
-      label: 'STORAGE NODE',
+      label: t('inventory.storageNode'),
       render: () => (
         <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
           {t('inventory.default_warehouse') || 'Primary Vault'}
@@ -171,7 +171,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <span>{t('inventory.add_item') || 'Ingest Asset'}</span>
                 </AmberButton>
             </Link>
-            <Link href="/inventory/transactions">
+            <Link href="/inventory">
                 <AmberButton variant="outline" className="gap-2 h-11 border-border font-bold rounded-xl hover:bg-obsidian-hover active:scale-95">
                     <HistoryIcon className="w-4 h-4" />
                     <span>{t('inventory.transactions') || 'Ledger'}</span>
@@ -196,7 +196,7 @@ export const InventoryOverviewPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
                 <TrendingUp className="w-3 h-3" />
-                <span>+12.8% Since Previous Cycle</span>
+                <span>+12.8% {t('inventory.sincePreviousCycle')}</span>
             </div>
           </Card>
 
@@ -214,14 +214,14 @@ export const InventoryOverviewPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-danger mt-4">
                 <ArrowRight className="w-3 h-3" />
-                <span>Requires Immediate Procurement</span>
+                <span>{t('inventory.requiresProcurement')}</span>
             </div>
           </Card>
 
           <Card className="!p-5 bg-obsidian-card border-border hover:border-info/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-info uppercase tracking-widest">Active Logistics Nodes</span>
+                    <span className="text-[10px] font-black text-info uppercase tracking-widest">{t('inventory.activeLogisticsNodes')}</span>
                     <h3 className="text-3xl font-black text-info tracking-tighter tabular-nums">{warehouses.length}</h3>
                 </div>
                 <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
@@ -229,14 +229,14 @@ export const InventoryOverviewPage: React.FC = () => {
                 </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4">
-                <span>94% Operational Efficiency</span>
+                <span>{t('inventory.operationalEfficiency')}</span>
             </div>
           </Card>
 
           <Card className="!p-5 bg-obsidian-card border-border hover:border-success/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-success uppercase tracking-widest">Aggregated Fiscal Value</span>
+                    <span className="text-[10px] font-black text-success uppercase tracking-widest">{t('inventory.aggregatedFiscalValue')}</span>
                     <h3 className="text-3xl font-black text-success tracking-tighter tabular-nums">
                         {formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
                     </h3>
@@ -246,7 +246,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
-                <span>Equity Optimization High</span>
+                <span>{t('inventory.equityOptimization')}</span>
             </div>
           </Card>
       </div>
@@ -256,7 +256,7 @@ export const InventoryOverviewPage: React.FC = () => {
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.2em] flex items-center gap-2">
-               <Layers className="w-4 h-4" /> Global Resource Distribution
+               <Layers className="w-4 h-4" /> {t('inventory.globalResourceDistribution')}
             </h2>
             <div className="relative group min-w-[280px]">
                 <Search className={cn(
@@ -264,7 +264,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     isRTL ? 'right-4' : 'left-4'
                 )} />
                 <AmberInput 
-                    placeholder="Search allocation identifiers..." 
+                    placeholder={t('inventory.searchAllocation')} 
                     className="h-10 bg-obsidian-card border-border pl-10 pr-4 text-[11px] font-bold"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -278,7 +278,7 @@ export const InventoryOverviewPage: React.FC = () => {
                pagination
                pageSize={15}
                selectable
-               onRowClick={(row) => router.push(`/inventory/details/${row.id}`)}
+               onRowClick={(row) => router.push(`/inventory`)}
              />
           </div>
         </div>
@@ -292,10 +292,10 @@ export const InventoryOverviewPage: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between mb-6 relative z-10">
                     <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em] flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-danger animate-pulse" /> Critical Depletion Alerts
+                        <AlertCircle className="w-4 h-4 text-danger animate-pulse" /> {t('inventory.criticalDepletionAlerts')}
                     </h3>
                     <span className="text-[10px] font-black text-danger bg-danger/10 px-3 py-1 rounded-full border border-danger/30">
-                        {lowStockItems.length} DETECTED
+                        {lowStockItems.length} {t('inventory.detected')}
                     </span>
                 </div>
                 <div className="space-y-4 max-h-[440px] overflow-y-auto custom-scrollbar pr-2 relative z-10">
@@ -304,11 +304,11 @@ export const InventoryOverviewPage: React.FC = () => {
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
                                     <p className="text-xs font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
-                                    <p className="text-[10px] font-bold text-zinc-muted uppercase">Protocol: High Urgency Procurement</p>
+                                    <p className="text-[10px] font-bold text-zinc-muted uppercase">{t('inventory.highUrgencyProcurement')}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-black text-danger leading-none">{item.inventory_quantity || 0}</p>
-                                    <p className="text-[8px] font-black text-zinc-muted uppercase mt-1">Remaining</p>
+                                    <p className="text-[8px] font-black text-zinc-muted uppercase mt-1">{t('inventory.remaining')}</p>
                                 </div>
                             </div>
                         </div>
@@ -330,7 +330,7 @@ export const InventoryOverviewPage: React.FC = () => {
            <Card className="!p-6 bg-obsidian-card border-border shadow-lg">
                 <div className="flex items-center gap-3 mb-8">
                    <Warehouse className="w-4 h-4 text-brand" />
-                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em]">Facility Capacity Index</h3>
+                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em]">{t('inventory.facilityCapacityIndex')}</h3>
                 </div>
                 <div className="space-y-10">
                    {warehouses.map((wh, i) => (
@@ -350,8 +350,8 @@ export const InventoryOverviewPage: React.FC = () => {
                                 className="h-2"
                            />
                            <div className="flex items-center justify-between mt-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">
-                               <span>Allocated: {wh.used} units</span>
-                               <span>Capacity: {wh.capacity} units</span>
+                               <span>{t('inventory.allocated')}: {wh.used} {t('inventory.units')}</span>
+                               <span>{t('inventory.capacity')}: {wh.capacity} {t('inventory.units')}</span>
                            </div>
                        </div>
                    ))}
@@ -364,14 +364,14 @@ export const InventoryOverviewPage: React.FC = () => {
       <AmberSlideOver
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        title="Inventory Matrix Configuration"
-        description="Filter resource allocation by status, category, and storage node identifiers."
+        title={t('inventory.filterTitle')}
+        description={t('inventory.filterDescription')}
       >
           <div className="space-y-8 py-4">
               <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Global Search</label>
+                  <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.globalSearch')}</label>
                   <AmberInput 
-                    placeholder="Scan per name or SKU..." 
+                    placeholder={t('inventory.scanPlaceholder')} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-12"
@@ -382,13 +382,13 @@ export const InventoryOverviewPage: React.FC = () => {
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Operational Status</label>
+                    <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.operationalStatus')}</label>
                     <AmberDropdown 
                         options={[
-                            { label: 'All Protocols', value: 'all' },
-                            { label: 'Sufficient Stock', value: 'in_stock' },
-                            { label: 'Depleting Resources', value: 'low_stock' },
-                            { label: 'Exhausted Units', value: 'out_of_stock' },
+                            { label: t('inventory.allProtocols'), value: 'all' },
+                            { label: t('inventory.sufficientStock'), value: 'in_stock' },
+                            { label: t('inventory.depletingResources'), value: 'low_stock' },
+                            { label: t('inventory.exhaustedUnits'), value: 'out_of_stock' },
                         ]}
                         value={statusFilter}
                         onChange={setStatusFilter}
@@ -399,7 +399,7 @@ export const InventoryOverviewPage: React.FC = () => {
               
               <div className="pt-8">
                   <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest" onClick={() => setIsFilterOpen(false)}>
-                      Apply Configuration
+                      {t('inventory.applyConfiguration')}
                   </AmberButton>
               </div>
           </div>

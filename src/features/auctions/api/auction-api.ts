@@ -248,3 +248,39 @@ export const bidApi = {
   },
 };
 
+/**
+ * Live Monitor API - real-time monitoring endpoints
+ */
+export const liveMonitorApi = {
+  getLiveStats: async (): Promise<{
+    activeAuctions: number;
+    endingSoonAuctions: number;
+    recentBidsCount: number;
+    timestamp: string;
+  }> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/auctions/live-stats');
+    return response.data.data;
+  },
+
+  getCriticalAuctions: async (): Promise<any[]> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/auctions/critical');
+    return response.data.data;
+  },
+
+  getTickerHistory: async (limit = 100): Promise<any[]> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/auctions/ticker/history', {
+      params: { limit },
+    });
+    return response.data.data;
+  },
+
+  extendAuction: async (id: number | string, minutes = 15): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/extend`, { minutes });
+    return response.data.data;
+  },
+};
+

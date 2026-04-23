@@ -237,7 +237,7 @@ export const InventoryPage = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/inventory/new">
+          <Link href="/inventory">
             <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95">
               <span>{t('inventory.add_item')}</span>
               <Plus className="w-5 h-5" />

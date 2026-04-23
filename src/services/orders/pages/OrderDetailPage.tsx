@@ -8,6 +8,7 @@ import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const OrderDetailPage = () => {
   const router = useRouter();
@@ -15,6 +16,7 @@ export const OrderDetailPage = () => {
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setIsClient(true);
@@ -45,11 +47,11 @@ export const OrderDetailPage = () => {
   if (!isClient) return null;
 
   if (isLoading) {
-    return <div className="text-white">Loading...</div>;
+    return <div className="text-white">{t('common.loading')}</div>;
   }
 
   if (!order) {
-    return <div className="text-white">Order not found</div>;
+    return <div className="text-white">{t('orders.notFound')}</div>;
   }
 
   const statusColors: Record<Order['status'], string> = {
@@ -95,7 +97,7 @@ export const OrderDetailPage = () => {
           <div className="flex items-center gap-3">
             <Package className="text-zinc-400" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">Order Status</div>
+              <div className="text-zinc-400 text-sm">{t('orders.orderStatus')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
                 {order.status}
               </span>
@@ -106,7 +108,7 @@ export const OrderDetailPage = () => {
           <div className="flex items-center gap-3">
             <CreditCard className="text-zinc-400" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">Payment</div>
+              <div className="text-zinc-400 text-sm">{t('orders.payment')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[order.paymentStatus]}`}>
                 {order.paymentStatus}
               </span>
@@ -117,7 +119,7 @@ export const OrderDetailPage = () => {
           <div className="flex items-center gap-3">
             <User className="text-zinc-400" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">Customer</div>
+              <div className="text-zinc-400 text-sm">{t('orders.customer')}</div>
               <div className="text-white font-medium">{order.customerName}</div>
             </div>
           </div>
@@ -128,7 +130,7 @@ export const OrderDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Items */}
         <AmberCard className="p-6 lg:col-span-2">
-          <h2 className="text-lg font-semibold text-white mb-4">Order Items</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">{t('orders.orderItems')}</h2>
           <div className="space-y-4">
             {order.items.map((item) => (
               <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
@@ -139,8 +141,8 @@ export const OrderDetailPage = () => {
                   )}
                 </div>
                 <div className="text-right">
-                  <div className="text-white">{item.quantity} x {formatCurrency(item.unitPrice)}</div>
-                  <div className="text-sm font-medium text-white">{formatCurrency(item.totalPrice)}</div>
+                  <div className="text-white">{item.quantity} x {formatCurrency(item.unitPrice ?? 0)}</div>
+                  <div className="text-sm font-medium text-white">{formatCurrency(item.totalPrice ?? 0)}</div>
                 </div>
               </div>
             ))}
@@ -149,26 +151,26 @@ export const OrderDetailPage = () => {
           {/* Totals */}
           <div className="mt-6 pt-6 border-t border-white/10 space-y-2">
             <div className="flex justify-between text-zinc-400">
-              <span>Subtotal</span>
-              <span>{formatCurrency(order.subtotal)}</span>
+              <span>{t('orders.subtotal')}</span>
+              <span>{formatCurrency(order.subtotal ?? 0)}</span>
             </div>
             <div className="flex justify-between text-zinc-400">
-              <span>Tax</span>
-              <span>{formatCurrency(order.tax)}</span>
+              <span>{t('orders.tax')}</span>
+              <span>{formatCurrency(order.tax ?? 0)}</span>
             </div>
             <div className="flex justify-between text-zinc-400">
-              <span>Shipping</span>
-              <span>{formatCurrency(order.shipping)}</span>
+              <span>{t('orders.shipping')}</span>
+              <span>{formatCurrency(order.shipping ?? 0)}</span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-green-400">
-                <span>Discount</span>
-                <span>-{formatCurrency(order.discount)}</span>
+                <span>{t('orders.discount')}</span>
+                <span>-{formatCurrency(order.discount ?? 0)}</span>
               </div>
             )}
             <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-white/10">
-              <span>Total</span>
-              <span>{formatCurrency(order.total)}</span>
+              <span>{t('orders.total')}</span>
+              <span>{formatCurrency(order.total ?? 0)}</span>
             </div>
           </div>
         </AmberCard>
@@ -179,7 +181,7 @@ export const OrderDetailPage = () => {
           <AmberCard className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <MapPin className="text-zinc-400" size={18} />
-              <h2 className="text-lg font-semibold text-white">Shipping Address</h2>
+              <h2 className="text-lg font-semibold text-white">{t('orders.shippingAddress')}</h2>
             </div>
             <div className="space-y-1 text-sm">
               <div className="text-white">{order.shippingAddress.fullName}</div>
@@ -203,14 +205,14 @@ export const OrderDetailPage = () => {
           {/* Notes */}
           {order.notes && (
             <AmberCard className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Notes</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('orders.notes')}</h2>
               <p className="text-zinc-400 text-sm">{order.notes}</p>
             </AmberCard>
           )}
 
           {/* Status Actions */}
           <AmberCard className="p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Update Status</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">{t('orders.updateStatus')}</h2>
             <div className="space-y-2">
               {(['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as Order['status'][]).map((status) => (
                 <AmberButton
@@ -232,8 +234,8 @@ export const OrderDetailPage = () => {
       {/* Delete Confirmation Modal */}
       <AmberConfirmModal
         isOpen={showDeleteModal}
-        title="Delete Order"
-        message={`Are you sure you want to delete order ${order.orderNumber}? This action cannot be undone.`}
+        title={t('orders.deleteOrder')}
+        message={t('orders.deleteConfirm', { orderNumber: order.orderNumber })}
         onConfirm={() => deleteMutation.mutate(order.id)}
         onClose={() => setShowDeleteModal(false)}
         variant="destructive"

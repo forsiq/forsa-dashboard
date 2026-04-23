@@ -7,24 +7,33 @@ import type { MenuSection } from '@config/navigation';
 
 export const sidebarSections: MenuSection[] = [
   {
-    title: 'sidebar.dashboards',
+    title: 'sidebar.general',
     items: [
       { path: '/dashboard', label: 'sidebar.dashboard', icon: 'Activity' },
+      { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
+      { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
     ]
   },
   {
-    title: 'sidebar.catalog',
+    title: 'sidebar.auctions',
     items: [
-      { path: '/categories', label: 'category.title', icon: 'FolderTree' },
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
+      { path: '/categories', label: 'sidebar.categories', icon: 'FolderTree' },
       { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
+      { path: '/my-bids', label: 'sidebar.my_bids', icon: 'Hammer' },
     ]
   },
   {
-    title: 'sidebar.sales_department',
+    title: 'sidebar.inventory',
     items: [
-      { path: '/customers', label: 'customer.title', icon: 'Users' },
+      { path: '/inventory', label: 'sidebar.inventory', icon: 'Warehouse' },
+    ]
+  },
+  {
+    title: 'sidebar.sales',
+    items: [
       { path: '/orders', label: 'order.title', icon: 'ShoppingCart' },
+      { path: '/customers', label: 'customer.title', icon: 'Users' },
     ]
   },
   {
@@ -36,12 +45,4 @@ export const sidebarSections: MenuSection[] = [
       { path: '/reports/customer-insights', label: 'report.customer_insights', icon: 'Users' },
     ]
   },
-  {
-    title: 'sidebar.management',
-    items: [
-      { path: '/inventory', label: 'sidebar.inventory', icon: 'Warehouse' },
-      { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
-      { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
-    ]
-  }
 ];

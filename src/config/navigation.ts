@@ -67,16 +67,9 @@ export const menuSections: MenuSection[] = [
         icon: 'PlusCircle',
       },
       {
-        path: '/bidding',
-        label: 'auction.live_bidding',
-        icon: 'Zap',
-        serviceId: 'bidding',
-      },
-      {
-        path: '/bids',
+        path: '/my-bids',
         label: 'auction.bids',
         icon: 'Hammer',
-        serviceId: 'bidding',
       },
     ],
   },

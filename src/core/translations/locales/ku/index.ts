@@ -25,6 +25,7 @@ import { misc } from './misc';
 import { ui } from './ui';
 import { groupBuying } from './groupBuying';
 import { services } from './services';
+import { sales } from './sales';
 
 export const ku = {
   ...common,
@@ -53,4 +54,5 @@ export const ku = {
   ...misc,
   ...ui,
   ...groupBuying,
+  ...sales,
 } as const;

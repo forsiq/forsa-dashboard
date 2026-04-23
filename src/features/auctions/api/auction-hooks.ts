@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import { useErrorHandler } from '@core/hooks';
 import Cookies from 'js-cookie';
-import { auctionApi, bidApi } from './auction-api';
+import { auctionApi, bidApi, liveMonitorApi } from './auction-api';
 import type {
   Auction,
   AuctionsResponse,
@@ -364,3 +364,65 @@ export const useBuyNow = createLifecycleHook(
   'Auction purchased successfully',
   'Failed to purchase auction',
 );
+
+// ============================================================================
+// Live Monitor Hooks
+// ============================================================================
+
+export function useLiveStats() {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'live-stats'] as const,
+    queryFn: () => liveMonitorApi.getLiveStats(),
+    staleTime: 10 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load live stats');
+
+  return query;
+}
+
+export function useCriticalAuctions() {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'critical'] as const,
+    queryFn: () => liveMonitorApi.getCriticalAuctions(),
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load critical auctions');
+
+  return query;
+}
+
+export function useTickerHistory(limit = 100) {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'ticker-history', limit] as const,
+    queryFn: () => liveMonitorApi.getTickerHistory(limit),
+    staleTime: 10 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load ticker history');
+
+  return query;
+}
+
+export function useExtendAuction() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, minutes }: { id: number | string; minutes?: number }) =>
+      liveMonitorApi.extendAuction(id, minutes),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'] });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'] });
+      toast.success('Auction extended successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to extend auction: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
