@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import { useErrorHandler } from '@core/hooks';
 import Cookies from 'js-cookie';
-import { auctionApi, bidApi, liveMonitorApi } from './auction-api';
+import { auctionApi, bidApi, liveMonitorApi, settlementApi, moderationApi } from './auction-api';
 import type {
   Auction,
   AuctionsResponse,
@@ -19,6 +19,7 @@ import type {
   AuctionFilters,
   AuctionStats,
 } from '../types/auction.types';
+import type { SettlementsResponse, AllBidsResponse } from './auction-api';
 
 /**
  * Check if user is authenticated (cookie + localStorage, same as ApiClientFactory)
@@ -423,6 +424,146 @@ export function useExtendAuction() {
     },
     onError: (error: any) => {
       toast.error(`Failed to extend auction: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+// ============================================================================
+// Settlement Hooks
+// ============================================================================
+
+export function useSettlements(filters?: { status?: string; page?: number; limit?: number }) {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'settlements', filters] as const,
+    queryFn: () => settlementApi.getSettlements(filters),
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load settlements');
+  return query;
+}
+
+export function useUpdatePaymentStatus() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, paymentStatus }: { id: number | string; paymentStatus: string }) =>
+      settlementApi.updatePaymentStatus(id, paymentStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'settlements'] });
+      toast.success('Payment status updated');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+export function useNudgeWinner() {
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (id: number | string) => settlementApi.nudgeWinner(id),
+    onSuccess: (data) => {
+      if (data.sent) {
+        toast.success('Push notification sent to winner');
+      } else {
+        toast.warning('Winner has no registered device');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to nudge winner: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+export function useOfferToUnderbidder() {
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (id: number | string) => settlementApi.offerToUnderbidder(id),
+    onSuccess: (data) => {
+      if (data.sent) {
+        toast.success('Offer sent to underbidder');
+      } else {
+        toast.warning('Underbidder has no registered device');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to offer to underbidder: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+// ============================================================================
+// Moderation Hooks
+// ============================================================================
+
+export function useAllBids(filters?: {
+  page?: number;
+  limit?: number;
+  auctionId?: number;
+  bidderId?: string;
+  status?: string;
+  minAmount?: number;
+  maxAmount?: number;
+}) {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'moderation-bids', filters] as const,
+    queryFn: () => moderationApi.getAllBids(filters),
+    staleTime: 15 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load bids');
+  return query;
+}
+
+export function useVoidBid() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (bidId: number | string) => moderationApi.voidBid(bidId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'moderation-bids'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'settlements'] });
+      toast.success('Bid voided successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to void bid: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+export function useSuspendUser() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (userId: string) => moderationApi.suspendUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'moderation-bids'] });
+      toast.success('User suspended successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to suspend user: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
+export function useUnsuspendUser() {
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (userId: string) => moderationApi.unsuspendUser(userId),
+    onSuccess: () => {
+      toast.success('User unsuspended successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to unsuspend user: ${error.message || 'Unknown error'}`, 8000);
     },
   });
 }

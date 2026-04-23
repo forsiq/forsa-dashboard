@@ -16,6 +16,13 @@ export const sidebarSections: MenuSection[] = [
     ]
   },
   {
+    title: 'sidebar.operations',
+    items: [
+      { path: '/settlements', label: 'sidebar.settlements', icon: 'Landmark' },
+      { path: '/moderation', label: 'sidebar.moderation', icon: 'Shield' },
+    ]
+  },
+  {
     title: 'sidebar.auctions',
     items: [
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },

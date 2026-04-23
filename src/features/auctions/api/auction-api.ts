@@ -284,3 +284,118 @@ export const liveMonitorApi = {
   },
 };
 
+export interface SettlementItem {
+  id: number;
+  title: string;
+  image: string | null;
+  status: string;
+  paymentStatus: string;
+  finalPrice: number | null;
+  startPrice: number;
+  currency: string;
+  endTime: string;
+  winnerId: string | null;
+  winningBid: {
+    id: number;
+    amount: number;
+    bidderId: string;
+    createdAt: string;
+  } | null;
+  createdAt: string;
+}
+
+export interface SettlementsResponse {
+  items: SettlementItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const settlementApi = {
+  getSettlements: async (filters?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<SettlementsResponse> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/auctions/settlements', { params: filters });
+    return response.data;
+  },
+
+  updatePaymentStatus: async (id: number | string, paymentStatus: string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.patch(`/auctions/${id}/payment-status`, { paymentStatus });
+    return response.data.data;
+  },
+
+  nudgeWinner: async (id: number | string): Promise<{ sent: boolean; winnerId: string }> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/nudge-winner`);
+    return response.data.data;
+  },
+
+  offerToUnderbidder: async (id: number | string): Promise<{ sent: boolean; underbidderId: string | null }> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/offer-underbidder`);
+    return response.data.data;
+  },
+};
+
+export interface AllBidsItem {
+  id: number;
+  auctionId: number;
+  bidderId: string;
+  amount: number;
+  status: string;
+  isAutoBid: boolean;
+  maxAmount: number | null;
+  createdAt: string;
+  auction: {
+    id: number;
+    title: string;
+  } | null;
+}
+
+export interface AllBidsResponse {
+  items: AllBidsItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const moderationApi = {
+  getAllBids: async (filters?: {
+    page?: number;
+    limit?: number;
+    auctionId?: number;
+    bidderId?: string;
+    status?: string;
+    minAmount?: number;
+    maxAmount?: number;
+  }): Promise<AllBidsResponse> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/bids/all', { params: filters });
+    return response.data;
+  },
+
+  voidBid: async (bidId: number | string): Promise<any> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/bids/${bidId}/void`);
+    return response.data.data;
+  },
+
+  suspendUser: async (userId: string): Promise<{ success: boolean; userId: string }> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/users/${userId}/suspend`);
+    return response.data.data;
+  },
+
+  unsuspendUser: async (userId: string): Promise<{ success: boolean; userId: string }> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/users/${userId}/unsuspend`);
+    return response.data.data;
+  },
+};
+
