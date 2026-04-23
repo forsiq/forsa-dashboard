@@ -131,7 +131,7 @@ export function SalesReportPage() {
                     <YAxis type="category" dataKey="name" stroke="#71717a" tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 700 }} width={100} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
-                      formatter={(value) => formatCurrency(value)}
+                      formatter={(value: string | number | (string | number)[]) => formatCurrency(Array.isArray(value) ? value[0] : value)}
                     />
                     <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={25} />
                   </BarChart>

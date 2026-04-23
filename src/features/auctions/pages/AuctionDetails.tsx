@@ -122,9 +122,9 @@ export const AuctionDetails: React.FC = () => {
     );
   }
 
-  const currentBid = parseFloat(auction.currentBid) || 0;
-  const startPrice = parseFloat(auction.startPrice) || 0;
-  const bidIncrement = parseFloat(auction.bidIncrement) || 0;
+  const currentBid = Number(auction.currentBid) || 0;
+  const startPrice = Number(auction.startPrice) || 0;
+  const bidIncrement = Number(auction.bidIncrement) || 0;
   const nextMinBid = (currentBid || startPrice) + bidIncrement;
   const isEndingSoon = new Date(auction.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
 
@@ -137,7 +137,7 @@ export const AuctionDetails: React.FC = () => {
     { icon: User, label: 'Winner', value: auction.winnerName || t('auction.detail.default_custodian') || 'No winner yet' },
   ];
 
-  if (auction.reservePrice != null && parseFloat(auction.reservePrice) > 0) {
+  if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
     detailRows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
   }
 

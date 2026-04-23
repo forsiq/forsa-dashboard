@@ -111,7 +111,7 @@ export const CriticalNodes: React.FC = () => {
         ))}
       </div>
 
-      {ConfirmModal}
+      <ConfirmModal />
     </AmberCard>
   );
 };

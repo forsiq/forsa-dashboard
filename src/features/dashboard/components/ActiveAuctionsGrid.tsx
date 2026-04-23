@@ -123,7 +123,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
         )}
       </div>
 
-      {ConfirmModalComponent}
+      <ConfirmModalComponent />
     </AmberCard>
   );
 };
