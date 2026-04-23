@@ -3,10 +3,8 @@ import type { FormFieldConfig } from '@core/services/types';
 export const orderFormFields: FormFieldConfig[] = [
   { name: 'customerId', label: 'orders.customer', type: 'select', required: true, grid: { xs: 12 } },
   { name: 'currency', label: 'orders.currency', type: 'select', options: [
-    { label: 'USD', value: 'USD' },
-    { label: 'EUR', value: 'EUR' },
     { label: 'IQD', value: 'IQD' },
-  ], defaultValue: 'USD', grid: { xs: 12, md: 4 } },
+  ], defaultValue: 'IQD', grid: { xs: 12, md: 4 } },
   { name: 'priority', label: 'orders.priority', type: 'select', options: [
     { label: 'orders.priority.low', value: 'low' },
     { label: 'orders.priority.medium', value: 'medium' },

@@ -6,6 +6,7 @@ import type { Order } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useState, useEffect } from 'react';
 
 export const OrderDetailPage = () => {
@@ -138,8 +139,8 @@ export const OrderDetailPage = () => {
                   )}
                 </div>
                 <div className="text-right">
-                  <div className="text-white">{item.quantity} x {order.currency}{item.unitPrice.toFixed(2)}</div>
-                  <div className="text-sm font-medium text-white">{order.currency}{item.totalPrice.toFixed(2)}</div>
+                  <div className="text-white">{item.quantity} x {formatCurrency(item.unitPrice)}</div>
+                  <div className="text-sm font-medium text-white">{formatCurrency(item.totalPrice)}</div>
                 </div>
               </div>
             ))}
@@ -149,25 +150,25 @@ export const OrderDetailPage = () => {
           <div className="mt-6 pt-6 border-t border-white/10 space-y-2">
             <div className="flex justify-between text-zinc-400">
               <span>Subtotal</span>
-              <span>{order.currency} {order.subtotal.toFixed(2)}</span>
+              <span>{formatCurrency(order.subtotal)}</span>
             </div>
             <div className="flex justify-between text-zinc-400">
               <span>Tax</span>
-              <span>{order.currency} {order.tax.toFixed(2)}</span>
+              <span>{formatCurrency(order.tax)}</span>
             </div>
             <div className="flex justify-between text-zinc-400">
               <span>Shipping</span>
-              <span>{order.currency} {order.shipping.toFixed(2)}</span>
+              <span>{formatCurrency(order.shipping)}</span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-green-400">
                 <span>Discount</span>
-                <span>-{order.currency} {order.discount.toFixed(2)}</span>
+                <span>-{formatCurrency(order.discount)}</span>
               </div>
             )}
             <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-white/10">
               <span>Total</span>
-              <span>{order.currency} {order.total.toFixed(2)}</span>
+              <span>{formatCurrency(order.total)}</span>
             </div>
           </div>
         </AmberCard>

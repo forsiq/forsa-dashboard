@@ -189,9 +189,7 @@ export const OrderFormPage = () => {
                 {...register('currency')}
                 className="w-full px-4 py-2 bg-obsidian-card border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
               >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
+                <option value="IQD">IQD</option>
               </select>
             </div>
             <div>

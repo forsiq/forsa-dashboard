@@ -8,7 +8,7 @@ export const products = {
   "prod.add.sku": "رمز المنتج (SKU)",
   "prod.add.condition": "حالة المنتج",
   "prod.add.auction_settings": "التسعير والتقييم",
-  "prod.add.price": "السعر الأساسي (USD)",
+  "prod.add.price": "السعر الأساسي (IQD)",
   "prod.add.buy_now": "سعر الشراء الفوري",
   "prod.add.starting_bid": "سعر المزايدة الابتدائي",
   "prod.add.duration": "مدة العرض (أيام)",

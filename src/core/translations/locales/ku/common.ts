@@ -68,7 +68,7 @@ export const common = {
   "common.city": "شار",
   "common.state": "پارێێز",
   "common.country": "وڵات",
-  "common.usd": "دۆلار",
+  "common.usd": "دیناری عێراقی",
   "common.feature_not_enabled": "تایبەت چالاک نەکراوەتە",
   "common.manage_your": "بەڕەڕەکاری",
   "common.ecosystem": "سیستەم",

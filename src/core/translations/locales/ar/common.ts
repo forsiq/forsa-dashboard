@@ -71,7 +71,7 @@ export const common = {
   "common.city": "المدينة",
   "common.state": "الولاية",
   "common.country": "الدولة",
-  "common.usd": "دولار أمريكي",
+  "common.usd": "دينار عراقي",
   "common.feature_not_enabled": "الميزة غير مفعلة",
   "common.manage_your": "إدارة",
   "common.ecosystem": "النظام البيئي",

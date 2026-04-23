@@ -71,7 +71,7 @@ export const common = {
   "common.city": "City",
   "common.state": "State",
   "common.country": "Country",
-  "common.usd": "USD",
+  "common.usd": "IQD",
   "common.feature_not_enabled": "Feature not enabled",
   "common.manage_your": "Manage Your",
   "common.ecosystem": "Ecosystem",

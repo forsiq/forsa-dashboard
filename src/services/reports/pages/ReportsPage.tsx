@@ -6,6 +6,7 @@ import { cn } from '../../../core/lib/utils/cn';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { useGetReports } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
+import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
 
 /**
  * ReportsPage - Reports dashboard
@@ -78,8 +79,8 @@ export function ReportsPage() {
           <ReportStatsCard
             key={card.title}
             label={card.title}
-            value={typeof card.value === 'number' && card.value > 1000
-              ? `$${(card.value / 1000).toFixed(1)}k`
+            value={typeof card.value === 'number'
+              ? formatCurrency(card.value)
               : card.value}
             change={`${card.change >= 0 ? '+' : ''}${card.change}%`}
             icon={card.icon}

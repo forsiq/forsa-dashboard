@@ -294,7 +294,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                             <h4 className="text-xs font-black uppercase tracking-[0.2em]">Yield Projection</h4>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-2xl font-black text-emerald-400 tabular-nums tracking-tighter leading-none">+$42,840</p>
+                            <p className="text-2xl font-black text-emerald-400 tabular-nums tracking-tighter leading-none">{formatCurrency(campaign.dealPrice * (campaign.currentParticipants || campaign.currentUsers || 1))}</p>
                             <p className="text-[10px] text-zinc-muted font-bold uppercase">Aggregate Net Consolidation</p>
                         </div>
                     </div>

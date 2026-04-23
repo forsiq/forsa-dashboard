@@ -37,7 +37,7 @@ export const products = {
   "prod.add.condition_used": "Used",
   "prod.add.description": "Description",
   "prod.add.description_placeholder": "Enter a detailed product description...",
-  "prod.add.price": "Base price (USD)",
+  "prod.add.price": "Base price (IQD)",
   "prod.add.buy_now": "Buy now price",
   "prod.add.starting_bid": "Starting bid",
   "prod.add.duration_3": "3 days",

@@ -41,7 +41,7 @@ const defaultAppSettings: Record<string, any> = {
   general: {
     siteName: 'Forsa Auction',
     siteDescription: 'Premium auction platform',
-    currency: 'USD',
+    currency: 'IQD',
     timezone: 'Asia/Baghdad',
     language: 'en',
     maintenanceMode: false,
@@ -61,7 +61,7 @@ const defaultAppSettings: Record<string, any> = {
     pushOnBid: true,
   },
   payments: {
-    currency: 'USD',
+    currency: 'IQD',
     taxRate: 0,
     commissionRate: 5,
     minWithdrawal: 50,
