@@ -2,20 +2,7 @@
  * Sales Utility Functions
  */
 
-/**
- * Format number as currency
- */
-export function formatCurrency(amount: number | string, currency = 'IQD'): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return `0 ${currency}`;
-  
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(num).replace('$', '') + ' ' + currency;
-}
+export { formatCurrency } from '@core/lib/utils/formatCurrency';
 
 /**
  * Calculate discount percentage

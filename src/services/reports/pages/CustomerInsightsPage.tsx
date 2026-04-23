@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, MapPin, Repeat, Crown } from 'lucide-react';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
 import { cn } from '../../../core/lib/utils/cn';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { useGetSalesReport } from '../hooks';
@@ -80,7 +81,7 @@ export function CustomerInsightsPage() {
                   <p className="text-sm font-black text-zinc-text">{customer.name}</p>
                   <p className="text-xs text-zinc-muted">{customer.email}</p>
                 </div>
-                <p className="text-sm font-black text-brand">${customer.spent.toLocaleString()}</p>
+                <p className="text-sm font-black text-brand">{formatCurrency(customer.spent)}</p>
               </div>
             ))}
           </div>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -237,7 +238,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 <div className="space-y-1">
                     <span className="text-[10px] font-black text-success uppercase tracking-widest">Aggregated Fiscal Value</span>
                     <h3 className="text-3xl font-black text-success tracking-tighter tabular-nums">
-                        ${products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0).toLocaleString()}
+                        {formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
                     </h3>
                 </div>
                 <div className="p-3 bg-success/10 text-success rounded-xl border border-success/20">

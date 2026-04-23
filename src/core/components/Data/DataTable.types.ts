@@ -40,6 +40,9 @@ interface DataTableProps<T> {
   expandable?: boolean;
   pagination?: boolean;
   pageSize?: number;
+  totalItems?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
   loading?: boolean;
   onRowClick?: (row: T) => void;
   onSelectionChange?: (selectedIds: string[]) => void;

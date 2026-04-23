@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
 import { cn } from '../../../core/lib/utils/cn';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { useGetAnalytics } from '../hooks';
@@ -38,7 +39,7 @@ export function AnalyticsPage() {
   const summaryStats = [
     { 
       label: t('report.total_revenue'), 
-      value: analytics?.totalRevenue ? `$${analytics.totalRevenue.toLocaleString()}` : '$124,592', 
+      value: analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : formatCurrency(124592), 
       change: analytics?.totalRevenueChange || '+12.5%', 
       icon: DollarSign, 
       color: 'text-success' 
@@ -52,7 +53,7 @@ export function AnalyticsPage() {
     },
     { 
       label: t('report.avg_order'), 
-      value: analytics?.avgOrderValue ? `$${analytics.avgOrderValue.toLocaleString()}` : '$142.10', 
+      value: analytics?.avgOrderValue ? formatCurrency(analytics.avgOrderValue) : formatCurrency(142), 
       change: analytics?.avgOrderValueChange || '-2.1%', 
       icon: ShoppingCart, 
       color: 'text-warning' 

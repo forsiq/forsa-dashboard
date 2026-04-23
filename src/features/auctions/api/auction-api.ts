@@ -32,13 +32,15 @@ export const auctionApi = {
    */
   list: async (filters?: AuctionFilters): Promise<AuctionsResponse> => {
     const response = await auctionBaseApi.list(filters) as any;
-    // Compatibility layer: REST API returns { data, total, page, limit }
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 50;
+    const total = response.pagination?.total || response.total || (response.data?.length || 0);
     return {
       data: response.data || [],
-      total: response.total || (response.data?.length || 0),
-      page: filters?.page || 1,
-      limit: filters?.limit || 50,
-      hasMore: (response.total || 0) > (filters?.page || 1) * (filters?.limit || 50),
+      total,
+      page,
+      limit,
+      hasMore: response.pagination?.hasNext ?? (total > page * limit),
     };
   },
 

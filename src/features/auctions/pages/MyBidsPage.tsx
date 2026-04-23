@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
@@ -59,7 +60,7 @@ export const MyBidsPage: React.FC = () => {
       label: t('auction.table.premium_value') || 'Bid Amount',
       render: (bid) => (
         <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-          ${bid.amount.toLocaleString()}
+          {formatCurrency(bid.amount)}
         </span>
       ),
       sortable: true,

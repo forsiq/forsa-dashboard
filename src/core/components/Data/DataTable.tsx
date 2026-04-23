@@ -31,6 +31,9 @@ export function DataTable<T extends Record<string, any>>({
   expandable = false,
   pagination = false,
   pageSize = 10,
+  totalItems,
+  currentPage: externalCurrentPage,
+  onPageChange,
   loading = false,
   onRowClick,
   onSelectionChange,
@@ -51,7 +54,9 @@ export function DataTable<T extends Record<string, any>>({
   // --- State ---
   const [internalViewMode, setInternalViewMode] = useState<ViewMode>('table');
   const viewMode = externalViewMode ?? internalViewMode;
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(1);
+  const currentPage = externalCurrentPage ?? internalPage;
+  const handlePageChange = onPageChange ?? setInternalPage;
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -83,13 +88,15 @@ export function DataTable<T extends Record<string, any>>({
   }, [rows, sortConfig, sortable]);
 
   // --- Pagination ---
+  const isServerPagination = !!onPageChange;
   const paginatedData = useMemo(() => {
-    if (!pagination) return sortedData;
+    if (!pagination || isServerPagination) return sortedData;
     const startIndex = (currentPage - 1) * pageSize;
     return sortedData.slice(startIndex, startIndex + pageSize);
-  }, [sortedData, currentPage, pagination, pageSize]);
+  }, [sortedData, currentPage, pagination, pageSize, isServerPagination]);
 
-  const totalPages = Math.ceil(sortedData.length / pageSize);
+  const resolvedTotalItems = totalItems ?? sortedData.length;
+  const totalPages = Math.ceil(resolvedTotalItems / pageSize);
 
   // --- Handlers ---
   const handleSort = (key: string) => {
@@ -412,8 +419,8 @@ export function DataTable<T extends Record<string, any>>({
           currentPage={currentPage}
           totalPages={totalPages}
           pageSize={pageSize}
-          totalItems={sortedData.length}
-          onPageChange={setCurrentPage}
+          totalItems={resolvedTotalItems}
+          onPageChange={handlePageChange}
         />
       )}
 

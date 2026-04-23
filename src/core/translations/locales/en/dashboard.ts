@@ -48,4 +48,10 @@ export const dashboard = {
   "stats.products": "Total Products",
   "stats.customers": "Total Customers",
   "stats.vs_last_month": "vs last month",
+  "dash.totalItems": "Total Auctions & Deals",
+  "dash.sales_trend": "Sales Trend (30 Days)",
+  "dash.category_distribution": "Top Categories",
+  "dash.top_performing": "Top Performing Items",
+  "dash.revenue": "Revenue",
+  "dash.sales": "Sales",
 } as const;

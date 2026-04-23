@@ -48,4 +48,10 @@ export const dashboard = {
   "stats.products": "إجمالي المنتجات",
   "stats.customers": "إجمالي العملاء",
   "stats.vs_last_month": "من الشهر الماضي",
+  "dash.totalItems": "إجمالي المزادات والصفقات",
+  "dash.sales_trend": "اتجاه المبيعات (30 يومًا)",
+  "dash.category_distribution": "أفضل الفئات",
+  "dash.top_performing": "أفضل العناصر أداءً",
+  "dash.revenue": "الإيرادات",
+  "dash.sales": "المبيعات",
 } as const;

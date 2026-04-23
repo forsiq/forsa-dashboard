@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
@@ -148,7 +149,7 @@ export const AuctionsList: React.FC = () => {
         label: t('auction.table.premium_value') || 'Price',
         render: (auction) => (
           <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-            ${(auction.currentBid || auction.startPrice).toLocaleString()}
+            {(auction.currentBid || auction.startPrice).toLocaleString()}
           </span>
         ),
         sortable: true,
@@ -306,7 +307,7 @@ export const AuctionsList: React.FC = () => {
                     },
                     {
                         label: t('auction.metrics.projected_revenue'),
-                        value: `$${stats?.totalRevenue?.toLocaleString() || '0'}`,
+                        value: formatCurrency(stats?.totalRevenue),
                         icon: DollarSign,
                         color: 'info',
                         description: t('auction.equitable_distribution'),
@@ -339,7 +340,7 @@ export const AuctionsList: React.FC = () => {
                                 isRTL ? "pr-11 pl-4 text-right" : "pl-11 pr-4 text-left"
                             )}
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                         />
                     </div>
                 </div>
@@ -369,6 +370,9 @@ export const AuctionsList: React.FC = () => {
                             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
                             pagination
                             pageSize={limit}
+                            currentPage={page}
+                            totalItems={auctionsData?.total || 0}
+                            onPageChange={(newPage) => setPage(newPage)}
                             showViewToggle
                         />
                     </div>
@@ -388,7 +392,7 @@ export const AuctionsList: React.FC = () => {
                         <AmberInput
                             placeholder={t('auction.listings.search')}
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                             className="h-12"
                         />
                     </div>
@@ -409,7 +413,7 @@ export const AuctionsList: React.FC = () => {
                                     { label: t('auction.lifecycle.cancelled') || 'Cancelled', value: 'cancelled' },
                                 ]}
                                 value={statusFilter}
-                                onChange={(value: any) => setStatusFilter(value)}
+                                onChange={(value: any) => { setStatusFilter(value); setPage(1); }}
                                 className="h-12 w-full"
                             />
                         </div>
@@ -431,7 +435,7 @@ export const AuctionsList: React.FC = () => {
                                 {(categoriesData?.categories || []).map((cat: any) => (
                                     <button
                                         key={cat.id}
-                                        onClick={() => setCategoryIdFilter(cat.id)}
+                                        onClick={() => { setCategoryIdFilter(cat.id); setPage(1); }}
                                         className={cn(
                                             "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
                                             categoryIdFilter === cat.id
@@ -457,6 +461,7 @@ export const AuctionsList: React.FC = () => {
                                 setStatusFilter('all');
                                 setCategoryIdFilter('all');
                                 setSearchQuery('');
+                                setPage(1);
                                 setIsFilterOpen(false);
                             }}
                         >

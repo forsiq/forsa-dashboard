@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Download } from 'lucide-react';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
 import { cn } from '../../../core/lib/utils/cn';
 import { AmberCard } from '../../../core/components/AmberCard';
 import { AmberButton } from '../../../core/components/AmberButton';
@@ -23,25 +24,25 @@ export function SalesReportPage() {
   const kpis = [
     { 
       label: t('report.gross_sales'), 
-      value: report?.grossSales ? `$${report.grossSales.toLocaleString()}` : '$154,200', 
+      value: report?.grossSales ? formatCurrency(report.grossSales) : formatCurrency(154200), 
       change: report?.grossSalesChange || '+14%', 
       color: 'text-brand' 
     },
     { 
       label: t('report.net_profit'), 
-      value: report?.netProfit ? `$${report.netProfit.toLocaleString()}` : '$42,500', 
+      value: report?.netProfit ? formatCurrency(report.netProfit) : formatCurrency(42500), 
       change: report?.netProfitChange || '+8%', 
       color: 'text-success' 
     },
     { 
       label: t('report.tax_collected'), 
-      value: report?.taxCollected ? `$${report.taxCollected.toLocaleString()}` : '$12,430', 
+      value: report?.taxCollected ? formatCurrency(report.taxCollected) : formatCurrency(12430), 
       change: report?.taxCollectedChange || '+12%', 
       color: 'text-warning' 
     },
     { 
       label: t('report.shipping'), 
-      value: report?.shipping ? `$${report.shipping.toLocaleString()}` : '$5,200', 
+      value: report?.shipping ? formatCurrency(report.shipping) : formatCurrency(5200), 
       change: report?.shippingChange || '+5%', 
       color: 'text-info' 
     },
@@ -130,7 +131,7 @@ export function SalesReportPage() {
                     <YAxis type="category" dataKey="name" stroke="#71717a" tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 700 }} width={100} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
-                      formatter={(value) => `$${value.toLocaleString()}`}
+                      formatter={(value) => formatCurrency(value)}
                     />
                     <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={25} />
                   </BarChart>

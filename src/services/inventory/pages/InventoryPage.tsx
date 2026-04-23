@@ -7,6 +7,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import {
   Package,
   AlertCircle,
@@ -107,7 +108,7 @@ export const InventoryPage = () => {
     { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'brand' as const, description: '+4% ' + t('common.this_month') },
     { label: t('inventory.low_stock'), value: lowStockAlerts.length.toString(), icon: AlertCircle, color: 'danger' as const, description: t('inventory.needs_review') },
     { label: t('inventory.warehouses'), value: '3', icon: Warehouse, color: 'info' as const, description: t('inventory.global_dist') },
-    { label: t('inventory.total_value'), value: '$' + data.reduce((sum, p) => sum + (p.price * p.stock), 0).toLocaleString(), icon: TrendingUp, color: 'success' as const, description: '+12.4% vs LY' },
+    { label: t('inventory.total_value'), value: formatCurrency(data.reduce((sum, p) => sum + (p.price * p.stock), 0)), icon: TrendingUp, color: 'success' as const, description: '+12.4% vs LY' },
   ];
 
   // --- Table Configuration ---

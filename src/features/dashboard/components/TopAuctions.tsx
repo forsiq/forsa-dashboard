@@ -1,6 +1,7 @@
 import React from 'react';
 import { AmberCard } from '@core/components/AmberCard';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { TrendingUp, Package } from 'lucide-react';
 
 interface TopAuctionsProps {
@@ -39,7 +40,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                <div className="flex items-center gap-6">
                  <div className="text-right">
                    <p className="text-[10px] font-semibold text-zinc-muted tracking-widest mb-0.5">{t('dash.revenue') || 'Revenue'}</p>
-                   <p className="text-sm font-bold text-brand tabular-nums">${item.revenue.toLocaleString()}</p>
+                   <p className="text-sm font-bold text-brand tabular-nums">{formatCurrency(item.revenue)}</p>
                  </div>
                  <div className="text-right">
                     <p className="text-[10px] font-semibold text-zinc-muted tracking-widest mb-0.5">{t('dash.sales') || 'Sales'}</p>

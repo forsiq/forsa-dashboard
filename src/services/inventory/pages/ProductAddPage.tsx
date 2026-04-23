@@ -295,7 +295,7 @@ export const ProductAddPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <AmberInput
-                label={t('prod.add.price') || 'السعر الأساسي (USD)'}
+                label={t('prod.add.price') || 'السعر الأساسي (IQD)'}
                 type="number"
                 value={formData.price}
                 onChange={e => handleChange('price', e.target.value)}

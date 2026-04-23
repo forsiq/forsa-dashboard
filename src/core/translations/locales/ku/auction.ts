@@ -293,4 +293,13 @@ export const auction = {
   "auction.form.action.clone": "لەبەرگرتنەوە",
   "auction.form.action.sync": "پاشەکەوتکردن",
   "auction.detail.clone": "لەبەرگرتنەوە",
+  "auction.detail.reserve_price": "نرخی یەدەگ",
+  "auction.detail.created_at": "بەرواری درووستکردن",
+  "auction.form.manual_select": "جۆر هەڵبژێرە...",
+  "dash.totalItems": "کۆی مەزاد و ڕێککەوتنەکان",
+  "dash.sales_trend": "ڕەهەندی فرۆتن (30 ڕۆژ)",
+  "dash.category_distribution": "باشترین جۆرەکان",
+  "dash.top_performing": "باشترین بابەتەکان",
+  "dash.revenue": "داهات",
+  "dash.sales": "فرۆتن",
 } as const;

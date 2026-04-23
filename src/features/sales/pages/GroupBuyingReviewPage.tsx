@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -213,7 +214,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">Yield Potential</span>
                                                  <div className="flex items-center gap-2">
                                                      <DollarSign className="w-3.5 h-3.5 text-brand" />
-                                                     <p className="text-lg font-black text-zinc-text tracking-tighter tabular-nums">${campaign.dealPrice.toLocaleString()}</p>
+                                                     <p className="text-lg font-black text-zinc-text tracking-tighter tabular-nums">{formatCurrency(campaign.dealPrice)}</p>
                                                  </div>
                                              </div>
                                              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">

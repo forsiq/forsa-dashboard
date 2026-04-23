@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberProgress } from '@core/components/AmberProgress';
@@ -394,13 +395,13 @@ export const GroupBuyingDetailPage: React.FC = () => {
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
                 <p className="text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
-                  ${campaign.dealPrice.toLocaleString()}
+                  {formatCurrency(campaign.dealPrice)}
                 </p>
               </div>
               <div className="space-y-1 text-end">
                 <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
                 <p className="text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
-                  ${campaign.originalPrice.toLocaleString()}
+                  {formatCurrency(campaign.originalPrice)}
                 </p>
               </div>
             </div>
@@ -412,7 +413,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
               </div>
               <p className="text-xl font-bold text-emerald-400 tabular-nums leading-none">
-                ${((campaign.originalPrice - campaign.dealPrice) || 0).toLocaleString()}
+                {formatCurrency((campaign.originalPrice - campaign.dealPrice) || 0)}
               </p>
             </div>
 

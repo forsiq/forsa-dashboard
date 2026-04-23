@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { getOrders, getOrderStats, orderKeys } from '../api/orders';
 import type { Order, OrderFilters, OrderStats } from '../types';
 import {
@@ -92,7 +93,7 @@ export const OrdersListPage = () => {
       label: t('orders.table.total') || 'Total',
       render: (order: any) => (
         <span className="text-zinc-text font-black tabular-nums">
-          ${(order.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          {formatCurrency(order.total || 0)}
         </span>
       ),
       sortable: true,
@@ -176,7 +177,7 @@ export const OrdersListPage = () => {
       <StatsGrid
         stats={[
           { label: t('orders.stat.total'), value: statsData?.total.toString() || '0', icon: Package, color: 'brand' },
-          { label: t('orders.stat.revenue'), value: '$' + (statsData?.totalRevenue?.toLocaleString() || '0'), icon: DollarSign, color: 'success' },
+          { label: t('orders.stat.revenue'), value: formatCurrency(statsData?.totalRevenue), icon: DollarSign, color: 'success' },
           { label: t('orders.stat.pending'), value: statsData?.pending?.toString() || '0', icon: AlertCircle, color: 'warning' },
           { label: t('orders.stat.active'), value: statsData?.todayOrders?.toString() || '0', icon: TrendingUp, color: 'info' },
         ]}

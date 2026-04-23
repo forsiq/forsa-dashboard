@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
@@ -82,7 +83,7 @@ export const WatchlistPage: React.FC = () => {
       label: t('auction.table.premium_value') || 'Price',
       render: (auction) => (
         <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-          ${(auction.currentBid || auction.startPrice).toLocaleString()}
+          {(auction.currentBid || auction.startPrice).toLocaleString()}
         </span>
       ),
       align: 'right',

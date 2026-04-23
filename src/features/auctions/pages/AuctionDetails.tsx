@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -127,13 +128,13 @@ export const AuctionDetails: React.FC = () => {
   const detailRows = [
     { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
     { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
-    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: `$${(auction.bidIncrement || 0).toLocaleString()}` },
+    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(auction.bidIncrement) },
     { icon: Tag, label: 'Category', value: auction.categoryName || t('common.general_asset') || 'General' },
     { icon: User, label: 'Winner', value: auction.winnerName || t('auction.detail.default_custodian') || 'No winner yet' },
   ];
 
   if (auction.reservePrice != null && auction.reservePrice > 0) {
-    detailRows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: `$${auction.reservePrice.toLocaleString()}` });
+    detailRows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
   }
 
   if (auction.createdAt) {
@@ -338,7 +339,7 @@ export const AuctionDetails: React.FC = () => {
                     </div>
                     <div className="text-end">
                       <span className="text-lg font-bold text-zinc-text tracking-tight tabular-nums">
-                        ${bid.amount.toLocaleString()}
+                        {formatCurrency(bid.amount)}
                       </span>
                       <p className="text-[10px] font-semibold text-brand tracking-widest mt-0.5">#{bids.length - index}</p>
                     </div>
@@ -361,7 +362,7 @@ export const AuctionDetails: React.FC = () => {
               <div className="space-y-1">
                 <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.current_premium') || 'Current Bid'}</span>
                 <p className="text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
-                  ${(auction.currentBid || auction.startPrice).toLocaleString()}
+                  {formatCurrency(auction.currentBid || auction.startPrice)}
                 </p>
               </div>
               <div className="space-y-1 text-end">
@@ -379,7 +380,7 @@ export const AuctionDetails: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
-                <span className="text-[10px] font-semibold text-zinc-muted tracking-wider">Min: ${nextMinBid.toLocaleString()}</span>
+                <span className="text-[10px] font-semibold text-zinc-muted tracking-wider">Min: {formatCurrency(nextMinBid)}</span>
               </div>
               <div className="relative group">
                 <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
@@ -413,13 +414,13 @@ export const AuctionDetails: React.FC = () => {
                 className="w-full h-10 border-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider text-xs hover:bg-emerald-500/10 active:scale-95 transition-all rounded-xl"
                 onClick={() => openConfirm({
                   title: t('auction.lifecycle.buy_now_title') || 'Buy Now',
-                  message: t('auction.lifecycle.buy_now_confirm') || `Are you sure you want to buy this auction for $${auction.buyNowPrice?.toLocaleString()}?`,
+                  message: t('auction.lifecycle.buy_now_confirm') || `Are you sure you want to buy this auction for ${formatCurrency(auction.buyNowPrice)}?`,
                   onConfirm: () => buyNow.mutate(auction.id),
                   variant: 'success',
                 })}
                 disabled={buyNow.isPending}
               >
-                {buyNow.isPending ? <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" /> : t('auction.detail.instant_acquisition') || 'Buy Now'} ({auction.buyNowPrice.toLocaleString()})
+                {buyNow.isPending ? <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" /> : t('auction.detail.instant_acquisition') || 'Buy Now'} ({formatCurrency(auction.buyNowPrice)})
               </AmberButton>
             )}
 

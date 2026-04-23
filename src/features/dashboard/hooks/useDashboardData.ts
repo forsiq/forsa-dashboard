@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { ActivityItem, StatCard } from '../types';
 import { auctionBaseApi } from '../../auctions/api/auction-api';
 import { orderBaseApi } from '../../../services/orders/api/orders';
@@ -244,7 +245,7 @@ export const useDashboardData = () => {
     {
       id: 'revenue',
       title: t('stats.revenue') || 'Total Revenue',
-      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+      value: formatCurrency(stats?.totalRevenue),
       change: stats?.revenueChange || 0,
       color: 'brand',
     },
@@ -275,7 +276,7 @@ export const useDashboardData = () => {
     id: order.id,
     type: order.status === 'active' ? 'success' : 'info',
     title: order.productName,
-    description: `${order.customerName} - $${order.amount.toLocaleString()}`,
+    description: `${order.customerName} - ${formatCurrency(order.amount)}`,
     timestamp: new Date(order.date).toLocaleString(),
   }));
 

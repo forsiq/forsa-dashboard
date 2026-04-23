@@ -5,6 +5,7 @@ import { AmberCard as Card } from '../../../core/components/AmberCard';
 import { AmberButton } from '../../../core/components/AmberButton';
 import { AmberAvatar } from '../../../core/components/AmberAvatar';
 import { cn } from '../../../core/lib/utils/cn';
+import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
 import { useLanguage } from '../../../core/contexts/LanguageContext';
 import { 
   Building2, 
@@ -204,7 +205,7 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Total Expenditure</span>
-                    <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums leading-none">BHD {(customer.totalSpent || 0).toLocaleString()}</span>
+                    <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums leading-none">{formatCurrency(customer.totalSpent || 0)}</span>
                  </div>
                  <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-zinc-muted uppercase">Reliability Index</span>

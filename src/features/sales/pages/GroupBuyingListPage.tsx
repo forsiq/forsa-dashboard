@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -161,10 +162,10 @@ export const GroupBuyingListPage: React.FC = () => {
       render: (campaign) => (
         <div>
           <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-            ${campaign.dealPrice.toLocaleString()}
+            {campaign.dealPrice.toLocaleString()}
           </span>
           <p className="text-[10px] font-black text-zinc-muted line-through mt-0.5">
-            ${campaign.originalPrice.toLocaleString()}
+            {campaign.originalPrice.toLocaleString()}
           </p>
         </div>
       ),
@@ -296,7 +297,7 @@ export const GroupBuyingListPage: React.FC = () => {
           },
           {
             label: t('groupBuying.total_conversion'),
-            value: `$${stats?.totalRevenue?.toLocaleString() || '0'}`,
+                value: formatCurrency(stats?.totalRevenue),
             icon: TrendingUp,
             color: 'success',
             description: t('groupBuying.aggregate_yield') || 'REVENUE',
