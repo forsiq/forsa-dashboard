@@ -29,7 +29,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({ chil
   // }
 
   return (
-    <div className="min-h-screen flex flex-col" dir={dir}>
+    <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
       <AmberTopbar
         onOpenSidebar={() => setIsSidebarOpen(true)}
         language={language}

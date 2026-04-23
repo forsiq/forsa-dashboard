@@ -63,4 +63,8 @@ export const sidebar = {
   "sidebar.customers": "Customers",
   "sidebar.warehouses": "Warehouses",
   "sidebar.group_review": "Group Deal Review",
+  "sidebar.items": "Items",
+  "sidebar.my_bids": "My Bids",
+  "sidebar.watchlist": "Watchlist",
+  "sidebar.users": "Users",
 } as const;

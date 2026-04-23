@@ -64,4 +64,8 @@ export const reports = {
   "report.period_comparison": "مقارنة الفترة",
   "report.sales_performance": "أداء المبيعات",
   "report.inventory_dist": "توزيع المخزون",
+  "report.timeframe.day": "يوم",
+  "report.timeframe.week": "أسبوع",
+  "report.timeframe.month": "شهر",
+  "report.timeframe.year": "سنة",
 } as const;

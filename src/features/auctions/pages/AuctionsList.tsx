@@ -31,7 +31,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useGetAuctions, useGetAuctionStats, useDeleteAuction, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
-import { useConfirmModal } from '@core/hooks/useConfirmModal';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useList as useCategories } from '@services/categories/hooks';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
@@ -238,7 +238,7 @@ export const AuctionsList: React.FC = () => {
         variant: 'danger',
         onClick: (auction) => openConfirm({
           title: t('common.confirm_delete') || 'Delete Auction',
-          message: t('common.delete_confirm_message') || 'Are you sure you want to delete this auction?',
+          message: t('common.delete_confirm') || 'Are you sure you want to delete this auction?',
           onConfirm: () => deleteAuction(auction.id),
           variant: 'danger',
         }),

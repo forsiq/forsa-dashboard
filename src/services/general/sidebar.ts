@@ -35,5 +35,13 @@ export const sidebarSections: MenuSection[] = [
       { path: '/reports/group-buying-analytics', label: 'report.group_buying_analytics', icon: 'FileText' },
       { path: '/reports/customer-insights', label: 'report.customer_insights', icon: 'Users' },
     ]
+  },
+  {
+    title: 'sidebar.management',
+    items: [
+      { path: '/inventory', label: 'sidebar.inventory', icon: 'Warehouse' },
+      { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
+      { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
+    ]
   }
 ];

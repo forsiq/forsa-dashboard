@@ -50,4 +50,8 @@ export const reports = {
   "report.net_profit": "قازانجی پاک",
   "report.product_performance": "ئەدای بەرهەمەکان",
   "report.period_comparison": "بەراوردی ماوە",
+  "report.timeframe.day": "ڕۆژ",
+  "report.timeframe.week": "هەفتە",
+  "report.timeframe.month": "مانگ",
+  "report.timeframe.year": "ساڵ",
 } as const;

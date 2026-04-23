@@ -15,12 +15,14 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('en');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const savedLanguage = getLanguage();
     if (savedLanguage !== language) {
       setLanguageState(savedLanguage);
     }
+    setMounted(true);
   }, []);
 
   useEffect(() => {

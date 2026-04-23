@@ -24,7 +24,7 @@ export function CategorySelect({
 
   // Fetch categories
   const { data: categoriesData, isLoading } = useGetCategories({
-    status: 'active',
+    isActive: true,
     limit: 100,
   });
 

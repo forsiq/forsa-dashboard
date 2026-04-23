@@ -314,7 +314,10 @@ export function DataTable<T extends Record<string, any>>({
               {/* Card Actions */}
               {rowActions && (
                 <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  {rowActions.slice(0, 3).map((action, i) => {
+                  {rowActions.filter((action) => {
+                    const label = typeof action.label === 'function' ? action.label(row) : action.label;
+                    return label != null;
+                  }).slice(0, 3).map((action, i) => {
                     const ResolvedIcon = action.icon
                       ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon)
                       : null;
@@ -390,7 +393,10 @@ export function DataTable<T extends Record<string, any>>({
           <div className={cn(
             "absolute top-12 end-3 w-40 bg-obsidian-card border border-white/10 rounded-lg shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100"
           )} onClick={(e) => e.stopPropagation()}>
-            {rowActions.slice(3).map((action, i) => {
+            {rowActions.filter((action) => {
+              const label = typeof action.label === 'function' ? action.label(row) : action.label;
+              return label != null;
+            }).slice(3).map((action, i) => {
               const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
               const ResolvedIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
               return (
@@ -639,7 +645,10 @@ export function DataTable<T extends Record<string, any>>({
                                 "absolute top-0 w-40 bg-obsidian-card border border-white/10 rounded-sm shadow-xl z-50 py-1 animate-in fade-in zoom-in-95 duration-100",
                                 dir === 'rtl' ? "left-8 origin-top-left" : "right-8 origin-top-right"
                               )}>
-                                {rowActions.map((action, i) => {
+                                {rowActions.filter((action) => {
+                                  const label = typeof action.label === 'function' ? action.label(row) : action.label;
+                                  return label != null;
+                                }).map((action, i) => {
                                   const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;
                                   const ActionIcon = action.icon ? (typeof action.icon === 'function' ? (action.icon as (row: T) => React.ElementType)(row) : action.icon) : null;
                                   return (
@@ -838,7 +847,12 @@ export function DataTable<T extends Record<string, any>>({
             </button>
           )}
 
-          {rowActions.map((action, i) => {
+          {rowActions.filter((action) => {
+            const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
+            if (!row) return false;
+            const label = typeof action.label === 'function' ? action.label(row) : action.label;
+            return label != null;
+          }).map((action, i) => {
             const row = rows.find(r => String(r[keyField as keyof T]) === contextMenu.rowId);
             if (!row) return null;
             const actionLabel = typeof action.label === 'function' ? action.label(row) : action.label;

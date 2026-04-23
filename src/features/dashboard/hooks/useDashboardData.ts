@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { ActivityItem, StatCard } from '../types';
 import { auctionBaseApi } from '../../auctions/api/auction-api';
-import { itemBaseApi } from '../../items/api/items';
 import { orderBaseApi } from '../../../services/orders/api/orders';
 import { categoryBaseApi } from '../../../services/categories/api/categories';
 import { groupBuyingBaseApi } from '../../sales/api/group-buying-api';
@@ -77,8 +76,7 @@ export const useDashboardStats = () => {
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<DashboardStats> => {
       // Fetch data from multiple services in parallel
-      const [itemsRes, auctionsRes, ordersRes] = await Promise.all([
-        itemBaseApi.list({ limit: 1 }).catch(() => ({ total: 0 })),
+      const [auctionsRes, ordersRes] = await Promise.all([
         auctionBaseApi.list({ limit: 1 }).catch(() => ({ total: 0 })),
         orderBaseApi.getStats().catch(() => ({ data: { total_revenue: 0, total: 0 } })),
       ]);
@@ -88,7 +86,7 @@ export const useDashboardStats = () => {
         revenueChange: 0,
         totalOrders: (auctionsRes as any).total || 0,
         ordersChange: 0,
-        totalProducts: (itemsRes as any).total || 0,
+        totalProducts: (auctionsRes as any).total || 0,
         productsChange: 0,
         totalCustomers: 0,
         customersChange: 0,
@@ -147,15 +145,15 @@ export const useTopProducts = () => {
   return useQuery({
     queryKey: dashboardKeys.topProducts(),
     queryFn: async (): Promise<TopProduct[]> => {
-      const itemsRes = await itemBaseApi.list({ limit: 5 }).catch(() => ({ data: [] }));
-      const products = (itemsRes as any).data || [];
+      const auctionsRes = await auctionBaseApi.list({ limit: 5 }).catch(() => ({ data: [] }));
+      const products = (auctionsRes as any).data || [];
 
       return products.map((p: any, index: number) => ({
         id: p.id,
         name: p.title || p.name || `Product ${index + 1}`,
         category: p.category?.name || 'Uncategorized',
-        sales: p.sales_count || 0,
-        revenue: (p.selling_price || 0) * (p.sales_count || 0),
+        sales: p.total_bids || 0,
+        revenue: (p.current_bid || p.start_price || 0) * (p.total_bids || 1),
         stock: p.stock_quantity || 0,
       }));
     },

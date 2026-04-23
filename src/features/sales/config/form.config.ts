@@ -57,8 +57,8 @@ export const groupBuyingFormFields: FieldConfig[] = [
     label: 'groupBuying.item',
     type: 'select',
     required: true,
-    options: [], // Will be populated from items feature
-    relation: 'items',
+    options: [], // Will be populated from auctions service
+    relation: 'auctions',
   },
   {
     name: 'originalPrice',

@@ -62,4 +62,7 @@ export const sidebar = {
   "sidebar.group_review": "مراجعة الصفقة الجماعية",
   "sidebar.users": "المستخدمون",
   "sidebar.customers": "العملاء",
+  "sidebar.items": "العناصر",
+  "sidebar.my_bids": "مزايداتي",
+  "sidebar.watchlist": "قائمة المراقبة",
 } as const;

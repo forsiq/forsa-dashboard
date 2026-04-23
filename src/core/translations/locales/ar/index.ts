@@ -24,7 +24,6 @@ import { crm } from './crm';
 import { finance } from './finance';
 import { misc } from './misc';
 import { ui } from './ui';
-import { items } from './items';
 import { groupBuying } from './groupBuying';
 
 export const ar = {
@@ -53,6 +52,5 @@ export const ar = {
   ...finance,
   ...misc,
   ...ui,
-  ...items,
   ...groupBuying,
 } as const;

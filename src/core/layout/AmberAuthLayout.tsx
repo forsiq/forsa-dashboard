@@ -38,8 +38,8 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
            <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-transparent via-white/5 to-transparent" />
            
            <div className="flex items-center gap-6">
-              <div className="p-5 bg-brand/10 border border-brand/20 rounded-[2rem] backdrop-blur-2xl shadow-[0_0_50px_rgba(255,192,0,0.2)] ring-1 ring-brand/30 group transition-all duration-500 hover:scale-105">
-                 <AmberLogo className="w-14 h-14" />
+              <div className="p-3 bg-brand/10 border border-brand/20 rounded-2xl backdrop-blur-2xl shadow-[0_0_50px_rgba(255,192,0,0.2)] ring-1 ring-brand/30 group transition-all duration-500 hover:scale-105">
+                 <AmberLogo className="w-10 h-10" />
               </div>
               <div className="flex flex-col">
                  <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">
@@ -89,10 +89,10 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
         {/* Right Side: Auth Forms Interaction Layer */}
         <div className="w-full md:w-[55%] lg:w-[45%] flex flex-col relative items-center justify-center p-8 md:p-20">
            {/* Top Navigation / Controls */}
-           <div className="absolute top-10 inset-x-10 flex items-center justify-between">
+           <div className="absolute top-4 right-4 left-4 md:top-6 md:right-6 md:left-6 flex items-center justify-between z-20">
               <div className="md:hidden flex items-center gap-5">
-                 <AmberLogo className="w-12 h-12" />
-                 <span className="text-2xl font-black text-white tracking-tighter uppercase">ZONE<span className="text-brand">VAST</span></span>
+                 <AmberLogo className="w-10 h-10" />
+                 <span className="text-xl font-black text-white tracking-tighter uppercase">ZONE<span className="text-brand">VAST</span></span>
               </div>
               <div className="ml-auto flex items-center gap-4">
                  <AmberSettingsToolbar />
@@ -100,7 +100,7 @@ export const AmberAuthLayout: React.FC<AuthLayoutProps> = ({ children, title, su
            </div>
 
            {/* Content Card Wrapper */}
-            <div className="w-full max-w-[480px] flex flex-col items-center">
+            <div className="w-full max-w-[480px] flex flex-col items-center pt-14 md:pt-0">
               <div className="text-center mb-10 animate-fade-in-down">
                  <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic drop-shadow-lg">
                     {title || t('login.welcome')}

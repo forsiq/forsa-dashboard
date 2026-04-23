@@ -35,7 +35,7 @@ import {
   useCancelGroupBuying,
   useCompleteGroupBuying
 } from '../api';
-import { useConfirmModal } from '@core/hooks/useConfirmModal';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 
 export const GroupBuyingDetailPage: React.FC = () => {

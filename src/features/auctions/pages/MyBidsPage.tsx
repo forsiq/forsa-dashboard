@@ -35,7 +35,7 @@ export const MyBidsPage: React.FC = () => {
   }, []);
 
   const { data: bidsData, isLoading } = useGetMyBids();
-  const bids: BidRow[] = bidsData?.data || [];
+  const bids = (bidsData?.data || []) as unknown as BidRow[];
 
   const columns: Column<BidRow>[] = [
     {

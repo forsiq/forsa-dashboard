@@ -202,10 +202,16 @@ function createBaseInstance(baseURL: string): AxiosInstance {
           });
         }
 
-        // No refresh token available - notify via SessionExpiredDialog
-        console.warn('[API] No refresh token for:', requestUrl);
-        clearAuthSession();
-        emitSessionExpired();
+        // No refresh token available
+        const hadAccessToken = !!getAuthToken();
+        console.warn('[API] No refresh token for:', requestUrl, '| had access token:', hadAccessToken);
+        // Only show session expired dialog if user was actually authenticated
+        // (had an access token that expired or was rejected)
+        // Skip if user was never logged in (no access token = not a session expiry)
+        if (hadAccessToken) {
+          clearAuthSession();
+          emitSessionExpired();
+        }
       } else if (error.response?.status && error.response.status !== 401) {
         console.error(`[API] ${error.response.status} Error:`, error.config?.url, apiError);
       }

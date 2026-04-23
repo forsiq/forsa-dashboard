@@ -38,7 +38,7 @@ import {
   useCancelGroupBuying,
   useCompleteGroupBuying
 } from '../api';
-import { useConfirmModal } from '@core/hooks/useConfirmModal';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useList as useCategories } from '@services/categories/hooks';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import type { GroupBuying } from '../types';
@@ -235,7 +235,7 @@ export const GroupBuyingListPage: React.FC = () => {
       variant: 'danger',
       onClick: (campaign) => openConfirm({
         title: t('common.confirm_delete') || 'Delete Campaign',
-        message: t('common.delete_confirm_message') || 'Are you sure you want to delete this campaign?',
+        message: t('common.delete_confirm') || 'Are you sure you want to delete this campaign?',
         onConfirm: () => deleteCampaign(String(campaign.id)),
         variant: 'danger',
       }),

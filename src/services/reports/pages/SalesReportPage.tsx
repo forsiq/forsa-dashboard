@@ -73,7 +73,7 @@ export function SalesReportPage() {
                     : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
                 )}
               >
-                {t_frame}
+                {t(`report.timeframe.${t_frame}`)}
               </button>
             ))}
           </div>

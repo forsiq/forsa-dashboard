@@ -23,7 +23,6 @@ import { crm } from './crm';
 import { finance } from './finance';
 import { misc } from './misc';
 import { ui } from './ui';
-import { items } from './items';
 import { groupBuying } from './groupBuying';
 import { services } from './services';
 
@@ -53,6 +52,5 @@ export const ku = {
   ...finance,
   ...misc,
   ...ui,
-  ...items,
   ...groupBuying,
 } as const;

@@ -4,8 +4,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import { useErrorHandler } from '@core/hooks';
+import Cookies from 'js-cookie';
 import { auctionApi, bidApi } from './auction-api';
 import type {
   Auction,
@@ -17,6 +19,41 @@ import type {
   AuctionFilters,
   AuctionStats,
 } from '../types/auction.types';
+
+/**
+ * Check if user is authenticated (cookie + localStorage, same as ApiClientFactory)
+ */
+function hasAuthToken(): boolean {
+  if (typeof window === 'undefined') return false;
+  const cookieToken = Cookies.get('access');
+  if (cookieToken) return true;
+  try { return !!localStorage.getItem('access_token'); } catch { return false; }
+}
+
+/**
+ * Reactive hook that tracks auth token availability.
+ * Re-evaluates when cookie/localStorage changes.
+ */
+function useIsAuthenticated(): boolean {
+  const [authenticated, setAuthenticated] = useState(() => hasAuthToken());
+
+  useEffect(() => {
+    const check = () => setAuthenticated(hasAuthToken());
+    // Check on mount and on storage events (cross-tab) and focus (same-tab after login)
+    check();
+    window.addEventListener('storage', check);
+    window.addEventListener('focus', check);
+    // Also poll every 2 seconds for same-tab cookie changes
+    const interval = setInterval(check, 2000);
+    return () => {
+      window.removeEventListener('storage', check);
+      window.removeEventListener('focus', check);
+      clearInterval(interval);
+    };
+  }, []);
+
+  return authenticated;
+}
 
 // ============================================================================
 // Query Keys
@@ -104,12 +141,14 @@ export function useGetAuctionBids(auctionId: number | string, page = 1, limit = 
 }
 
 /**
- * Get current user's bids
+ * Get current user's bids (requires auth)
  */
 export function useGetMyBids(page = 1, limit = 20) {
+  const isAuthenticated = useIsAuthenticated();
   const query = useQuery({
     queryKey: auctionKeys.myBids(page, limit),
     queryFn: () => bidApi.getMyBids(page, limit),
+    enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -246,12 +285,14 @@ export function useAuctionBySlug(slug: string) {
 }
 
 /**
- * Get watched auctions
+ * Get watched auctions (requires auth)
  */
 export function useWatchedAuctions() {
+  const isAuthenticated = useIsAuthenticated();
   const query = useQuery({
     queryKey: auctionKeys.watched(),
     queryFn: () => auctionApi.getWatched(),
+    enabled: isAuthenticated,
     staleTime: 30 * 1000,
   });
 

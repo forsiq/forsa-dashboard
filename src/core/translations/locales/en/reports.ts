@@ -64,4 +64,8 @@ export const reports = {
   "report.period_comparison": "Period Comparison",
   "report.sales_performance": "Sales performance",
   "report.inventory_dist": "Inventory distribution",
+  "report.timeframe.day": "Day",
+  "report.timeframe.week": "Week",
+  "report.timeframe.month": "Month",
+  "report.timeframe.year": "Year",
 } as const;

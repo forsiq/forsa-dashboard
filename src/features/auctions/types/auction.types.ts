@@ -2,7 +2,7 @@
  * Auction Type Definitions
  */
 
-export type AuctionStatus = 'draft' | 'scheduled' | 'active' | 'ended' | 'cancelled';
+export type AuctionStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'ended' | 'cancelled';
 
 export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'refunded';
 

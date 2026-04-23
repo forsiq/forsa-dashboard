@@ -7,7 +7,7 @@ import { AmberButton } from '../AmberButton';
 
 // --- Types ---
 
-export type ConfirmModalVariant = 'default' | 'destructive' | 'warning' | 'success' | 'info';
+export type ConfirmModalVariant = 'default' | 'destructive' | 'danger' | 'warning' | 'success' | 'info';
 
 export interface AmberConfirmModalProps {
   isOpen: boolean;
@@ -24,36 +24,42 @@ export interface AmberConfirmModalProps {
 
 // --- Variant Configurations ---
 
-const variantConfig = {
+const variantConfig: Record<ConfirmModalVariant, { icon: React.ElementType; iconBg: string; iconColor: string; confirmVariant: 'primary' | 'outline' }> = {
   default: {
     icon: Info,
     iconBg: 'bg-blue-500/10',
     iconColor: 'text-blue-500',
-    confirmVariant: 'primary' as const,
+    confirmVariant: 'primary',
   },
   destructive: {
     icon: XCircle,
     iconBg: 'bg-danger/10',
     iconColor: 'text-danger',
-    confirmVariant: 'outline' as const,
+    confirmVariant: 'outline',
+  },
+  danger: {
+    icon: XCircle,
+    iconBg: 'bg-danger/10',
+    iconColor: 'text-danger',
+    confirmVariant: 'outline',
   },
   warning: {
     icon: AlertTriangle,
     iconBg: 'bg-warning/10',
     iconColor: 'text-warning',
-    confirmVariant: 'primary' as const,
+    confirmVariant: 'primary',
   },
   success: {
     icon: CheckCircle,
     iconBg: 'bg-success/10',
     iconColor: 'text-success',
-    confirmVariant: 'primary' as const,
+    confirmVariant: 'primary',
   },
   info: {
     icon: Info,
     iconBg: 'bg-brand/10',
     iconColor: 'text-brand',
-    confirmVariant: 'primary' as const,
+    confirmVariant: 'primary',
   },
 };
 
@@ -112,6 +118,7 @@ export const AmberConfirmModal = React.forwardRef<HTMLDivElement, AmberConfirmMo
     const defaultConfirmText = {
       default: t('common.confirm') || 'Confirm',
       destructive: t('common.delete') || 'Delete',
+      danger: t('common.delete') || 'Delete',
       warning: t('common.proceed') || 'Proceed',
       success: t('common.done') || 'Done',
       info: t('common.ok') || 'OK',

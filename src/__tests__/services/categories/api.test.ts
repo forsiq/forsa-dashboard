@@ -37,12 +37,12 @@ describe('Category API Functions', () => {
 
     const result = await createCategory({
       name: 'Electronics',
-      status: 'active',
+      isActive: true,
     });
 
     expect(mockedCreateCategory).toHaveBeenCalledWith({
       name: 'Electronics',
-      status: 'active',
+      isActive: true,
     });
     expect(result.name).toBe('Electronics');
     expect(result.id).toBe('1');
@@ -61,9 +61,9 @@ describe('Category API Functions', () => {
     };
     mockedGetCategories.mockResolvedValue(mockResponse);
 
-    const result = await getCategories({ page: 1, limit: 50, status: 'active' });
+    const result = await getCategories({ page: 1, limit: 50, isActive: true });
 
-    expect(mockedGetCategories).toHaveBeenCalledWith({ page: 1, limit: 50, status: 'active' });
+    expect(mockedGetCategories).toHaveBeenCalledWith({ page: 1, limit: 50, isActive: true });
     expect(result.categories).toHaveLength(2);
     expect(result.total).toBe(2);
   });

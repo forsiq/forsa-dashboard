@@ -101,7 +101,6 @@ export const AmberSidebar: React.FC<SidebarProps> = ({
     const featureMap: Record<string, string> = {
       '/auctions': 'auctions',
       '/bidding': 'bidding',
-      '/items': 'items',
       '/group-buying': 'sales',
       '/sales': 'sales',
       '/orders': 'orders',
