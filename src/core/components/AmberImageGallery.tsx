@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, AlertCircle, ImageIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils/cn';
 import { AmberLightbox } from './AmberLightbox';
@@ -23,7 +23,7 @@ export const AmberImageGallery: React.FC<AmberImageGalleryProps> = ({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-  const { dir } = useLanguage();
+  const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
 
   const validImages = images.filter((_, i) => !imageErrors.has(i));
@@ -52,9 +52,11 @@ export const AmberImageGallery: React.FC<AmberImageGalleryProps> = ({
   if (validImages.length === 0) {
     return (
       <div className={cn('relative rounded-xl border border-white/5 bg-obsidian-card flex items-center justify-center', height, className)}>
-        <div className="text-center space-y-2">
-          <AlertCircle className="w-10 h-10 text-zinc-muted/30 mx-auto" />
-          <p className="text-xs text-zinc-muted">No images available</p>
+        <div className="text-center space-y-3">
+          <ImageIcon className="w-12 h-12 text-zinc-muted/20 mx-auto" />
+          <p className="text-sm text-zinc-muted font-semibold">
+            {t('auction.detail.no_images') || 'لا توجد صور متاحة'}
+          </p>
         </div>
       </div>
     );

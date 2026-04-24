@@ -362,17 +362,17 @@ export const AuctionDetails: React.FC = () => {
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
-            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
-              <div className="space-y-1">
+            <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
+              <div className="space-y-1 min-w-0 flex-1">
                 <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.current_premium') || 'Current Bid'}</span>
-                <p className="text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
+                <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
                   {formatCurrency(currentBid || startPrice)}
                 </p>
               </div>
-              <div className="space-y-1 text-end">
+              <div className="space-y-1 text-end min-w-0 flex-1">
                 <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.table.protocol_duration') || 'Time Left'}</span>
                 <p className={cn(
-                  "text-2xl font-bold tabular-nums leading-none tracking-tight",
+                  "text-xl sm:text-2xl font-bold tabular-nums leading-none tracking-tight",
                   isEndingSoon ? "text-danger animate-pulse" : "text-warning"
                 )}>
                   {getCountdown(auction.endTime)}
@@ -441,17 +441,17 @@ export const AuctionDetails: React.FC = () => {
               <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                 <Gavel className="w-4 h-4" />
               </div>
-              <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.infrastructure_logistics') || 'Details'}</h3>
+              <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.infrastructure_logistics') || 'Details'}</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {detailRows.map((item, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 group/row">
+                <div key={i} className="flex items-start justify-between gap-3 group/row">
                   <div className="flex items-center gap-2.5 shrink-0">
-                    <item.icon className="w-3.5 h-3.5 text-zinc-muted group-hover/row:text-brand transition-colors" />
-                    <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{item.label}</span>
+                    <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
+                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
-                  <span className="text-xs font-bold text-zinc-text text-end truncate">{item.value}</span>
+                  <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
                 </div>
               ))}
             </div>

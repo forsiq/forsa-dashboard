@@ -261,12 +261,12 @@ export const GroupBuyingDetailPage: React.FC = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Joined</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{campaign.currentParticipants}</p>
                 </div>
                 <div className="w-px h-8 bg-white/5" />
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Target</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.target') || 'Target'}</span>
                   <p className="text-lg font-bold text-brand leading-none mt-0.5">{campaign.maxParticipants}</p>
                 </div>
               </div>
@@ -285,7 +285,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                   "text-[10px] font-bold uppercase tracking-widest",
                   isUnlocked ? "text-emerald-400" : "text-warning"
                 )}>
-                  Min: {campaign.minParticipants}
+                  {t('groupBuying.min_reach') || 'Min'}: {campaign.minParticipants}
                 </span>
                 <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{campaign.maxParticipants}</span>
               </div>
@@ -296,21 +296,21 @@ export const GroupBuyingDetailPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3 h-3 text-brand" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Joined</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.currentParticipants}</p>
               </div>
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Zap className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Min</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.min_reach') || 'Min'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.minParticipants}</p>
               </div>
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Activity className="w-3 h-3 text-info" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Max</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.capacity_cap') || 'Max'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.maxParticipants}</p>
               </div>
@@ -328,7 +328,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">Total</span>
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.node_participation') || 'Total'}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{participants.length}</p>
                 </div>
               </div>
@@ -391,16 +391,16 @@ export const GroupBuyingDetailPage: React.FC = () => {
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
-            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
-              <div className="space-y-1">
+            <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
+              <div className="space-y-1 min-w-0 flex-1">
                 <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
-                <p className="text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
+                <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
                   {formatCurrency(campaign.dealPrice)}
                 </p>
               </div>
-              <div className="space-y-1 text-end">
+              <div className="space-y-1 text-end min-w-0 flex-1">
                 <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
-                <p className="text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
+                <p className="text-lg sm:text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
                   {formatCurrency(campaign.originalPrice)}
                 </p>
               </div>
@@ -476,17 +476,17 @@ export const GroupBuyingDetailPage: React.FC = () => {
               <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                 <Package className="w-4 h-4" />
               </div>
-              <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
+              <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {detailRows.map((item, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 group/row">
+                <div key={i} className="flex items-start justify-between gap-3 group/row">
                   <div className="flex items-center gap-2.5 shrink-0">
-                    <item.icon className="w-3.5 h-3.5 text-zinc-muted group-hover/row:text-brand transition-colors" />
-                    <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{item.label}</span>
+                    <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
+                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
-                  <span className="text-xs font-bold text-zinc-text text-end truncate">{item.value}</span>
+                  <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
                 </div>
               ))}
             </div>

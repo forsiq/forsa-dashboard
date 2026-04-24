@@ -238,7 +238,7 @@ export const bidApi = {
    * Get my bids
    */
   getMyBids: async (page = 1, limit = 20): Promise<{ data: Bid[]; total: number }> => {
-    const response = await auctionBaseApi.getInstance().get('/my-bids/', {
+    const response = await auctionBaseApi.getInstance().get('/bids/history', {
       params: { page, limit }
     });
     return {
@@ -319,7 +319,7 @@ export const settlementApi = {
     limit?: number;
   }): Promise<SettlementsResponse> => {
     const client = auctionBaseApi.getInstance();
-    const response = await client.get('/auctions/settlements', { params: filters });
+    const response = await client.get('/settlements', { params: filters });
     return response.data;
   },
 
@@ -376,7 +376,7 @@ export const moderationApi = {
     maxAmount?: number;
   }): Promise<AllBidsResponse> => {
     const client = auctionBaseApi.getInstance();
-    const response = await client.get('/bids/all', { params: filters });
+    const response = await client.get('/moderation/bids', { params: filters });
     return response.data;
   },
 

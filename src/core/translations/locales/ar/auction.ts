@@ -385,6 +385,7 @@ export const auction = {
   "auction.detail.scanning_listing": "جاري التحميل...",
   "auction.detail.anonymous": "مشارك مجهول",
   "auction.detail.default_custodian": "القسم الاستراتيجي 11",
+  "auction.detail.no_images": "لا توجد صور متاحة",
   "auction.validation.upload_failed": "فشل في رفع الصورة. يرجى المحاولة مرة أخرى.",
   "auction.validation.submit_failed": "فشل في الإرسال. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
   "auction.lifecycle.start": "تشغيل",

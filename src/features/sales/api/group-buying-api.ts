@@ -91,7 +91,7 @@ export const groupBuyingApi = {
    * Join a campaign
    */
   join: async (id: string, quantity: number): Promise<GroupBuyingParticipant> => {
-    const response = await groupBuyingBaseApi.getInstance().post(`/group-buying/${id}/join/`, { quantity });
+    const response = await groupBuyingBaseApi.getInstance().post(`/group-deals/${id}/join/`, { quantity });
     return response.data.data;
   },
 
@@ -99,14 +99,14 @@ export const groupBuyingApi = {
    * Leave a campaign
    */
   leave: async (id: string): Promise<void> => {
-    await groupBuyingBaseApi.getInstance().post(`/group-buying/${id}/leave/`);
+    await groupBuyingBaseApi.getInstance().post(`/group-deals/${id}/leave/`);
   },
 
   /**
    * Get campaign participants
    */
   getParticipants: async (id: string, page = 1, limit = 20): Promise<{ participants: GroupBuyingParticipant[]; total: number }> => {
-    const response = await groupBuyingBaseApi.getInstance().get(`/group-buying/${id}/participants/`, {
+    const response = await groupBuyingBaseApi.getInstance().get(`/group-deals/${id}/participants/`, {
       params: { page, limit }
     });
     return {
