@@ -21,15 +21,22 @@ function buildAuthUrl(path: string): string {
 
   if (API_BASE) {
     try {
-      // Use only origin for auth calls; auth is mounted at root /api/v1 (not under /forsa).
+      // Use only origin for auth calls; auth is a separate service.
       originOnly = new URL(API_BASE).origin;
     } catch {
-      // Relative API_BASE values (e.g., /forsa or /api/v1) should still target root /api/v1.
+      // Relative API_BASE values should still target root.
       originOnly = '';
     }
   }
 
-  return `${originOnly}/api/v1${normalizedPath}`;
+  // Auth service is at /api/v1/auth/auth/ (double auth in path)
+  // Incoming paths are like /auth/token/ → need to become /api/v1/auth/auth/token/
+  // Strip leading /auth/ if present to avoid triple nesting
+  let authPath = normalizedPath;
+  if (authPath.startsWith('/auth/')) {
+    authPath = authPath.slice(5); // Remove leading /auth, keep the rest like /token/
+  }
+  return `${originOnly}/api/v1/auth/auth${authPath}`;
 }
 
 /**
