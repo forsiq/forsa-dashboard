@@ -2,41 +2,18 @@ import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
 import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types';
 
 /**
- * Same resolution as ApiClientFactory so auth never uses a host-less relative URL
- * when NEXT_PUBLIC_API_BASE_URL is unset at build time.
+ * Auth API base URL - dedicated env var for auth service,
+ * with hardcoded fallback to zv-auth-service on test.
  */
-const API_BASE = getResolvedApiBaseUrl();
+const AUTH_API_BASE = process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://test.zonevast.com/api/v1/auth/auth/';
 
 /**
- * Build auth API URL safely without duplicating /api/v1.
- * Supports bases like:
- * - https://test.zonevast.com
- * - https://test.zonevast.com/api/v1
- * - https://test.zonevast.com/forsa
- * - /api/v1
+ * Build the full auth API URL by appending a path to the base.
  */
 function buildAuthUrl(path: string): string {
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  let originOnly = '';
-
-  if (API_BASE) {
-    try {
-      // Use only origin for auth calls; auth is a separate service.
-      originOnly = new URL(API_BASE).origin;
-    } catch {
-      // Relative API_BASE values should still target root.
-      originOnly = '';
-    }
-  }
-
-  // Auth service is at /api/v1/auth/auth/ (double auth in path)
-  // Incoming paths are like /auth/token/ → need to become /api/v1/auth/auth/token/
-  // Strip leading /auth/ if present to avoid triple nesting
-  let authPath = normalizedPath;
-  if (authPath.startsWith('/auth/')) {
-    authPath = authPath.slice(5); // Remove leading /auth, keep the rest like /token/
-  }
-  return `${originOnly}/api/v1/auth/auth${authPath}`;
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  const base = AUTH_API_BASE.endsWith('/') ? AUTH_API_BASE : `${AUTH_API_BASE}/`;
+  return `${base}${normalizedPath}`;
 }
 
 /**
