@@ -246,10 +246,10 @@ export const SettingsPage = () => {
                 </div>
               </Card>
 
-              <Card className="!p-6 bg-[var(--color-danger)]/[0.03] border border-[var(--color-danger)]/20 rounded-2xl shadow-sm">
+              <Card className="!p-6 bg-[var(--color-danger)]/5 border-[1.5px] border-[var(--color-danger)]/30 rounded-2xl shadow-sm">
                 <div className="flex items-start gap-5">
-                   <div className="p-4 bg-[var(--color-danger)]/10 rounded-xl border border-[var(--color-danger)]/20">
-                      <AlertCircle className="w-7 h-7 text-[var(--color-danger)]" />
+                   <div className="p-3 bg-[var(--color-danger)]/15 rounded-xl">
+                      <AlertCircle className="w-6 h-6 text-[var(--color-danger)]" />
                    </div>
                    <div className="space-y-2">
                        <h4 className="text-sm font-black text-[var(--color-danger)] uppercase tracking-widest">{t('settings.critical_safety')}</h4>
@@ -293,10 +293,10 @@ export const SettingsPage = () => {
                 </div>
               </Card>
               
-              <Card className="!p-6 bg-[var(--color-brand)]/[0.03] border border-[var(--color-brand)]/20 rounded-2xl shadow-sm">
+              <Card className="!p-6 bg-[var(--color-brand)]/5 border-[1.5px] border-[var(--color-brand)]/30 rounded-2xl shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">
-                    <div className="p-3 bg-[var(--color-brand)]/20 rounded-xl shadow-lg shadow-[var(--color-brand)]/10">
+                    <div className="p-3 bg-[var(--color-brand)]/15 rounded-xl">
                       <Shield className="w-6 h-6 text-[var(--color-brand)]" />
                     </div>
                     <div>
