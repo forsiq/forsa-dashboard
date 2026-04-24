@@ -1,11 +1,11 @@
+import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
 import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types';
 
 /**
- * Get API base URL with priority:
- * 1. Environment variable
- * 2. Hardcoded fallback (https://test.zonevast.com)
+ * Same resolution as ApiClientFactory so auth never uses a host-less relative URL
+ * when NEXT_PUBLIC_API_BASE_URL is unset at build time.
  */
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE = getResolvedApiBaseUrl();
 
 /**
  * Build auth API URL safely without duplicating /api/v1.

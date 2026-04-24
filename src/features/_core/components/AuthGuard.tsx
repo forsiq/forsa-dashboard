@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
+import { getApiOrigin, ZV_AUTH_JWT_REFRESH_PATH } from '@core/lib/apiBaseUrl';
 import { getCookieOptions } from '@core/lib/utils/cookieStorage';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -56,11 +57,6 @@ function getRefreshToken(): string | null {
   return Cookies.get('refresh') || null;
 }
 
-function getApiOrigin(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
-  try { return new URL(baseUrl).origin; } catch { return 'https://test.zonevast.com'; }
-}
-
 /**
  * AuthGuard - Protects routes that require authentication
  *
@@ -91,7 +87,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const attemptRefresh = useCallback(async (refreshToken: string): Promise<boolean> => {
     try {
       const origin = getApiOrigin();
-      const response = await axios.post(`${origin}/api/v1/auth/token/refresh/`, {
+      const response = await axios.post(`${origin}${ZV_AUTH_JWT_REFRESH_PATH}`, {
         refresh: refreshToken,
       }, {
         headers: { 'Content-Type': 'application/json' },

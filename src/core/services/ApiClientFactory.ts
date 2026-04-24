@@ -6,6 +6,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 import type { ServiceEndpoints, ApiError, ApiResponse } from './types';
+import { getApiOrigin, getResolvedApiBaseUrl, ZV_AUTH_JWT_REFRESH_PATH } from '../lib/apiBaseUrl';
 import { emitSessionExpired } from '../lib/session/sessionEvents';
 import { getLanguage, getCookieOptions, clearAuthCookies } from '../lib/utils/cookieStorage';
 
@@ -13,17 +14,7 @@ import { getLanguage, getCookieOptions, clearAuthCookies } from '../lib/utils/co
 // Configuration
 // ============================================================================
 
-const API_BASE_URL = 
-  process.env.NEXT_PUBLIC_API_BASE_URL || 
-  'https://test.zonevast.com/forsa/api/v1';
-
-/**
- * Origin URL for REST endpoints that are NOT under /forsa/ prefix.
- * Auth, project, and catalog services are at /api/v1/... (not /forsa/api/v1/).
- */
-function getApiOrigin(): string {
-  try { return new URL(API_BASE_URL).origin; } catch { return 'https://test.zonevast.com'; }
-}
+const API_BASE_URL = getResolvedApiBaseUrl();
 const API_ORIGIN = getApiOrigin();
 
 const PROJECT_STORAGE_KEY = 'zv_project';
@@ -120,8 +111,10 @@ function createBaseInstance(baseURL: string): AxiosInstance {
         const requestUrl = error.config?.url || '';
         const isLoginPath = window.location.pathname.includes('/login');
         const isRegisterPath = window.location.pathname.includes('/register');
-        const isAuthTokenEndpoint = requestUrl.includes('/auth/token/');
-        const isRefreshEndpoint = requestUrl.includes('/auth/token/refresh/');
+        const isRefreshEndpoint = requestUrl.includes('token/refresh');
+        const isAuthTokenEndpoint =
+          (requestUrl.includes('/auth/auth/token/') || requestUrl.includes('/auth/token/')) &&
+          !isRefreshEndpoint;
 
         console.warn('[API] 401 on:', requestUrl);
 
@@ -138,7 +131,7 @@ function createBaseInstance(baseURL: string): AxiosInstance {
           originalRequest._retry = true;
           console.log('[API] Attempting token refresh...');
 
-          return axios.post(`${API_ORIGIN}/api/v1/auth/token/refresh/`, {
+          return axios.post(`${API_ORIGIN}${ZV_AUTH_JWT_REFRESH_PATH}`, {
             refresh: currentRefreshToken
           }, {
             headers: { 'Content-Type': 'application/json' }
