@@ -1,7 +1,7 @@
 // Authentication translations (Arabic)
 export const auth = {
   "login.welcome": "مرحباً بعودتك",
-  "login.subtitle": "المصادقة للوصول إلى البوابة",
+  "login.subtitle": "سجّل الدخول لإدارة المزادات والمخزون",
   "login.email": "البريد الإلكتروني أو اسم المستخدم",
   "login.password": "كلمة المرور",
   "login.remember": "تذكرني",
@@ -25,7 +25,7 @@ export const auth = {
   "auth.otp.submit": "تحقق",
 
   "auth.register.title": "إنشاء حساب",
-  "auth.register.subtitle": "انضم إلى ZoneVast لإدارة منظومتك",
+  "auth.register.subtitle": "أنشئ حساباً لاستخدام لوحة المزادات",
   "auth.register.username": "اسم المستخدم",
   "auth.register.username_placeholder": "أدخل اسم المستخدم",
   "auth.register.email": "البريد الإلكتروني",
@@ -39,16 +39,20 @@ export const auth = {
   "auth.register.login": "تسجيل الدخول",
   "validation.password_too_short": "كلمة المرور قصيرة جداً",
   "auth.register.success_title": "تم إنشاء الحساب",
-  "auth.register.success_desc": "تم تهيئة حسابك بنجاح. مرحباً بك في المنظومة.",
+  "auth.register.success_desc": "حسابك جاهز. يمكنك تسجيل الدخول إلى لوحة التحكم.",
   "auth.register.proceed_login": "المتابعة لتسجيل الدخول",
 
-  // Marketing Showcase
-  "auth.marketing.title": "تحكم بالكامل في أعمالك",
-  "auth.marketing.subtitle": "المركز الأساسي لإدارة المزادات، تحليلات المزايدة، ومزامنة المخزون عبر المنصات المختلفة.",
-  "auth.marketing.feature1.label": "إحصائيات مباشرة",
-  "auth.marketing.feature1.value": "فوري",
-  "auth.marketing.feature2.label": "طبقة الحماية",
-  "auth.marketing.feature2.value": "مؤسسي",
+  "auth.brand.line1": "ZONE",
+  "auth.brand.line2": "VAST",
+  "auth.brand.tagline": "إدارة مزادات",
+  "auth.footer.hint": "اتصال مؤمّن · جميع الحقوق محفوظة",
+
+  "auth.marketing.title": "المزادات والعمليات",
+  "auth.marketing.subtitle": "أدر العروض والمزايدة والمخزون في مكان واحد.",
+  "auth.marketing.feature1.label": "عروض ومزايدة",
+  "auth.marketing.feature1.value": "مباشر",
+  "auth.marketing.feature2.label": "العمليات",
+  "auth.marketing.feature2.value": "متزامن",
 
   // Session expired
   "auth.session_expired": "انتهت صلاحية الجلسة",

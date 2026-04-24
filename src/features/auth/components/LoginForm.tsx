@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, Loader2, User, ChevronRight } from 'lucide-react';
+import { Lock, Eye, EyeOff, Loader2, User, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberButton } from '@core/components/AmberButton';

@@ -12,17 +12,8 @@
  */
 
 import axios from 'axios';
+import { getApiOrigin } from '@core/lib/apiBaseUrl';
 import { createClient } from '@core/services/ApiClientFactory';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
-
-function getApiOrigin(): string {
-  try {
-    return new URL(API_BASE_URL).origin;
-  } catch {
-    return 'https://test.zonevast.com';
-  }
-}
 
 const API_ORIGIN = getApiOrigin();
 

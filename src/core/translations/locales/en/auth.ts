@@ -1,7 +1,7 @@
 // Authentication translations
 export const auth = {
   "login.welcome": "Welcome Back",
-  "login.subtitle": "Authenticate to access the portal",
+  "login.subtitle": "Sign in to manage auctions and inventory",
   "login.email": "Email or Username",
   "login.password": "Password",
   "login.remember": "Remember Me",
@@ -27,7 +27,7 @@ export const auth = {
 
   // Register
   "auth.register.title": "Create Account",
-  "auth.register.subtitle": "Join ZoneVast to manage your ecosystem",
+  "auth.register.subtitle": "Create an account to use the auction dashboard",
   "auth.register.username": "Username",
   "auth.register.username_placeholder": "Enter your username",
   "auth.register.email": "Email",
@@ -41,16 +41,21 @@ export const auth = {
   "auth.register.login": "Login",
   "validation.password_too_short": "Password is too short",
   "auth.register.success_title": "Account Created",
-  "auth.register.success_desc": "Your account has been successfully initialized. Welcome to the ecosystem.",
+  "auth.register.success_desc": "Your account is ready. You can sign in to the dashboard.",
   "auth.register.proceed_login": "Proceed to Login",
 
-  // Marketing Showcase
-  "auth.marketing.title": "Master the Global Marketplace",
-  "auth.marketing.subtitle": "The ultimate central hub for auction management, bidding analytics, and cross-platform inventory synchronization.",
-  "auth.marketing.feature1.label": "Real-time Stats",
-  "auth.marketing.feature1.value": "Instant",
-  "auth.marketing.feature2.label": "Security Layer",
-  "auth.marketing.feature2.value": "Enterprise",
+  "auth.brand.line1": "ZONE",
+  "auth.brand.line2": "VAST",
+  "auth.brand.tagline": "Auction management",
+  "auth.footer.hint": "Secured connection · All rights reserved",
+
+  // Marketing (legacy / optional)
+  "auth.marketing.title": "Auctions & operations",
+  "auth.marketing.subtitle": "Manage listings, bids, and inventory in one place.",
+  "auth.marketing.feature1.label": "Listings & bids",
+  "auth.marketing.feature1.value": "Live",
+  "auth.marketing.feature2.label": "Operations",
+  "auth.marketing.feature2.value": "In sync",
 
   // Session expired
   "auth.session_expired": "Session Expired",

@@ -27,4 +27,6 @@ export const sidebar = {
   "sidebar.warehouses": "کۆگاکان",
   "sidebar.group_review": "پێداچوونەوەی کڕینی کۆمەڵ",
   "sidebar.live_monitor": "چاودێری ڕاستەوخۆ",
+  "sidebar.settlements": "تەسویات",
+  "sidebar.moderation": "چاودێری ناوەڕۆک",
 } as const;

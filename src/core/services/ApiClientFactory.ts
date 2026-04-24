@@ -126,45 +126,56 @@ function createBaseInstance(baseURL: string): AxiosInstance {
         const currentRefreshToken = getRefreshToken();
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        // If we haven't retried yet and have a refresh token, try refreshing
-        if (!originalRequest._retry && currentRefreshToken) {
+        // 401 on a request that already ran after a successful refresh: do not clear cookies or
+        // show SessionExpired — the access token was just renewed; failure is likely JWT/API
+        // mismatch, wrong audience, or backend 401, not "refresh token expired".
+        if (originalRequest._retry) {
+          console.warn(
+            '[API] 401 on retried request (after refresh); rejecting without session dialog:',
+            requestUrl
+          );
+          return Promise.reject(apiError);
+        }
+
+        // First 401: try refresh once, then retry with _retry set
+        if (currentRefreshToken) {
           originalRequest._retry = true;
           console.log('[API] Attempting token refresh...');
 
-          return axios.post(`${API_ORIGIN}${ZV_AUTH_JWT_REFRESH_PATH}`, {
-            refresh: currentRefreshToken
-          }, {
-            headers: { 'Content-Type': 'application/json' }
-          }).then((refreshResponse) => {
-            const newAccess = refreshResponse.data?.access;
-            const newRefresh = refreshResponse.data?.refresh;
-            if (newAccess) {
-              const cookieOpts = getCookieOptions();
-              Cookies.set('access', newAccess, cookieOpts);
-              if (newRefresh) {
-                Cookies.set('refresh', newRefresh, cookieOpts);
+          return axios
+            .post(
+              `${API_ORIGIN}${ZV_AUTH_JWT_REFRESH_PATH}`,
+              { refresh: currentRefreshToken },
+              { headers: { 'Content-Type': 'application/json' } }
+            )
+            .then((refreshResponse) => {
+              const newAccess = refreshResponse.data?.access;
+              const newRefresh = refreshResponse.data?.refresh;
+              if (newAccess) {
+                const cookieOpts = getCookieOptions();
+                Cookies.set('access', newAccess, cookieOpts);
+                if (newRefresh) {
+                  Cookies.set('refresh', newRefresh, cookieOpts);
+                }
+                if (originalRequest.headers) {
+                  originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+                }
+                return instance(originalRequest);
               }
-              if (originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-              }
-              return instance(originalRequest);
-            }
-            return Promise.reject(apiError);
-          }).catch((refreshErr) => {
-            // Refresh failed - notify the user via SessionExpiredDialog
-            console.warn('[API] Token refresh failed for:', requestUrl);
-            clearAuthSession();
-            emitSessionExpired();
-            return Promise.reject(apiError);
-          });
+              return Promise.reject(apiError);
+            })
+            .catch((refreshErr) => {
+              // Only here: refresh endpoint failed — session is truly invalid
+              console.warn('[API] Token refresh failed for:', requestUrl, refreshErr);
+              clearAuthSession();
+              emitSessionExpired();
+              return Promise.reject(apiError);
+            });
         }
 
-        // No refresh token available
+        // No refresh token: treat as logged-out or expired if we still had a stale access cookie
         const hadAccessToken = !!getAuthToken();
-        console.warn('[API] No refresh token for:', requestUrl, '| had access token:', hadAccessToken);
-        // Only show session expired dialog if user was actually authenticated
-        // (had an access token that expired or was rejected)
-        // Skip if user was never logged in (no access token = not a session expiry)
+        console.warn('[API] 401 with no refresh token for:', requestUrl, '| had access token:', hadAccessToken);
         if (hadAccessToken) {
           clearAuthSession();
           emitSessionExpired();

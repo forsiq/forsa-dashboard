@@ -437,7 +437,8 @@ export function useSettlements(filters?: { status?: string; page?: number; limit
     queryKey: [...auctionKeys.all, 'settlements', filters] as const,
     queryFn: () => settlementApi.getSettlements(filters),
     staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    // Stop polling while in error state to avoid repeated toasts / 401 noise
+    refetchInterval: (q) => (q.state.status === 'error' ? false : 30 * 1000),
   });
 
   useErrorHandler(query.error, 'Failed to load settlements');

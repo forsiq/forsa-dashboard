@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Gavel } from 'lucide-react';
+import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
 import { getAuctionImageUrl, parseAttachmentIds } from '../utils/auction-utils';
 import { createClient } from '@core/services/ApiClientFactory';
 
-const PROJECT_API_URL = `${new URL(
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1',
-).origin}/api/v1`;
+const PROJECT_API_URL = `${new URL(getResolvedApiBaseUrl()).origin}/api/v1`;
 
 interface AuctionImageProps {
   auction: {

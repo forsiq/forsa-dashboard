@@ -66,4 +66,6 @@ export const sidebar = {
   "sidebar.my_bids": "مزايداتي",
   "sidebar.watchlist": "قائمة المراقبة",
   "sidebar.live_monitor": "المراقبة المباشرة",
+  "sidebar.settlements": "التسويات",
+  "sidebar.moderation": "الإشراف",
 } as const;
