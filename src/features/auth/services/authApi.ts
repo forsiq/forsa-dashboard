@@ -79,7 +79,7 @@ async function fetchWithTimeout(
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   console.log('[authApi] Attempting login for:', credentials.username);
   
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/token/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('token/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
   // Fetch user profile immediately after login
   try {
-    const userResponse = await fetchWithTimeout(buildAuthUrl('/auth/user/'), {
+    const userResponse = await fetchWithTimeout(buildAuthUrl('user/'), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${data.access}`,
@@ -147,7 +147,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
  * Register a new user
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/register/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('register/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ export const logout = async (): Promise<void> => {
  * Refresh access token
  */
 export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
-  const response = await fetchWithTimeout(buildAuthUrl('/auth/token/refresh/'), {
+  const response = await fetchWithTimeout(buildAuthUrl('token/refresh/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
