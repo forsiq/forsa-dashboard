@@ -59,6 +59,31 @@ export const useDelete = () => {
   });
 };
 
+export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => api.updateOrderStatus(id, status),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.stats() });
+    },
+  });
+};
+
+export const useUpdateOrderPaymentStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isPaid, notes }: { id: string; isPaid: boolean; notes?: string }) =>
+      api.updateOrderPaymentStatus(id, isPaid, notes),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: api.orderKeys.stats() });
+    },
+  });
+};
+
 // Aliases for existing code
 export const useGetOrders = useList;
 export const useGetOrder = useById;

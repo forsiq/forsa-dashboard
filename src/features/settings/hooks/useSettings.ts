@@ -4,11 +4,6 @@ import { createApiClient } from '@core/services/ApiClientFactory';
 import { useErrorHandler } from '@core/hooks';
 import type { UserProfile, UserPreferences } from '../types';
 
-const settingsApi = createApiClient<UserProfile, Partial<UserProfile>, Partial<UserProfile>>({
-  serviceName: 'settings',
-  endpoint: '/auth/profile',
-});
-
 const appSettingsApi = createApiClient<any, any, any>({
   serviceName: 'settings',
   endpoint: '/settings',
@@ -71,16 +66,19 @@ const defaultAppSettings: Record<string, any> = {
 export const useSettings = () => {
   const queryClient = useQueryClient();
 
+  // Profile is read from localStorage only (no auth/profile API endpoint)
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: settingsKeys.profile(),
     queryFn: async (): Promise<UserProfile> => {
-      try {
-        const response = await settingsApi.getById('me');
-        return response.data;
-      } catch {
-        const stored = localStorage.getItem('user_profile');
-        return stored ? JSON.parse(stored) : defaultProfile;
+      const stored = localStorage.getItem('user_profile');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return defaultProfile;
+        }
       }
+      return defaultProfile;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -94,6 +92,7 @@ export const useSettings = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // App settings use the compat /settings endpoint (mock data in backend)
   const { data: appSettings, isLoading: appSettingsLoading } = useQuery({
     queryKey: settingsKeys.app(),
     queryFn: async (): Promise<Record<string, any>> => {
@@ -107,19 +106,12 @@ export const useSettings = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  useErrorHandler(profileError, 'Failed to load profile');
-
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: Partial<UserProfile>) => {
-      try {
-        const response = await settingsApi.update({ ...updates, id: 'me' });
-        return response.data;
-      } catch {
-        const current = profile || defaultProfile;
-        const updated = { ...current, ...updates };
-        localStorage.setItem('user_profile', JSON.stringify(updated));
-        return updated;
-      }
+      const current = profile || defaultProfile;
+      const updated = { ...current, ...updates };
+      localStorage.setItem('user_profile', JSON.stringify(updated));
+      return updated;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.profile() });
