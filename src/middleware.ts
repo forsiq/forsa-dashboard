@@ -10,7 +10,29 @@ import type { NextRequest } from 'next/server';
  * 3. Redirect to login if unauthenticated on protected paths
  */
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  const parseJwtExp = (token?: string): number | null => {
+    if (!token) return null;
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) return null;
+      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+      const payloadJson = atob(padded);
+      const payload = JSON.parse(payloadJson) as { exp?: number };
+      return typeof payload.exp === 'number' ? payload.exp : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const isTokenValid = (token?: string): boolean => {
+    if (!token) return false;
+    const exp = parseJwtExp(token);
+    if (!exp) return false;
+    return Date.now() < (exp - 30) * 1000;
+  };
 
   // 1. Define public routes
   const isPublicPath =
@@ -24,17 +46,23 @@ export function middleware(request: NextRequest) {
 
   // 2. Check authentication token in cookies
   const token = request.cookies.get('access')?.value;
+  const hasValidToken = isTokenValid(token);
 
   // 3. Protection Logic
-  if (!isPublicPath && !token) {
+  if (!isPublicPath && !hasValidToken) {
     // Redirect to login if trying to access protected route without token
     const url = new URL('/login', request.url);
     url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    response.cookies.delete('access');
+    response.cookies.delete('refresh');
+    response.cookies.delete('zv_user');
+    return response;
   }
 
   // 4. Prevent logged-in users from accessing login/register
-  if ((pathname === '/login' || pathname === '/register') && token) {
+  const isForcedLogin = searchParams.get('expired') === 'true';
+  if ((pathname === '/login' || pathname === '/register') && hasValidToken && !isForcedLogin) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

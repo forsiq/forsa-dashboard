@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
 import { getApiOrigin, ZV_AUTH_JWT_REFRESH_PATH } from '@core/lib/apiBaseUrl';
-import { getCookieOptions } from '@core/lib/utils/cookieStorage';
+import { clearAuthCookies, getCookieOptions } from '@core/lib/utils/cookieStorage';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -76,6 +76,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const { isAuthenticated: isProjectSelected, isLoading: projectLoading } = useProject();
   const [authState, setAuthState] = useState<AuthState>('checking');
   const [isMounted, setIsMounted] = useState(false);
+  const [hasRedirectedToLogin, setHasRedirectedToLogin] = useState(false);
 
   const isAuthEnabled = isFeatureEnabled('auth');
 
@@ -126,7 +127,8 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
       if (!accessToken) {
         setAuthState('none');
         const publicPaths = ['/login', '/register', '/otp', '/404'];
-        if (!publicPaths.includes(router.pathname)) {
+        if (!publicPaths.includes(router.pathname) && !hasRedirectedToLogin) {
+          setHasRedirectedToLogin(true);
           router.replace({
             pathname: fallback,
             query: { from: router.asPath }
@@ -147,12 +149,14 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 
       if (!refreshToken) {
         console.warn('[AuthGuard] No refresh token available');
+        clearAuthCookies();
         setAuthState('expired');
         return;
       }
 
       if (isTokenExpired(refreshToken)) {
         console.warn('[AuthGuard] Refresh token also expired');
+        clearAuthCookies();
         setAuthState('expired');
         return;
       }
@@ -161,12 +165,13 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
       if (refreshed) {
         setAuthState('valid');
       } else {
+        clearAuthCookies();
         setAuthState('expired');
       }
     };
 
     validateAuth();
-  }, [isAuthEnabled, router, fallback, attemptRefresh]);
+  }, [isAuthEnabled, router, fallback, attemptRefresh, hasRedirectedToLogin]);
 
   // Not client-side yet - return null to avoid hydration mismatch
   if (!isMounted) {
@@ -200,7 +205,8 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   if (authState === 'expired') {
     // Use replace to avoid back-button loop, only redirect once
     const publicPaths = ['/login', '/register', '/otp', '/404'];
-    if (!publicPaths.includes(router.pathname)) {
+    if (!publicPaths.includes(router.pathname) && !hasRedirectedToLogin) {
+      setHasRedirectedToLogin(true);
       router.replace({
         pathname: fallback,
         query: { expired: 'true', from: router.asPath }
