@@ -8,6 +8,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { cn } from '@core/lib/utils/cn';
+import { useDebounce } from '@core/hooks/useDebounce';
 import { Ban, Snowflake, Gavel, AlertTriangle, XCircle, Search } from 'lucide-react';
 import type { AllBidsItem } from '../../auctions/api/auction-api';
 
@@ -50,13 +51,16 @@ export const ModerationHubPage = () => {
   const isRTL = dir === 'rtl';
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
-  const [bidderFilter, setBidderFilter] = useState('');
+  const [bidderInput, setBidderInput] = useState('');
+
+  // Debounce bidder search — only hit API after 300ms of inactivity
+  const debouncedBidder = useDebounce(bidderInput, 300);
 
   const { data: bidsData, isLoading } = useAllBids({
     page,
     limit: 20,
     status: statusFilter || undefined,
-    bidderId: bidderFilter || undefined,
+    bidderId: debouncedBidder || undefined,
   });
 
   const voidBid = useVoidBid();
@@ -225,8 +229,8 @@ export const ModerationHubPage = () => {
           )} />
           <input
             type="text"
-            value={bidderFilter}
-            onChange={(e) => { setBidderFilter(e.target.value); setPage(1); }}
+            value={bidderInput}
+            onChange={(e) => { setBidderInput(e.target.value); setPage(1); }}
             placeholder={t('moderation.filter.bidder_placeholder')}
             className={cn(
               "w-full bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20",
@@ -236,9 +240,9 @@ export const ModerationHubPage = () => {
         </div>
 
         {/* Clear Filters */}
-        {(statusFilter || bidderFilter) && (
+        {(statusFilter || bidderInput) && (
           <button
-            onClick={() => { setStatusFilter(''); setBidderFilter(''); setPage(1); }}
+            onClick={() => { setStatusFilter(''); setBidderInput(''); setPage(1); }}
             className="px-4 py-2.5 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
           >
             {t('moderation.filter.clear')}

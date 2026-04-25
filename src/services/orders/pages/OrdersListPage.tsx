@@ -18,20 +18,7 @@ import {
 } from '@core/components';
 import { Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
-
-// Simple debounce hook
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce } from '@core/hooks/useDebounce';
 
 export const OrdersListPage = () => {
   const router = useRouter();

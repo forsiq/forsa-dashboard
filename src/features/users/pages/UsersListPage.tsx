@@ -4,7 +4,7 @@
  * Displays all users with search, filters, and pagination
  */
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from '../api';
 
@@ -18,6 +18,7 @@ import { PageHeader } from '@core/components/Layout/PageHeader';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
+import { useDebounce } from '@core/hooks/useDebounce';
 import { Search, Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
 import type { UserFilters } from '../types';
 
@@ -32,18 +33,25 @@ export function UsersListPage() {
   }, []);
 
   // State for filters
-  const [filters, setFilters] = useState<UserFilters>({
+  const [searchInput, setSearchInput] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [page, setPage] = useState(1);
+
+  // Debounce search — only hit API after 300ms of inactivity
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  // API filters — only search goes to backend (role/status filtered client-side)
+  const apiFilters: UserFilters = useMemo(() => ({
     page: 1,
-    limit: 20,
-    search: '',
-    role: 'all',
-    status: 'all',
+    limit: 200,
+    search: debouncedSearch || undefined,
     sortBy: 'createdAt',
     sortOrder: 'desc',
-  });
+  }), [debouncedSearch]);
 
   // Queries
-  const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useGetUsers(filters);
+  const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useGetUsers(apiFilters);
   const { data: stats, isLoading: isLoadingStats } = useGetUserStats();
 
   // Mutations
@@ -57,14 +65,35 @@ export function UsersListPage() {
     }
   }, [usersError, toast, t]);
 
-  // Handle filter changes
-  const handleFilterChange = (key: keyof UserFilters, value: string | number) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      page: key !== 'page' ? 1 : (typeof value === 'number' ? value : parseInt(value) || 1),
-    }));
-  };
+  // Client-side filtering for role and status (backend compat doesn't support these)
+  const filteredUsers = useMemo(() => {
+    let users = usersData?.users || [];
+
+    if (roleFilter !== 'all') {
+      users = users.filter((u: any) => u.role === roleFilter);
+    }
+
+    if (statusFilter !== 'all') {
+      const isActive = statusFilter === 'active';
+      users = users.filter((u: any) => u.isActive === isActive);
+    }
+
+    return users;
+  }, [usersData?.users, roleFilter, statusFilter]);
+
+  // Paginate filtered results
+  const pageSize = 20;
+  const totalFiltered = filteredUsers.length;
+  const totalPages = Math.ceil(totalFiltered / pageSize);
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, page, pageSize]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, roleFilter, statusFilter]);
 
   // Handle user actions
   const handleView = (id: string) => {
@@ -201,8 +230,6 @@ export function UsersListPage() {
 
   if (!isClient) return null;
 
-  const users = usersData?.users || [];
-
   return (
     <div className="flex flex-col gap-4 p-4 pt-0">
       {/* Page Header */}
@@ -261,7 +288,7 @@ export function UsersListPage() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-4">
-        {/* Search */}
+        {/* Search — debounced */}
         <div className="relative flex-1 max-w-sm w-full">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted",
@@ -269,8 +296,8 @@ export function UsersListPage() {
           )} />
           <AmberInput
             placeholder={t('user.search_placeholder')}
-            value={filters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className={cn(
               "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
               dir === 'rtl' ? 'pl-10 pr-4 text-right' : 'pr-10 pl-4 text-left'
@@ -278,10 +305,10 @@ export function UsersListPage() {
           />
         </div>
 
-        {/* Role Filter */}
+        {/* Role Filter — client-side */}
         <select
-          value={filters.role}
-          onChange={(e) => handleFilterChange('role', e.target.value)}
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
           className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
         >
           <option value="all">{t('user.filter.all_roles') || 'All Roles'}</option>
@@ -290,10 +317,10 @@ export function UsersListPage() {
           <option value="user">{t('user.role.user') || 'User'}</option>
         </select>
 
-        {/* Status Filter */}
+        {/* Status Filter — client-side */}
         <select
-          value={filters.status}
-          onChange={(e) => handleFilterChange('status', e.target.value)}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
         >
           <option value="all">{t('user.filter.all_status') || 'All Status'}</option>
@@ -306,7 +333,7 @@ export function UsersListPage() {
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {isLoadingUsers ? (
           <AmberTableSkeleton columns={7} rows={5} />
-        ) : users.length === 0 ? (
+        ) : paginatedUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <ShieldAlert className="h-16 w-16 text-zinc-600 mb-4" />
             <h3 className="text-lg font-semibold text-white mb-2">
@@ -327,12 +354,15 @@ export function UsersListPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={users}
+            data={paginatedUsers}
             keyField="id"
             rowActions={rowActions}
             onRowClick={(row) => handleView(String(row.id))}
             pagination
-            pageSize={filters.limit}
+            pageSize={pageSize}
+            totalItems={totalFiltered}
+            currentPage={page}
+            onPageChange={setPage}
             showViewToggle
           />
         )}

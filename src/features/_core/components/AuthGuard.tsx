@@ -2,10 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
-import { getApiOrigin, ZV_AUTH_JWT_REFRESH_PATH } from '@core/lib/apiBaseUrl';
 import { clearAuthCookies, getCookieOptions } from '@core/lib/utils/cookieStorage';
+import { startProactiveTokenRefresh, stopProactiveTokenRefresh } from '@core/services/ApiClientFactory';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getApiOrigin, ZV_AUTH_JWT_REFRESH_PATH } from '@core/lib/apiBaseUrl';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -40,7 +41,6 @@ function decodeJWTPayload(token: string): { exp?: number; [key: string]: unknown
 function isTokenExpired(token: string): boolean {
   const payload = decodeJWTPayload(token);
   if (!payload?.exp) return true;
-  // 30 second buffer to account for clock skew
   return Date.now() >= (payload.exp - 30) * 1000;
 }
 
@@ -66,6 +66,7 @@ function getRefreshToken(): string | null {
  * 3. If token expired → attempt silent refresh
  * 4. If refresh succeeds → allow access
  * 5. If no token or refresh fails → redirect to login
+ * 6. Start proactive token refresh timer to prevent mid-session expiry
  */
 export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
@@ -92,7 +93,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
         refresh: refreshToken,
       }, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 8000,
+        timeout: 10000,
       });
 
       const newAccess = response.data?.access;
@@ -173,6 +174,19 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     validateAuth();
   }, [isAuthEnabled, router, fallback, attemptRefresh, hasRedirectedToLogin]);
 
+  // Start proactive token refresh when authenticated, stop when not
+  useEffect(() => {
+    if (authState === 'valid') {
+      startProactiveTokenRefresh();
+    } else {
+      stopProactiveTokenRefresh();
+    }
+
+    return () => {
+      stopProactiveTokenRefresh();
+    };
+  }, [authState]);
+
   // Not client-side yet - return null to avoid hydration mismatch
   if (!isMounted) {
     return null;
@@ -203,7 +217,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 
   // Token expired and refresh failed → redirect to login with expired flag
   if (authState === 'expired') {
-    // Use replace to avoid back-button loop, only redirect once
     const publicPaths = ['/login', '/register', '/otp', '/404'];
     if (!publicPaths.includes(router.pathname) && !hasRedirectedToLogin) {
       setHasRedirectedToLogin(true);

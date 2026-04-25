@@ -14,23 +14,9 @@ import { DataTable } from '../../../core/components/Data/DataTable';
 import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { AmberCard as Card } from '../../../core/components/AmberCard';
 import { useConfirmModal } from '../../../core/components/Feedback/AmberConfirmModal';
+import { useDebounce } from '../../../core/hooks/useDebounce';
 import { useGetCustomers, useGetCustomerStats, useDeleteCustomer, useUpdateCustomerStatus } from '../hooks';
 import type { Customer } from '../types';
-
-// Simple debounce hook
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 /**
  * CustomersPage - Customers list page

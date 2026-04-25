@@ -14,23 +14,9 @@ import { StatusBadge } from '../../../core/components/Data/StatusBadge';
 import { StatsGrid } from '../../../core/components/Layout/StatsGrid';
 import { getIconByName } from '../../../core/components/IconPicker';
 import { useConfirmModal } from '../../../core/components/Feedback/AmberConfirmModal';
+import { useDebounce } from '../../../core/hooks/useDebounce';
 import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUpdateCategoryMutation } from '../hooks';
 import type { Category } from '../types';
-
-// Simple debounce hook
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 // Stats are now handled by StatsGrid component
 

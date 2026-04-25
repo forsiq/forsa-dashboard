@@ -1,6 +1,11 @@
 /**
  * API Client Factory
  * Generates configured axios instances for services
+ *
+ * Key features:
+ * - Automatic token refresh on 401 with mutex (prevents race conditions)
+ * - Auth token and project ID injection on every request
+ * - Session expired dialog on refresh failure
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
@@ -50,7 +55,7 @@ function getProjectId(): string {
   } catch {
     // Ignore
   }
-  return '11'; // Default fallback
+  return '11';
 }
 
 /**
@@ -64,6 +69,130 @@ function clearAuthSession(): void {
     // Ignore
   }
 }
+
+// ============================================================================
+// Token Refresh Mutex
+// ============================================================================
+
+/**
+ * Singleton mutex for token refresh — ensures only ONE refresh request
+ * happens at a time. Concurrent 401s wait for the same refresh promise.
+ */
+let refreshPromise: Promise<boolean> | null = null;
+
+function refreshAccessToken(): Promise<boolean> {
+  // If a refresh is already in progress, reuse the same promise
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    const currentRefreshToken = getRefreshToken();
+    if (!currentRefreshToken) {
+      return false;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_ORIGIN}${ZV_AUTH_JWT_REFRESH_PATH}`,
+        { refresh: currentRefreshToken },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+      );
+
+      const newAccess = response.data?.access;
+      const newRefresh = response.data?.refresh;
+
+      if (newAccess) {
+        const cookieOpts = getCookieOptions();
+        Cookies.set('access', newAccess, cookieOpts);
+        if (newRefresh) {
+          Cookies.set('refresh', newRefresh, cookieOpts);
+        }
+        console.log('[API] Token refreshed successfully');
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.warn('[API] Token refresh failed:', (err as Error)?.message);
+      return false;
+    } finally {
+      // Always clear the mutex so future 401s can attempt a new refresh
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+// ============================================================================
+// Proactive Token Refresh
+// ============================================================================
+
+/**
+ * Decode JWT payload without external library
+ */
+function decodeJWTPayload(token: string): { exp?: number; [key: string]: unknown } | null {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if token will expire within the given buffer (seconds).
+ */
+function isTokenExpiringSoon(token: string, bufferSeconds: number = 120): boolean {
+  const payload = decodeJWTPayload(token);
+  if (!payload?.exp) return true;
+  return Date.now() >= (payload.exp - bufferSeconds) * 1000;
+}
+
+/**
+ * Start a periodic check that proactively refreshes the token
+ * before it expires. Called once at app startup.
+ */
+let proactiveInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startProactiveTokenRefresh(): void {
+  if (typeof window === 'undefined') return;
+  if (proactiveInterval) return; // Already started
+
+  // Check every 60 seconds
+  proactiveInterval = setInterval(() => {
+    const accessToken = getAuthToken();
+    if (!accessToken) return; // Not logged in, skip
+
+    if (isTokenExpiringSoon(accessToken, 120)) {
+      console.log('[API] Token expiring soon, proactive refresh...');
+      refreshAccessToken().then((success) => {
+        if (!success) {
+          console.warn('[API] Proactive refresh failed, will retry on next 401');
+        }
+      });
+    }
+  }, 60 * 1000);
+}
+
+export function stopProactiveTokenRefresh(): void {
+  if (proactiveInterval) {
+    clearInterval(proactiveInterval);
+    proactiveInterval = null;
+  }
+}
+
+// ============================================================================
+// Base Axios Instance
+// ============================================================================
 
 /**
  * Create base axios instance with common configuration
@@ -82,8 +211,6 @@ function createBaseInstance(baseURL: string): AxiosInstance {
       const token = getAuthToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
-      } else if (!token) {
-        console.warn('[API] No auth token found for request:', config.method?.toUpperCase(), config.url);
       }
       // Add project ID header
       if (config.headers) {
@@ -95,10 +222,10 @@ function createBaseInstance(baseURL: string): AxiosInstance {
     (error) => Promise.reject(error)
   );
 
-  // Response interceptor - standardize error handling
+  // Response interceptor - handle 401 with mutex-based refresh
   instance.interceptors.response.use(
     (response) => response,
-    (error: AxiosError) => {
+    async (error: AxiosError) => {
       const apiError: ApiError = {
         message: (error.response?.data as any)?.message || error.message || 'An error occurred',
         code: (error.response?.data as any)?.code,
@@ -116,72 +243,37 @@ function createBaseInstance(baseURL: string): AxiosInstance {
           (requestUrl.includes('/auth/auth/token/') || requestUrl.includes('/auth/token/')) &&
           !isRefreshEndpoint;
 
-        console.warn('[API] 401 on:', requestUrl);
-
-        // Skip 401 handling entirely for auth pages and token endpoints
+        // Skip 401 handling for auth pages and token endpoints
         if (isLoginPath || isRegisterPath || isAuthTokenEndpoint || isRefreshEndpoint) {
           return Promise.reject(apiError);
         }
 
-        const currentRefreshToken = getRefreshToken();
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        // 401 on a request that already ran after a successful refresh: do not clear cookies or
-        // show SessionExpired — the access token was just renewed; failure is likely JWT/API
-        // mismatch, wrong audience, or backend 401, not "refresh token expired".
+        // Already retried after a refresh — don't loop
         if (originalRequest._retry) {
-          console.warn(
-            '[API] 401 on retried request (after refresh); rejecting without session dialog:',
-            requestUrl
-          );
+          console.warn('[API] 401 on retried request, rejecting:', requestUrl);
           return Promise.reject(apiError);
         }
 
-        // First 401: try refresh once, then retry with _retry set
-        if (currentRefreshToken) {
+        // Try refresh with mutex (only one refresh at a time)
+        const refreshed = await refreshAccessToken();
+
+        if (refreshed) {
+          // Retry original request with new token
           originalRequest._retry = true;
-          console.log('[API] Attempting token refresh...');
-
-          return axios
-            .post(
-              `${API_ORIGIN}${ZV_AUTH_JWT_REFRESH_PATH}`,
-              { refresh: currentRefreshToken },
-              { headers: { 'Content-Type': 'application/json' } }
-            )
-            .then((refreshResponse) => {
-              const newAccess = refreshResponse.data?.access;
-              const newRefresh = refreshResponse.data?.refresh;
-              if (newAccess) {
-                const cookieOpts = getCookieOptions();
-                Cookies.set('access', newAccess, cookieOpts);
-                if (newRefresh) {
-                  Cookies.set('refresh', newRefresh, cookieOpts);
-                }
-                if (originalRequest.headers) {
-                  originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-                }
-                return instance(originalRequest);
-              }
-              return Promise.reject(apiError);
-            })
-            .catch((refreshErr) => {
-              // Only here: refresh endpoint failed — session is truly invalid
-              console.warn('[API] Token refresh failed for:', requestUrl, refreshErr);
-              clearAuthSession();
-              emitSessionExpired();
-              return Promise.reject(apiError);
-            });
+          const newToken = getAuthToken();
+          if (newToken && originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+          return instance(originalRequest);
         }
 
-        // No refresh token: treat as logged-out or expired if we still had a stale access cookie
-        const hadAccessToken = !!getAuthToken();
-        console.warn('[API] 401 with no refresh token for:', requestUrl, '| had access token:', hadAccessToken);
-        if (hadAccessToken) {
-          clearAuthSession();
-          emitSessionExpired();
-        }
-      } else if (error.response?.status && error.response.status !== 401) {
-        console.error(`[API] ${error.response.status} Error:`, error.config?.url, apiError);
+        // Refresh failed — session is truly expired
+        console.warn('[API] Session expired, clearing auth');
+        clearAuthSession();
+        emitSessionExpired();
+        return Promise.reject(apiError);
       }
 
       return Promise.reject(apiError);
@@ -236,17 +328,6 @@ export interface ApiClientFactoryConfig {
 
 /**
  * Creates a configured API client for a service
- *
- * @example
- * const categoryApi = createApiClient({
- *   serviceName: 'categories',
- *   endpoint: '/api/v1/categories',
- * });
- *
- * // Usage:
- * const categories = await categoryApi.list({ page: 1, limit: 20 });
- * const category = await categoryApi.getById('123');
- * const created = await categoryApi.create({ name: 'New Category' });
  */
 export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = unknown>(
   config: ApiClientFactoryConfig
@@ -254,13 +335,9 @@ export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = 
   const { serviceName, endpoint, endpoints: customEndpoints, apiBaseUrl } = config;
   const fullBaseUrl = apiBaseUrl || API_BASE_URL;
   const endpoints = buildEndpoints(endpoint, customEndpoints);
-  // Don't append endpoints.base to baseURL - it's already the full API base URL
   const client = createBaseInstance(fullBaseUrl);
 
   return {
-    /**
-     * List all entities with optional filters
-     */
     async list(filters?: TFilters): Promise<ApiResponse<TEntity[]>> {
       const params = new URLSearchParams();
 
@@ -279,34 +356,22 @@ export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = 
       return response.data;
     },
 
-    /**
-     * Get a single entity by ID
-     */
     async getById(id: string): Promise<ApiResponse<TEntity>> {
       const url = buildEndpointUrl(endpoints.detail || '', id);
       const response = await client.get<ApiResponse<TEntity>>(url);
       return response.data;
     },
 
-    /**
-     * Get statistics for the entity
-     */
     async getStats(): Promise<ApiResponse<Record<string, number>>> {
       const response = await client.get<ApiResponse<Record<string, number>>>(endpoints.stats || '/stats');
       return response.data;
     },
 
-    /**
-     * Create a new entity
-     */
     async create(input: TCreateInput): Promise<ApiResponse<TEntity>> {
       const response = await client.post<ApiResponse<TEntity>>(endpoints.create || '', input);
       return response.data;
     },
 
-    /**
-     * Update an existing entity
-     */
     async update(input: TUpdateInput & { id: string }): Promise<ApiResponse<TEntity>> {
       const { id, ...data } = input;
       const url = buildEndpointUrl(endpoints.update || '', id);
@@ -314,26 +379,17 @@ export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = 
       return response.data;
     },
 
-    /**
-     * Delete an entity
-     */
     async delete(id: string): Promise<void> {
       const url = buildEndpointUrl(endpoints.delete || '', id);
       await client.delete(url);
     },
 
-    /**
-     * Bulk delete entities
-     * Sends a single DELETE request with all IDs for efficiency.
-     * Falls back to individual deletes if the batch endpoint is not available.
-     */
     async bulkDelete(ids: string[]): Promise<void> {
       if (ids.length === 0) return;
 
       try {
         await client.delete(endpoints.base + '/', { data: { ids } });
       } catch {
-        // Fallback: delete individually with concurrency limit of 5
         const batchSize = 5;
         for (let i = 0; i < ids.length; i += batchSize) {
           const batch = ids.slice(i, i + batchSize);
@@ -342,14 +398,7 @@ export function createApiClient<TEntity, TCreateInput, TUpdateInput, TFilters = 
       }
     },
 
-    /**
-     * Get the underlying axios instance for custom requests
-     */
     getInstance: () => client,
-
-    /**
-     * Get endpoints configuration
-     */
     getEndpoints: () => endpoints,
   };
 }
@@ -361,7 +410,8 @@ export function createClient(baseURL?: string): AxiosInstance {
   return createBaseInstance(baseURL || API_BASE_URL);
 }
 
-// For compatibility with legacy code or patterns that expect a namespace
+export { createUploadClient, uploadFile };
+
 export const ApiClientFactory = {
   createClient,
   createApiClient,
@@ -373,20 +423,15 @@ export const ApiClientFactory = {
 // Utility Functions
 // ============================================================================
 
-/**
- * Create a multipart/form-data client for file uploads
- */
-export function createUploadClient(serviceName: string, endpoint: string): AxiosInstance {
+function createUploadClient(serviceName: string, endpoint: string): AxiosInstance {
   const fullUrl = `${API_BASE_URL}${endpoint}`;
   const client = createBaseInstance(fullUrl);
 
-  // Override content type for multipart
   client.interceptors.request.use((config) => {
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Remove Content-Type to let browser set it with boundary
     if (config.headers) {
       delete config.headers['Content-Type'];
     }
@@ -396,10 +441,7 @@ export function createUploadClient(serviceName: string, endpoint: string): Axios
   return client;
 }
 
-/**
- * Upload a file using FormData
- */
-export async function uploadFile(
+async function uploadFile(
   serviceName: string,
   endpoint: string,
   file: File,
