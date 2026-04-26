@@ -180,6 +180,7 @@ export const misc = {
   "upload.avatar_help": "تحميل صورة الملف الشخصي (JPG ، PNG ، بحد أقصى 2 ميجابايت)",
   "upload.profile_photo": "صورة الملف الشخصي",
   "upload.error_invalid_type": "نوع ملف غير صالح. يرجى تحميل JPG أو PNG.",
+  "upload.primary": "رئيسية",
 
   // Status
   "status.pending": "قيد الانتظار",

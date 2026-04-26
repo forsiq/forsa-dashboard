@@ -281,6 +281,7 @@ export const misc = {
   "upload.avatar_help": "Upload a profile picture (JPG, PNG, max 2MB)",
   "upload.profile_photo": "Profile Photo",
   "upload.error_invalid_type": "Invalid file type. Please upload JPG or PNG.",
+  "upload.primary": "Primary",
 
   // Additional status
   "status.pending": "Pending",

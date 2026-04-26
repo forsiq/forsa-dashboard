@@ -7,6 +7,7 @@ export const misc = {
   "status.active": "چالاوان",
   "status.inactive": "چالاک نییە",
   "upload.click_or_drag": "کلیک بکە یان فایلەکە ڕابکێشە بۆ بارکردن",
+  "upload.primary": "سەرەکی",
 
   // Error pages
   "error.404_title": "لە تۆڕەکە ون بوویت",
