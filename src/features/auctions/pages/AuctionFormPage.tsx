@@ -62,19 +62,40 @@ export const AuctionFormPage: React.FC = () => {
   const createMutation = useCreateAuction();
   const updateMutation = useUpdateAuction();
 
+  const [durationDays, setDurationDays] = useState<number>(7);
+  const [useDurationMode, setUseDurationMode] = useState<boolean>(true);
+
   const [formData, setFormData] = useState<Partial<AuctionCreateInput> & { productId?: number }>({
     title: '',
     description: '',
     startPrice: 0,
     buyNowPrice: undefined,
     reservePrice: undefined,
-    startTime: '',
-    endTime: '',
+    startTime: (() => {
+      const now = new Date();
+      now.setHours(now.getHours() + 1, 0, 0, 0);
+      return now.toISOString().slice(0, 16);
+    })(),
+    endTime: (() => {
+      const end = new Date();
+      end.setDate(end.getDate() + 7);
+      end.setHours(end.getHours() + 1, 0, 0, 0);
+      return end.toISOString().slice(0, 16);
+    })(),
     bidIncrement: 10,
     categoryId: 1,
     images: [],
     productId: undefined,
   });
+
+  // Compute endTime from startTime + durationDays
+  const computedEndTime = formData.startTime
+    ? (() => {
+        const start = new Date(formData.startTime);
+        start.setDate(start.getDate() + durationDays);
+        return start.toISOString().slice(0, 16);
+      })()
+    : '';
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -86,14 +107,22 @@ export const AuctionFormPage: React.FC = () => {
   useEffect(() => {
     if (existingAuction) {
       const titleSuffix = isClone ? ' (Copy)' : '';
+      const startTime = isClone ? '' : existingAuction.startTime?.split('Z')[0];
+      const endTime = isClone ? '' : existingAuction.endTime?.split('Z')[0];
+      // Calculate duration in days from existing auction
+      if (startTime && endTime) {
+        const diffMs = new Date(endTime).getTime() - new Date(startTime).getTime();
+        const days = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        setDurationDays(days);
+      }
       setFormData({
         title: existingAuction.title + titleSuffix,
         description: existingAuction.description,
         startPrice: existingAuction.startPrice,
         buyNowPrice: existingAuction.buyNowPrice,
         reservePrice: existingAuction.reservePrice,
-        startTime: isClone ? '' : existingAuction.startTime?.split('Z')[0],
-        endTime: isClone ? '' : existingAuction.endTime?.split('Z')[0],
+        startTime,
+        endTime,
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
         images: existingAuction.images || [],
@@ -130,7 +159,6 @@ export const AuctionFormPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.title?.trim()) newErrors.title = t('auction.validation.title_required');
     if (!formData.startTime) newErrors.startTime = t('auction.validation.start_time_required');
-    if (!formData.endTime) newErrors.endTime = t('auction.validation.end_time_required');
     if ((formData.startPrice || 0) <= 0) newErrors.startPrice = t('auction.validation.start_price_gt_0');
     
     setErrors(newErrors);
@@ -155,8 +183,10 @@ export const AuctionFormPage: React.FC = () => {
       }
       // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
       const { productId, ...formPayload } = formData;
+      const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
       const payload: any = {
         ...formPayload,
+        endTime: finalEndTime ? new Date(finalEndTime).toISOString() : undefined,
       };
       if (uploadedAttachmentId) {
         payload.mainAttachmentId = uploadedAttachmentId;
@@ -394,11 +424,42 @@ export const AuctionFormPage: React.FC = () => {
 
             {/* Deployment Window Control */}
             <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
-                      <Clock className="w-5 h-5" />
+                <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
+                         <Clock className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.temporal')}</h3>
                    </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.temporal')}</h3>
+                   {/* Mode toggle in header */}
+                   <div className="flex items-center gap-1 bg-white/[0.02] rounded-lg p-0.5 border border-white/5">
+                        <button
+                            type="button"
+                            onClick={() => setUseDurationMode(true)}
+                            title={t('auction.form.cycle_duration') || 'Duration'}
+                            className={cn(
+                                "p-1.5 rounded-md transition-all",
+                                useDurationMode
+                                    ? "bg-brand/15 text-brand border border-brand/30"
+                                    : "text-zinc-muted hover:text-zinc-text"
+                            )}
+                        >
+                            <Clock className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setUseDurationMode(false)}
+                            title={t('auction.form.temporal_end') || 'Manual Date'}
+                            className={cn(
+                                "p-1.5 rounded-md transition-all",
+                                !useDurationMode
+                                    ? "bg-brand/15 text-brand border border-brand/30"
+                                    : "text-zinc-muted hover:text-zinc-text"
+                            )}
+                        >
+                            <Calendar className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
                 </div>
                 <div className="space-y-6">
                     <AmberInput 
@@ -406,26 +467,59 @@ export const AuctionFormPage: React.FC = () => {
                         type="datetime-local"
                         value={formData.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
-                        icon={<Calendar className="w-4 h-4" />}
                         error={errors.startTime}
                     />
-                    <AmberInput 
-                        label={t('auction.form.temporal_end')}
-                        type="datetime-local"
-                        value={formData.endTime}
-                        onChange={(e) => handleChange('endTime', e.target.value)}
-                        icon={<Clock className="w-4 h-4" />}
-                        error={errors.endTime}
-                    />
-                </div>
-                <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 space-y-3">
-                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                         <span className="text-zinc-muted">{t('auction.form.cycle_duration')}</span>
-                         <span className="text-warning">{t('auction.form.syncing')}</span>
-                     </div>
-                     <div className="h-1 bg-white/[0.03] rounded-full overflow-hidden">
-                         <div className="h-full bg-warning w-[65%]" />
-                     </div>
+
+                    {useDurationMode ? (
+                        /* Duration mode: number of days */
+                        <>
+                            <AmberInput
+                                label={t('auction.form.cycle_duration') || 'Duration (Days)'}
+                                type="number"
+                                value={durationDays}
+                                onChange={(e) => {
+                                  const val = Math.max(1, Math.min(90, Number(e.target.value) || 1));
+                                  setDurationDays(val);
+                                }}
+                                icon={<Clock className="w-4 h-4" />}
+                                min={1}
+                                max={90}
+                            />
+                            <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 space-y-3">
+                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                                    <span className="text-zinc-muted">{t('auction.form.temporal_end')}</span>
+                                    <span className="text-success font-mono text-xs">
+                                        {computedEndTime
+                                            ? new Date(computedEndTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', {
+                                                month: 'short', day: 'numeric', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit'
+                                            })
+                                            : '-'
+                                        }
+                                    </span>
+                                </div>
+                                <div className="h-1 bg-white/[0.03] rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-warning rounded-full transition-all duration-500"
+                                        style={{ width: `${Math.min((durationDays / 30) * 100, 100)}%` }}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mt-1">
+                                    <span className="text-zinc-muted">{durationDays} {durationDays === 1 ? 'day' : 'days'}</span>
+                                    <span className="text-warning">{Math.round((durationDays / 30) * 100)}%</span>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        /* Manual mode: pick exact end date */
+                        <AmberInput 
+                            label={t('auction.form.temporal_end')}
+                            type="datetime-local"
+                            value={formData.endTime}
+                            onChange={(e) => handleChange('endTime', e.target.value)}
+                            error={errors.endTime}
+                        />
+                    )}
                 </div>
             </Card>
 

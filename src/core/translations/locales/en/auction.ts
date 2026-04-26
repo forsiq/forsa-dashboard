@@ -370,6 +370,7 @@ export const auction = {
   "auction.form.fields.start_price": "Starting Price ($)",
   "auction.form.fields.bid_increment": "Bid Increment ($)",
   "auction.form.fields.buy_now": "Buy Now Price ($)",
+  "auction.form.fields.reserve_price": "Reserve Price ($)",
   "auction.form.pricing_note_title": "Pricing Tip",
   "auction.form.pricing_note_desc": "Set a competitive starting price to attract more bidders.",
   "auction.form.imagery_specs": "Image Specifications",

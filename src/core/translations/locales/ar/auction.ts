@@ -371,6 +371,7 @@ export const auction = {
   "auction.form.fields.start_price": "سعر البداية ($)",
   "auction.form.fields.bid_increment": "قيمة زيادة المزايدة ($)",
   "auction.form.fields.buy_now": "سعر الشراء الفوري ($)",
+  "auction.form.fields.reserve_price": "السعر الاحتياطي ($)",
   "auction.form.pricing_note_title": "نصيحة للتسعير",
   "auction.form.pricing_note_desc": "تأكد من أن سعر البداية مناسب لزيادة فرصة الحصول على مزايدات أكثر.",
   "auction.form.imagery_specs": "مواصفات الصور",
