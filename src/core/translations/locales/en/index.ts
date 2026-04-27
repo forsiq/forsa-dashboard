@@ -33,6 +33,7 @@ import { billingPortal } from './billingPortal';
 import { settingsPortal } from './settingsPortal';
 import { profilePortal } from './profilePortal';
 import { deployTrack } from './deployTrack';
+import { mobileManagement } from './mobileManagement';
 
 export const en = {
   ...common,
@@ -69,4 +70,5 @@ export const en = {
   ...settingsPortal,
   ...profilePortal,
   ...deployTrack,
+  ...mobileManagement,
 } as const;

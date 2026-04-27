@@ -32,6 +32,7 @@ import { support } from './support';
 import { billingPortal } from './billingPortal';
 import { settingsPortal } from './settingsPortal';
 import { profilePortal } from './profilePortal';
+import { mobileManagement } from './mobileManagement';
 
 export const ku = {
   ...common,
@@ -67,4 +68,5 @@ export const ku = {
   ...billingPortal,
   ...settingsPortal,
   ...profilePortal,
+  ...mobileManagement,
 } as const;
