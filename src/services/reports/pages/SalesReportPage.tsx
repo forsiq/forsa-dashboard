@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Download } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
-import { cn } from '../../../core/lib/utils/cn';
-import { AmberCard } from '../../../core/components/AmberCard';
-import { AmberButton } from '../../../core/components/AmberButton';
-import { AmberExcelExport } from '../../../core/components/Data/AmberExcelExport';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { cn } from '@core/lib/utils/cn';
+import { AmberCard } from '@core/components/AmberCard';
+import { AmberButton } from '@core/components/AmberButton';
+import { AmberExcelExport } from '@core/components/Data/AmberExcelExport';
 import { useGetSalesReport } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
 

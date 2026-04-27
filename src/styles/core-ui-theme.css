@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --color-obsidian-outer: #F4F7FB;
+  --color-obsidian-panel: #FFFFFF;
+  --color-obsidian-card: #FFFFFF;
+  --color-obsidian-hover: #F8FAFC;
+
+  --color-zinc-text: #1E293B;
+  --color-zinc-secondary: #475569;
+  --color-zinc-muted: #94A3B8;
+  --color-border: rgba(0, 0, 0, 0.06);
+
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: 10px;
+
+  --color-brand: #FFC000;
+  --color-brand-muted: #FFF9E6;
+
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  --color-success-bg: #E7FBF3;
+  --color-success-text: #059669;
+  --color-danger-bg: #FFF1F2;
+  --color-danger-text: #E11D48;
+
+  --chart-1: #FFC000;
+  --chart-2: #3B82F6;
+  --chart-3: #10B981;
+  --chart-4: #EF4444;
+  --chart-5: #8B5CF6;
+}
+
+.dark {
+  --color-obsidian-outer: #050914;
+  --color-obsidian-panel: #0D1326;
+  --color-obsidian-card: #161E36;
+  --color-obsidian-hover: #232E4D;
+
+  --color-zinc-text: #F1F5F9;
+  --color-zinc-secondary: #CBD5E1;
+  --color-zinc-muted: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  --glass-bg: rgba(13, 19, 38, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 16px;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 14px;
+  font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-obsidian-hover);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-zinc-secondary);
+}
+
+body {
+  background-color: var(--color-obsidian-outer);
+  color: var(--color-zinc-text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.dark body {
+  background-color: var(--color-obsidian-outer);
+  background-image: radial-gradient(circle at 15% 0%, #1A2332 0%, var(--color-obsidian-outer) 85%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.page-transition {
+  animation: fade-in 300ms ease-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.enterprise-card {
+  background: rgb(var(--color-obsidian-card));
+  border: 1px solid rgba(var(--color-border), 0.08);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  transition: all 200ms ease-out;
+}
+
+.enterprise-card:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-item-active {
+  background-color: rgba(255, 192, 0, 0.1);
+  color: #FFC000;
+}
+
+.brand-slant {
+  font-style: normal;
+  font-weight: 700;
+}
+
+input, textarea, select, button {
+  font-style: normal !important;
+}
+
+::placeholder {
+  font-style: normal !important;
+  opacity: 0.5;
+}

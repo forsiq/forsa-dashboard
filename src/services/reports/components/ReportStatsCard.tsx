@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
-import { AmberCard } from '../../../core/components/AmberCard';
-import { cn } from '../../../core/lib/utils/cn';
+import { AmberCard } from '@core/components/AmberCard';
+import { cn } from '@core/lib/utils/cn';
 
 interface ReportStatsCardProps {
   label: string;

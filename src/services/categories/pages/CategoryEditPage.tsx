@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { AmberButton } from '../../../core/components/AmberButton';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { AmberButton } from '@core/components/AmberButton';
 import { CategoryForm } from '../components/CategoryForm';
 import { useGetCategories, useGetCategory, useUpdateCategoryMutation } from '../hooks';
 

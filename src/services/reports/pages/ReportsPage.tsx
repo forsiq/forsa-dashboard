@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BarChart3, ShoppingCart, DollarSign, Users, FileText } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { cn } from '../../../core/lib/utils/cn';
-import { AmberCard } from '../../../core/components/AmberCard';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { cn } from '@core/lib/utils/cn';
+import { AmberCard } from '@core/components/AmberCard';
 import { useGetReports } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
-import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
 
 /**
  * ReportsPage - Reports dashboard

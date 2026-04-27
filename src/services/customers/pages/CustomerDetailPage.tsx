@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { AmberCard as Card } from '../../../core/components/AmberCard';
-import { AmberButton } from '../../../core/components/AmberButton';
-import { AmberAvatar } from '../../../core/components/AmberAvatar';
-import { cn } from '../../../core/lib/utils/cn';
-import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
-import { formatPhone } from '../../../core/lib/utils/formatPhone';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { AmberCard as Card } from '@core/components/AmberCard';
+import { AmberButton } from '@core/components/AmberButton';
+import { AmberAvatar } from '@core/components/AmberAvatar';
+import { cn } from '@core/lib/utils/cn';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { formatPhone } from '@core/lib/utils/formatPhone';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { 
   Building2, 
   Mail, 
@@ -22,7 +22,7 @@ import {
   Globe
 } from 'lucide-react';
 import { useGetCustomer } from '../hooks';
-import { StatusBadge } from '../../../core/components/Data/StatusBadge';
+import { StatusBadge } from '@core/components/Data/StatusBadge';
 
 export function CustomerDetailPage() {
   const { t, dir } = useLanguage();

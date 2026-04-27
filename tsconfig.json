@@ -21,7 +21,7 @@
     "baseUrl": ".",
     "paths": {
       "@core/*": [
-        "src/core/*"
+        "node_modules/@yousef2001/core-ui/src/*"
       ],
       "@features/*": [
         "src/features/*"

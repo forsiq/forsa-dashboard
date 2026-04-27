@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { AmberCard as Card } from '../../../core/components/AmberCard';
-import { AmberButton } from '../../../core/components/AmberButton';
-import { AmberInput } from '../../../core/components/AmberInput';
-import { AmberDropdown } from '../../../core/components/AmberDropdown';
-import { AmberAvatar } from '../../../core/components/AmberAvatar';
-import { cn } from '../../../core/lib/utils/cn';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { AmberCard as Card } from '@core/components/AmberCard';
+import { AmberButton } from '@core/components/AmberButton';
+import { AmberInput } from '@core/components/AmberInput';
+import { AmberDropdown } from '@core/components/AmberDropdown';
+import { AmberAvatar } from '@core/components/AmberAvatar';
+import { cn } from '@core/lib/utils/cn';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import {
   User,
   Save,

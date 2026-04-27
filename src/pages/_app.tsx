@@ -7,6 +7,7 @@ import { ThemeProvider } from '@core/contexts/ThemeContext';
 import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
+import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { AuthGuard } from '@features/_core/components/AuthGuard';
@@ -34,6 +35,10 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <CoreUIProvider config={{
+        apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+        authRefreshPath: '/api/v1/auth/auth/token/refresh/',
+      }}>
       <FeatureProvider configPath="/zvs.config.json">
         <ToastProvider>
           <LanguageProvider>
@@ -59,6 +64,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </LanguageProvider>
         </ToastProvider>
       </FeatureProvider>
+      </CoreUIProvider>
     </QueryClientProvider>
   );
 }

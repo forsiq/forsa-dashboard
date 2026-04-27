@@ -13,11 +13,11 @@ import { useList as useCategories } from '../../../services/categories/hooks';
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
-import { AmberInput } from '../../../core/components/AmberInput';
-import { AmberCard as Card } from '../../../core/components/AmberCard';
-import { AmberButton as Button } from '../../../core/components/AmberButton';
-import { AmberDropdown } from '../../../core/components/AmberDropdown';
-import { AmberImageUpload } from '../../../core/components/AmberImageUpload';
+import { AmberInput } from '@core/components/AmberInput';
+import { AmberCard as Card } from '@core/components/AmberCard';
+import { AmberButton as Button } from '@core/components/AmberButton';
+import { AmberDropdown } from '@core/components/AmberDropdown';
+import { AmberImageUpload } from '@core/components/AmberImageUpload';
 
 export const AuctionAdd = () => {
   const router = useRouter();

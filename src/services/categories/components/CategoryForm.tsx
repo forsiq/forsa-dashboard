@@ -4,13 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { cn } from '../../../core/lib/utils/cn';
-import { AmberInput } from '../../../core/components/AmberInput';
-import { AmberButton } from '../../../core/components/AmberButton';
-import { AmberCard } from '../../../core/components/AmberCard';
-import { AmberDropdown } from '../../../core/components/AmberDropdown';
-import { IconPicker } from '../../../core/components/IconPicker';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { cn } from '@core/lib/utils/cn';
+import { AmberInput } from '@core/components/AmberInput';
+import { AmberButton } from '@core/components/AmberButton';
+import { AmberCard } from '@core/components/AmberCard';
+import { AmberDropdown } from '@core/components/AmberDropdown';
+import { IconPicker } from '@core/components/IconPicker';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 
 // --- Validation Schema ---

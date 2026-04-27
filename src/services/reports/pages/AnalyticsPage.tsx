@@ -17,10 +17,10 @@ import {
   Cell
 } from 'recharts';
 import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
-import { cn } from '../../../core/lib/utils/cn';
-import { AmberCard } from '../../../core/components/AmberCard';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { cn } from '@core/lib/utils/cn';
+import { AmberCard } from '@core/components/AmberCard';
 import { useGetAnalytics } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
 

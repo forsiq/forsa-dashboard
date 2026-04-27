@@ -13,11 +13,11 @@ import {
     AlertTriangle,
     Loader2
 } from 'lucide-react';
-import { AmberButton } from '../../../core/components/AmberButton';
-import { AmberCard } from '../../../core/components/AmberCard';
+import { AmberButton } from '@core/components/AmberButton';
+import { AmberCard } from '@core/components/AmberCard';
 import { ExampleItem } from '../types';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { cn } from '../../../core/lib/utils/cn';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { cn } from '@core/lib/utils/cn';
 
 interface ExampleTableProps {
   data: ExampleItem[];

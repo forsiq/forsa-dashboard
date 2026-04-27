@@ -1,8 +1,8 @@
 import React from 'react';
 import { Folder, CheckCircle2, Heart, Tag } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { AmberCard } from '../../../core/components/AmberCard';
-import { cn } from '../../../core/lib/utils/cn';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { AmberCard } from '@core/components/AmberCard';
+import { cn } from '@core/lib/utils/cn';
 import type { CategoryStats as Stats } from '../types';
 
 // --- Types ---

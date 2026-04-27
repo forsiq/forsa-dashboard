@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Users, MapPin, Repeat, Crown } from 'lucide-react';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
-import { formatCurrency } from '../../../core/lib/utils/formatCurrency';
-import { cn } from '../../../core/lib/utils/cn';
-import { AmberCard } from '../../../core/components/AmberCard';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { cn } from '@core/lib/utils/cn';
+import { AmberCard } from '@core/components/AmberCard';
 import { useGetSalesReport } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
 

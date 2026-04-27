@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
-import { useLanguage } from '../../../core/contexts/LanguageContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { CategoryForm } from '../components/CategoryForm';
 import { useGetCategories, useCreateCategoryMutation } from '../hooks';
 
