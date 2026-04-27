@@ -146,10 +146,7 @@ export const OrdersListPage = () => {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
             {t('orders.title') || 'الطلبات'}
@@ -171,10 +168,7 @@ export const OrdersListPage = () => {
       />
 
       {/* Toolbar */}
-      <div className={cn(
-        "flex flex-col md:flex-row items-center gap-4 pt-2",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col md:flex-row items-center gap-4 pt-2 text-start">
         {/* Status Tabs */}
         <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
           <button
@@ -216,7 +210,7 @@ export const OrdersListPage = () => {
         <div className="relative flex-1 max-w-sm w-full group">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'left-4' : 'right-4'
+            isRTL ? 'start-4' : 'end-4'
           )} />
           <AmberInput
             placeholder={t('orders.search') || 'البحث في الطلبات...'}
@@ -224,7 +218,7 @@ export const OrdersListPage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
               "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              isRTL ? 'pl-4 pr-10' : 'pr-4 pl-10'
+              isRTL ? 'ps-4 pe-10' : 'pe-4 ps-10'
             )}
           />
         </div>

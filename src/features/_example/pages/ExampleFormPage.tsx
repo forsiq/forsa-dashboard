@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AmberButton } from '@core/components/AmberButton';
 import { ExampleForm } from '../components/ExampleForm';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const ExampleFormPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const isEdit = !!id;
+  const { isRTL } = useLanguage();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export const ExampleFormPage = () => {
       <div className="flex items-center gap-4">
         <Link href="/example">
           <AmberButton variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           </AmberButton>
         </Link>
         <div>

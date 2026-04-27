@@ -44,7 +44,7 @@ export const LanguageSelector: React.FC = () => {
             <span className="text-2xl">{lang.flag}</span>
             <span className="text-sm font-bold">{lang.name}</span>
             {language === lang.code && (
-              <span className="ml-auto text-[10px] uppercase tracking-wider">{t('settings.lang_active')}</span>
+              <span className="ms-auto text-[10px] uppercase tracking-wider">{t('settings.lang_active')}</span>
             )}
           </button>
         ))}

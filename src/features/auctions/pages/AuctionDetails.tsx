@@ -113,7 +113,7 @@ export const AuctionDetails: React.FC = () => {
         <AlertCircle className="w-16 h-16 text-danger mx-auto" />
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-zinc-text tracking-tighter">{t('auction.detail.node_not_found')}</h2>
-          <p className="text-zinc-muted font-semibold tracking-tight text-sm">Auction not found</p>
+          <p className="text-zinc-muted font-semibold tracking-tight text-sm">{t('auction.detail.not_found_text')}</p>
         </div>
         <AmberButton onClick={() => router.push('/auctions')} variant="secondary" className="px-8 h-12 uppercase font-bold">
           {t('common.back') || 'Back'}
@@ -133,8 +133,8 @@ export const AuctionDetails: React.FC = () => {
     { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
     { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
     { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
-    { icon: Tag, label: 'Category', value: auction.categoryName || t('common.general_asset') || 'General' },
-    { icon: User, label: 'Winner', value: auction.winnerName || t('auction.detail.default_custodian') || 'No winner yet' },
+    { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
+    { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
   ];
 
   if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
@@ -282,7 +282,7 @@ export const AuctionDetails: React.FC = () => {
                   </div>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <span className="text-[10px] font-semibold text-brand tracking-widest">{auction.categoryName || 'General'}</span>
+                  <span className="text-[10px] font-semibold text-brand tracking-widest">{auction.categoryName || t('auction.detail.general')}</span>
                   <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
                 </div>
               </>
@@ -300,7 +300,7 @@ export const AuctionDetails: React.FC = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-end">
-                  <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">Total Bids</span>
+                  <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.total_bids')}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{auction.totalBids || 0}</p>
                 </div>
               </div>
@@ -309,7 +309,7 @@ export const AuctionDetails: React.FC = () => {
             {bidsLoading ? (
               <div className="py-12 text-center">
                 <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-[10px] text-zinc-muted font-semibold tracking-widest mt-3">Loading...</p>
+                <p className="text-[10px] text-zinc-muted font-semibold tracking-widest mt-3">{t('auction.detail.loading')}</p>
               </div>
             ) : bids?.length === 0 ? (
               <div className="py-12 text-center space-y-3 bg-white/[0.02] rounded-xl border border-dashed border-white/5">

@@ -14,7 +14,8 @@ export const OrderFormPage = () => {
   const queryClient = useQueryClient();
   const isEdit = !!id;
   const [isClient, setIsClient] = useState(false);
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
+  const isRTL = dir === 'rtl';
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [comingSoon, setComingSoon] = useState(false);
 
@@ -77,7 +78,7 @@ export const OrderFormPage = () => {
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
           <p className="text-sm text-danger font-medium">{submitError}</p>
-          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+          <button onClick={() => setSubmitError(null)} className="ms-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -89,7 +90,7 @@ export const OrderFormPage = () => {
           size="sm"
           onClick={() => router.push('/orders')}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
         </AmberButton>
         <div>
           <h1 className="text-2xl font-bold text-white">

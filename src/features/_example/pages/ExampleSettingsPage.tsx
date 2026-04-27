@@ -48,7 +48,7 @@ export const ExampleSettingsPage = () => {
                 <p className="text-[10px] text-zinc-muted">Get notified about changes</p>
               </div>
               <button className="w-12 h-6 bg-brand rounded-full relative">
-                <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
+                <span className="absolute end-1 top-1 w-4 h-4 bg-white rounded-full" />
               </button>
             </div>
 
@@ -58,7 +58,7 @@ export const ExampleSettingsPage = () => {
                 <p className="text-[10px] text-zinc-muted">Save work automatically</p>
               </div>
               <button className="w-12 h-6 bg-zinc-muted rounded-full relative">
-                <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
+                <span className="absolute start-1 top-1 w-4 h-4 bg-white rounded-full" />
               </button>
             </div>
           </div>

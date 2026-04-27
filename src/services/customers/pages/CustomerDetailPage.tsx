@@ -63,10 +63,7 @@ export function CustomerDetailPage() {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Dynamic Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="flex items-start gap-6">
           <AmberButton 
             variant="ghost" 
@@ -83,7 +80,7 @@ export function CustomerDetailPage() {
               size="xl" 
               className="shadow-2xl"
             />
-            <div className="space-y-2 text-center md:text-left">
+            <div className="space-y-2 text-center md:text-start">
               <div className="flex items-center gap-3 justify-center md:justify-start">
                 <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-tight uppercase">
                   {customer.name}
@@ -134,7 +131,7 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'Mobile Frequency'}</span>
-                    <p dir="ltr" className="text-sm font-bold text-zinc-text text-right">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
+                    <p dir="ltr" className="text-sm font-bold text-zinc-text text-end">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
                  </div>
                </div>
             </Card>

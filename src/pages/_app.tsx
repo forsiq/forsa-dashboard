@@ -13,6 +13,7 @@ import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDi
 import { AuthGuard } from '@features/_core/components/AuthGuard';
 import { AmberDashboardLayout } from '@core/layout/AmberDashboardLayout';
 import { useRouter } from 'next/router';
+import { appTranslations } from '../translations';
 import '@styles/globals.css';
 
 const queryClient = new QueryClient({
@@ -41,11 +42,11 @@ function MyApp({ Component, pageProps }: AppProps) {
       }}>
       <FeatureProvider configPath="/zvs.config.json">
         <ToastProvider>
-          <LanguageProvider>
+          <LanguageProvider extraTranslations={appTranslations}>
             <ThemeProvider>
               <NavigationProvider>
                 <ProjectProvider>
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">BOOTING SYSTEM...</div>}>
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">...</div>}>
                     <Toast />
                     <SessionExpiredDialog />
                     {isPublicRoute ? (

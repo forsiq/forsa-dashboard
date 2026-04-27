@@ -37,7 +37,7 @@ export const ExampleFilter: React.FC<ExampleFilterProps> = ({ filter, onFilterCh
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="ml-auto text-[10px] font-black text-danger hover:text-danger/80 uppercase tracking-widest flex items-center gap-1.5 transition-all"
+            className="ms-auto text-[10px] font-black text-danger hover:text-danger/80 uppercase tracking-widest flex items-center gap-1.5 transition-all"
           >
             <X className="w-3 h-3" />
             {t('common.clear')}

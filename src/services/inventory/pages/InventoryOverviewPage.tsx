@@ -142,10 +142,7 @@ export const InventoryOverviewPage: React.FC = () => {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Page Header */}
-      <div className={cn(
-        "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 text-start">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
@@ -218,7 +215,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-danger mt-4">
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className={cn("w-3 h-3", isRTL && "rotate-180")} />
                 <span>{t('inventory.requiresProcurement')}</span>
             </div>
           </Card>
@@ -266,11 +263,11 @@ export const InventoryOverviewPage: React.FC = () => {
             <div className="relative group min-w-[280px]">
                 <Search className={cn(
                     "absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                    isRTL ? 'right-4' : 'left-4'
+                    isRTL ? 'end-4' : 'start-4'
                 )} />
                 <AmberInput 
                     placeholder={t('inventory.searchAllocation')} 
-                    className="h-10 bg-obsidian-card border-border pl-10 pr-4 text-[11px] font-bold"
+                    className="h-10 bg-obsidian-card border-border ps-10 pe-4 text-[11px] font-bold"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -303,7 +300,7 @@ export const InventoryOverviewPage: React.FC = () => {
                         {lowStockItems.length} {t('inventory.detected')}
                     </span>
                 </div>
-                <div className="space-y-4 max-h-[440px] overflow-y-auto custom-scrollbar pr-2 relative z-10">
+                <div className="space-y-4 max-h-[440px] overflow-y-auto custom-scrollbar pe-2 relative z-10">
                     {lowStockItems.length > 0 ? lowStockItems.map((item: any, i: number) => (
                         <div key={i} className="p-4 bg-obsidian-card border border-border rounded-xl hover:border-danger/30 transition-all group">
                             <div className="flex items-start justify-between">
@@ -311,7 +308,7 @@ export const InventoryOverviewPage: React.FC = () => {
                                     <p className="text-xs font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
                                     <p className="text-[10px] font-bold text-zinc-muted uppercase">{t('inventory.highUrgencyProcurement')}</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-end">
                                     <p className="text-sm font-black text-danger leading-none">{item.inventory_quantity || 0}</p>
                                     <p className="text-[8px] font-black text-zinc-muted uppercase mt-1">{t('inventory.remaining')}</p>
                                 </div>

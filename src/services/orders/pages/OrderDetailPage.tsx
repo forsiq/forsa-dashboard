@@ -16,7 +16,8 @@ export const OrderDetailPage = () => {
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
+  const isRTL = dir === 'rtl';
 
   useEffect(() => {
     setIsClient(true);
@@ -80,7 +81,7 @@ export const OrderDetailPage = () => {
             size="sm"
             onClick={() => router.push('/orders')}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
           </AmberButton>
           <div>
             <h1 className="text-2xl font-bold text-white">{order.orderNumber}</h1>
@@ -140,7 +141,7 @@ export const OrderDetailPage = () => {
                     <div className="text-sm text-zinc-400">SKU: {item.productSku}</div>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="text-white">{item.quantity} x {formatCurrency(item.unitPrice ?? 0)}</div>
                   <div className="text-sm font-medium text-white">{formatCurrency(item.totalPrice ?? 0)}</div>
                 </div>

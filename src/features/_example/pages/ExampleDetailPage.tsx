@@ -6,6 +6,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberCard } from '@core/components/AmberCard';
 import { ExampleItem } from '../types';
 import { useExampleCRUD } from '../hooks/useExampleCRUD';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 const statusConfig = {
   active: { label: 'Active', color: 'text-success bg-success/10 border-success/20' },
@@ -17,6 +18,7 @@ export const ExampleDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const { getOne, remove, isLoading } = useExampleCRUD();
+  const { isRTL } = useLanguage();
   const [item, setItem] = useState<ExampleItem | null>(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -58,7 +60,7 @@ export const ExampleDetailPage = () => {
         <div className="flex items-center gap-4">
           <Link href="/example">
             <AmberButton variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
             </AmberButton>
           </Link>
           <div>
@@ -73,12 +75,12 @@ export const ExampleDetailPage = () => {
         <div className="flex items-center gap-2">
           <Link href={`/example/${item.id}/edit`}>
             <AmberButton variant="outline">
-              <Edit className="w-4 h-4 mr-2" />
+              <Edit className="w-4 h-4 me-2" />
               Edit
             </AmberButton>
           </Link>
           <AmberButton variant="ghost" className="text-danger" onClick={handleDelete}>
-            <Trash2 className="w-4 h-4 mr-2" />
+            <Trash2 className="w-4 h-4 me-2" />
             Delete
           </AmberButton>
         </div>

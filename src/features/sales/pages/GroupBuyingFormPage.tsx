@@ -199,7 +199,7 @@ export const GroupBuyingFormPage: React.FC = () => {
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
           <p className="text-sm text-danger font-medium">{submitError}</p>
-          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+          <button onClick={() => setSubmitError(null)} className="ms-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -261,7 +261,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 <div className="space-y-7 relative pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
-                             <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 ${isRTL ? 'text-right block' : ''}`}>{t('groupBuying.form.asset_scan_label')}</label>
+                             <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.asset_scan_label')}</label>
                              <AmberDropdown 
                                 options={[
                                     { label: t('groupBuying.form.manual_asset_protocol'), value: '' },
@@ -273,10 +273,10 @@ export const GroupBuyingFormPage: React.FC = () => {
                                 value={String(formData.productId || '')}
                                 onChange={(val) => handleChange('productId', val)}
                              />
-                             {errors.productId && <p className={`text-[10px] text-danger font-black uppercase px-1 ${isRTL ? 'text-right' : ''}`}>{errors.productId}</p>}
+                             {errors.productId && <p className={`text-[10px] text-danger font-black uppercase px-1 text-start`}>{errors.productId}</p>}
                         </div>
                         <div className="space-y-3">
-                            <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 ${isRTL ? 'text-right block' : ''}`}>{t('groupBuying.form.tactical_division')}</label>
+                            <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.tactical_division')}</label>
                             <AmberDropdown 
                                 options={[
                                     { label: t('groupBuying.form.manual_select') || 'Select Category...', value: '' },

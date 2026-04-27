@@ -183,10 +183,7 @@ export function CustomersPage() {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Page Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
             {t('customer.title') || 'العملاء'}
@@ -308,7 +305,7 @@ export function CustomersPage() {
         <div className="relative flex-1 max-w-sm w-full group">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'left-4' : 'right-4'
+            isRTL ? 'start-4' : 'end-4'
           )} />
           <AmberInput
             placeholder={t('customer.search_placeholder') || 'البحث عن العملاء...'}
@@ -316,7 +313,7 @@ export function CustomersPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
               "bg-white/5 border-[var(--color-border)] shadow-sm h-14 focus:ring-[var(--color-brand)]/20 text-lg",
-              isRTL ? 'pl-4 pr-12' : 'pr-4 pl-12'
+              isRTL ? 'ps-4 pe-12' : 'pe-4 ps-12'
             )}
           />
         </div>

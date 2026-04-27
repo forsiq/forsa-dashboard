@@ -41,7 +41,7 @@ export const ExampleListPage = () => {
         </div>
         <Link href="/example/new">
           <AmberButton variant="primary">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 me-2" />
             Add New
           </AmberButton>
         </Link>

@@ -37,7 +37,7 @@ export const ServerErrorPage = () => {
           {t('error.500_subtitle')}
         </p>
 
-        <div className="max-w-md mx-auto bg-obsidian-panel border border-white/5 rounded-sm p-6 mb-8 text-left">
+        <div className="max-w-md mx-auto bg-obsidian-panel border border-white/5 rounded-sm p-6 mb-8 text-start">
            <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
               <Terminal className="w-4 h-4 text-zinc-muted" />
               <span className="text-[10px] font-mono text-zinc-muted">{t('error.diagnostic')}</span>

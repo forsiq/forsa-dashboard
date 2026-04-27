@@ -153,16 +153,13 @@ export function CustomerFormPage() {
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
           <p className="text-sm text-danger font-medium">{submitError}</p>
-          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+          <button onClick={() => setSubmitError(null)} className="ms-auto text-danger/60 hover:text-danger">
             <span className="text-lg">&times;</span>
           </button>
         </div>
       )}
       {/* Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="flex items-center gap-4">
           <AmberButton 
             variant="ghost" 
@@ -202,7 +199,7 @@ export function CustomerFormPage() {
               </span>
             ) : (
               <>
-                <Save className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+                <Save className={cn("w-4 h-4", "me-2")} />
                 {isEditMode ? t('common.save') || 'Commit' : t('common.create') || 'Deploy'}
               </>
             )}
@@ -235,7 +232,7 @@ export function CustomerFormPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className={cn("text-[10px] font-black text-zinc-muted uppercase tracking-widest block px-1", isRTL ? "text-right" : "text-left")}>
+                <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest block px-1 text-start">
                   {t('customer.type') || 'نوع العميل'}
                 </label>
                 <AmberDropdown 
@@ -336,7 +333,7 @@ export function CustomerFormPage() {
 
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className={cn("text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block", isRTL ? "text-right" : "text-left")}>
+                <label className="text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block text-start">
                    {t('common.status') || 'Operational Status'}
                 </label>
                 <div className="grid grid-cols-2 gap-3">

@@ -62,8 +62,7 @@ export const SettingsPage = () => {
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-2 duration-700" dir={dir}>
       {/* Page Header */}
       <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
+        "flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start"
       )}>
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
@@ -87,7 +86,7 @@ export const SettingsPage = () => {
               </span>
             ) : (
               <>
-                <Save className={cn("w-4 h-4 text-black", isRTL ? "ml-2" : "mr-2")} />
+                <Save className={cn("w-4 h-4 text-black me-2")} />
                 <span className="text-black">{t('settings.save')}</span>
               </>
             )}
@@ -98,7 +97,7 @@ export const SettingsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Tab Sidebar */}
         <div className="lg:col-span-1 space-y-4">
-          <Card className={cn("p-2 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm", isRTL ? "text-right" : "text-left")}>
+          <Card className={cn("p-2 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm text-start")}>
             <nav className="space-y-1.5 font-cairo">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -125,7 +124,7 @@ export const SettingsPage = () => {
 
           {/* Help Card */}
           <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden group rounded-2xl shadow-sm">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-[var(--color-brand)]/20 transition-colors" />
+            <div className="absolute top-0 end-0 w-24 h-24 bg-[var(--color-brand)]/10 rounded-full blur-2xl -me-12 -mt-12 group-hover:bg-[var(--color-brand)]/20 transition-colors" />
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-[var(--color-brand)]/10 rounded-lg">
                 <Info className="w-5 h-5 text-[var(--color-brand)]" />
@@ -144,7 +143,7 @@ export const SettingsPage = () => {
         {/* Tab Content */}
         <div className="lg:col-span-3 space-y-6">
           {activeTab === 'general' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
               <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
                   {t('settings.instance_identity')}
@@ -153,7 +152,7 @@ export const SettingsPage = () => {
                   <AmberInput label={t('settings.domain_display_name')} defaultValue="ZoneVast Neural Base" />
                   <AmberInput label={t('settings.technical_contact_email')} defaultValue="admin@zonevast.systems" />
                   <div className="space-y-2">
-                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
+                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block text-start")}>
                       {t('settings.regional_locale')}
                     </label>
                     <AmberDropdown
@@ -167,7 +166,7 @@ export const SettingsPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
+                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block text-start")}>
                       {t('settings.base_currency_unit')}
                     </label>
                     <AmberDropdown
@@ -219,7 +218,7 @@ export const SettingsPage = () => {
           )}
 
           {activeTab === 'auction' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
                   {t('settings.engine_calibration')}
@@ -229,7 +228,7 @@ export const SettingsPage = () => {
                   <AmberInput label={t('settings.anti_sniper_buffer')} type="number" defaultValue="30" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
                   <AmberInput label={t('settings.bid_cooldown_period')} type="number" defaultValue="5" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
                   <div className="space-y-2">
-                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
+                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block text-start")}>
                       {t('settings.verification_requirement')}
                     </label>
                     <AmberDropdown
@@ -266,14 +265,14 @@ export const SettingsPage = () => {
           )}
 
           {activeTab === 'payments' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
                   {t('settings.financial_bridge')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
+                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block text-start")}>
                       {t('settings.active_gateway_profile')}
                     </label>
                     <AmberDropdown
@@ -311,14 +310,14 @@ export const SettingsPage = () => {
           )}
 
           {activeTab === 'shipping' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
                <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-visible">
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
                   {t('settings.logistics_routing')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-2">
-                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block", isRTL ? "text-right" : "text-left")}>
+                    <label className={cn("text-xs font-bold text-zinc-secondary uppercase tracking-wider block text-start")}>
                       {t('settings.primary_fulfilment_node')}
                     </label>
                     <AmberDropdown
@@ -348,7 +347,7 @@ export const SettingsPage = () => {
         <div 
           className={cn(
             "fixed bottom-8 flex items-center gap-3 px-6 py-4 bg-brand text-slate-900 rounded-lg shadow-2xl shadow-brand/30 animate-in slide-in-from-bottom-10 h-auto z-[200] font-black uppercase tracking-widest text-xs",
-            isRTL ? "left-8" : "right-8"
+            "end-8"
           )}
         >
           <div className="bg-white/20 p-1.5 rounded-full ring-4 ring-white/5">

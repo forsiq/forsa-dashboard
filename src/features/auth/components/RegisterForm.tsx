@@ -145,14 +145,14 @@ export const RegisterForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 mr-2 text-zinc-muted/60 hover:text-brand transition-colors outline-none"
+                  className="p-2 me-2 text-zinc-muted/60 hover:text-brand transition-colors outline-none"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               }
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              error={formData.password !== formData.confirmPassword && formData.confirmPassword ? 'Passwords do not match' : ''}
+              error={formData.password !== formData.confirmPassword && formData.confirmPassword ? t('auth.register.password_mismatch_inline') : ''}
               required
             />
           </div>

@@ -211,11 +211,8 @@ export function CategoriesPage() {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        dir === 'rtl' ? 'text-right' : 'text-left'
-      )}>
-        <div className={cn("space-y-1", dir === 'rtl' ? 'text-right' : 'text-left')}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
+        <div className="space-y-1 text-start">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
             {t('category.title') || 'الفئات'}
           </h1>
@@ -303,7 +300,7 @@ export function CategoriesPage() {
         <div className="relative flex-1 max-w-sm w-full">
           <Search className={cn(
             'absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted',
-            dir === 'rtl' ? 'left-3' : 'right-3'
+            dir === 'rtl' ? 'start-3' : 'end-3'
           )} />
           <AmberInput
             placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
@@ -311,7 +308,7 @@ export function CategoriesPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
               "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              dir === 'rtl' ? 'pl-10 pr-4 text-right' : 'pr-10 pl-4 text-left'
+              dir === 'rtl' ? 'ps-10 pe-4 text-end' : 'pe-10 ps-4 text-start'
             )}
           />
         </div>

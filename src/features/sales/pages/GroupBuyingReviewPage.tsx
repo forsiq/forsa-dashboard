@@ -82,8 +82,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
         <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
             {/* Mission Critical Header */}
             <div className={cn(
-                "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-                isRTL ? "text-right" : "text-left"
+                "flex flex-col lg:flex-row lg:items-start justify-between gap-6 text-start"
             )}>
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
@@ -121,11 +120,11 @@ export const GroupBuyingReviewPage: React.FC = () => {
                 <div className="relative flex-1 max-w-lg group">
                     <Search className={cn(
                         "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                        isRTL ? 'right-4' : 'left-4'
+                        'start-4'
                     )} />
-                    <AmberInput 
-                        placeholder={t('sales.searchCampaigns')} 
-                        className="h-12 bg-obsidian-card border-border pl-11 pr-4 text-xs font-black shadow-inner"
+                    <AmberInput
+                        placeholder={t('sales.searchCampaigns')}
+                        className="h-12 bg-obsidian-card border-border ps-11 pe-4 text-xs font-black shadow-inner"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -240,7 +239,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                             )}
                                             onClick={() => isUnlocked && router.push(`/group-buying/${campaign.id}`)}
                                         >
-                                            {isUnlocked ? <Send className="w-4 h-4 mr-2" /> : <AlertCircle className="w-4 h-4 mr-2" />}
+                                            {isUnlocked ? <Send className="w-4 h-4 me-2" /> : <AlertCircle className="w-4 h-4 me-2" />}
                                             {isUnlocked ? t('sales.finalizeDeal') : t('sales.pendingStabilization')}
                                         </AmberButton>
                                         <AmberButton 

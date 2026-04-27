@@ -156,7 +156,7 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({
             onClick={() => router.push('/example')}
             disabled={isLoading}
           >
-            <X className="w-4 h-4 mr-2" />
+            <X className="w-4 h-4 me-2" />
             Cancel
           </AmberButton>
           <AmberButton
@@ -164,7 +164,7 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({
             variant="primary"
             disabled={isLoading}
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-4 h-4 me-2" />
             {isLoading ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
           </AmberButton>
         </div>

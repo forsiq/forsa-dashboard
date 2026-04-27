@@ -122,7 +122,7 @@ export function CompactCategoriesStats({ stats, isLoading }: CompactCategoriesSt
         { label: t('status.inactive') || 'Inactive', value: stats.inactive },
         { label: t('category.subcategories') || 'Subcategories', value: stats.withParent },
       ].map((stat) => (
-        <div key={stat.label} className="text-left p-4 border border-white/5 rounded-xl bg-obsidian-card hover:border-white/10 transition-all">
+        <div key={stat.label} className="text-start p-4 border border-white/5 rounded-xl bg-obsidian-card hover:border-white/10 transition-all">
           <p className="text-[10px] text-zinc-muted font-black uppercase tracking-widest h-4">
             {stat.label}
           </p>

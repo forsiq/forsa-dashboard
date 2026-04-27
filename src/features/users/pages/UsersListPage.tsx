@@ -292,7 +292,7 @@ export function UsersListPage() {
         <div className="relative flex-1 max-w-sm w-full">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted",
-            dir === 'rtl' ? 'left-3' : 'right-3'
+            'end-3'
           )} />
           <AmberInput
             placeholder={t('user.search_placeholder')}
@@ -300,7 +300,7 @@ export function UsersListPage() {
             onChange={(e) => setSearchInput(e.target.value)}
             className={cn(
               "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              dir === 'rtl' ? 'pl-10 pr-4 text-right' : 'pr-10 pl-4 text-left'
+              "ps-4 pe-10 text-start"
             )}
           />
         </div>

@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">
-      INITIALIZING SYSTEM...
+      ...
     </div>
   );
 }

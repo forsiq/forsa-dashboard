@@ -217,11 +217,8 @@ export const InventoryPage = () => {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Page Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
-        <div className={cn("space-y-1", isRTL ? "text-right" : "text-left")}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
+        <div className="space-y-1 text-start">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
             {t('inventory.overview')}
           </h1>
@@ -255,10 +252,7 @@ export const InventoryPage = () => {
       />
 
       {/* Filters & Search Row */}
-      <div className={cn(
-        "flex flex-col md:flex-row items-center gap-4 pt-2",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col md:flex-row items-center gap-4 pt-2 text-start">
         <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
           <button
             onClick={() => setStatusFilter('all')}
@@ -298,7 +292,7 @@ export const InventoryPage = () => {
         <div className="relative flex-1 max-w-sm w-full group">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'left-4' : 'right-4'
+            isRTL ? 'start-4' : 'end-4'
           )} />
           <AmberInput
             placeholder={t('inventory.search') || 'Search inventory...'}
@@ -306,7 +300,7 @@ export const InventoryPage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
               "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              isRTL ? 'pl-4 pr-10' : 'pr-4 pl-10'
+              isRTL ? 'ps-4 pe-10' : 'pe-4 ps-10'
             )}
           />
         </div>
@@ -339,7 +333,7 @@ export const InventoryPage = () => {
         <div className="space-y-6">
           {/* Real-time Alerts */}
           <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden rounded-2xl shadow-sm">
-            <div className={cn("absolute top-0 bottom-0 w-1 bg-[var(--color-danger)]", isRTL ? "right-0" : "left-0")} />
+            <div className={cn("absolute top-0 bottom-0 w-1 bg-[var(--color-danger)]", isRTL ? "end-0" : "start-0")} />
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-[var(--color-danger)] animate-pulse" /> {t('inventory.alerts')}
@@ -354,13 +348,13 @@ export const InventoryPage = () => {
                 lowStockAlerts.map((alert, i) => (
                   <div key={i} className="group p-4 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
                     <div className="flex items-center justify-between mb-2">
-                       <p className="text-xs font-bold text-zinc-text uppercase tracking-tight truncate pr-4">
+                       <p className="text-xs font-bold text-zinc-text uppercase tracking-tight truncate pe-4">
                         {alert.name}
                       </p>
                       <StatusBadge status="LOW" variant="warning" size="sm" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex-1 pr-4">
+                      <div className="flex-1 pe-4">
                         <div className="h-1.5 bg-obsidian-outer rounded-full overflow-hidden mb-2">
                           <div className="h-full bg-[var(--color-danger)]" style={{ width: `${(alert.stock / 5) * 100}%` }} />
                         </div>
@@ -440,7 +434,7 @@ export const InventoryPage = () => {
               </label>
             </div>
             <div className="relative group">
-              <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand", isRTL ? 'right-3' : 'left-3')} />
+              <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand", isRTL ? 'end-3' : 'start-3')} />
               <input
                 type="text"
                 value={searchQuery}
@@ -448,7 +442,7 @@ export const InventoryPage = () => {
                 placeholder={t('inventory.search')}
                 className={cn(
                   "w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40",
-                  isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'
+                  isRTL ? 'pe-10 ps-4' : 'ps-10 pe-4'
                 )}
               />
             </div>

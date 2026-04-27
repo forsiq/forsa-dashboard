@@ -25,7 +25,7 @@ export function CustomerInsightsPage() {
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      <div className={cn('space-y-1', isRTL ? 'text-right' : 'text-left')}>
+      <div className="space-y-1 text-start">
         <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
           {t('report.customer_insights')}
         </h1>

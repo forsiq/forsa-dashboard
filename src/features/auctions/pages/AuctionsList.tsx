@@ -252,8 +252,7 @@ export const AuctionsList: React.FC = () => {
         <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
             {/* Page Title */}
             <div className={cn(
-                "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-                isRTL ? "text-right" : "text-left"
+                "flex flex-col lg:flex-row lg:items-start justify-between gap-6 text-start"
             )}>
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
@@ -331,13 +330,13 @@ export const AuctionsList: React.FC = () => {
                     <div className="relative group min-w-[320px]">
                         <Search className={cn(
                             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                            isRTL ? 'right-4' : 'left-4'
+                            'start-4'
                         )} />
                         <AmberInput
                             placeholder={t('auction.listings.search')}
                             className={cn(
                                 "h-11 bg-obsidian-card border-border text-xs font-bold",
-                                isRTL ? "pr-11 pl-4 text-right" : "pl-11 pr-4 text-left"
+                                "ps-11 pe-4 text-start"
                             )}
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}

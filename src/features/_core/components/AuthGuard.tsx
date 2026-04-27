@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useFeatureConfig } from '../hooks/useFeatureConfig';
 import { useProject } from '@core/contexts';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { clearAuthCookies, getCookieOptions } from '@core/lib/utils/cookieStorage';
 import { startProactiveTokenRefresh, stopProactiveTokenRefresh } from '@core/services/ApiClientFactory';
 import axios from 'axios';
@@ -75,6 +76,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const router = useRouter();
   const { isFeatureEnabled } = useFeatureConfig();
   const { isAuthenticated: isProjectSelected, isLoading: projectLoading } = useProject();
+  const { t } = useLanguage();
   const [authState, setAuthState] = useState<AuthState>('checking');
   const [isMounted, setIsMounted] = useState(false);
   const [hasRedirectedToLogin, setHasRedirectedToLogin] = useState(false);
@@ -201,7 +203,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   if (authState === 'checking') {
     return (
       <div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">
-        AUTHENTICATING...
+        {t('auth_guard.authenticating')}
       </div>
     );
   }
@@ -210,7 +212,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   if (authState === 'none') {
     return (
       <div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">
-        AUTHENTICATING...
+        {t('auth_guard.authenticating')}
       </div>
     );
   }
@@ -227,7 +229,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     }
     return (
       <div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">
-        SESSION EXPIRED...
+        {t('auth_guard.session_expired')}
       </div>
     );
   }

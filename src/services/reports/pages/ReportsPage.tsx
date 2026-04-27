@@ -59,10 +59,7 @@ export function ReportsPage() {
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
             {t('report.title') || 'التقارير'}

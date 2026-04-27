@@ -42,11 +42,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
            <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
-             {t('dash.sales_trend') || 'Sales Trend (30 Days)'}
+             {t('dash.sales_trend')}
            </h3>
            {hasSalesData && (
              <span className="text-[10px] font-semibold text-zinc-muted">
-               {salesData.length > 0 && `${salesData.filter((d: any) => d.orders > 0).length} ${t('dash.active_days') || 'active days'}`}
+               {salesData.length > 0 && `${salesData.filter((d: any) => d.orders > 0).length} ${t('dash.active_days')}`}
              </span>
            )}
         </div>
@@ -86,8 +86,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                     fontWeight: 'bold'
                   }}
                   formatter={(value: number, name: string) => {
-                    if (name === 'revenue') return [formatCurrency(value), t('dash.revenue') || 'Revenue'];
-                    return [value, t('dash.orders') || 'Orders'];
+                    if (name === 'revenue') return [formatCurrency(value), t('dash.revenue')];
+                    return [value, t('dash.orders')];
                   }}
                 />
                 <Area 
@@ -105,8 +105,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
           ) : (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-2">
-                <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_sales_data') || 'No sales data yet'}</p>
-                <p className="text-[10px] text-zinc-muted/50">{t('dash.sales_data_hint') || 'Sales data will appear here when orders are placed'}</p>
+                <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_sales_data')}</p>
+                <p className="text-[10px] text-zinc-muted/50">{t('dash.sales_data_hint')}</p>
               </div>
             </div>
           )}
@@ -117,7 +117,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
            <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
-             {t('dash.category_distribution') || 'Top Categories'}
+             {t('dash.category_distribution')}
            </h3>
         </div>
         <div className="flex-1 w-full flex items-center">
@@ -148,7 +148,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                         fontSize: '12px',
                         fontWeight: 'bold'
                       }}
-                      formatter={(value: number) => [value, t('dash.products') || 'Products']}
+                      formatter={(value: number) => [value, t('dash.products')]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -166,8 +166,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center space-y-2">
-                <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_category_data') || 'No category data'}</p>
-                <p className="text-[10px] text-zinc-muted/50">{t('dash.category_data_hint') || 'Add products to categories to see distribution'}</p>
+                <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_category_data')}</p>
+                <p className="text-[10px] text-zinc-muted/50">{t('dash.category_data_hint')}</p>
               </div>
             </div>
           )}

@@ -52,7 +52,7 @@ export const groupBuyingListConfig: ListConfig = {
       render: (row: any) => {
         const discount = calculateDiscount(row.originalPrice, row.dealPrice);
         return (
-          <div className="text-right">
+          <div className="text-end">
             <div className="text-sm text-zinc-500 line-through">{formatCurrency(row.originalPrice)}</div>
             <div className="font-semibold text-green-400">{formatCurrency(row.dealPrice)}</div>
             <div className="text-xs text-zinc-500">

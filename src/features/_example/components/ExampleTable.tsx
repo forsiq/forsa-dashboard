@@ -78,7 +78,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
     return (
       <AmberCard className="flex items-center justify-center py-24">
         <Loader2 className="w-8 h-8 animate-spin text-brand" />
-        <span className="ml-3 text-sm text-zinc-muted font-bold uppercase tracking-widest">{t('common.loading')}</span>
+        <span className="ms-3 text-sm text-zinc-muted font-bold uppercase tracking-widest">{t('common.loading')}</span>
       </AmberCard>
     );
   }
@@ -111,7 +111,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
         "fixed bottom-8 left-1/2 -translate-x-1/2 bg-obsidian-panel border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-full px-6 py-3 flex items-center gap-6 z-[100] transition-all duration-500",
         selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
       )}>
-        <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest border-r border-white/10 pr-6">
+        <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest border-e border-white/10 pe-6">
           {selectedIds.size} {t('portal.selected')}
         </span>
         <div className="flex items-center gap-3">
@@ -122,14 +122,14 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
-        <button onClick={() => setSelectedIds(new Set())} className="ml-2 p-1.5 bg-white/10 rounded-full text-zinc-muted hover:bg-white/20 transition-colors">
+        <button onClick={() => setSelectedIds(new Set())} className="ms-2 p-1.5 bg-white/10 rounded-full text-zinc-muted hover:bg-white/20 transition-colors">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       <AmberCard noPadding className="overflow-hidden border-white/5 shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left" dir={dir}>
+          <table className="w-full text-start" dir={dir}>
             <thead className="bg-obsidian-outer/40 border-b border-white/5">
               <tr>
                 <th className="w-12 px-6 py-5 text-center">
@@ -142,7 +142,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
                 <th className="px-6 py-5 text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">{t('rec.table.module')}</th>
                 <th className="px-6 py-5 text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">{t('common.status')}</th>
                 <th className="px-6 py-5 text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">{t('common.date')}</th>
-                <th className="px-6 py-5 text-right text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">{t('common.actions')}</th>
+                <th className="px-6 py-5 text-end text-xs font-black text-zinc-muted uppercase tracking-[0.2em]">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
@@ -194,7 +194,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
                       <td className="px-6 py-4 text-xs text-zinc-muted font-bold font-mono tracking-tighter">
                         {new Date(item.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-end">
                         <div className="flex justify-end gap-1 px-1">
                           <Link
                             href={`/example/${item.id}`}
@@ -220,7 +220,7 @@ export const ExampleTable: React.FC<ExampleTableProps> = ({
                       !isExpanded && "hidden"
                     )}>
                       <td colSpan={7} className="px-6 py-0 pb-6 bg-white/[0.01]">
-                        <div className="ml-20 mr-6 p-6 border border-dashed border-zinc-secondary/20 rounded-2xl bg-obsidian-card shadow-inner space-y-4">
+                        <div className="ms-20 me-6 p-6 border border-dashed border-zinc-secondary/20 rounded-2xl bg-obsidian-card shadow-inner space-y-4">
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div className="space-y-2">
                                  <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.3em] font-black">{t('form.resource_desc')}</h4>

@@ -5,7 +5,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const NetworkErrorPage = () => {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -28,11 +28,11 @@ export const NetworkErrorPage = () => {
           {t('error.network_desc')}
         </p>
 
-        <div className="p-4 bg-warning/5 border border-warning/10 rounded-sm mb-8 text-left flex gap-4">
+        <div className="p-4 bg-warning/5 border border-warning/10 rounded-sm mb-8 text-start flex gap-4">
            <div className="w-1 h-full bg-warning/50 rounded-full" />
            <div>
               <p className="text-[10px] font-black text-warning uppercase tracking-widest mb-1">{t('error.diagnostic_advice')}</p>
-              <ul className="text-[10px] text-zinc-muted space-y-1 list-disc pl-3">
+              <ul className="text-[10px] text-zinc-muted space-y-1 list-disc ps-3">
                  <li>{t('error.check_network')}</li>
                  <li>{t('error.check_vpn')}</li>
                  <li>{t('error.server_maintenance')}</li>
@@ -45,7 +45,7 @@ export const NetworkErrorPage = () => {
              onClick={() => router.back()}
              className="px-4 py-3 bg-transparent border border-white/10 text-zinc-text rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2"
            >
-             <ArrowLeft className="w-3.5 h-3.5" /> {t('error.go_back')}
+             <ArrowLeft className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''}`} /> {t('error.go_back')}
            </button>
            <button
              onClick={() => window.location.reload()}

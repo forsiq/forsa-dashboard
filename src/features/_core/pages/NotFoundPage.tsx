@@ -6,7 +6,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const NotFoundPage = () => {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export const NotFoundPage = () => {
           onClick={() => router.back()}
           className="flex items-center justify-center gap-2 p-4 bg-obsidian-panel border border-white/10 rounded-sm hover:border-brand/30 hover:bg-white/5 transition-all group"
         >
-           <ArrowLeft className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
+           <ArrowLeft className={`w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors ${isRTL ? 'rotate-180' : ''}`} />
            <span className="text-[10px] font-black text-zinc-text uppercase tracking-widest">{t('error.go_back')}</span>
         </button>
 

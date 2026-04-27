@@ -194,8 +194,7 @@ export const ModerationHubPage = () => {
 
       {/* Filters */}
       <div className={cn(
-        "flex flex-col md:flex-row items-center gap-4",
-        isRTL ? "text-right" : "text-left"
+        "flex flex-col md:flex-row items-center gap-4 text-start"
       )}>
         {/* Status Filter */}
         <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
@@ -225,7 +224,7 @@ export const ModerationHubPage = () => {
         <div className="relative flex-1 max-w-sm w-full group">
           <Search className={cn(
             "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'left-4' : 'right-4'
+            'end-4'
           )} />
           <input
             type="text"
@@ -234,7 +233,7 @@ export const ModerationHubPage = () => {
             placeholder={t('moderation.filter.bidder_placeholder')}
             className={cn(
               "w-full bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20",
-              isRTL ? 'pl-4 pr-10 text-right' : 'pr-4 pl-10 text-left'
+              'ps-4 pe-10 text-start'
             )}
           />
         </div>

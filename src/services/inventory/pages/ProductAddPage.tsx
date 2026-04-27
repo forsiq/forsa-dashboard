@@ -136,16 +136,13 @@ export const ProductAddPage = () => {
         <div className="bg-info/10 border border-info/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-info shrink-0" />
           <p className="text-sm text-info font-medium">{t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.'}</p>
-          <button onClick={() => setComingSoonShown(false)} className="ml-auto text-info/60 hover:text-info">
+          <button onClick={() => setComingSoonShown(false)} className="ms-auto text-info/60 hover:text-info">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
       {/* Header */}
-      <div className={cn(
-        "flex flex-col sm:flex-row sm:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="flex items-center gap-4">
           <AmberButton 
             variant="ghost" 
@@ -185,7 +182,7 @@ export const ProductAddPage = () => {
               </span>
             ) : (
               <>
-                <Save className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+                <Save className={cn("w-4 h-4", "me-2")} />
                 {isEditMode ? t('common.save') : t('common.create')}
               </>
             )}

@@ -129,7 +129,7 @@ export function CategoryDetailPage() {
           </AmberButton>
           <Link href={`/categories/${category.id}/edit`}>
             <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all">
-              <Edit className="w-4 h-4 mr-2" />
+              <Edit className="w-4 h-4 me-2" />
               {t('common.edit') || 'Edit'}
             </AmberButton>
           </Link>
@@ -148,7 +148,7 @@ export function CategoryDetailPage() {
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
                 {t('category.details') || 'Category Details'}
               </h3>
-              <div className="ml-auto">
+              <div className="ms-auto">
                 <StatusBadge
                   status={
                     category.isActive
@@ -200,7 +200,7 @@ export function CategoryDetailPage() {
                       {t('category.description') || 'Description'}
                     </span>
                   </div>
-                  <span className="text-xs font-bold text-zinc-text tracking-tight max-w-[60%] text-right">
+                  <span className="text-xs font-bold text-zinc-text tracking-tight max-w-[60%] text-end">
                     {category.description}
                   </span>
                 </div>

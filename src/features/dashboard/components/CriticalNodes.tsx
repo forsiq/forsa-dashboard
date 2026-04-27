@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Clock, ArrowUp, Square, AlertTriangle } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { useCriticalAuctions, useExtendAuction, useEndAuction } from '../../auctions/api/auction-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 
-function formatTimeRemaining(endTime: string): string {
+function formatTimeRemaining(endTime: string, t: (key: string) => string): string {
   const now = Date.now();
   const end = new Date(endTime).getTime();
   const diff = end - now;
 
-  if (diff <= 0) return 'Ended';
+  if (diff <= 0) return t('critical.ended');
 
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -22,6 +23,7 @@ function formatTimeRemaining(endTime: string): string {
 }
 
 export const CriticalNodes: React.FC = () => {
+  const { t } = useLanguage();
   const { data: auctions, isLoading } = useCriticalAuctions();
   const extendAuction = useExtendAuction();
   const endAuction = useEndAuction();
@@ -35,7 +37,7 @@ export const CriticalNodes: React.FC = () => {
         <div className="flex items-center gap-2 mb-4 border-s-2 border-warning ps-3">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
-            Critical Nodes
+            {t('critical.title')}
           </h3>
         </div>
         <div className="flex items-center justify-center h-20">
@@ -51,15 +53,15 @@ export const CriticalNodes: React.FC = () => {
         <div className="flex items-center gap-2 mb-4 border-s-2 border-success ps-3">
           <Clock className="w-3.5 h-3.5 text-success" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
-            Critical Nodes
+            {t('critical.title')}
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <p className="text-sm text-zinc-muted/50 font-bold">
-            No critical auctions
+            {t('critical.empty')}
           </p>
           <p className="text-[10px] text-zinc-muted/30 uppercase tracking-widest mt-1">
-            All auctions have more than 60 minutes remaining
+            {t('critical.all_safe')}
           </p>
         </div>
       </AmberCard>
@@ -72,11 +74,11 @@ export const CriticalNodes: React.FC = () => {
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
-            Critical Nodes
+            {t('critical.title')}
           </h3>
         </div>
         <span className="text-[10px] text-warning font-mono uppercase tracking-widest">
-          {criticalAuctions.length} ending soon
+          {criticalAuctions.length} {t('critical.ending_soon')}
         </span>
       </div>
 
@@ -91,18 +93,18 @@ export const CriticalNodes: React.FC = () => {
             endTime={auction.endTime}
             onExtend={() => {
               openConfirm({
-                title: 'Extend Auction',
-                message: `Extend "${auction.title}" by 15 minutes?`,
-                confirmText: 'Extend 15m',
+                title: t('critical.extend_title'),
+                message: t('critical.extend_message', { title: auction.title }),
+                confirmText: t('critical.extend_button'),
                 variant: 'warning',
                 onConfirm: () => extendAuction.mutate({ id: auction.id, minutes: 15 }),
               });
             }}
             onEnd={() => {
               openConfirm({
-                title: 'End Auction',
-                message: `End "${auction.title}" now? This cannot be undone.`,
-                confirmText: 'End Now',
+                title: t('critical.end_title'),
+                message: t('critical.end_message', { title: auction.title }),
+                confirmText: t('critical.end_now'),
                 variant: 'danger',
                 onConfirm: () => endAuction.mutate(auction.id),
               });
@@ -134,14 +136,15 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
   onExtend,
   onEnd,
 }) => {
-  const [timeStr, setTimeStr] = useState(formatTimeRemaining(endTime));
+  const { t } = useLanguage();
+  const [timeStr, setTimeStr] = useState(formatTimeRemaining(endTime, t));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeStr(formatTimeRemaining(endTime));
+      setTimeStr(formatTimeRemaining(endTime, t));
     }, 1000);
     return () => clearInterval(interval);
-  }, [endTime]);
+  }, [endTime, t]);
 
   const diff = new Date(endTime).getTime() - Date.now();
   const minutesLeft = diff / (1000 * 60);
@@ -174,7 +177,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
               {Number(currentBid || 0).toLocaleString()} IQD
             </span>
             <span className="text-[10px] text-zinc-muted font-mono">
-              {totalBids} bids
+              {totalBids} {t('critical.bids')}
             </span>
           </div>
         </div>
@@ -202,7 +205,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
               className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
             >
               <Square className="w-2.5 h-2.5" />
-              End
+              {t('critical.end')}
             </button>
           </div>
         </div>

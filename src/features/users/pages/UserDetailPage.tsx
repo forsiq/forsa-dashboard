@@ -118,7 +118,7 @@ export function UserDetailPage() {
                 </div>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getRoleBadgeColor(user.role)}`}>
-                <Shield className="inline h-4 w-4 mr-1 text-zinc-400" />
+                <Shield className="inline h-4 w-4 me-1 text-zinc-400" />
                 {t(`user.role.${user.role}`)}
               </span>
             </div>

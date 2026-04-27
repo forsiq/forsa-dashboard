@@ -86,7 +86,7 @@ function formatTimeAgo(timestamp: string, t: (key: string) => string): string {
 }
 
 function maskBidderId(id?: string): string {
-  if (!id) return 'Anonymous';
+  if (!id) return '';
   if (id.length <= 8) return id;
   return `${id.slice(0, 4)}...${id.slice(-4)}`;
 }
@@ -226,9 +226,13 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
                         {t('live.from')} {event.previousBid.toLocaleString()}
                       </span>
                     )}
-                    {event.bidderId && (
+                    {event.bidderId ? (
                       <span className="text-[10px] text-zinc-muted/60 font-mono">
                         {t('live.by')} {maskBidderId(event.bidderId)}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-zinc-muted/60 font-mono">
+                        {t('bid_ticker.anonymous')}
                       </span>
                     )}
                     {event.minutesLeft !== undefined && (
