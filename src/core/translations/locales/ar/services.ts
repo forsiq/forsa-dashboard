@@ -24,6 +24,8 @@ export const services = {
   "service.users.description": "إدارة المستخدمين (خدمة المصادقة)",
   "service.projects.name": "المشاريع",
   "service.projects.description": "إدارة المشاريع",
+  "service.deploy-track.name": "تتبع النشر",
+  "service.deploy-track.description": "تتبع النشر والمراقبة",
   "Developer Platform Dashboard": "لوحة تحكم منصة المطورين",
   "Per-Project Auth Configuration": "إعدادات المصادقة لكل مشروع",
   "User Management (Auth Service)": "إدارة المستخدمين (خدمة المصادقة)",

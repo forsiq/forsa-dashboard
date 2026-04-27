@@ -68,4 +68,6 @@ export const sidebar = {
   "sidebar.live_monitor": "المراقبة المباشرة",
   "sidebar.settlements": "التسويات",
   "sidebar.moderation": "الإشراف",
+  "sidebar.flex_auth": "Flex Auth",
+  "sidebar.activity": "النشاط",
 } as const;

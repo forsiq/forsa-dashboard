@@ -31,4 +31,7 @@ export const projects = {
   "proj.desc_placeholder": "Briefly describe the project goals...",
   "proj.team_assignment": "Team Assignment",
   "proj.team_help": "You can assign team members and configure roles after the project shell is created.",
+  "project.add": "Add Project",
+  "project.stats.total": "Total Projects",
+  "project.stats.active": "Active Projects",
 } as const;

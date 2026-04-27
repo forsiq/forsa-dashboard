@@ -24,6 +24,8 @@ export const services = {
   "service.users.description": "User Management (Auth Service)",
   "service.projects.name": "Projects",
   "service.projects.description": "Project Management",
+  "service.deploy-track.name": "DeployTrack",
+  "service.deploy-track.description": "Deployment Tracking & Monitoring",
   "Developer Platform Dashboard": "Developer Platform Dashboard",
   "Per-Project Auth Configuration": "Per-Project Auth Configuration",
   "User Management (Auth Service)": "User Management (Auth Service)",

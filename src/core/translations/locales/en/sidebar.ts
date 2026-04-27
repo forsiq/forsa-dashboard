@@ -70,4 +70,6 @@ export const sidebar = {
   "sidebar.live_monitor": "Live Monitor",
   "sidebar.settlements": "Settlements",
   "sidebar.moderation": "Moderation",
+  "sidebar.flex_auth": "Flex Auth",
+  "sidebar.activity": "Activity",
 } as const;

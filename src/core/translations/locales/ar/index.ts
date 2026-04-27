@@ -32,6 +32,7 @@ import { support } from './support';
 import { billingPortal } from './billingPortal';
 import { settingsPortal } from './settingsPortal';
 import { profilePortal } from './profilePortal';
+import { deployTrack } from './deployTrack';
 
 export const ar = {
   ...common,
@@ -67,4 +68,5 @@ export const ar = {
   ...billingPortal,
   ...settingsPortal,
   ...profilePortal,
+  ...deployTrack,
 } as const;
