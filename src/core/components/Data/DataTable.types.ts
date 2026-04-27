@@ -13,6 +13,7 @@ export interface Column<T = any> {
   cardSubtitle?: boolean;
   cardMedia?: boolean;
   cardBadge?: boolean;
+  textDirection?: 'ltr' | 'rtl';
 }
 
 export interface Action<T = any> {

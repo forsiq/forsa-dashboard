@@ -27,7 +27,7 @@ import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
-import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
+import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';

@@ -12,7 +12,7 @@ import { AmberLogo } from '../components/AmberLogo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNavigation } from '../contexts/NavigationContext';
 import { cn } from '../lib/utils/cn';
-import { getEnabledServices, resolveServiceIcon } from '../../config/services';
+import { getEnabledServices, resolveServiceIcon } from '@config/services';
 
 export const PortalPage: React.FC = () => {
   const { t, dir } = useLanguage();

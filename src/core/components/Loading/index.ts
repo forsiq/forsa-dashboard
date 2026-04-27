@@ -31,3 +31,5 @@ export {
   SettingsFormSkeleton,
   LoginFormSkeleton,
 } from './AmberFormSkeleton';
+
+export { ErrorState } from './ErrorState';

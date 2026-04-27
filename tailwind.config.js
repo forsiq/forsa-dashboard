@@ -124,6 +124,9 @@ module.exports = {
       },
       animation: {
         'fade-up': 'fade-up 300ms ease-out forwards',
+        'fade-in-down': 'fade-in-down 500ms ease-out forwards',
+        'slow-zoom': 'slow-zoom 20s ease-in-out infinite alternate',
+        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
       },
       keyframes: {
         'fade-up': {
@@ -134,6 +137,32 @@ module.exports = {
           'to': {
             opacity: '1',
             transform: 'translateY(0)',
+          },
+        },
+        'fade-in-down': {
+          'from': {
+            opacity: '0',
+            transform: 'translateY(-8px)',
+          },
+          'to': {
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
+        'slow-zoom': {
+          'from': {
+            transform: 'scale(1.05)',
+          },
+          'to': {
+            transform: 'scale(1.15)',
+          },
+        },
+        'pulse-slow': {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '0.6',
           },
         },
       },

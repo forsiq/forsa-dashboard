@@ -4,3 +4,5 @@ export type { UseFileUploadOptions, UseFileUploadReturn, UploadState } from './u
 export { useErrorHandler } from './useErrorHandler';
 
 export { useDebounce } from './useDebounce';
+
+export { useClickOutside } from './useClickOutside';

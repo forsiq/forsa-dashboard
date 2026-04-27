@@ -26,6 +26,12 @@ import { misc } from './misc';
 import { ui } from './ui';
 import { groupBuying } from './groupBuying';
 import { sales } from './sales';
+import { flexAuth } from './flexAuth';
+import { help } from './help';
+import { support } from './support';
+import { billingPortal } from './billingPortal';
+import { settingsPortal } from './settingsPortal';
+import { profilePortal } from './profilePortal';
 
 export const en = {
   ...common,
@@ -55,4 +61,10 @@ export const en = {
   ...ui,
   ...groupBuying,
   ...sales,
+  ...flexAuth,
+  ...help,
+  ...support,
+  ...billingPortal,
+  ...settingsPortal,
+  ...profilePortal,
 } as const;

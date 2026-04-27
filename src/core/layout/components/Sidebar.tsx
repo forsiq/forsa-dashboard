@@ -11,8 +11,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useFeatureConfig } from '../../contexts/FeatureContext';
 import { AmberLogo } from '../../components/AmberLogo';
-import { getSidebarForPath, getServiceIdFromPath, isPortalPath } from '../../../config/sidebarLoader';
-import { resolveIcon } from '../../../config/navigation';
+import { getSidebarForPath, getServiceIdFromPath, isPortalPath } from '@config/sidebarLoader';
+import { resolveIcon } from '@config/navigation';
 
 export interface MenuItem {
   label: string;

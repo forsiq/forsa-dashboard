@@ -5,7 +5,7 @@ import { AmberTopbar } from './components/Topbar';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '../contexts/NavigationContext';
-import { isPortalPath } from '../../config/sidebarLoader';
+import { isPortalPath } from '@config/sidebarLoader';
 
 interface AmberDashboardLayoutProps {
   children?: React.ReactNode;
@@ -32,6 +32,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({ chil
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
       <AmberTopbar
         onOpenSidebar={() => setIsSidebarOpen(true)}
+        isPortalPage={isPortalPage}
         language={language}
         setLanguage={setLanguage}
         theme={theme}

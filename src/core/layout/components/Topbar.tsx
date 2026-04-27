@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { AmberLogo } from '../../components/AmberLogo';
 import { SearchModal } from './SearchModal';
 import { cn } from '../../lib/utils/cn';
-import { getServicesForTopbar, type QuickApp as ConfigQuickApp } from '../../../config/services';
+import { getServicesForTopbar, type QuickApp as ConfigQuickApp } from '@config/services';
 
 export type Language = 'en' | 'ar' | 'ku';
 export type Theme = 'light' | 'dark';
@@ -31,6 +31,7 @@ type QuickAppInput = ConfigQuickApp | QuickApp;
 
 interface AmberTopbarProps {
   onOpenSidebar: () => void;
+  isPortalPage?: boolean;
   // Language & Theme - passed from app's own context
   language: Language;
   setLanguage: (lang: Language) => void;

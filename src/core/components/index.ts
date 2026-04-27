@@ -2,6 +2,9 @@
 export { AmberButton } from './AmberButton';
 export { AmberCard } from './AmberCard';
 export { AmberInput } from './AmberInput';
+export { AmberSelect } from './AmberSelect';
+export type { AmberSelectProps } from './AmberSelect';
+export { AmberToggle } from './AmberToggle';
 export { AmberLogo } from './AmberLogo';
 export { AmberDropdown } from './AmberDropdown';
 export { AmberAutocomplete } from './AmberAutocomplete';
@@ -81,6 +84,11 @@ export {
   SettingsFormSkeleton,
   LoginFormSkeleton,
 } from './Loading/AmberFormSkeleton';
+
+export { ErrorState } from './Loading/ErrorState';
+
+// Search Components
+export { UnifiedSearchInput } from './Search/UnifiedSearchInput';
 
 // Data Components
 export { DataTable } from './Data/DataTable';

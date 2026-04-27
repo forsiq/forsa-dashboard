@@ -26,7 +26,7 @@ import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
+import { AmberSlideOver } from '@core/components';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';

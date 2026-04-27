@@ -28,7 +28,7 @@ import {
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
-import { AmberSlideOver } from '@core/components/Feedback/AmberSlideOver';
+import { AmberSlideOver } from '@core/components';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
 import { useList, useStats } from '../hooks';
 

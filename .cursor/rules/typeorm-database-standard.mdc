@@ -1,0 +1,77 @@
+---
+description: TypeORM is the standard ORM for all NestJS services - do not use Prisma, Drizzle, or other ORMs
+alwaysApply: true
+---
+
+# Database Layer: TypeORM is the Standard
+
+All NestJS services in ZoneVast use **TypeORM** as the ORM. Do NOT introduce Prisma, Drizzle, Kysely, or any other ORM.
+
+## NestJS Services Using TypeORM
+
+| Service | TypeORM Version |
+|---|---|
+| `auction-service` | ^0.3.28 |
+| `zv-flex-auth-service` | ^0.3.19 |
+| `auth-nestjs` | ^0.3.19 |
+| `nestjs-common-layer` | ^0.3.19 |
+
+## Why TypeORM Over Prisma
+
+- **Lambda deployment size**: TypeORM ~5MB vs Prisma ~30-50MB (binary engine)
+- **Cold start speed**: TypeORM is pure JS, Prisma requires engine initialization
+- **NestJS integration**: `@nestjs/typeorm` provides first-class integration (decorators, modules, guards)
+- **Complex queries**: `createQueryBuilder` handles joins, aggregations, and raw SQL gracefully
+- **Shared infrastructure**: `nestjs-common-layer` Lambda layer already bundles TypeORM
+- **Multi-schema PostgreSQL**: TypeORM handles `DB_SCHEMA` properly, Prisma has limited support
+
+## Usage Patterns
+
+### Repository Pattern (Simple CRUD)
+```typescript
+@InjectRepository(Auction)
+private readonly auctionRepository: Repository<Auction>;
+
+// Create
+const auction = this.auctionRepository.create({ title, startPrice });
+await this.auctionRepository.save(auction);
+
+// Read
+await this.auctionRepository.findOne({ where: { id } });
+
+// Update
+await this.auctionRepository.update(id, { status: 'active' });
+
+// Delete (soft)
+await this.auctionRepository.softRemove(auction);
+```
+
+### QueryBuilder (Complex Queries)
+```typescript
+this.auctionRepository
+  .createQueryBuilder('auction')
+  .where('auction.projectId = :projectId', { projectId })
+  .andWhere('auction.title ILIKE :search', { search: `%${term}%` })
+  .orderBy('auction.createdAt', 'DESC')
+  .skip((page - 1) * limit)
+  .take(limit)
+  .getManyAndCount();
+```
+
+### Raw Queries via Manager (Cross-Entity)
+```typescript
+this.auctionRepository.manager
+  .createQueryBuilder()
+  .select('COUNT(*)', 'count')
+  .from('bids', 'bid')
+  .where('bid.created_at > :date', { date: oneHourAgo })
+  .getRawOne();
+```
+
+## Security Rules
+
+- Always use parameterized queries (`:paramName` or `$1, $2`)
+- Never concatenate user input into SQL strings
+- Validate `sortBy` fields against a whitelist before using in `orderBy`
+- Use `class-validator` decorators on all DTOs
+- Set `whitelist: true` and `forbidNonWhitelisted: true` on `ValidationPipe`
