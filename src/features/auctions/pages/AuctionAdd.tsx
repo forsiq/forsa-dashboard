@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Upload, Plus, X, AlertCircle } from 'lucide-react';
+import { ArrowLeft, X, AlertCircle } from 'lucide-react';
 import { useCreateAuction } from '../api';
 import { useList as useCategories } from '../../../services/categories/hooks';
 
@@ -17,6 +17,7 @@ import { AmberInput } from '../../../core/components/AmberInput';
 import { AmberCard as Card } from '../../../core/components/AmberCard';
 import { AmberButton as Button } from '../../../core/components/AmberButton';
 import { AmberDropdown } from '../../../core/components/AmberDropdown';
+import { AmberImageUpload } from '../../../core/components/AmberImageUpload';
 
 export const AuctionAdd = () => {
   const router = useRouter();
@@ -65,18 +66,17 @@ export const AuctionAdd = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      // In a real app, this would upload to a server
-      // For now, we'll use object URLs for preview
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-      setUploadedImages(prev => [...prev, ...newImages]);
-    }
+  const handleImageChange = (files: File[]) => {
+    const newImages = files.map(file => URL.createObjectURL(file));
+    setUploadedImages(prev => [...prev, ...newImages]);
   };
 
   const removeImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const reorderImages = (newOrder: string[]) => {
+    setUploadedImages(newOrder);
   };
 
   const validate = (): boolean => {
@@ -182,48 +182,16 @@ export const AuctionAdd = () => {
         <Card className="p-6 space-y-4">
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.images') || 'Images'}</h2>
 
-          <div className="border-2 border-dashed border-white/10 rounded-lg p-8 text-center hover:border-brand/50 transition-colors">
-            <Upload size={32} className="mx-auto text-zinc-500 mb-2" />
-            <p className="text-zinc-400 mb-4">{t('auction.form.drag_drop') || 'Drag images here or click to upload'}</p>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-              id="image-upload"
-            />
-            <label
-              htmlFor="image-upload"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white cursor-pointer"
-            >
-              <Plus size={18} />
-              {t('auction.form.select_images') || 'Select Images'}
-            </label>
-          </div>
+          <AmberImageUpload
+            value={uploadedImages}
+            onChange={handleImageChange}
+            onRemove={removeImage}
+            onReorder={reorderImages}
+            multiple={true}
+            sortable={true}
+          />
 
           {errors.images && <span className={`text-sm text-red-400 block ${isRTL ? 'text-right' : 'text-left'}`}>{errors.images}</span>}
-
-          {uploadedImages.length > 0 && (
-            <div className="grid grid-cols-4 gap-4">
-              {uploadedImages.map((image, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={image}
-                    alt={`Upload ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={14} className="text-white" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </Card>
 
         {/* Pricing */}

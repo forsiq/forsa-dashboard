@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2, AlertCircle, ZoomIn, ChevronLeft, ChevronRight, Eye, Trash2, GripVertical, Star } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils/cn';
@@ -10,6 +10,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type UniqueIdentifier,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -45,8 +46,19 @@ export interface AmberImageUploadProps {
   onReorder?: (newOrder: string[]) => void;
 }
 
-export interface FileWithPreview extends File {
-  preview?: string;
+// --- Utilities ---
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function parseSortableId(id: UniqueIdentifier): number {
+  const str = typeof id === 'string' ? id : String(id);
+  return parseInt(str.replace('image-', ''), 10);
 }
 
 // --- Image Preview Modal ---
@@ -175,7 +187,7 @@ interface SortableImageItemProps {
   primaryLabel: string;
 }
 
-function SortableImageItem({
+const SortableImageItem = memo(function SortableImageItem({
   id,
   item,
   index,
@@ -306,7 +318,7 @@ function SortableImageItem({
       </div>
     </div>
   );
-}
+});
 
 // --- Image Upload Component ---
 
@@ -367,27 +379,16 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       })
     );
 
-    // Validate file
-    const validateFile = (file: File): string | null => {
-      if (!file.type.startsWith('image/')) {
-        return t('upload.error_invalid_type') || 'Only image files are allowed';
-      }
-      if (file.size > maxSize) {
-        const maxSizeMB = (maxSize / 1024 / 1024).toFixed(1);
-        return `File must be smaller than ${maxSizeMB}MB`;
-      }
-      return null;
-    };
-
     const handleFiles = useCallback(
       (selectedFiles: FileList | File[]) => {
         const newErrors: string[] = [];
         const validFiles: File[] = [];
 
         Array.from(selectedFiles).forEach((file) => {
-          const error = validateFile(file);
-          if (error) {
-            newErrors.push(error);
+          if (!file.type.startsWith('image/')) {
+            newErrors.push(t('upload.error_invalid_type') || 'Only image files are allowed');
+          } else if (file.size > maxSize) {
+            newErrors.push(`File must be smaller than ${(maxSize / 1024 / 1024).toFixed(1)}MB`);
           } else {
             validFiles.push(file);
           }
@@ -398,7 +399,7 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
           onChange?.(validFiles);
         }
       },
-      [maxSize, onChange]
+      [maxSize, onChange, t]
     );
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -442,22 +443,22 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       }
     };
 
-    const handleRemove = (e: React.MouseEvent, index: number) => {
+    const handleImageError = useCallback((index: number) => {
+      setImageLoadErrors(prev => new Set(prev).add(index));
+    }, []);
+
+    const handleRemove = useCallback((e: React.MouseEvent, index: number) => {
       e.stopPropagation();
       onRemove?.(index);
-    };
-
-    const handleImageError = (index: number) => {
-      setImageLoadErrors(prev => new Set(prev).add(index));
-    };
+    }, [onRemove]);
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
       const currentUrls = Array.isArray(value) ? [...value] : value ? [value] : [];
-      const oldIndex = Number(String(active.id).replace('image-', ''));
-      const newIndex = Number(String(over.id).replace('image-', ''));
+      const oldIndex = parseSortableId(active.id);
+      const newIndex = parseSortableId(over.id);
 
       if (isNaN(oldIndex) || isNaN(newIndex)) return;
 
@@ -465,16 +466,8 @@ export const AmberImageUpload = React.forwardRef<HTMLDivElement, AmberImageUploa
       onReorder?.(newOrder);
     }, [value, onReorder]);
 
-    const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return '';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    };
-
     const primaryLabel = t('upload.primary') || 'Primary';
-    const sortableIds = displayItems.map((_, i) => `image-${i}`);
+    const sortableIds = useMemo(() => displayItems.map((_, i) => `image-${i}`), [displayItems.length]);
 
     const previewGrid = (
       <div className={cn(

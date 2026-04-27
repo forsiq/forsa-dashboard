@@ -48,7 +48,7 @@ export {
   AmberImageUpload,
   AmberAvatarUpload,
 } from './AmberImageUpload';
-export type { AmberImageUploadProps, AmberAvatarUploadProps, FileWithPreview } from './AmberImageUpload';
+export type { AmberImageUploadProps, AmberAvatarUploadProps } from './AmberImageUpload';
 
 // Skeleton & Loading Components
 export {

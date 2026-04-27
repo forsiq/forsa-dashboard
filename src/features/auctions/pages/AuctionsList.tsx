@@ -68,7 +68,7 @@ export const AuctionsList: React.FC = () => {
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
         search: searchQuery || undefined,
         sortBy: 'createdAt',
-        sortOrder: 'DESC',
+        sortOrder: 'desc',
         page,
         limit
     });

@@ -4,13 +4,13 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
+import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import {
   Package,
   Save,
   X,
-  Upload,
   Image as ImageIcon,
   TrendingUp,
   ArrowLeft,
@@ -78,12 +78,10 @@ export const ProductAddPage = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const fileArray = Array.from(files);
-    fileArray.forEach(file => {
+  const handleImageUpload = (files: File[]) => {
+    const remaining = 5 - formData.images.length;
+    const toProcess = files.slice(0, remaining);
+    toProcess.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({
@@ -100,6 +98,10 @@ export const ProductAddPage = () => {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  const reorderImages = (newOrder: string[]) => {
+    setFormData(prev => ({ ...prev, images: newOrder }));
   };
 
   const validate = () => {
@@ -354,72 +356,16 @@ export const ProductAddPage = () => {
                {t('prod.add.images') || 'صور المنتج'}
             </h3>
 
-            <div className="space-y-4">
-              <label className={cn(
-                "flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all relative overflow-hidden group",
-                formData.images.length >= 5 
-                  ? "border-[var(--color-border)] bg-black/20 cursor-not-allowed opacity-50" 
-                  : "border-[var(--color-border)] bg-white/[0.02] hover:bg-[var(--color-obsidian-hover)] hover:border-[var(--color-brand)]/30"
-              )}>
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  onChange={handleImageUpload} 
-                  multiple 
-                  disabled={formData.images.length >= 5}
-                  accept="image/*"
-                />
-                
-                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4 relative z-10">
-                  <Upload className="w-10 h-10 mb-3 text-zinc-muted group-hover:text-[var(--color-brand)] transition-colors" />
-                  <p className="text-sm font-bold text-zinc-text uppercase tracking-tight mb-1.5">
-                    {formData.images.length >= 5 
-                      ? (t('prod.add.limit_reached') || 'تم الوصول للحد الأقصى')
-                      : (t('prod.add.upload') || 'رفع الصور')}
-                  </p>
-                  <p className="text-xs text-zinc-muted font-medium">
-                    {formData.images.length < 5 
-                      ? (t('prod.add.image_hint') || 'PNG، JPG حتى 10MB (الحد الأقصى 5 صور)')
-                      : (t('prod.add.image_limit_hint') || 'تم رفع الحد الأقصى من الصور')}
-                  </p>
-                </div>
-              </label>
-
-              {/* Image Previews */}
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                {formData.images.length > 0 ? (
-                  formData.images.map((img, idx) => (
-                    <div 
-                      key={idx} 
-                      className={cn(
-                        "relative group rounded-xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-xl aspect-square",
-                        idx === 0 && "col-span-2 aspect-video mb-2"
-                      )}
-                    >
-                      <img src={img} alt={`${t('prod.add.primary_image') || 'صورة'} ${idx + 1}`} className="w-full h-full object-cover text-xs" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button 
-                          onClick={(e) => { e.preventDefault(); removeImage(idx); }}
-                          className="w-10 h-10 bg-[var(--color-danger)] text-white rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                      {idx === 0 && (
-                        <div className="absolute top-3 left-3 px-3 py-1 bg-[var(--color-brand)] text-black rounded-lg text-xs font-black uppercase tracking-widest shadow-lg">
-                          {t('prod.add.primary_image') || 'الصورة الرئيسية'}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-2 py-10 flex flex-col items-center justify-center bg-white/[0.01] border border-[var(--color-border)] rounded-xl opacity-20">
-                     <ImageIcon className="w-12 h-12 mb-3 stroke-1" />
-                     <p className="text-sm font-black uppercase tracking-widest">{t('prod.add.no_images') || 'لا توجد صور بعد'}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AmberImageUpload
+              value={formData.images}
+              onChange={handleImageUpload}
+              onRemove={removeImage}
+              onReorder={reorderImages}
+              multiple={true}
+              sortable={true}
+              maxFiles={5}
+              maxSize={10 * 1024 * 1024}
+            />
           </Card>
 
           {/* Note Card */}

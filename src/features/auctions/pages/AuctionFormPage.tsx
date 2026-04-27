@@ -412,7 +412,9 @@ export const AuctionFormPage: React.FC = () => {
                           handleChange('images', newImages);
                           if (index === 0) setSelectedImageFile(null);
                         }}
+                        onReorder={(newOrder) => handleChange('images', newOrder)}
                         multiple={true}
+                        sortable={true}
                         disabled={isUploading}
                         isUploading={isUploading}
                         uploadProgress={uploadProgress}
