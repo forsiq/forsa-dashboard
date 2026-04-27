@@ -65,4 +65,31 @@ export const en: Record<string, string> = {
   "settings.username": "Username",
   "settings.email": "Email",
   "common.save_changes": "Save Changes",
+
+  // Sidebar service labels (used by Sidebar component: t(`service.${sectionTitle}.name`))
+  "service.sidebar.general.name": "General",
+  "service.sidebar.operations.name": "Operations",
+  "service.sidebar.auctions.name": "Auctions",
+  "service.sidebar.inventory.name": "Inventory",
+  "service.sidebar.sales.name": "Sales",
+  "service.sidebar.reports.name": "Reports",
+  "service.sidebar.customers.name": "Customers",
+  "service.sidebar.catalog.name": "Catalog",
+  "service.sidebar.orders.name": "Orders",
+  "service.sidebar.dashboards.name": "Dashboards",
+  "service.sidebar.settings.name": "Settings",
+
+  // Report page labels
+  "report.dashboard": "Report Dashboard",
+  "report.analytics": "Analytics",
+  "report.sales": "Sales Reports",
+  "report.inventory": "Inventory Reports",
+  "report.sales_overview_section": "Sales Overview",
+  "report.auction_performance": "Auction Performance",
+  "report.group_buying_analytics": "Group Buying Analytics",
+  "report.customer_insights": "Customer Insights",
+
+  // Order & Customer titles
+  "order.title": "Orders",
+  "customer.title": "Customers",
 };

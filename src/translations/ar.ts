@@ -65,4 +65,31 @@ export const ar: Record<string, string> = {
   "settings.username": "اسم المستخدم",
   "settings.email": "البريد الإلكتروني",
   "common.save_changes": "حفظ التغييرات",
+
+  // Sidebar service labels
+  "service.sidebar.general.name": "عام",
+  "service.sidebar.operations.name": "العمليات",
+  "service.sidebar.auctions.name": "المزادات",
+  "service.sidebar.inventory.name": "المخزون",
+  "service.sidebar.sales.name": "المبيعات",
+  "service.sidebar.reports.name": "التقارير",
+  "service.sidebar.customers.name": "العملاء",
+  "service.sidebar.catalog.name": "الكتالوج",
+  "service.sidebar.orders.name": "الطلبات",
+  "service.sidebar.dashboards.name": "لوحات التحكم",
+  "service.sidebar.settings.name": "الإعدادات",
+
+  // Report page labels
+  "report.dashboard": "لوحة التقارير",
+  "report.analytics": "التحليلات",
+  "report.sales": "تقارير المبيعات",
+  "report.inventory": "تقارير المخزون",
+  "report.sales_overview_section": "نظرة عامة على المبيعات",
+  "report.auction_performance": "أداء المزادات",
+  "report.group_buying_analytics": "تحليلات الشراء الجماعي",
+  "report.customer_insights": "رؤى العملاء",
+
+  // Order & Customer titles
+  "order.title": "الطلبات",
+  "customer.title": "العملاء",
 };
