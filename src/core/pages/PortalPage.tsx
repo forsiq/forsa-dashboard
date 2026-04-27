@@ -5,29 +5,29 @@ import {
   Grip,
   ArrowUpRight,
   ExternalLink,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react';
 import { AmberCard } from '../components/AmberCard';
 import { AmberLogo } from '../components/AmberLogo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNavigation } from '../contexts/NavigationContext';
 import { cn } from '../lib/utils/cn';
-import { getEnabledServices, resolveServiceIcon } from '@config/services';
+import { useProjectServices, resolveServiceIcon } from '../hooks/useProjectServices';
+import type { ProjectServiceItem } from '../hooks/useProjectServices';
 
 export const PortalPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const { setSidebarView } = useNavigation();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const { services, isLoading, isFallback } = useProjectServices();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Get all enabled services from config
-  const services = getEnabledServices();
-
-  const handleServiceClick = (service: typeof services[0]) => {
+  const handleServiceClick = (service: ProjectServiceItem) => {
     if (service.type === 'external') {
       window.open(service.url, '_blank');
     } else {
@@ -41,7 +41,6 @@ export const PortalPage: React.FC = () => {
     router.push('/login');
   };
 
-  // Get color classes from service color
   const getColorClasses = (color?: string) => {
     const colorLower = color?.toLowerCase() || '';
     return {
@@ -90,6 +89,11 @@ export const PortalPage: React.FC = () => {
           <p className="text-zinc-muted max-w-xl text-sm font-medium leading-relaxed tracking-tight">
              {t('portal.subtitle') || 'بوابة الوصول الموحدة من ZoneVast.'}
           </p>
+          {isFallback && (
+            <p className="text-[10px] text-zinc-muted/50 font-medium">
+              {t('portal.using_cached_config') || 'Using cached service configuration'}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -111,57 +115,67 @@ export const PortalPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-brand animate-spin" />
+          <span className="ml-3 text-zinc-muted text-sm">{t('portal.loading_services') || 'Loading services...'}</span>
+        </div>
+      )}
+
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {services.map((service, index) => {
-          const IconComponent = resolveServiceIcon(service.icon);
-          const colors = getColorClasses(service.color);
+      {!isLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {services.map((service, index) => {
+            const IconComponent = resolveServiceIcon(service.icon);
+            const colors = getColorClasses(service.color);
 
-          return (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * index }}
-            >
-              <AmberCard
-                onClick={() => handleServiceClick(service)}
-                className="cursor-pointer group relative overflow-hidden flex flex-col items-start gap-5 hover:border-brand/40 hover:shadow-2xl transition-all duration-500 h-full p-8"
-                glass
+            return (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 * index }}
               >
-                {service.type === 'external' && (
-                  <div className="absolute top-4 right-4 p-1.5 opacity-30 group-hover:opacity-100 transition-opacity">
-                     <ExternalLink className="w-4 h-4 text-zinc-muted group-hover:text-brand" />
+                <AmberCard
+                  onClick={() => handleServiceClick(service)}
+                  className="cursor-pointer group relative overflow-hidden flex flex-col items-start gap-5 hover:border-brand/40 hover:shadow-2xl transition-all duration-500 h-full p-8"
+                  glass
+                >
+                  {service.type === 'external' && (
+                    <div className="absolute top-4 right-4 p-1.5 opacity-30 group-hover:opacity-100 transition-opacity">
+                       <ExternalLink className="w-4 h-4 text-zinc-muted group-hover:text-brand" />
+                    </div>
+                  )}
+
+                  <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center border border-white/5 bg-obsidian-outer group-hover:scale-110 transition-transform duration-500", colors.bg)}>
+                    <IconComponent className={cn("w-8 h-8", colors.text)} />
                   </div>
-                )}
 
-                <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center border border-white/5 bg-obsidian-outer group-hover:scale-110 transition-transform duration-500", colors.bg)}>
-                  <IconComponent className={cn("w-8 h-8", colors.text)} />
-                </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-white tracking-tighter uppercase group-hover:text-brand transition-colors">
+                       {t(`service.${service.id}.name`) || service.name}
+                    </h3>
+                    <p className="text-[11px] text-zinc-muted leading-relaxed font-medium tracking-tight">
+                       {t(service.description) || service.description}
+                    </p>
+                  </div>
 
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black text-white tracking-tighter uppercase group-hover:text-brand transition-colors">
-                     {t(`service.${service.id}.name`) || service.name}
-                  </h3>
-                  <p className="text-[11px] text-zinc-muted leading-relaxed font-medium tracking-tight">
-                     {t(service.description) || service.description}
-                  </p>
-                </div>
-
-                <div className="w-full mt-auto flex items-center justify-between pt-5 border-t border-white/5 group-hover:border-brand/20 transition-colors">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-success" />
-                      <span className="text-[10px] font-black text-success uppercase tracking-widest">
-                        {service.type === 'external' ? (t('portal.service_external') || 'خارجي') : (t('portal.service_internal') || 'داخلي')}
-                      </span>
-                   </div>
-                   <ArrowUpRight className={cn("w-5 h-5 text-zinc-muted group-hover:text-brand transition-all duration-500", dir === 'rtl' ? "rotate-[-90deg] group-hover:rotate-0" : "group-hover:translate-x-1 group-hover:-translate-y-1")} />
-                </div>
-              </AmberCard>
-            </motion.div>
-          );
-        })}
-      </div>
+                  <div className="w-full mt-auto flex items-center justify-between pt-5 border-t border-white/5 group-hover:border-brand/20 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-success" />
+                        <span className="text-[10px] font-black text-success uppercase tracking-widest">
+                          {service.type === 'external' ? (t('portal.service_external') || 'خارجي') : (t('portal.service_internal') || 'داخلي')}
+                        </span>
+                     </div>
+                     <ArrowUpRight className={cn("w-5 h-5 text-zinc-muted group-hover:text-brand transition-all duration-500", dir === 'rtl' ? "rotate-[-90deg] group-hover:rotate-0" : "group-hover:translate-x-1 group-hover:-translate-y-1")} />
+                  </div>
+                </AmberCard>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Admin / Low Priority Hub Footer */}
       <motion.div
