@@ -125,7 +125,7 @@ export const AuctionAdd = () => {
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
           <p className="text-sm text-danger font-medium">{submitError}</p>
-          <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+          <button onClick={() => setSubmitError(null)} className={isRTL ? 'mr-auto text-danger/60 hover:text-danger' : 'ml-auto text-danger/60 hover:text-danger'}>
             <X className="w-4 h-4" />
           </button>
         </div>
