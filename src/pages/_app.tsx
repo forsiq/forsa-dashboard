@@ -12,6 +12,7 @@ import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { AuthGuard } from '@features/_core/components/AuthGuard';
 import { AmberDashboardLayout } from '@core/layout/AmberDashboardLayout';
+import { getSidebarForPath } from '@config/sidebarLoader';
 import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';
 import '@styles/globals.css';
@@ -53,7 +54,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                       <Component {...pageProps} />
                     ) : (
                       <AuthGuard>
-                        <AmberDashboardLayout>
+                        <AmberDashboardLayout sidebarLoader={getSidebarForPath}>
                           <Component {...pageProps} />
                         </AmberDashboardLayout>
                       </AuthGuard>
