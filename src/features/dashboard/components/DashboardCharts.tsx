@@ -41,7 +41,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       {/* Sales Trend Chart */}
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-l-2 border-brand pl-3">
+           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.sales_trend') || 'Sales Trend (30 Days)'}
            </h3>
            {hasSalesData && (
@@ -116,7 +116,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       {/* Category Distribution Chart */}
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-l-2 border-brand pl-3">
+           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.category_distribution') || 'Top Categories'}
            </h3>
         </div>
@@ -153,7 +153,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="w-2/5 space-y-3 pr-2">
+              <div className="w-2/5 space-y-3 pe-2">
                 {categoryData.map((entry: any, index: number) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />

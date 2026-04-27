@@ -115,7 +115,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 border-l-2 border-brand pl-3">
+      <div className="flex items-center justify-between mb-4 border-s-2 border-brand ps-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('live.liveBidTicker')}
@@ -163,7 +163,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
         ref={scrollRef}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto space-y-2 pe-1 min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
         style={{ maxHeight: 'calc(100vh - 380px)' }}
       >
         {events.length === 0 ? (

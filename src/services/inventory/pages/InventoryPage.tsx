@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AmberCard as Card } from '@core/components/AmberCard';
@@ -116,7 +117,7 @@ export const InventoryPage = () => {
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
             {row.image ? (
-              <img src={row.image} alt={row.name} className="w-full h-full object-cover" />
+              <NextImage src={row.image} alt={row.name} width={48} height={48} className="w-full h-full object-cover" />
             ) : (
               <ImageIcon className="w-5 h-5 text-zinc-muted" />
             )}

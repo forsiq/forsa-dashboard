@@ -3,7 +3,9 @@
  *
  * Loads sidebar menus from services or features based on current route.
  * GENERAL service is the default with all menu items.
- * Supports sidebarView: 'general' (excludes reports) or 'reports' (only reports).
+ * Automatically detects sidebar view from the current path:
+ * - /reports/* → shows only reports section
+ * - everything else → shows all sections except reports
  */
 
 import type { MenuSection } from './navigation';
@@ -14,24 +16,38 @@ export const GENERAL_SERVICE = 'general';
 
 export type SidebarView = 'general' | 'reports';
 
-// Additional custom services (optional, user-created later)
-export const serviceRoutes: Record<string, string> = {
-  // Users can add custom services here, e.g.:
-  // 'my-custom-service': '/my-custom-service',
+// Map of path prefixes to their sidebar view
+const PATH_VIEW_MAP: Record<string, SidebarView> = {
+  '/reports': 'reports',
 };
 
 /**
- * Get sidebar sections based on current path and view mode
- * - 'general': All sections EXCEPT reports
- * - 'reports': Only the reports section
+ * Detect sidebar view from the current path
  */
-export async function getSidebarForPath(path: string, sidebarView: SidebarView = 'general'): Promise<MenuSection[]> {
+export function getViewFromPath(path: string): SidebarView {
+  for (const [prefix, view] of Object.entries(PATH_VIEW_MAP)) {
+    if (path === prefix || path.startsWith(prefix + '/')) {
+      return view;
+    }
+  }
+  return 'general';
+}
+
+/**
+ * Get sidebar sections based on current path
+ * Uses path-based detection to determine which sections to show,
+ * regardless of the sidebarView parameter from context.
+ */
+export async function getSidebarForPath(path: string, _sidebarView?: SidebarView): Promise<MenuSection[]> {
   // Portal has no sidebar
   if (path === '/portal' || path === '/') {
     return [];
   }
 
-  if (sidebarView === 'reports') {
+  // Always detect view from path - this ensures sidebar follows the route
+  const effectiveView = getViewFromPath(path);
+
+  if (effectiveView === 'reports') {
     return generalSidebarSections.filter(s => s.title === 'sidebar.reports');
   }
 
@@ -42,13 +58,11 @@ export async function getSidebarForPath(path: string, sidebarView: SidebarView =
 /**
  * Get service ID from path
  */
-export function getServiceIdFromPath(path: string): string | null {
-  // Default to GENERAL for standard pages
+export function getServiceIdFromPath(path: string): string {
   if (path !== '/portal' && path !== '/') {
     return GENERAL_SERVICE;
   }
-
-  return null;
+  return '';
 }
 
 /**

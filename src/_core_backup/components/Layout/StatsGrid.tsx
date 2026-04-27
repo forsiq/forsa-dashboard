@@ -14,6 +14,7 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { cn } from '../../lib/utils/cn';
@@ -253,9 +254,9 @@ function StatCard({
 
   if (href) {
     return (
-      <a href={href} className="block transition-transform hover:scale-[1.02]">
+      <Link href={href} className="block transition-transform hover:scale-[1.02]">
         {card}
-      </a>
+      </Link>
     );
   }
 

@@ -67,7 +67,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 border-l-2 border-warning pl-3">
+      <div className="flex items-center justify-between mb-4 border-s-2 border-warning ps-3">
         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
           {t('live.activeAuctionsTitle')}
         </h3>
@@ -77,7 +77,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
       </div>
 
       {/* Grid */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+      <div className="flex-1 overflow-y-auto space-y-2 pe-1 min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
         style={{ maxHeight: 'calc(100vh - 380px)' }}
       >
         {isLoading ? (
@@ -178,7 +178,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
               {auction.title}
             </p>
           </div>
-          <div className="flex items-center gap-3 mt-1.5 ml-4">
+          <div className="flex items-center gap-3 mt-1.5 ms-4">
             <span className="text-sm font-black text-zinc-text tracking-tight">
               {(auction.currentBid || auction.startPrice).toLocaleString()} IQD
             </span>
@@ -208,7 +208,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
       </div>
 
       {expanded && (
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5 ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5 ms-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <button
             onClick={onExtend}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20 hover:bg-warning/20 transition-colors"

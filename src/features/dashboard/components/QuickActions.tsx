@@ -37,7 +37,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
 
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80">
-      <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] mb-6 border-l-2 border-brand pl-3">
+      <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] mb-6 border-s-2 border-brand ps-3">
         {t('dash.quickActions')}
       </h3>
 

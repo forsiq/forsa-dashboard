@@ -32,7 +32,7 @@ export const CriticalNodes: React.FC = () => {
   if (isLoading) {
     return (
       <AmberCard className="border-warning/10 shadow-lg">
-        <div className="flex items-center gap-2 mb-4 border-l-2 border-warning pl-3">
+        <div className="flex items-center gap-2 mb-4 border-s-2 border-warning ps-3">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
             Critical Nodes
@@ -48,7 +48,7 @@ export const CriticalNodes: React.FC = () => {
   if (criticalAuctions.length === 0) {
     return (
       <AmberCard className="border-success/10 shadow-lg">
-        <div className="flex items-center gap-2 mb-4 border-l-2 border-success pl-3">
+        <div className="flex items-center gap-2 mb-4 border-s-2 border-success ps-3">
           <Clock className="w-3.5 h-3.5 text-success" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
             Critical Nodes
@@ -68,7 +68,7 @@ export const CriticalNodes: React.FC = () => {
 
   return (
     <AmberCard className="border-warning/10 shadow-lg">
-      <div className="flex items-center justify-between mb-4 border-l-2 border-warning pl-3">
+      <div className="flex items-center justify-between mb-4 border-s-2 border-warning ps-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
@@ -169,7 +169,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
               {title}
             </p>
           </div>
-          <div className="flex items-center gap-3 mt-1.5 ml-4">
+          <div className="flex items-center gap-3 mt-1.5 ms-4">
             <span className="text-sm font-black text-zinc-text tracking-tight">
               {Number(currentBid || 0).toLocaleString()} IQD
             </span>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { Gavel } from 'lucide-react';
 import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
 import { getAuctionImageUrl, parseAttachmentIds } from '../utils/auction-utils';
@@ -207,17 +208,21 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
 
   // Show image
   return (
-    <img
-      src={imageUrl}
-      alt={alt}
-      className={fallbackClassName}
-      onError={() => {
-        setHasError(true);
-      }}
-      onLoad={() => {
-        setIsLoading(false);
-      }}
-    />
+    <div className={`relative ${fallbackClassName}`}>
+      <Image
+        src={imageUrl}
+        alt={alt}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, 400px"
+        onError={() => {
+          setHasError(true);
+        }}
+        onLoad={() => {
+          setIsLoading(false);
+        }}
+      />
+    </div>
   );
 };
 

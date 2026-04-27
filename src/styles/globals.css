@@ -2,4 +2,4 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './core-ui-theme.css';
+@import '@yousef2001/core-ui/styles';

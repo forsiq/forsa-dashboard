@@ -14,7 +14,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
   return (
     <AmberCard className="!p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-l-2 border-brand pl-3">
+         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
            {t('dash.top_performing') || 'Top Performing Items'}
          </h3>
       </div>
@@ -45,12 +45,12 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                
                <div className="flex items-center gap-5">
                  {/* Revenue */}
-                 <div className="text-right">
+                 <div className="text-end">
                    <p className="text-[10px] font-semibold text-zinc-muted mb-0.5">{t('dash.revenue') || 'Revenue'}</p>
                    <p className="text-sm font-bold text-brand tabular-nums">{formatCurrency(item.revenue)}</p>
                  </div>
                  {/* Bids / Views */}
-                 <div className="text-right">
+                 <div className="text-end">
                     <p className="text-[10px] font-semibold text-zinc-muted mb-0.5">{t('dash.sales') || 'Sales'}</p>
                     <div className="flex items-center gap-1.5 justify-end">
                        {item.sales > 0 ? (

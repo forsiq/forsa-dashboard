@@ -6,6 +6,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@yousef2001/core-ui'],
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'file.zonevast.com' },
+      { protocol: 'https', hostname: '**.amazonaws.com' },
+    ],
+  },
   webpack: (config, { dev, isServer }) => {
     // Ensure path aliases resolve correctly in webpack
     config.resolve.alias = {
