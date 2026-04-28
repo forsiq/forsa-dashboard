@@ -119,7 +119,7 @@ export const GroupBuyingListPage: React.FC = () => {
           <div>
             <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{campaign.title}</p>
             <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
-              {campaign.category?.name || t('group_buying.general')}
+              {campaign.category?.name || 'GENERAL'}
             </p>
           </div>
         </div>
@@ -162,10 +162,10 @@ export const GroupBuyingListPage: React.FC = () => {
       render: (campaign) => (
         <div>
           <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-            {campaign.dealPrice.toLocaleString()}
+            {formatCurrency(campaign.dealPrice)}
           </span>
           <p className="text-[10px] font-black text-zinc-muted line-through mt-0.5">
-            {campaign.originalPrice.toLocaleString()}
+            {formatCurrency(campaign.originalPrice)}
           </p>
         </div>
       ),
@@ -249,7 +249,8 @@ export const GroupBuyingListPage: React.FC = () => {
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
       <div className={cn(
-        "flex flex-col lg:flex-row lg:items-start justify-between gap-6 text-start"
+        "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
+        isRTL ? "text-right" : "text-left"
       )}>
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -327,11 +328,11 @@ export const GroupBuyingListPage: React.FC = () => {
           <div className="relative group min-w-[320px]">
             <Search className={cn(
               "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-              'start-4'
+              isRTL ? 'right-4' : 'left-4'
             )} />
             <AmberInput
               placeholder={t('groupBuying.scan_nomenclature') || "Search campaigns..."}
-              className="h-11 bg-obsidian-card border-border ps-11 pe-4 text-xs font-bold shadow-inner"
+              className="h-11 bg-obsidian-card border-border pl-11 pr-4 text-xs font-bold shadow-inner"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

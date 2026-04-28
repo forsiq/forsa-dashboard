@@ -43,8 +43,8 @@ const defaultAppSettings: Record<string, any> = {
   },
   auctions: {
     defaultDuration: 7,
-    minBidIncrement: 10,
-    maxBidIncrement: 1000,
+    minBidIncrement: 5000,
+    maxBidIncrement: 100000,
     autoExtendOnBid: true,
     extendMinutes: 5,
     requireApproval: false,
@@ -59,7 +59,7 @@ const defaultAppSettings: Record<string, any> = {
     currency: 'IQD',
     taxRate: 0,
     commissionRate: 5,
-    minWithdrawal: 50,
+    minWithdrawal: 50000,
   },
 };
 

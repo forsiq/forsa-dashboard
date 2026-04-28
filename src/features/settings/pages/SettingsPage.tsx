@@ -171,11 +171,12 @@ export const SettingsPage = () => {
                     </label>
                     <AmberDropdown
                       options={[
+                        { label: 'Iraqi Dinar (IQD)', value: 'iqd' },
                         { label: 'Universal (USD)', value: 'usd' },
                         { label: 'Regional (SAR)', value: 'sar' },
                         { label: 'Regional (AED)', value: 'aed' },
                       ]}
-                      value="usd"
+                      value="iqd"
                       onChange={() => {}}
                       className="w-full h-11"
                     />
@@ -224,7 +225,7 @@ export const SettingsPage = () => {
                   {t('settings.engine_calibration')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <AmberInput label={t('settings.global_min_bid_increment')} type="number" defaultValue="50" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
+                  <AmberInput label={t('settings.global_min_bid_increment')} type="number" defaultValue="5000" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">IQD</span>} />
                   <AmberInput label={t('settings.anti_sniper_buffer')} type="number" defaultValue="30" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
                   <AmberInput label={t('settings.bid_cooldown_period')} type="number" defaultValue="5" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">SEC</span>} />
                   <div className="space-y-2">
@@ -287,7 +288,7 @@ export const SettingsPage = () => {
                     />
                   </div>
                   <AmberInput label={t('settings.global_protocol_fee')} type="number" defaultValue="2.5" />
-                  <AmberInput label={t('settings.min_payout_threshold')} type="number" defaultValue="500" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">USD</span>} />
+                  <AmberInput label={t('settings.min_payout_threshold')} type="number" defaultValue="50000" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">IQD</span>} />
                   <AmberInput label={t('settings.dispute_cooldown')} type="number" defaultValue="7" rightElement={<span className="text-sm font-bold text-zinc-muted px-3">DAYS</span>} />
                 </div>
               </Card>
