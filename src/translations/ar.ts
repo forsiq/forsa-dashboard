@@ -138,4 +138,17 @@ export const ar: Record<string, string> = {
   "collaborators.error_create": "فشل إضافة عضو الفريق",
   "collaborators.error_update": "فشل تحديث عضو الفريق",
   "collaborators.error_delete": "فشل إزالة عضو الفريق",
+
+  // User roles
+  "user.role.admin": "مدير النظام",
+  "user.role.manager": "مدير",
+  "user.role.user": "مستخدم",
+  "user.role.customer": "عميل",
+  "user.role.driver": "سائق",
+  "user.role.staff": "طاقم عمل",
+  "user.role.pending": "قيد الانتظار",
+  "user.role.moderator": "مراقب",
+  "user.role.editor": "محرر",
+  "user.role.viewer": "مشاهد",
+  "user.filter.all_roles": "جميع الأدوار",
 };

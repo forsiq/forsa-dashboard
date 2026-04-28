@@ -138,4 +138,17 @@ export const en: Record<string, string> = {
   "collaborators.error_create": "Failed to add team member",
   "collaborators.error_update": "Failed to update team member",
   "collaborators.error_delete": "Failed to remove team member",
+
+  // User roles (dynamic: t(`user.role.${role}`))
+  "user.role.admin": "Admin",
+  "user.role.manager": "Manager",
+  "user.role.user": "User",
+  "user.role.customer": "Customer",
+  "user.role.driver": "Driver",
+  "user.role.staff": "Staff",
+  "user.role.pending": "Pending",
+  "user.role.moderator": "Moderator",
+  "user.role.editor": "Editor",
+  "user.role.viewer": "Viewer",
+  "user.filter.all_roles": "All Roles",
 };
