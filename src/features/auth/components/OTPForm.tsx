@@ -19,19 +19,19 @@ export const OTPForm: React.FC = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full max-w-md mx-auto space-y-12"
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full max-w-md mx-auto space-y-8"
     >
-      <div className="flex flex-col items-center gap-6">
-        <div className="w-20 h-20 rounded-[2rem] bg-brand/10 border border-brand/20 flex items-center justify-center shadow-[0_0_30px_rgba(255,192,0,0.15)] ring-1 ring-brand/30 animate-pulse-slow">
-          <Shield className="w-10 h-10 text-brand" />
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+          <Shield className="w-8 h-8 text-brand" />
         </div>
-         <div className="text-center space-y-2">
-            <h3 className="text-lg font-black text-white uppercase tracking-widest">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
-            <p className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
-         </div>
+        <div className="text-center space-y-1">
+          <h3 className="text-base font-black text-zinc-text uppercase tracking-widest">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
+          <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.15em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -40,25 +40,25 @@ export const OTPForm: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-danger/10 border border-danger/20 p-5 rounded-3xl flex items-center gap-4 overflow-hidden"
+            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
           >
-            <div className="w-2 h-2 rounded-full bg-danger animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
-            <p className="text-[12px] font-black text-danger uppercase tracking-[0.1em]">
+            <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
+            <p className="text-xs font-bold text-danger">
               {error}
             </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit} className="space-y-12">
-        <div className="grid grid-cols-6 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-6 gap-3">
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <input
               key={index}
               type="text"
               inputMode="numeric"
               maxLength={1}
-              className="w-full h-14 text-center text-2xl font-black bg-white/[0.03] border border-white/10 rounded-2xl focus:border-brand/50 focus:bg-white/[0.06] outline-none transition-all text-white shadow-2xl placeholder:text-zinc-800"
+              className="w-full h-14 text-center text-xl font-black bg-obsidian-card border border-border rounded-xl focus:border-brand/50 focus:ring-1 focus:ring-brand/20 outline-none transition-all text-zinc-text placeholder:text-zinc-muted/30"
               placeholder="•"
               value={code[index] || ''}
               onChange={(e) => {
@@ -84,26 +84,25 @@ export const OTPForm: React.FC = () => {
           type="submit"
           variant="primary"
           size="lg"
-          className="w-full h-14 bg-brand text-obsidian-outer shadow-2xl shadow-brand/20 group overflow-hidden relative rounded-[1.25rem]"
+          className="w-full h-14 rounded-2xl"
           disabled={isLoading || code.length !== 6}
         >
           {isLoading ? (
             <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span className="font-black uppercase tracking-[0.3em] text-lg">{t('common.loading')}</span>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-bold uppercase tracking-[0.2em]">{t('common.loading')}</span>
             </div>
           ) : (
-            <span className="font-black uppercase tracking-[0.25em] text-base">{t('auth.otp.submit') || 'VERIFY PROTOCOL'}</span>
+            <span className="font-bold uppercase tracking-[0.15em]">{t('auth.otp.submit') || 'VERIFY PROTOCOL'}</span>
           )}
-          <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
         </AmberButton>
       </form>
 
-      <div className="text-center pt-4">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
-        <p className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] leading-relaxed">
-          {t('auth.otp.resend') || "DIDN'T RECEIVE THE CODE?"}<br />
-          <button className="text-brand hover:text-brand-light transition-all mt-4 inline-block decoration-brand/30 underline underline-offset-8 decoration-2 hover:scale-105">
+      <div className="text-center pt-2">
+        <div className="w-full h-px bg-border mb-6" />
+        <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.1em] leading-relaxed">
+          {t('auth.otp.resend') || "DIDN'T RECEIVE THE CODE?"}{' '}
+          <button className="text-brand hover:opacity-80 transition-opacity">
             {t('auth.otp.resend_button') || 'RESEND REQUEST'}
           </button>
         </p>

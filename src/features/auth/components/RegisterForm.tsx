@@ -26,7 +26,6 @@ export const RegisterForm: React.FC = () => {
     e.preventDefault();
     setLocalError(null);
 
-    // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setLocalError(t('error.password_mismatch') || 'Passwords do not match');
       return;
@@ -50,27 +49,25 @@ export const RegisterForm: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center space-y-10 py-12"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="text-center space-y-8 py-8"
       >
-        <div className="flex justify-center relative">
-          <div className="absolute inset-0 bg-success/20 blur-3xl rounded-full scale-150 animate-pulse-slow" />
-          <div className="w-24 h-24 bg-success/10 rounded-[2.5rem] flex items-center justify-center border border-success/20 shadow-[0_0_50px_rgba(16,185,129,0.2)] ring-1 ring-success/30 relative z-10">
-            <CheckCircle2 className="w-12 h-12 text-success" />
+        <div className="flex justify-center">
+          <div className="w-20 h-20 bg-success/10 rounded-2xl flex items-center justify-center border border-success/20">
+            <CheckCircle2 className="w-10 h-10 text-success" />
           </div>
         </div>
-        <div className="space-y-4">
-          <h2 className="text-3xl font-black text-white tracking-tighter uppercase drop-shadow-lg">
-             {t('auth.register.success_title')}
+        <div className="space-y-3">
+          <h2 className="text-2xl font-black text-zinc-text tracking-tight uppercase">
+            {t('auth.register.success_title')}
           </h2>
-          <p className="text-[13px] font-black text-zinc-muted uppercase tracking-[0.2em] max-w-[320px] mx-auto leading-relaxed">
+          <p className="text-sm font-medium text-zinc-muted max-w-[320px] mx-auto leading-relaxed">
             {t('auth.register.success_desc')}
           </p>
         </div>
-        <Link href="/login" className="inline-block w-full mt-6">
-          <AmberButton variant="primary" size="lg" className="w-full h-14 bg-brand text-obsidian-outer shadow-2xl shadow-brand/20 group overflow-hidden relative rounded-[1.25rem]">
-             <span className="font-black uppercase tracking-[0.25em] text-base">{t('auth.register.proceed_login')}</span>
-             <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
+        <Link href="/login" className="inline-block w-full">
+          <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl">
+            <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.proceed_login')}</span>
           </AmberButton>
         </Link>
       </motion.div>
@@ -79,10 +76,10 @@ export const RegisterForm: React.FC = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full space-y-10"
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full space-y-8"
     >
       <AnimatePresence mode="wait">
         {currentError && (
@@ -90,23 +87,22 @@ export const RegisterForm: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-danger/10 border border-danger/20 p-5 rounded-3xl flex items-center gap-4 overflow-hidden"
+            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
           >
-            <div className="w-2 h-2 rounded-full bg-danger animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
-            <p className="text-[12px] font-black text-danger uppercase tracking-[0.1em]">
+            <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
+            <p className="text-xs font-bold text-danger">
               {currentError}
             </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid gap-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-5">
           <AmberInput
             label={t('auth.register.username') || 'Username'}
             placeholder={t('auth.register.username_placeholder') || 'IDENTITY'}
             icon={<User className="w-5 h-5 text-brand/60" />}
-            className="h-14 text-base bg-white/[0.03] border-white/10 focus:border-brand/50 rounded-2xl transition-all"
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             required
@@ -117,19 +113,17 @@ export const RegisterForm: React.FC = () => {
             type="email"
             placeholder={t('auth.register.email_placeholder') || 'CONTACT@PROTOCOL.COM'}
             icon={<Mail className="w-5 h-5 text-brand/60" />}
-            className="h-14 text-base bg-white/[0.03] border-white/10 focus:border-brand/50 rounded-2xl transition-all"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <AmberInput
               label={t('auth.register.password') || 'Password'}
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               icon={<Lock className="w-5 h-5 text-brand/60" />}
-              className="h-14 text-base bg-white/[0.03] border-white/10 focus:border-brand/50 rounded-2xl transition-all"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -140,12 +134,11 @@ export const RegisterForm: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               icon={<Lock className="w-5 h-5 text-brand/60" />}
-              className="h-14 text-base bg-white/[0.03] border-white/10 focus:border-brand/50 rounded-2xl transition-all"
               rightElement={
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 me-2 text-zinc-muted/60 hover:text-brand transition-colors outline-none"
+                  className="p-2 me-2 text-zinc-muted hover:text-brand transition-colors outline-none"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -158,37 +151,34 @@ export const RegisterForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-6">
-          <AmberButton
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-full h-14 bg-brand text-obsidian-outer shadow-2xl shadow-brand/20 group overflow-hidden relative rounded-[1.25rem]"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="font-black uppercase tracking-[0.3em] text-lg">{t('common.loading')}</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-3">
-                <span className="font-black uppercase tracking-[0.25em] text-base">{t('auth.register.submit') || 'INITIALIZE ACCOUNT'}</span>
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
-          </AmberButton>
-        </div>
+        <AmberButton
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full h-14 rounded-2xl"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-bold uppercase tracking-[0.2em]">{t('common.loading')}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.submit') || 'INITIALIZE ACCOUNT'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          )}
+        </AmberButton>
       </form>
 
-      <div className="pt-4">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
-        <p className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] text-center leading-relaxed">
-          {t('auth.register.has_account') || 'ALREADY HAVE ACCESS?'}<br />
+      <div className="pt-2">
+        <div className="w-full h-px bg-border mb-6" />
+        <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.1em] text-center leading-relaxed">
+          {t('auth.register.has_account') || 'ALREADY HAVE ACCESS?'}{' '}
           <Link
             href="/login"
-            className="text-white hover:text-brand transition-all mt-4 inline-block decoration-brand/30 underline underline-offset-8 decoration-2 hover:scale-105"
+            className="text-brand hover:opacity-80 transition-opacity"
           >
             {t('auth.register.login') || 'RETURN TO SIGN IN'}
           </Link>
