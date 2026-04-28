@@ -35,6 +35,23 @@ export const en: Record<string, string> = {
   // Register Form
   "auth.register.password_mismatch_inline": "Passwords do not match",
 
+  // Forgot Password
+  "auth.forgot.title": "Reset Password",
+  "auth.forgot.subtitle": "Recover your account",
+  "auth.forgot.email": "Email Address",
+  "auth.forgot.email_placeholder": "your@email.com",
+  "auth.forgot.submit": "Send Reset Link",
+  "auth.forgot.instructions": "Enter your email address and we will send you a link to reset your password.",
+  "auth.forgot.success_title": "Email Sent",
+  "auth.forgot.success_desc": "Check your email for a password reset link.",
+  "auth.forgot.back_to_login": "Back to Login",
+  "auth.forgot.error_empty": "Please enter your email address",
+
+  // Password Strength
+  "auth.password.weak": "Weak",
+  "auth.password.fair": "Fair",
+  "auth.password.strong": "Strong",
+
   // Sidebar service labels (used by Sidebar component: t(`service.${sectionTitle}.name`))
   "service.sidebar.general.name": "General",
   "service.sidebar.operations.name": "Operations",

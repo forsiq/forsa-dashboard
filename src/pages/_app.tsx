@@ -32,7 +32,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   
   // Public routes that don't need AuthGuard or Layout
-  const isPublicRoute = ['/login', '/register', '/otp', '/404'].includes(router.pathname);
+  const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
 
   return (
     <QueryClientProvider client={queryClient}>

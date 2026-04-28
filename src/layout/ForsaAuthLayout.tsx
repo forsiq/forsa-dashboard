@@ -15,6 +15,9 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-obsidian-outer selection:bg-brand/30 selection:text-white" dir={dir}>
+      {/* Brand Accent Bar */}
+      <div className="w-full h-1 bg-gradient-to-r from-brand via-brand/60 to-brand shrink-0" />
+
       {/* Top Bar */}
       <div className="flex items-center justify-between p-4 md:p-6">
         <div className="flex items-center gap-3">
@@ -68,10 +71,16 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mt-8 text-center"
           >
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-success" />
-              <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.3em]">
-                Secure Connection
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.2em]">
+                  Secure Connection
+                </p>
+              </div>
+              <span className="text-zinc-muted/30">|</span>
+              <p className="text-[10px] font-bold text-zinc-muted/60 uppercase tracking-[0.2em]">
+                &copy; {new Date().getFullYear()} ZoneVast
               </p>
             </div>
           </motion.div>

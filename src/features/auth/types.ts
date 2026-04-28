@@ -24,6 +24,10 @@ export interface AuthResponse {
   };
 }
 
+export interface ForgotPasswordData {
+  email: string;
+}
+
 export interface AuthError {
   message: string;
   code?: string;

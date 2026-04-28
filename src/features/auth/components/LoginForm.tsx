@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Lock, Eye, EyeOff, Loader2, User, ChevronRight } from 'lucide-react';
+import { Lock, Eye, EyeOff, Loader2, User, ChevronRight, WifiOff, ShieldX, AlertTriangle, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberButton } from '@core/components/AmberButton';
 import { useAuth } from '../hooks/useAuth';
 import { LoginCredentials } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
+
+function getErrorInfo(error: string): { icon: React.ReactNode; type: 'network' | 'auth' | 'validation' } {
+  const lower = error.toLowerCase();
+  if (lower.includes('timeout') || lower.includes('network') || lower.includes('connection') || lower.includes('connectivity')) {
+    return { icon: <WifiOff className="w-4 h-4 text-danger shrink-0" />, type: 'network' };
+  }
+  if (lower.includes('invalid') || lower.includes('credentials') || lower.includes('unauthorized') || lower.includes('401')) {
+    return { icon: <ShieldX className="w-4 h-4 text-danger shrink-0" />, type: 'auth' };
+  }
+  if (lower.includes('too many') || lower.includes('rate') || lower.includes('429') || lower.includes('attempts')) {
+    return { icon: <AlertTriangle className="w-4 h-4 text-warning shrink-0" />, type: 'validation' };
+  }
+  return { icon: <AlertTriangle className="w-4 h-4 text-danger shrink-0" />, type: 'validation' };
+}
 
 export const LoginForm: React.FC = () => {
   const { t } = useLanguage();
@@ -55,6 +69,7 @@ export const LoginForm: React.FC = () => {
   };
 
   const currentError = localError || authError;
+  const errorInfo = currentError ? getErrorInfo(currentError) : null;
 
   return (
     <motion.div 
@@ -64,17 +79,37 @@ export const LoginForm: React.FC = () => {
       className="w-full space-y-8"
     >
       <AnimatePresence mode="wait">
-        {currentError && (
+        {currentError && errorInfo && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
+            className={`p-4 rounded-2xl flex items-center gap-3 overflow-hidden ${
+              errorInfo.type === 'validation' && currentError.toLowerCase().includes('too many')
+                ? 'bg-warning/10 border border-warning/20'
+                : 'bg-danger/10 border border-danger/20'
+            }`}
           >
-            <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
-            <p className="text-xs font-bold text-danger">
-              {currentError}
-            </p>
+            {errorInfo.icon}
+            <div className="flex-1 min-w-0">
+              <p className={`text-xs font-bold ${
+                errorInfo.type === 'validation' && currentError.toLowerCase().includes('too many')
+                  ? 'text-warning'
+                  : 'text-danger'
+              }`}>
+                {currentError}
+              </p>
+            </div>
+            {errorInfo.type === 'network' && (
+              <button
+                type="button"
+                onClick={() => setLocalError(null)}
+                className="shrink-0 p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                title="Retry"
+              >
+                <RotateCw className="w-3.5 h-3.5 text-zinc-muted" />
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

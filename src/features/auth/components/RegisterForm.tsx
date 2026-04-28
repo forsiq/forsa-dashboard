@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +7,21 @@ import { AmberButton } from '@core/components/AmberButton';
 import { useAuth } from '../hooks/useAuth';
 import { RegisterData } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
+
+function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+  if (!password) return { score: 0, label: '', color: '' };
+  
+  let score = 0;
+  if (password.length >= 6) score++;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) return { score: 1, label: 'weak', color: 'bg-danger' };
+  if (score <= 3) return { score: 2, label: 'fair', color: 'bg-warning' };
+  return { score: 3, label: 'strong', color: 'bg-success' };
+}
 
 export const RegisterForm: React.FC = () => {
   const { t } = useLanguage();
@@ -21,6 +36,8 @@ export const RegisterForm: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+
+  const passwordStrength = useMemo(() => getPasswordStrength(formData.password), [formData.password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,7 +135,7 @@ export const RegisterForm: React.FC = () => {
             required
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
             <AmberInput
               label={t('auth.register.password') || 'Password'}
               type={showPassword ? 'text' : 'password'}
@@ -128,27 +145,47 @@ export const RegisterForm: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
             />
-
-            <AmberInput
-              label={t('auth.register.confirm_password') || 'Confirm'}
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              icon={<Lock className="w-5 h-5 text-brand/60" />}
-              rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 me-2 text-zinc-muted hover:text-brand transition-colors outline-none"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              }
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              error={formData.password !== formData.confirmPassword && formData.confirmPassword ? t('auth.register.password_mismatch_inline') : ''}
-              required
-            />
+            {formData.password && (
+              <div className="flex items-center gap-3 px-1">
+                <div className="flex-1 flex gap-1">
+                  {[1, 2, 3].map((level) => (
+                    <div
+                      key={level}
+                      className={`h-1 flex-1 rounded-full transition-all ${
+                        passwordStrength.score >= level ? passwordStrength.color : 'bg-border'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                  passwordStrength.label === 'weak' ? 'text-danger' :
+                  passwordStrength.label === 'fair' ? 'text-warning' : 'text-success'
+                }`}>
+                  {t(`auth.password.${passwordStrength.label}`)}
+                </span>
+              </div>
+            )}
           </div>
+
+          <AmberInput
+            label={t('auth.register.confirm_password') || 'Confirm'}
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            icon={<Lock className="w-5 h-5 text-brand/60" />}
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="p-2 me-2 text-zinc-muted hover:text-brand transition-colors outline-none"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            }
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            error={formData.password !== formData.confirmPassword && formData.confirmPassword ? t('auth.register.password_mismatch_inline') : ''}
+            required
+          />
         </div>
 
         <AmberButton

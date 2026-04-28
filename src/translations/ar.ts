@@ -35,6 +35,23 @@ export const ar: Record<string, string> = {
   // Register Form
   "auth.register.password_mismatch_inline": "كلمات المرور غير متطابقة",
 
+  // Forgot Password
+  "auth.forgot.title": "إعادة تعيين كلمة المرور",
+  "auth.forgot.subtitle": "استعادة حسابك",
+  "auth.forgot.email": "البريد الإلكتروني",
+  "auth.forgot.email_placeholder": "your@email.com",
+  "auth.forgot.submit": "إرسال رابط إعادة التعيين",
+  "auth.forgot.instructions": "أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
+  "auth.forgot.success_title": "تم إرسال البريد",
+  "auth.forgot.success_desc": "تحقق من بريدك الإلكتروني للحصول على رابط إعادة تعيين كلمة المرور.",
+  "auth.forgot.back_to_login": "العودة لتسجيل الدخول",
+  "auth.forgot.error_empty": "يرجى إدخال بريدك الإلكتروني",
+
+  // Password Strength
+  "auth.password.weak": "ضعيفة",
+  "auth.password.fair": "متوسطة",
+  "auth.password.strong": "قوية",
+
   // Sidebar service labels
   "service.sidebar.general.name": "عام",
   "service.sidebar.operations.name": "العمليات",

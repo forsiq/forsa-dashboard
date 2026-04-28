@@ -1,5 +1,5 @@
 import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
-import { LoginCredentials, RegisterData, OTPData, AuthResponse } from '../types';
+import { LoginCredentials, RegisterData, OTPData, AuthResponse, ForgotPasswordData } from '../types';
 
 /**
  * Auth API base URL - dedicated env var for auth service,
@@ -206,5 +206,27 @@ export const verifyOTP = async (data: OTPData): Promise<AuthResponse> => {
       });
     }, 1000);
   });
+};
+
+/**
+ * Request password reset - sends reset link to email
+ */
+export const requestPasswordReset = async (data: ForgotPasswordData): Promise<{ message: string }> => {
+  const response = await fetchWithTimeout(buildAuthUrl('password/reset/'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getProjectHeaders()
+    },
+    body: JSON.stringify({ email: data.email })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || 'Failed to send reset email. Please try again.');
+  }
+
+  const result = await response.json();
+  return { message: result.detail || result.message || 'Reset link sent to your email.' };
 };
 
