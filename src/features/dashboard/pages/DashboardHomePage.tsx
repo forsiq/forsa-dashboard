@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDashboardData } from '../hooks/useDashboardData';
-import { StatsCard } from '../components/StatsCard';
-import { ActivityFeed } from '../components/ActivityFeed';
-import { QuickActions } from '../components/QuickActions';
+import { StatsCard } from '@core/core/dashboard/StatsCard';
+import { ActivityFeed } from '@core/core/dashboard/ActivityFeed';
+import { QuickActions } from '@core/core/dashboard/QuickActions';
 import { DashboardCharts } from '../components/DashboardCharts';
 import { TopAuctions } from '../components/TopAuctions';
 import { CriticalNodes } from '../components/CriticalNodes';

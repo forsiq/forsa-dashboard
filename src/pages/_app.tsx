@@ -10,7 +10,7 @@ import { ToastProvider } from '@core/contexts/ToastContext';
 import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
-import { AuthGuard } from '@features/_core/components/AuthGuard';
+import { AuthGuard } from '@core/core/components/AuthGuard';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';

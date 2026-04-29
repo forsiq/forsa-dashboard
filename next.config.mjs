@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +24,37 @@ const nextConfig = {
       '@styles': path.resolve(__dirname, 'src/styles'),
       '@core': path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/src'),
     };
+
+    // File-replacement override: if a local file exists in src/core/,
+    // it takes priority over the core-ui package version.
+    // Pattern: @core/core/* → checks src/core/* first, then falls back to package
+    config.resolve.plugins = config.resolve.plugins || [];
+    config.resolve.plugins.push({
+      apply(resolver) {
+        resolver.hooks.resolve.tapAsync('CoreOverridePlugin', (request, context, callback) => {
+          if (request.request && request.request.startsWith('@core/core/')) {
+            const relativePath = request.request.replace('@core/core/', '');
+            const localPath = path.resolve(__dirname, 'src/core', relativePath);
+            
+            // Check if local override exists (with common extensions)
+            const extensions = ['', '.tsx', '.ts', '.jsx', '.js', '/index.tsx', '/index.ts'];
+            for (const ext of extensions) {
+              if (fs.existsSync(localPath + ext)) {
+                const overrideRequest = { ...request, request: localPath + ext };
+                return resolver.doResolve(
+                  resolver.hooks.resolve,
+                  overrideRequest,
+                  `core override: ${request.request} → src/core/${relativePath}${ext}`,
+                  context,
+                  callback
+                );
+              }
+            }
+          }
+          callback();
+        });
+      }
+    });
 
     if (dev) {
       config.watchOptions = {

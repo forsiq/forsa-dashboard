@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { ActivityItem, StatCard } from '../types';
+import { ActivityItem, StatCard } from '@core/core/dashboard/types';
 import { auctionBaseApi } from '../../auctions/api/auction-api';
 import { orderBaseApi } from '../../../services/orders/api/orders';
 import { categoryBaseApi } from '../../../services/categories/api/categories';
