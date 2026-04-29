@@ -20,6 +20,33 @@ export interface Category {
   nameAr?: string;
 }
 
+/**
+ * Get the localized name for a category based on the current language.
+ * Falls back to the default `name` if no translation is available.
+ */
+export function getLocalizedName(
+  category: Category,
+  language: string,
+): string {
+  if (!category) return '';
+  const translated = category.translations?.[language]?.name;
+  if (translated) return translated;
+  if (language === 'ar' && category.nameAr) return category.nameAr;
+  return category.name;
+}
+
+/**
+ * Get the localized description for a category based on the current language.
+ * Falls back to the default `description` if no translation is available.
+ */
+export function getLocalizedDescription(
+  category: Category,
+  language: string,
+): string {
+  if (!category) return '';
+  return category.translations?.[language]?.description || category.description || '';
+}
+
 export interface CreateCategoryInput {
   name: string;
   slug?: string;

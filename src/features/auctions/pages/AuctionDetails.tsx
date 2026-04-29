@@ -6,7 +6,6 @@ import {
   Users,
   DollarSign,
   ArrowLeft,
-  Heart,
   Share2,
   TrendingUp,
   ShieldCheck,
@@ -244,9 +243,6 @@ export const AuctionDetails: React.FC = () => {
             </AmberButton>
           ) : null}
 
-          <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-danger hover:border-danger/20 transition-all">
-            <Heart className={cn("w-4 h-4", auction.isWatched && "fill-danger text-danger")} />
-          </button>
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>

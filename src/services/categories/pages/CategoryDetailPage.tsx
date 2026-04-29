@@ -24,12 +24,13 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useGetCategory, useDeleteCategoryMutation } from '../hooks';
 import type { Category } from '../types';
+import { getLocalizedName, getLocalizedDescription } from '../types';
 
 /**
  * CategoryDetailPage - Category details view
  */
 export function CategoryDetailPage() {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const router = useRouter();
   const { id } = router.query;
   const [isClient, setIsClient] = useState(false);
@@ -113,7 +114,7 @@ export function CategoryDetailPage() {
               </span>
             </div>
             <h1 className="text-4xl font-black text-zinc-text tracking-tighter uppercase leading-none mt-1">
-              {category.name}
+              {getLocalizedName(category, language)}
             </h1>
           </div>
         </div>
@@ -166,7 +167,7 @@ export function CategoryDetailPage() {
               <DetailRow
                 icon={<LayoutGrid className="w-4 h-4" />}
                 label={t('category.name') || 'Name'}
-                value={category.name}
+                value={getLocalizedName(category, language)}
                 isRTL={isRTL}
               />
 
@@ -201,7 +202,7 @@ export function CategoryDetailPage() {
                     </span>
                   </div>
                   <span className="text-xs font-bold text-zinc-text tracking-tight max-w-[60%] text-end">
-                    {category.description}
+                    {getLocalizedDescription(category, language)}
                   </span>
                 </div>
               )}

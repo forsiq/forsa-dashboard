@@ -17,6 +17,7 @@ import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUpdateCategoryMutation } from '../hooks';
 import type { Category } from '../types';
+import { getLocalizedName, getLocalizedDescription } from '../types';
 
 // Stats are now handled by StatsGrid component
 
@@ -24,7 +25,7 @@ import type { Category } from '../types';
  * CategoriesPage - Main categories list page
  */
 export function CategoriesPage() {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -54,6 +55,7 @@ export function CategoriesPage() {
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase();
       categories = categories.filter((c: Category) =>
+        getLocalizedName(c, language)?.toLowerCase().includes(query) ||
         c.name?.toLowerCase().includes(query) ||
         c.slug?.toLowerCase().includes(query) ||
         c.description?.toLowerCase().includes(query)
@@ -61,7 +63,7 @@ export function CategoriesPage() {
     }
 
     return categories;
-  }, [data?.categories, statusFilter, debouncedSearch]);
+  }, [data?.categories, statusFilter, debouncedSearch, language]);
 
   // Fetch stats
   const { data: stats, isLoading: statsLoading } = useGetCategoryStats();
@@ -100,7 +102,7 @@ export function CategoriesPage() {
 
     openConfirm({
       title: t('category.status') || 'تغيير الحالة',
-      message: `${t('category.toggle_status_confirm') || 'هل تريد تغيير حالة الفئة إلى'} ${statusText}?\n\n"${category.name}"`,
+      message: `${t('category.toggle_status_confirm') || 'هل تريد تغيير حالة الفئة إلى'} ${statusText}?\n\n"${getLocalizedName(category, language)}"`,
       variant: 'warning',
       confirmText: statusText,
       onConfirm: () => {
@@ -123,8 +125,8 @@ export function CategoriesPage() {
             <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
               <Icon className="w-4 h-4 text-zinc-muted" />
             </div>
-            <span className="text-sm font-bold text-zinc-text tracking-tight uppercase">
-              {category.name}
+            <span className="text-sm font-bold text-zinc-text tracking-tight">
+              {getLocalizedName(category, language)}
             </span>
           </div>
         );
@@ -196,7 +198,7 @@ export function CategoriesPage() {
       onClick: (category: Category) => {
         openConfirm({
           title: t('category.delete') || 'حذف الفئة',
-          message: `${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${category.name}"`,
+          message: `${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${getLocalizedName(category, language)}"`,
           variant: 'destructive',
           onConfirm: () => {
             handleDelete(category.id, category.name);

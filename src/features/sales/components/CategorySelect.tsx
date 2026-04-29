@@ -8,6 +8,7 @@ import { useGetCategories } from '@services/categories/hooks';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import type { CategoriesResponse } from '@services/categories/types';
+import { getLocalizedName } from '@services/categories/types';
 
 interface CategorySelectProps {
   value?: string;
@@ -20,7 +21,7 @@ export function CategorySelect({
   onChange,
   disabled = false,
 }: CategorySelectProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Fetch categories
   const { data: categoriesData, isLoading } = useGetCategories({
@@ -34,7 +35,7 @@ export function CategorySelect({
   // Map categories to dropdown options
   const options = categories.map((cat) => ({
     value: cat.id,
-    label: cat.name,
+    label: getLocalizedName(cat, language),
   }));
 
   return (

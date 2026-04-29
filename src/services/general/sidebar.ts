@@ -44,13 +44,4 @@ export const sidebarSections: MenuSection[] = [
       { path: '/customers', label: 'customer.title', icon: 'Users' },
     ]
   },
-  {
-    title: 'sidebar.reports',
-    items: [
-      { path: '/reports/sales-overview', label: 'report.sales_overview_section', icon: 'BarChart3' },
-      { path: '/reports/auction-performance', label: 'report.auction_performance', icon: 'TrendingUp' },
-      { path: '/reports/group-buying-analytics', label: 'report.group_buying_analytics', icon: 'FileText' },
-      { path: '/reports/customer-insights', label: 'report.customer_insights', icon: 'Users' },
-    ]
-  },
 ];

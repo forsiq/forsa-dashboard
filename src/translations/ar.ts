@@ -52,6 +52,9 @@ export const ar: Record<string, string> = {
   "auth.password.fair": "متوسطة",
   "auth.password.strong": "قوية",
 
+  // Common overrides (simpler than core-ui defaults)
+  "common.all_protocols": "الكل",
+
   // Sidebar service labels
   "service.sidebar.general.name": "عام",
   "service.sidebar.operations.name": "العمليات",

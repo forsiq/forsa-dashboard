@@ -143,27 +143,6 @@ export const menuSections: MenuSection[] = [
     ],
   },
   {
-    title: 'sidebar.reports',
-    items: [
-      {
-        path: '/reports',
-        label: 'report.dashboard',
-        icon: 'BarChart3',
-        serviceId: 'reports',
-      },
-      {
-        path: '/reports/analytics',
-        label: 'report.analytics',
-        icon: 'TrendingUp',
-      },
-      {
-        path: '/reports/sales',
-        label: 'report.sales',
-        icon: 'FileText',
-      },
-    ],
-  },
-  {
     title: 'sidebar.general',
     items: [
       {

@@ -41,6 +41,7 @@ import {
 } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useList as useCategories } from '@services/categories/hooks';
+import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import type { GroupBuying } from '../types';
 
@@ -48,7 +49,7 @@ import type { GroupBuying } from '../types';
  * GroupBuyingListPage - Campaign Management with DataTable
  */
 export const GroupBuyingListPage: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t, language, dir } = useLanguage();
   const router = useRouter();
   const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
@@ -441,7 +442,7 @@ export const GroupBuyingListPage: React.FC = () => {
                           : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
                       )}
                     >
-                      {cat.name}
+                      {getLocalizedName(cat, language)}
                     </button>
                   ))}
                 </div>

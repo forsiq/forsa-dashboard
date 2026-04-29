@@ -52,6 +52,9 @@ export const en: Record<string, string> = {
   "auth.password.fair": "Fair",
   "auth.password.strong": "Strong",
 
+  // Common overrides (simpler than core-ui defaults)
+  "common.all_protocols": "All",
+
   // Sidebar service labels (used by Sidebar component: t(`service.${sectionTitle}.name`))
   "service.sidebar.general.name": "General",
   "service.sidebar.operations.name": "Operations",

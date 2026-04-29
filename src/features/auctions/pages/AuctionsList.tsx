@@ -34,6 +34,7 @@ import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useGetAuctions, useGetAuctionStats, useDeleteAuction, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useList as useCategories } from '@services/categories/hooks';
+import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
 
@@ -41,7 +42,7 @@ import type { AuctionStatus, Auction } from '../types/auction.types';
  * AuctionsList - Auction Management with DataTable
  */
 export const AuctionsList: React.FC = () => {
-    const { t, dir } = useLanguage();
+    const { t, language, dir } = useLanguage();
     const router = useRouter();
     const isRTL = dir === 'rtl';
 
@@ -443,7 +444,7 @@ export const AuctionsList: React.FC = () => {
                                                 : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
                                         )}
                                     >
-                                        {cat.name}
+                                        {getLocalizedName(cat, language)}
                                     </button>
                                 ))}
                             </div>

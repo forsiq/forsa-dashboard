@@ -11,6 +11,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'file.zonevast.com' },
       { protocol: 'https', hostname: '**.amazonaws.com' },
+      { protocol: 'https', hostname: 'picsum.photos' },
     ],
   },
   webpack: (config, { dev, isServer }) => {

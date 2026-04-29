@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { ArrowLeft, X, AlertCircle } from 'lucide-react';
 import { useCreateAuction } from '../api';
 import { useList as useCategories } from '../../../services/categories/hooks';
+import { getLocalizedName } from '../../../services/categories/types';
 
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -21,7 +22,7 @@ import { AmberImageUpload } from '@core/components/AmberImageUpload';
 
 export const AuctionAdd = () => {
   const router = useRouter();
-  const { t, dir } = useLanguage();
+  const { t, language, dir } = useLanguage();
   const createAuction = useCreateAuction();
 
   const [formData, setFormData] = useState<Partial<AuctionCreateInput>>({
@@ -52,7 +53,7 @@ export const AuctionAdd = () => {
     if (items.length > 0) {
       return items.map((cat: any) => ({
         id: cat.id,
-        name: cat.name || cat.title || '',
+        name: getLocalizedName(cat, language) || cat.title || '',
         key: cat.slug || String(cat.id),
       }));
     }
@@ -174,7 +175,7 @@ export const AuctionAdd = () => {
             label={t('auction.form.category')}
             value={String(formData.categoryId)}
             onChange={(val) => handleInputChange('categoryId', parseInt(val))}
-            options={categories.map(cat => ({ value: String(cat.id), label: cat.name }))}
+            options={categories.map(cat => ({ value: String(cat.id), label: getLocalizedName(cat, language) }))}
           />
         </Card>
 
