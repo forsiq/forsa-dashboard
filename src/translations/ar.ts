@@ -54,6 +54,12 @@ export const ar: Record<string, string> = {
 
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "الكل",
+  "common.all": "الكل",
+
+  // Auction overrides - simplify confusing "protocol" terminology
+  "auction.table.protocol_duration": "المدة",
+  "auction.config.state_protocol": "الحالة",
+  "auction.config.protocol_identifier_search": "بحث بالمعـرّف أو العنوان",
 
   // Sidebar service labels
   "service.sidebar.general.name": "عام",

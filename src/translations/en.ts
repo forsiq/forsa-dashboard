@@ -54,6 +54,12 @@ export const en: Record<string, string> = {
 
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "All",
+  "common.all": "All",
+
+  // Auction overrides - simplify confusing "protocol" terminology
+  "auction.table.protocol_duration": "Duration",
+  "auction.config.state_protocol": "Status",
+  "auction.config.protocol_identifier_search": "Search by ID or Title",
 
   // Sidebar service labels (used by Sidebar component: t(`service.${sectionTitle}.name`))
   "service.sidebar.general.name": "General",
