@@ -70,6 +70,17 @@ export async function updateCustomerStatus(id: string, status: Customer['status'
   return response.data.data;
 }
 
+export async function getCustomerBids(
+  id: string,
+  page = 1,
+  limit = 20,
+): Promise<import('../types').CustomerBidsResponse> {
+  const response = await customerBaseApi.getInstance().get(`/customers/${id}/bids`, {
+    params: { page, limit },
+  });
+  return response.data;
+}
+
 export const customerKeys = {
   all: ['customers'] as const,
   lists: () => [...customerKeys.all, 'list'] as const,
@@ -77,5 +88,6 @@ export const customerKeys = {
   details: () => [...customerKeys.all, 'detail'] as const,
   detail: (id: string) => [...customerKeys.details(), id] as const,
   stats: () => [...customerKeys.all, 'stats'] as const,
+  bids: (id: string) => [...customerKeys.detail(id), 'bids'] as const,
 };
 

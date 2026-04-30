@@ -28,6 +28,14 @@ export const useGetCustomerStats = () => {
   });
 };
 
+export const useGetCustomerBids = (id: string, page = 1, limit = 20) => {
+  return useQuery<import('../types').CustomerBidsResponse>({
+    queryKey: api.customerKeys.bids(id),
+    queryFn: () => api.getCustomerBids(id, page, limit),
+    enabled: !!id,
+  });
+};
+
 export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({

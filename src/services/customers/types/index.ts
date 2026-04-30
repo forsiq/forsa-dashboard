@@ -70,3 +70,33 @@ export interface CustomerStats {
   newThisMonth: number;
   topSpenders: Customer[];
 }
+
+export interface CustomerBid {
+  id: number;
+  auctionId: number;
+  auctionTitle: string | null;
+  auctionSlug: string | null;
+  auctionImage: string | null;
+  auctionStatus: string | null;
+  amount: number;
+  status: string;
+  isAutoBid: boolean;
+  createdAt: string;
+}
+
+export interface CustomerBidSummary {
+  totalBids: number;
+  totalAuctions: number;
+  winningBids: number;
+  winRate: number;
+  totalSpent: number;
+}
+
+export interface CustomerBidsResponse {
+  data: CustomerBid[];
+  summary: CustomerBidSummary;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

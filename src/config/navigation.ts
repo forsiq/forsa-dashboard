@@ -86,11 +86,6 @@ export const menuSections: MenuSection[] = [
         label: 'auction.create',
         icon: 'PlusCircle',
       },
-      {
-        path: '/my-bids',
-        label: 'auction.bids',
-        icon: 'Hammer',
-      },
     ],
   },
   {

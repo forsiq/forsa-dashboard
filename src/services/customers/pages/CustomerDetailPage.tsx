@@ -93,7 +93,7 @@ export function CustomerDetailPage() {
               </div>
               <p className="text-base text-zinc-secondary font-bold flex items-center gap-2 justify-center md:justify-start opacity-70">
                 <Building2 className="w-4 h-4 text-[var(--color-brand)]" />
-                {customer.company || 'INDEPENDENT OPERATOR'}
+                {customer.company || t('customer.independent') || 'مشغل مستقل'}
               </p>
             </div>
           </div>
@@ -112,29 +112,19 @@ export function CustomerDetailPage() {
         <div className="lg:col-span-2 space-y-8">
           {/* Detailed Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden group">
-               <div className="flex items-center gap-4 relative z-10">
-                 <div className="p-3 rounded-xl bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-                    <Mail className="w-5 h-5" />
-                 </div>
-                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.email') || 'Comms Channel'}</span>
-                    <p className="text-sm font-bold text-zinc-text">{customer.email}</p>
-                 </div>
-               </div>
-            </Card>
-
+            {customer.phone && (
             <Card className="p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden group">
                <div className="flex items-center gap-4 relative z-10">
                  <div className="p-3 rounded-xl bg-[var(--color-info)]/10 text-[var(--color-info)]">
                     <Phone className="w-5 h-5" />
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'Mobile Frequency'}</span>
-                    <p dir="ltr" className="text-sm font-bold text-zinc-text text-end">{customer.phone ? formatPhone(customer.phone) : 'N/A'}</p>
+                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'رقم الهاتف'}</span>
+                    <p dir="ltr" className="text-sm font-bold text-zinc-text text-end">{formatPhone(customer.phone)}</p>
                  </div>
                </div>
             </Card>
+            )}
 
             <Card className="p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden group">
                <div className="flex items-center gap-4 relative z-10">
@@ -144,7 +134,7 @@ export function CustomerDetailPage() {
                  <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.registered') || 'Node Initialization'}</span>
                     <p className="text-sm font-bold text-zinc-text">
-                      {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'UNKNOWN'}
+                      {(customer.createdAt || customer.joinDate) ? new Date(customer.createdAt || customer.joinDate).toLocaleDateString() : 'N/A'}
                     </p>
                  </div>
                </div>
@@ -157,33 +147,35 @@ export function CustomerDetailPage() {
                  </div>
                  <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.timezone') || 'Temporal Zone'}</span>
-                    <p className="text-sm font-bold text-zinc-text">GMT +3 (Bahrain)</p>
+                    <p className="text-sm font-bold text-zinc-text">GMT +3 (Iraq)</p>
                  </div>
                </div>
             </Card>
           </div>
 
-          {/* Spatial Matrix */}
+          {/* Spatial Matrix - only show if address data exists */}
+          {customer.address && (customer.address.street || customer.address.city || customer.address.country) && (
           <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl relative overflow-hidden">
              <div className="flex items-center gap-3 mb-8 border-b border-[var(--color-border)] pb-6">
                 <MapPin className="w-5 h-5 text-[var(--color-brand)]" />
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('customer.spatial_matrix') || 'Geospatial Matrix'}</h3>
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('customer.spatial_matrix') || 'العنوان'}</h3>
              </div>
              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div className="space-y-1">
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.street') || 'Address'}</span>
+                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.street') || 'الشارع'}</span>
                    <p className="text-sm font-bold text-zinc-text line-clamp-1">{customer.address?.street || '-'}</p>
                 </div>
                 <div className="space-y-1">
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.city') || 'Hub'}</span>
+                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.city') || 'المدينة'}</span>
                    <p className="text-sm font-bold text-zinc-text">{customer.address?.city || '-'}</p>
                 </div>
                 <div className="space-y-1">
-                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.country') || 'Sovereign'}</span>
+                   <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.country') || 'الدولة'}</span>
                    <p className="text-sm font-bold text-zinc-text">{customer.address?.country || '-'}</p>
                 </div>
              </div>
           </Card>
+          )}
         </div>
 
         {/* Sidebar Intelligence */}
@@ -193,20 +185,20 @@ export function CustomerDetailPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-brand)]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[var(--color-brand)]/10 transition-colors" />
               <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/5">
                 <CreditCard className="w-5 h-5 text-[var(--color-brand)]" />
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">Market Intelligence</h3>
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('customer.market_intelligence') || 'Market Intelligence'}</h3>
               </div>
               
               <div className="space-y-6">
                  <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-zinc-muted uppercase">Thread Volume</span>
+                    <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.bids_count') || 'عدد المزايدات'}</span>
                     <span className="text-2xl font-black text-zinc-text tabular-nums leading-none">{customer.totalOrders || 0}</span>
                  </div>
                  <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-zinc-muted uppercase">Total Expenditure</span>
+                    <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.total_spent') || 'إجمالي الإنفاق'}</span>
                     <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums leading-none">{formatCurrency(customer.totalSpent || 0)}</span>
                  </div>
                  <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-zinc-muted uppercase">Reliability Index</span>
+                    <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.reliability') || 'مؤشر الموثوقية'}</span>
                     <span className="text-2xl font-black text-[var(--color-success)] tabular-nums leading-none">--</span>
                  </div>
               </div>
@@ -214,14 +206,14 @@ export function CustomerDetailPage() {
 
            {/* Quick Actions */}
            <Card className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl space-y-4">
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest mb-2">Protocol Actions</h3>
+              <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest mb-2">{t('customer.actions') || 'إجراءات'}</h3>
               <AmberButton variant="outline" className="w-full justify-start gap-4 h-12 border-white/5 hover:bg-white/5 rounded-xl font-bold text-zinc-text">
                  <History className="w-4 h-4 text-zinc-muted" />
-                 View Audit Logs
+                 {t('customer.view_audit_logs') || 'عرض سجل النشاط'}
               </AmberButton>
               <AmberButton variant="outline" className="w-full justify-start gap-4 h-12 border-white/5 hover:bg-white/5 rounded-xl font-bold text-zinc-text">
                  <CreditCard className="w-4 h-4 text-zinc-muted" />
-                 Transaction Snapshot
+                 {t('customer.transaction_snapshot') || 'لقطة المعاملات'}
               </AmberButton>
            </Card>
         </div>

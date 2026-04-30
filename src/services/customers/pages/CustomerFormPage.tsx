@@ -296,7 +296,7 @@ export function CustomerFormPage() {
                 label={t('customer.address.city') || 'Regional Hub'}
                 value={formData.address.city}
                 onChange={e => handleChange('address.city', e.target.value)}
-                placeholder="Neo-Bahrain"
+                placeholder="Neo-Iraq"
               />
 
               <AmberInput
@@ -317,7 +317,7 @@ export function CustomerFormPage() {
                 label={t('customer.address.country') || 'Territorial Sovereign'}
                 value={formData.address.country}
                 onChange={e => handleChange('address.country', e.target.value)}
-                placeholder="Kingdom of Bahrain"
+                placeholder="Republic of Iraq"
               />
             </div>
           </Card>

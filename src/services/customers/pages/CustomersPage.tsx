@@ -77,7 +77,7 @@ export function CustomersPage() {
       cardTitle: true,
       cardSubtitle: true,
       render: (customer: any) => {
-        const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || 'N/A';
+        const fullName = customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || customer.phone || 'N/A';
         return (
           <div className="flex items-center gap-3">
             <AmberAvatar

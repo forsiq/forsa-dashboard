@@ -146,13 +146,13 @@ export const auctionApi = {
     // Map REST stats to AuctionStats interface
     const stats = response.data;
     return {
-      totalAuctions: stats.total || 0,
-      activeAuctions: stats.active || 0,
-      scheduledAuctions: stats.scheduled || 0,
-      endedAuctions: stats.ended || 0,
-      totalBids: stats.bids || 0,
-      totalRevenue: stats.revenue || 0,
-      avgWinningBid: stats.avg_bid || 0,
+      totalAuctions: stats.totalAuctions || stats.total || 0,
+      activeAuctions: stats.activeAuctions || stats.active || 0,
+      scheduledAuctions: stats.endingSoonAuctions || stats.scheduled || 0,
+      endedAuctions: stats.soldAuctions || stats.ended || 0,
+      totalBids: stats.totalBids || stats.bids || 0,
+      totalRevenue: stats.totalRevenue || stats.revenue || 0,
+      avgWinningBid: stats.avgWinningBid || stats.avg_bid || 0,
     };
   },
 
