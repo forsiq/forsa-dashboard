@@ -61,6 +61,15 @@ export const en: Record<string, string> = {
   "auction.config.state_protocol": "Status",
   "auction.config.protocol_identifier_search": "Search by ID or Title",
 
+  // Auction Tabs
+  "auction.tabs.all": "All",
+  "auction.tabs.active": "Active",
+  "auction.tabs.scheduled": "Scheduled",
+  "auction.tabs.draft": "Draft",
+  "auction.tabs.ended": "Ended",
+  "auction.tabs.paused": "Paused",
+  "auction.tabs.cancelled": "Cancelled",
+
   // Auction Lifecycle
   "auction.lifecycle.start": "Start",
   "auction.lifecycle.pause": "Pause",

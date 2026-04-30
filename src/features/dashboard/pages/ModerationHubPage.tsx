@@ -1,40 +1,29 @@
-import React, { useState, useMemo } from 'react';
-import { useAllBids, useVoidBid, useSuspendUser } from '../../auctions/api/auction-hooks';
-import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import React, { useState } from 'react';
+import {
+  useModerationActivity,
+  useModerationActivityStats,
+  useModerationTimeline,
+} from '../../auctions/api/auction-hooks';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { DataTable, Column, Action } from '@core/components/Data/DataTable';
-import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
-import { Ban, Snowflake, Gavel, AlertTriangle, XCircle, Search } from 'lucide-react';
-import type { AllBidsItem } from '../../auctions/api/auction-api';
-
-function maskId(id: string): string {
-  return id.substring(0, 8) + '...';
-}
-
-function bidStatusVariant(status: string): 'success' | 'info' | 'inactive' | 'error' {
-  switch (status) {
-    case 'winning': return 'success';
-    case 'active': return 'info';
-    case 'outbid': return 'inactive';
-    case 'cancelled': return 'error';
-    default: return 'inactive';
-  }
-}
-
-function bidStatusLabel(status: string, t: (key: string) => string): string {
-  const map: Record<string, string> = {
-    winning: t('moderation.status.winning'),
-    active: t('moderation.status.active'),
-    outbid: t('moderation.status.outbid'),
-    cancelled: t('moderation.status.cancelled'),
-  };
-  return map[status] || status;
-}
+import {
+  Activity,
+  Zap,
+  Flame,
+  Snowflake,
+  Clock,
+  TrendingUp,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Timer,
+  Eye,
+} from 'lucide-react';
+import type { ActivityAuctionItem, TimelineEvent } from '../../auctions/api/auction-api';
 
 function timeAgo(dateStr: string, t: (key: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -46,227 +35,376 @@ function timeAgo(dateStr: string, t: (key: string) => string): string {
   return `${Math.floor(hours / 24)}${t('moderation.time_d')}`;
 }
 
+function maskId(id: string): string {
+  return id.substring(0, 8) + '...';
+}
+
+function auctionStatusVariant(status: string): 'success' | 'info' | 'inactive' | 'error' | 'warning' {
+  switch (status) {
+    case 'active': return 'success';
+    case 'paused': return 'warning';
+    case 'ended':
+    case 'sold': return 'inactive';
+    case 'cancelled': return 'error';
+    default: return 'info';
+  }
+}
+
+function auctionStatusLabel(status: string, t: (key: string) => string): string {
+  const map: Record<string, string> = {
+    active: t('auction.lifecycle.active'),
+    paused: t('auction.lifecycle.paused'),
+    ended: t('auction.lifecycle.ended'),
+    sold: t('auction.lifecycle.sold'),
+    cancelled: t('auction.lifecycle.cancelled'),
+    draft: t('auction.lifecycle.draft'),
+    scheduled: t('auction.lifecycle.scheduled'),
+  };
+  return map[status] || status;
+}
+
+function activityIndicator(level: 'hot' | 'warm' | 'cold', t: (key: string) => string) {
+  const config = {
+    hot: { icon: Flame, color: 'text-red-400', bg: 'bg-red-400/10', label: t('moderation.activity.hot') },
+    warm: { icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/10', label: t('moderation.activity.warm') },
+    cold: { icon: Snowflake, color: 'text-blue-400', bg: 'bg-blue-400/10', label: t('moderation.activity.cold') },
+  };
+  const c = config[level];
+  const Icon = c.icon;
+  return (
+    <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold', c.bg, c.color)}>
+      <Icon className="w-3 h-3" />
+      {c.label}
+    </span>
+  );
+}
+
+// ─── Timeline Event Component ──────────────────────────────────────────────
+function TimelineEventRow({ event, t }: { event: TimelineEvent; t: (key: string) => string }) {
+  return (
+    <div className="flex items-start gap-3 py-2 border-b border-[var(--color-border)] last:border-0">
+      <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-[var(--color-brand)]" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-zinc-text leading-relaxed">
+          <span className="font-mono text-zinc-muted">{maskId(event.bidderId)}</span>
+          {' '}
+          <span className="text-zinc-muted">{t('moderation.activity.timeline_bid')
+            .replace('{amount}', Number(event.amount).toLocaleString())
+            .replace('{auction}', event.auctionTitle || `#${event.auctionId}`)
+          }</span>
+        </p>
+        <p className="text-[10px] text-zinc-muted mt-0.5">
+          {event.createdAt ? timeAgo(event.createdAt, t) : ''}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Auction Card Component ────────────────────────────────────────────────
+function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (key: string) => string; dir: string }) {
+  return (
+    <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-4 hover:border-[var(--color-brand)]/30 transition-all duration-200 group">
+      <div className="flex gap-4">
+        {/* Image */}
+        <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)]">
+          {auction.image ? (
+            <img
+              src={auction.image}
+              alt={auction.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Eye className="w-5 h-5 text-zinc-muted" />
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          {/* Title + Status */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-sm text-zinc-text truncate">{auction.title}</h3>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {activityIndicator(auction.activityLevel, t)}
+              <StatusBadge
+                status={auctionStatusLabel(auction.status, t)}
+                variant={auctionStatusVariant(auction.status)}
+                showDot
+                size="sm"
+                className="font-bold text-[10px]"
+              />
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 mt-2">
+            {/* Bid count */}
+            <div className="flex items-center gap-1">
+              <Activity className="w-3.5 h-3.5 text-zinc-muted" />
+              <span className="text-xs font-bold text-zinc-text">
+                {auction.bidCount}
+              </span>
+              <span className="text-[10px] text-zinc-muted">
+                {t('moderation.activity.bids_count')}
+              </span>
+            </div>
+
+            {/* Current price */}
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5 text-[var(--color-brand)]" />
+              <span className="text-xs font-black text-zinc-text tabular-nums">
+                {auction.currentPrice.toLocaleString()}
+              </span>
+              <span className="text-[10px] text-zinc-muted">IQD</span>
+            </div>
+          </div>
+
+          {/* Last bid */}
+          <div className="flex items-center gap-2 mt-1.5">
+            {auction.lastBid ? (
+              <>
+                <Clock className="w-3 h-3 text-zinc-muted" />
+                <span className="text-[10px] text-zinc-muted">
+                  {t('moderation.activity.last_bid')}: {Number(auction.lastBid.amount).toLocaleString()} IQD
+                </span>
+                <span className="text-[10px] text-zinc-muted/60">•</span>
+                <span className="text-[10px] text-zinc-muted">
+                  {timeAgo(auction.lastBid.timeAgo, t)}
+                </span>
+              </>
+            ) : (
+              <span className="text-[10px] text-zinc-muted">
+                {t('moderation.activity.no_bids_yet')}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ──────────────────────────────────────────────────────────────
 export const ModerationHubPage = () => {
   const { t, dir } = useLanguage();
-  const isRTL = dir === 'rtl';
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [bidderInput, setBidderInput] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('most_active');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  // Debounce bidder search — only hit API after 300ms of inactivity
-  const debouncedBidder = useDebounce(bidderInput, 300);
-
-  const { data: bidsData, isLoading } = useAllBids({
+  const { data: statsData, isLoading: statsLoading } = useModerationActivityStats();
+  const { data: activityData, isLoading: activityLoading } = useModerationActivity({
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    search: debouncedSearch || undefined,
+    sortBy,
     page,
-    limit: 20,
-    status: statusFilter || undefined,
-    bidderId: debouncedBidder || undefined,
+    limit: 12,
   });
+  const { data: timelineData } = useModerationTimeline(10);
 
-  const voidBid = useVoidBid();
-  const suspendUser = useSuspendUser();
-  const { openConfirm, ConfirmModal: ConfirmModalComponent } = useConfirmModal();
+  const stats = statsData;
+  const items = activityData?.items || [];
+  const total = activityData?.total || 0;
+  const totalPages = activityData?.totalPages || 1;
+  const timeline = timelineData || [];
 
-  const items = bidsData?.items || [];
-  const total = bidsData?.total || 0;
+  const hasFilters = statusFilter !== 'all' || searchInput;
 
-  const stats = useMemo(() => {
-    return {
-      totalBids: total,
-      flagged: items.filter((i) => Number(i.amount) > 1000000).length,
-      voided: items.filter((i) => i.status === 'cancelled').length,
-    };
-  }, [items, total]);
-
-  const columns: Column<AllBidsItem>[] = [
-    {
-      key: 'id',
-      label: t('moderation.col.bid_id'),
-      cardTitle: true,
-      render: (item) => (
-        <span className="font-bold text-zinc-text">#{item.id}</span>
-      ),
-    },
-    {
-      key: 'auctionId',
-      label: t('moderation.col.auction'),
-      cardSubtitle: true,
-      render: (item) => (
-        <span className="text-sm text-zinc-text truncate max-w-[200px] block">
-          {item.auction?.title || `Auction #${item.auctionId}`}
-        </span>
-      ),
-    },
-    {
-      key: 'bidderId',
-      label: t('moderation.col.bidder'),
-      render: (item) => (
-        <span className="font-mono text-zinc-secondary text-sm">{maskId(item.bidderId)}</span>
-      ),
-    },
-    {
-      key: 'amount',
-      label: t('moderation.col.amount'),
-      render: (item) => (
-        <span className="text-zinc-text font-black tabular-nums">
-          {Number(item.amount).toLocaleString()} <span className="text-zinc-muted font-normal text-xs">IQD</span>
-        </span>
-      ),
-      align: 'center',
-    },
-    {
-      key: 'status',
-      label: t('moderation.col.status'),
-      cardBadge: true,
-      render: (item) => (
-        <StatusBadge
-          status={bidStatusLabel(item.status, t)}
-          variant={bidStatusVariant(item.status)}
-          showDot
-          size="sm"
-          className="font-black"
-        />
-      ),
-      align: 'center',
-    },
-    {
-      key: 'createdAt',
-      label: t('moderation.col.time'),
-      render: (item) => (
-        <span className="text-zinc-muted text-sm font-medium">
-          {timeAgo(item.createdAt, t)}
-        </span>
-      ),
-      align: 'center',
-    },
-  ];
-
-  const rowActions: Action<AllBidsItem>[] = [
-    {
-      label: (item) => item.status !== 'cancelled' ? t('moderation.action.void') : null,
-      icon: Ban,
-      variant: 'danger',
-      onClick: (item) =>
-        openConfirm({
-          title: t('moderation.void_title'),
-          message: `${t('moderation.void_confirm')} #${item.id} — ${Number(item.amount).toLocaleString()} IQD? ${
-            item.status === 'winning' ? t('moderation.void_winning_warning') : ''
-          }`,
-          confirmText: t('moderation.void_confirm_btn'),
-          variant: 'danger',
-          onConfirm: () => voidBid.mutate(item.id),
-        }),
-    },
-    {
-      label: t('moderation.action.freeze'),
-      icon: Snowflake,
-      variant: 'danger',
-      onClick: (item) =>
-        openConfirm({
-          title: t('moderation.freeze_title'),
-          message: `${t('moderation.freeze_confirm')} ${maskId(item.bidderId)}`,
-          confirmText: t('moderation.freeze_confirm_btn'),
-          variant: 'danger',
-          onConfirm: () => suspendUser.mutate(item.bidderId),
-        }),
-    },
-  ];
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setSearchInput('');
+    setSortBy('most_active');
+    setPage(1);
+  };
 
   return (
     <div className="flex flex-col gap-4 p-4 pt-0" dir={dir}>
-      <ConfirmModalComponent />
-
       {/* Page Header */}
       <PageHeader
-        title={t('moderation.title')}
-        description={t('moderation.subtitle')}
+        title={t('moderation.activity.title')}
+        description={t('moderation.activity.subtitle')}
       />
 
-      {/* Stats Grid */}
+      {/* Overview Stats */}
       <StatsGrid
         stats={[
-          { label: t('moderation.stat.total_bids'), value: stats.totalBids.toString(), icon: Gavel, color: 'brand' },
-          { label: t('moderation.stat.flagged'), value: stats.flagged.toString(), icon: AlertTriangle, color: 'warning' },
-          { label: t('moderation.stat.voided'), value: stats.voided.toString(), icon: XCircle, color: 'danger' },
+          {
+            label: t('moderation.activity.stat.active'),
+            value: (stats?.activeAuctions ?? 0).toString(),
+            icon: Zap,
+            color: 'success',
+          },
+          {
+            label: t('moderation.activity.stat.ended'),
+            value: (stats?.endedAuctions ?? 0).toString(),
+            icon: Timer,
+            color: 'muted',
+          },
+          {
+            label: t('moderation.activity.stat.most_active'),
+            value: stats?.mostActiveAuction?.title || t('moderation.activity.no_most_active'),
+            icon: Flame,
+            color: 'warning',
+          },
+          {
+            label: t('moderation.activity.stat.bids_today'),
+            value: (stats?.totalBidsToday ?? 0).toString(),
+            icon: Activity,
+            color: 'brand',
+          },
         ]}
-        columns={3}
+        columns={4}
       />
 
-      {/* Filters */}
-      <div className={cn(
-        "flex flex-col md:flex-row items-center gap-4 text-start"
-      )}>
-        {/* Status Filter */}
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-          {[
-            { key: '', label: t('moderation.filter.all') },
-            { key: 'winning', label: t('moderation.status.winning') },
-            { key: 'active', label: t('moderation.status.active') },
-            { key: 'outbid', label: t('moderation.status.outbid') },
-            { key: 'cancelled', label: t('moderation.status.cancelled') },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => { setStatusFilter(tab.key); setPage(1); }}
-              className={cn(
-                'px-4 py-2.5 text-sm font-bold transition-colors rounded-lg whitespace-nowrap',
-                statusFilter === tab.key
-                  ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                  : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-              )}
+      {/* Main Layout: Activity + Timeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left: Filters + Auction Cards */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          {/* Filters Bar */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* Status Tabs */}
+            <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm">
+              {[
+                { key: 'all', label: t('moderation.activity.filter.all') },
+                { key: 'active', label: t('moderation.activity.filter.active') },
+                { key: 'ended', label: t('moderation.activity.filter.ended') },
+                { key: 'paused', label: t('moderation.activity.filter.paused') },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => { setStatusFilter(tab.key); setPage(1); }}
+                  className={cn(
+                    'px-3 py-2 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
+                    statusFilter === tab.key
+                      ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                      : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
+              className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs font-bold text-zinc-text focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20"
             >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+              <option value="most_active">{t('moderation.activity.sort.most_active')}</option>
+              <option value="newest">{t('moderation.activity.sort.newest')}</option>
+              <option value="highest_price">{t('moderation.activity.sort.highest_price')}</option>
+              <option value="ending_soon">{t('moderation.activity.sort.ending_soon')}</option>
+            </select>
 
-        {/* Bidder ID Search */}
-        <div className="relative flex-1 max-w-sm w-full group">
-          <Search className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            'end-4'
-          )} />
-          <input
-            type="text"
-            value={bidderInput}
-            onChange={(e) => { setBidderInput(e.target.value); setPage(1); }}
-            placeholder={t('moderation.filter.bidder_placeholder')}
-            className={cn(
-              "w-full bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20",
-              'ps-4 pe-10 text-start'
+            {/* Search */}
+            <div className="relative flex-1 max-w-xs w-full group">
+              <Search className={cn(
+                'absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors',
+                'end-3',
+              )} />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => { setSearchInput(e.target.value); setPage(1); }}
+                placeholder={t('moderation.activity.search')}
+                className={cn(
+                  'w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm rounded-xl h-9 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20',
+                  'ps-3 pe-9 text-start',
+                )}
+              />
+            </div>
+
+            {/* Clear */}
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
+              >
+                {t('moderation.activity.clear_filters')}
+              </button>
             )}
-          />
+          </div>
+
+          {/* Auction Cards Grid */}
+          {activityLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-4 animate-pulse">
+                  <div className="flex gap-4">
+                    <div className="w-16 h-16 rounded-xl bg-[var(--color-obsidian-outer)]" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-[var(--color-obsidian-outer)] rounded w-3/4" />
+                      <div className="h-2 bg-[var(--color-obsidian-outer)] rounded w-1/2" />
+                      <div className="h-2 bg-[var(--color-obsidian-outer)] rounded w-2/3" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-12 text-center">
+              <Activity className="w-10 h-10 text-zinc-muted mx-auto mb-3" />
+              <p className="text-sm text-zinc-muted font-bold">{t('moderation.activity.empty')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {items.map((auction) => (
+                  <AuctionCard key={auction.id} auction={auction} t={t} dir={dir} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page <= 1}
+                    className="p-2 rounded-lg bg-[var(--color-obsidian-card)] border border-[var(--color-border)] text-zinc-muted hover:text-zinc-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs text-zinc-muted font-bold tabular-nums">
+                    {page} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page >= totalPages}
+                    className="p-2 rounded-lg bg-[var(--color-obsidian-card)] border border-[var(--color-border)] text-zinc-muted hover:text-zinc-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Clear Filters */}
-        {(statusFilter || bidderInput) && (
-          <button
-            onClick={() => { setStatusFilter(''); setBidderInput(''); setPage(1); }}
-            className="px-4 py-2.5 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
-          >
-            {t('moderation.filter.clear')}
-          </button>
-        )}
-      </div>
+        {/* Right Sidebar: Timeline */}
+        <div className="lg:col-span-1">
+          <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-4 sticky top-4">
+            <h3 className="text-sm font-black text-zinc-text mb-3 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--color-brand)]" />
+              {t('moderation.activity.timeline_title')}
+            </h3>
 
-      {/* Table */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-        {isLoading ? (
-          <AmberTableSkeleton rows={8} columns={6} />
-        ) : (
-          <DataTable
-            columns={columns}
-            data={items}
-            keyField="id"
-            rowActions={rowActions}
-            pagination
-            pageSize={20}
-            totalItems={total}
-            currentPage={page}
-            onPageChange={setPage}
-            emptyMessage={t('moderation.no_bids')}
-          />
-        )}
+            {timeline.length === 0 ? (
+              <p className="text-xs text-zinc-muted py-4 text-center">
+                {t('moderation.activity.no_activity')}
+              </p>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto">
+                {timeline.map((event) => (
+                  <TimelineEventRow key={event.bidId} event={event} t={t} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

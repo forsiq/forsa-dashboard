@@ -365,6 +365,44 @@ export interface AllBidsResponse {
   totalPages: number;
 }
 
+export interface ActivityAuctionItem {
+  id: number;
+  title: string;
+  image: string | null;
+  status: string;
+  activityLevel: 'hot' | 'warm' | 'cold';
+  bidCount: number;
+  currentPrice: number;
+  lastBid: {
+    amount: number;
+    timeAgo: string;
+  } | null;
+}
+
+export interface TimelineEvent {
+  bidId: number;
+  bidderId: string;
+  amount: number;
+  auctionId: number;
+  auctionTitle: string | null;
+  createdAt: string;
+}
+
+export interface ActivityStats {
+  activeAuctions: number;
+  endedAuctions: number;
+  mostActiveAuction: { title: string } | null;
+  totalBidsToday: number;
+}
+
+export interface ActivityResponse {
+  items: ActivityAuctionItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const moderationApi = {
   getAllBids: async (filters?: {
     page?: number;
@@ -395,6 +433,30 @@ export const moderationApi = {
   unsuspendUser: async (userId: string): Promise<{ success: boolean; userId: string }> => {
     const client = auctionBaseApi.getInstance();
     const response = await client.post(`/users/${userId}/unsuspend`);
+    return response.data.data;
+  },
+
+  getActivity: async (filters?: {
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<ActivityResponse> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/moderation/activity', { params: filters });
+    return response.data;
+  },
+
+  getActivityStats: async (): Promise<ActivityStats> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/moderation/activity/stats');
+    return response.data.data;
+  },
+
+  getTimeline: async (limit = 10): Promise<TimelineEvent[]> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.get('/moderation/timeline', { params: { limit } });
     return response.data.data;
   },
 };

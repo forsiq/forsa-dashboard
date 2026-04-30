@@ -20,6 +20,7 @@ export interface Customer {
   totalSpent?: number;
   lastOrderDate?: string;
   createdAt: string;
+  joinDate?: string;
   updatedAt: string;
 }
 

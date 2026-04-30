@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -26,7 +26,6 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
@@ -38,8 +37,28 @@ import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
 import type { AuctionStatus, Auction } from '../types/auction.types';
 
+type TabValue = 'all' | AuctionStatus;
+
+interface TabConfig {
+  key: TabValue;
+  labelKey: string;
+  color: string;
+  activeColor: string;
+  countField?: keyof Pick<import('../types/auction.types').AuctionStats, 'activeAuctions' | 'scheduledAuctions' | 'endedAuctions' | 'totalAuctions'>;
+}
+
+const TABS: TabConfig[] = [
+  { key: 'all', labelKey: 'auction.tabs.all', color: 'text-zinc-muted', activeColor: 'bg-zinc-text text-black', countField: 'totalAuctions' },
+  { key: 'active', labelKey: 'auction.tabs.active', color: 'text-green-400', activeColor: 'bg-green-500 text-black', countField: 'activeAuctions' },
+  { key: 'scheduled', labelKey: 'auction.tabs.scheduled', color: 'text-blue-400', activeColor: 'bg-blue-500 text-black', countField: 'scheduledAuctions' },
+  { key: 'draft', labelKey: 'auction.tabs.draft', color: 'text-zinc-400', activeColor: 'bg-zinc-400 text-black' },
+  { key: 'ended', labelKey: 'auction.tabs.ended', color: 'text-red-400', activeColor: 'bg-red-500 text-black', countField: 'endedAuctions' },
+  { key: 'paused', labelKey: 'auction.tabs.paused', color: 'text-amber-400', activeColor: 'bg-amber-500 text-black' },
+  { key: 'cancelled', labelKey: 'auction.tabs.cancelled', color: 'text-red-300', activeColor: 'bg-red-900 text-red-100' },
+];
+
 /**
- * AuctionsList - Auction Management with DataTable
+ * AuctionsList - Auction Management with DataTable and Status Tabs
  */
 export const AuctionsList: React.FC = () => {
     const { t, language, dir } = useLanguage();
@@ -48,7 +67,7 @@ export const AuctionsList: React.FC = () => {
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | AuctionStatus>('all');
+    const [activeTab, setActiveTab] = useState<TabValue>('all');
     const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
@@ -65,7 +84,7 @@ export const AuctionsList: React.FC = () => {
     }, []);
 
     const { data: auctionsData, isLoading: listLoading } = useGetAuctions({
-        status: statusFilter === 'all' ? undefined : statusFilter as AuctionStatus,
+        status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
         search: searchQuery || undefined,
         sortBy: 'createdAt',
@@ -85,6 +104,17 @@ export const AuctionsList: React.FC = () => {
     const { openConfirm, ConfirmModal } = useConfirmModal();
 
     const auctions = auctionsData?.data || [];
+
+    const getTabCount = (tab: TabConfig): number => {
+        if (!stats) return 0;
+        if (tab.countField) return stats[tab.countField] || 0;
+        return 0;
+    };
+
+    const handleTabChange = (tabKey: TabValue) => {
+        setActiveTab(tabKey);
+        setPage(1);
+    };
 
     const getCountdown = (endTimeStr: string) => {
         if (!endTimeStr) return 'TBD';
@@ -289,6 +319,38 @@ export const AuctionsList: React.FC = () => {
                 </div>
             </div>
 
+            {/* Status Tabs */}
+            <div className="flex items-center gap-1 bg-obsidian-outer p-1.5 rounded-xl border border-white/5 overflow-x-auto scrollbar-hide">
+                {TABS.map((tab) => {
+                    const isActive = activeTab === tab.key;
+                    const count = getTabCount(tab);
+                    return (
+                        <button
+                            key={tab.key}
+                            onClick={() => handleTabChange(tab.key)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                isActive
+                                    ? tab.activeColor
+                                    : cn("text-zinc-muted hover:text-zinc-text hover:bg-white/5", tab.color)
+                            )}
+                        >
+                            {t(tab.labelKey)}
+                            {count > 0 && (
+                                <span className={cn(
+                                    "inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[9px] font-black tabular-nums",
+                                    isActive
+                                        ? "bg-black/20 text-inherit"
+                                        : "bg-white/5 text-zinc-muted"
+                                )}>
+                                    {count}
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* Stats Grid */}
             <StatsGrid
                 stats={[
@@ -380,7 +442,7 @@ export const AuctionsList: React.FC = () => {
                 )}
             </div>
 
-            {/* Filter SlideOver */}
+            {/* Filter SlideOver - Category Only */}
             <AmberSlideOver
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
@@ -400,54 +462,34 @@ export const AuctionsList: React.FC = () => {
 
                     <div className="h-px bg-white/5" />
 
-                    <div className="space-y-6">
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.config.state_protocol')}</label>
-                            <AmberDropdown
-                                options={[
-                                    { label: t('common.all_protocols'), value: 'all' },
-                                    { label: t('auction.metrics.live_liquidations'), value: 'active' },
-                                    { label: t('auction.scheduled_deployments'), value: 'scheduled' },
-                                    { label: t('auction.concluded_nodes'), value: 'ended' },
-                                    { label: t('auction.draft_schema'), value: 'draft' },
-                                    { label: t('auction.lifecycle.paused') || 'Paused', value: 'paused' },
-                                    { label: t('auction.lifecycle.cancelled') || 'Cancelled', value: 'cancelled' },
-                                ]}
-                                value={statusFilter}
-                                onChange={(value: any) => { setStatusFilter(value); setPage(1); }}
-                                className="h-12 w-full"
-                            />
-                        </div>
-
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
-                            <div className="flex flex-wrap gap-2">
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setCategoryIdFilter('all')}
+                                className={cn(
+                                    "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                                    categoryIdFilter === 'all'
+                                        ? "bg-brand text-black border-brand"
+                                        : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                                )}
+                            >
+                                {t('common.all') || 'All'}
+                            </button>
+                            {(categoriesData?.categories || []).map((cat: any) => (
                                 <button
-                                    onClick={() => setCategoryIdFilter('all')}
+                                    key={cat.id}
+                                    onClick={() => { setCategoryIdFilter(cat.id); setPage(1); }}
                                     className={cn(
                                         "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
-                                        categoryIdFilter === 'all'
+                                        categoryIdFilter === cat.id
                                             ? "bg-brand text-black border-brand"
                                             : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
                                     )}
                                 >
-                                    {t('common.all') || 'All'}
+                                    {getLocalizedName(cat, language)}
                                 </button>
-                                {(categoriesData?.categories || []).map((cat: any) => (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => { setCategoryIdFilter(cat.id); setPage(1); }}
-                                        className={cn(
-                                            "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
-                                            categoryIdFilter === cat.id
-                                                ? "bg-brand text-black border-brand"
-                                                : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
-                                        )}
-                                    >
-                                        {getLocalizedName(cat, language)}
-                                    </button>
-                                ))}
-                            </div>
+                            ))}
                         </div>
                     </div>
                     
@@ -459,7 +501,7 @@ export const AuctionsList: React.FC = () => {
                             variant="secondary"
                             className="w-full h-12 font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all"
                             onClick={() => {
-                                setStatusFilter('all');
+                                setActiveTab('all');
                                 setCategoryIdFilter('all');
                                 setSearchQuery('');
                                 setPage(1);

@@ -502,6 +502,48 @@ export function useOfferToUnderbidder() {
 // Moderation Hooks
 // ============================================================================
 
+export function useModerationActivity(filters?: {
+  status?: string;
+  search?: string;
+  sortBy?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'moderation-activity', filters] as const,
+    queryFn: () => moderationApi.getActivity(filters),
+    staleTime: 15 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load activity');
+  return query;
+}
+
+export function useModerationActivityStats() {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'moderation-activity-stats'] as const,
+    queryFn: () => moderationApi.getActivityStats(),
+    staleTime: 15 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load activity stats');
+  return query;
+}
+
+export function useModerationTimeline(limit = 10) {
+  const query = useQuery({
+    queryKey: [...auctionKeys.all, 'moderation-timeline', limit] as const,
+    queryFn: () => moderationApi.getTimeline(limit),
+    staleTime: 10 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  useErrorHandler(query.error, 'Failed to load timeline');
+  return query;
+}
+
 export function useAllBids(filters?: {
   page?: number;
   limit?: number;

@@ -61,6 +61,15 @@ export const ar: Record<string, string> = {
   "auction.config.state_protocol": "الحالة",
   "auction.config.protocol_identifier_search": "بحث بالمعـرّف أو العنوان",
 
+  // Auction Tabs
+  "auction.tabs.all": "الكل",
+  "auction.tabs.active": "نشط",
+  "auction.tabs.scheduled": "مجدول",
+  "auction.tabs.draft": "مسودة",
+  "auction.tabs.ended": "منتهي",
+  "auction.tabs.paused": "متوقف مؤقتاً",
+  "auction.tabs.cancelled": "ملغي",
+
   // Auction Lifecycle
   "auction.lifecycle.start": "بدء",
   "auction.lifecycle.pause": "إيقاف مؤقت",
@@ -119,4 +128,24 @@ export const ar: Record<string, string> = {
   "customer.street": "الشارع",
   "customer.city": "المدينة",
   "customer.country": "الدولة",
+
+  // Customer detail - activity
+  "customer.activity_total_bids": "إجمالي المزايدات",
+  "customer.activity_auctions": "المزادات المشتركة",
+  "customer.activity_win_rate": "نسبة الفوز",
+  "customer.activity_total_spent": "إجمالي الإنفاق",
+  "customer.activity_winning_bids": "مزايدات فائزة",
+
+  // Customer detail - bids table
+  "customer.recent_bids": "المزايدات الأخيرة",
+  "customer.no_bids_yet": "لا توجد مزايدات بعد",
+  "customer.showing_latest": "أحدث",
+  "customer.bid_auction": "المزاد",
+  "customer.bid_amount": "المبلغ",
+  "customer.bid_status": "الحالة",
+  "customer.bid_date": "التاريخ",
+  "customer.bid_status_winning": "فائز",
+  "customer.bid_status_outbid": "تم التفوق",
+  "customer.bid_status_cancelled": "ملغي",
+  "customer.bid_status_active": "نشط",
 };
