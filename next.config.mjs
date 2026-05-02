@@ -4,6 +4,9 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Cache for local override lookups to avoid repeated disk I/O
+const overrideCache = new Map();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@yousef2001/core-ui'],
@@ -15,7 +18,6 @@ const nextConfig = {
     ],
   },
   webpack: (config, { dev, isServer }) => {
-    // Ensure path aliases resolve correctly in webpack
     config.resolve.alias = {
       ...config.resolve.alias,
       '@config': path.resolve(__dirname, 'src/config'),
@@ -26,31 +28,50 @@ const nextConfig = {
       '@core': path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/src'),
     };
 
-    // File-replacement override: if a local file exists in src/core/,
+    // Cached local override: if a local file exists in src/core/,
     // it takes priority over the core-ui package version.
-    // Pattern: @core/core/* → checks src/core/* first, then falls back to package
     config.resolve.plugins = config.resolve.plugins || [];
     config.resolve.plugins.push({
       apply(resolver) {
         resolver.hooks.resolve.tapAsync('CoreOverridePlugin', (request, context, callback) => {
           if (request.request && request.request.startsWith('@core/core/')) {
             const relativePath = request.request.replace('@core/core/', '');
+
+            // Check cache first to avoid disk I/O on repeated resolves
+            const cached = overrideCache.get(relativePath);
+            if (cached !== undefined) {
+              if (cached === null) {
+                return callback();
+              }
+              const overrideRequest = { ...request, request: cached };
+              return resolver.doResolve(
+                resolver.hooks.resolve,
+                overrideRequest,
+                `core override: ${request.request} → ${cached}`,
+                context,
+                callback
+              );
+            }
+
             const localPath = path.resolve(__dirname, 'src/core', relativePath);
-            
-            // Check if local override exists (with common extensions)
             const extensions = ['', '.tsx', '.ts', '.jsx', '.js', '/index.tsx', '/index.ts'];
             for (const ext of extensions) {
-              if (fs.existsSync(localPath + ext)) {
-                const overrideRequest = { ...request, request: localPath + ext };
+              const fullPath = localPath + ext;
+              if (fs.existsSync(fullPath)) {
+                overrideCache.set(relativePath, fullPath);
+                const overrideRequest = { ...request, request: fullPath };
                 return resolver.doResolve(
                   resolver.hooks.resolve,
                   overrideRequest,
-                  `core override: ${request.request} → src/core/${relativePath}${ext}`,
+                  `core override: ${request.request} → ${fullPath}`,
                   context,
                   callback
                 );
               }
             }
+
+            // Cache the miss so we don't check disk again
+            overrideCache.set(relativePath, null);
           }
           callback();
         });
@@ -59,7 +80,6 @@ const nextConfig = {
 
     if (dev) {
       config.watchOptions = {
-        poll: 1000,
         aggregateTimeout: 300,
         ignored: [
           '**/.git/**',
