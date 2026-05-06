@@ -320,7 +320,7 @@ export const AuctionsList: React.FC = () => {
             </div>
 
             {/* Status Tabs */}
-            <div className="flex items-center gap-1 bg-obsidian-outer p-1.5 rounded-xl border border-white/5 overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
                 {TABS.map((tab) => {
                     const isActive = activeTab === tab.key;
                     const count = getTabCount(tab);
@@ -329,10 +329,10 @@ export const AuctionsList: React.FC = () => {
                             key={tab.key}
                             onClick={() => handleTabChange(tab.key)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
                                 isActive
-                                    ? tab.activeColor
-                                    : cn("text-zinc-muted hover:text-zinc-text hover:bg-white/5", tab.color)
+                                    ? "bg-[var(--color-brand)] text-black shadow-sm"
+                                    : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
                             )}
                         >
                             {t(tab.labelKey)}
