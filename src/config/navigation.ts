@@ -82,6 +82,12 @@ export const menuSections: MenuSection[] = [
         serviceId: 'auctions',
       },
       {
+        path: '/listings',
+        label: 'listing.title',
+        icon: 'Package',
+        serviceId: 'auctions',
+      },
+      {
         path: '/auctions/add',
         label: 'auction.create',
         icon: 'PlusCircle',

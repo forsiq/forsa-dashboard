@@ -23,6 +23,8 @@ export interface Auction {
   categoryId: number;
   categoryName?: string;
   images: string[];
+  specs?: Spec[];
+  sources?: Source[];
   createdBy?: number;
   createdAt: string;
   updatedAt: string;
@@ -32,6 +34,19 @@ export interface Auction {
   canBid?: boolean;
   winnerId?: number;
   winnerName?: string;
+}
+
+export interface Spec {
+  label: string;
+  value: string;
+}
+
+export type SourceType = 'youtube' | 'alibaba' | 'aws' | 'generic';
+
+export interface Source {
+  label: string;
+  url: string;
+  type: SourceType;
 }
 
 export interface Bid {
@@ -61,6 +76,8 @@ export interface AuctionCreateInput {
   images: string[];
   mainAttachmentId?: number;
   attachmentIds?: number[];
+  specs?: Spec[];
+  sources?: Source[];
 }
 
 export interface AuctionUpdateInput extends Partial<AuctionCreateInput> {

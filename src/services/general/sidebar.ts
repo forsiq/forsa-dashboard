@@ -26,6 +26,7 @@ export const sidebarSections: MenuSection[] = [
     title: 'sidebar.auctions',
     items: [
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
+      { path: '/listings', label: 'sidebar.listings', icon: 'Package' },
       { path: '/categories', label: 'sidebar.categories', icon: 'FolderTree' },
       { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
     ]

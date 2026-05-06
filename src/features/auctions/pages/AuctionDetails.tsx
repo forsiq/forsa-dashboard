@@ -18,7 +18,9 @@ import {
   Gavel,
   User,
   Tag,
-  Copy
+  Copy,
+  FileText,
+  ExternalLink
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -348,6 +350,69 @@ export const AuctionDetails: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Specifications */}
+          {auction.specs && auction.specs.length > 0 && (
+            <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
+              <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.specifications') || 'Specifications'}</h3>
+              </div>
+              <div className="space-y-0">
+                {auction.specs.map((spec, i) => (
+                  <div key={i} className={cn(
+                    "flex items-center justify-between py-3 gap-4",
+                    i < auction.specs!.length - 1 && "border-b border-white/5"
+                  )}>
+                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{spec.label}</span>
+                    <span className="text-sm font-bold text-zinc-text text-end">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sources & References */}
+          {auction.sources && auction.sources.length > 0 && (
+            <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
+              <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
+                  <ExternalLink className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.sources') || 'Sources & References'}</h3>
+              </div>
+              <div className="space-y-2">
+                {auction.sources.map((source, i) => (
+                  <a
+                    key={i}
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:border-brand/20 hover:bg-brand/5 transition-all group"
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold",
+                      source.type === 'youtube' ? 'bg-red-500/10 text-red-400' :
+                      source.type === 'alibaba' ? 'bg-orange-500/10 text-orange-400' :
+                      source.type === 'aws' ? 'bg-amber-500/10 text-amber-400' :
+                      'bg-sky-500/10 text-sky-400'
+                    )}>
+                      {source.type === 'youtube' ? 'YT' :
+                       source.type === 'alibaba' ? 'AB' :
+                       source.type === 'aws' ? 'AW' : 'LK'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-bold text-zinc-text tracking-tight group-hover:text-brand transition-colors">{source.label}</span>
+                      <p className="text-[10px] text-zinc-muted truncate mt-0.5">{source.url}</p>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand transition-colors shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column - Bidding + Info */}

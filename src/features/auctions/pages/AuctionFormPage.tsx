@@ -15,7 +15,11 @@ import {
   Package,
   Calendar,
   History,
-  Copy
+  Copy,
+  Plus,
+  Trash2,
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -30,7 +34,7 @@ import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
-import type { AuctionCreateInput, AuctionUpdateInput } from '../types/auction.types';
+import type { AuctionCreateInput, AuctionUpdateInput, Spec, Source } from '../types/auction.types';
 
 /**
  * AuctionFormPage - Universal Creation and Modification Interface
@@ -86,6 +90,8 @@ export const AuctionFormPage: React.FC = () => {
     categoryId: 1,
     images: [],
     productId: undefined,
+    specs: [],
+    sources: [],
   });
 
   // Compute endTime from startTime + durationDays
@@ -126,6 +132,8 @@ export const AuctionFormPage: React.FC = () => {
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
         images: existingAuction.images || [],
+        specs: existingAuction.specs || [],
+        sources: existingAuction.sources || [],
       });
     }
   }, [isEdit, isClone, existingAuction]);
@@ -379,6 +387,152 @@ export const AuctionFormPage: React.FC = () => {
                          <p className="text-xs font-black text-emerald-400 uppercase">{t('auction.form.pricing_note_title')}</p>
                          <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('auction.form.pricing_note_desc')}</p>
                     </div>
+                </div>
+            </Card>
+
+            {/* Product Specifications */}
+            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
+                <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400 border border-violet-500/20">
+                         <FileText className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.specs') || 'Product Specifications'}</h3>
+                   </div>
+                   <AmberButton
+                      type="button"
+                      variant="outline"
+                      className="h-9 px-4 text-xs font-bold border-border rounded-lg gap-1.5"
+                      onClick={() => {
+                        const current = formData.specs || [];
+                        handleChange('specs', [...current, { label: '', value: '' }]);
+                      }}
+                   >
+                      <Plus className="w-3.5 h-3.5" />
+                      {t('auction.form.add_spec') || 'Add Spec'}
+                   </AmberButton>
+                </div>
+                <div className="space-y-3">
+                  {(formData.specs || []).length === 0 && (
+                    <p className="text-xs text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
+                      {t('auction.form.no_specs') || 'No specifications added. Click "Add Spec" to add product details.'}
+                    </p>
+                  )}
+                  {(formData.specs || []).map((spec, idx) => (
+                    <div key={idx} className="flex items-center gap-3 group">
+                      <AmberInput
+                        placeholder={t('auction.form.spec_label') || 'Label (e.g. Screen)'}
+                        value={spec.label}
+                        onChange={(e) => {
+                          const updated = [...(formData.specs || [])];
+                          updated[idx] = { ...updated[idx], label: e.target.value };
+                          handleChange('specs', updated);
+                        }}
+                        className="flex-1"
+                      />
+                      <AmberInput
+                        placeholder={t('auction.form.spec_value') || 'Value (e.g. 6.7" AMOLED)'}
+                        value={spec.value}
+                        onChange={(e) => {
+                          const updated = [...(formData.specs || [])];
+                          updated[idx] = { ...updated[idx], value: e.target.value };
+                          handleChange('specs', updated);
+                        }}
+                        className="flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...(formData.specs || [])];
+                          updated.splice(idx, 1);
+                          handleChange('specs', updated);
+                        }}
+                        className="p-2 text-zinc-muted hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+            </Card>
+
+            {/* External Sources & References */}
+            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
+                <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20">
+                         <ExternalLink className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.sources') || 'Sources & References'}</h3>
+                   </div>
+                   <AmberButton
+                      type="button"
+                      variant="outline"
+                      className="h-9 px-4 text-xs font-bold border-border rounded-lg gap-1.5"
+                      onClick={() => {
+                        const current = formData.sources || [];
+                        handleChange('sources', [...current, { label: '', url: '', type: 'generic' as const }]);
+                      }}
+                   >
+                      <Plus className="w-3.5 h-3.5" />
+                      {t('auction.form.add_source') || 'Add Source'}
+                   </AmberButton>
+                </div>
+                <div className="space-y-3">
+                  {(formData.sources || []).length === 0 && (
+                    <p className="text-xs text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
+                      {t('auction.form.no_sources') || 'No sources added. Click "Add Source" to link product references.'}
+                    </p>
+                  )}
+                  {(formData.sources || []).map((source, idx) => (
+                    <div key={idx} className="flex items-center gap-3 group">
+                      <AmberInput
+                        placeholder={t('auction.form.source_label') || 'Label (e.g. YouTube Review)'}
+                        value={source.label}
+                        onChange={(e) => {
+                          const updated = [...(formData.sources || [])];
+                          updated[idx] = { ...updated[idx], label: e.target.value };
+                          handleChange('sources', updated);
+                        }}
+                        className="flex-1"
+                      />
+                      <AmberInput
+                        placeholder={t('auction.form.source_url') || 'URL (https://...)'}
+                        value={source.url}
+                        onChange={(e) => {
+                          const updated = [...(formData.sources || [])];
+                          updated[idx] = { ...updated[idx], url: e.target.value };
+                          handleChange('sources', updated);
+                        }}
+                        className="flex-[2]"
+                      />
+                      <select
+                        value={source.type}
+                        onChange={(e) => {
+                          const updated = [...(formData.sources || [])];
+                          updated[idx] = { ...updated[idx], type: e.target.value as any };
+                          handleChange('sources', updated);
+                        }}
+                        className="h-11 px-3 rounded-xl bg-obsidian-panel border border-border text-sm text-zinc-text font-bold"
+                      >
+                        <option value="generic">Link</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="alibaba">Alibaba</option>
+                        <option value="aws">AWS</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...(formData.sources || [])];
+                          updated.splice(idx, 1);
+                          handleChange('sources', updated);
+                        }}
+                        className="p-2 text-zinc-muted hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
             </Card>
         </div>
