@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -14,14 +14,16 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
-import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
+import { FormBuilder } from '@core/components/Form/FormBuilder';
+import { FormSection } from '@core/components/FormSection';
+import { useFormUX } from '@core/hooks/useFormUX';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import type { CreateListingInput } from '../../../types/services/listings.types';
+import type { FormFieldConfig } from '@core/services/types';
 
 export const ListingFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -35,10 +37,12 @@ export const ListingFormPage: React.FC = () => {
 
   const { data: existingListing, isLoading } = useGetListing(Number(id), isEdit);
   const { data: categoriesData } = useCategories({ limit: 100 });
-  const categoryOptions = (categoriesData as any)?.categories?.map((c: any) => ({
-    label: c.name,
-    value: String(c.id),
-  })) || [];
+  const categoryOptions = useMemo(() =>
+    (categoriesData as any)?.categories?.map((c: any) => ({
+      label: c.name,
+      value: String(c.id),
+    })) || []
+  , [categoriesData]);
 
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();
@@ -55,7 +59,6 @@ export const ListingFormPage: React.FC = () => {
     images: [],
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -76,24 +79,106 @@ export const ListingFormPage: React.FC = () => {
     }
   }, [isEdit, existingListing]);
 
-  const handleChange = (field: string, value: any) => {
+  const isSubmitting = createMutation.isPending || updateMutation.isPending || isUploading;
+
+  // Unsaved changes warning
+  const { isDirty, markClean } = useFormUX({
+    values: formData,
+    initialValues: isEdit && existingListing ? {
+      title: existingListing.title,
+      description: existingListing.description,
+      categoryId: existingListing.categoryId,
+      brand: existingListing.brand || '',
+      model: existingListing.model || '',
+      condition: existingListing.condition || '',
+      authenticity: existingListing.authenticity || '',
+      sku: existingListing.sku || '',
+      images: existingListing.images || [],
+    } : {
+      title: '',
+      description: '',
+      categoryId: undefined,
+      brand: '',
+      model: '',
+      condition: '',
+      authenticity: '',
+      sku: '',
+      images: [],
+    },
+    isSubmitting,
+    storageKey: isEdit ? `draft-listing-${id}` : 'draft-listing-new',
+  });
+
+  // Form fields config for FormBuilder
+  const formFields: FormFieldConfig[] = useMemo(() => [
+    {
+      name: 'title',
+      label: t('listing.form.title') || 'Title',
+      type: 'text',
+      placeholder: t('listing.form.title_placeholder') || 'Enter product title',
+      required: true,
+    },
+    {
+      name: 'description',
+      label: t('listing.form.description') || 'Description',
+      type: 'textarea',
+      placeholder: t('listing.form.description_placeholder') || 'Describe your product',
+    },
+    {
+      name: 'categoryId',
+      label: t('listing.form.category') || 'Category',
+      type: 'select',
+      placeholder: t('common.select') || 'Select...',
+      options: categoryOptions,
+    },
+    {
+      name: 'brand',
+      label: t('listing.form.brand') || 'Brand',
+      type: 'text',
+      placeholder: t('listing.form.brand_placeholder') || 'Brand name',
+    },
+    {
+      name: 'model',
+      label: t('listing.form.model') || 'Model',
+      type: 'text',
+      placeholder: t('listing.form.model_placeholder') || 'Model name',
+    },
+    {
+      name: 'condition',
+      label: t('listing.form.condition') || 'Condition',
+      type: 'select',
+      placeholder: t('common.select') || 'Select...',
+      options: [
+        { label: t('common.condition_new') || 'New', value: 'new' },
+        { label: t('common.condition_used') || 'Used', value: 'used' },
+        { label: t('common.condition_open_box') || 'Open Box', value: 'open_box' },
+        { label: t('common.condition_refurbished') || 'Refurbished', value: 'refurbished' },
+      ],
+    },
+    {
+      name: 'authenticity',
+      label: t('listing.form.authenticity') || 'Authenticity',
+      type: 'select',
+      placeholder: t('common.select') || 'Select...',
+      options: [
+        { label: t('common.authenticity_original') || 'Original', value: 'original' },
+        { label: t('common.authenticity_copy') || 'Copy', value: 'copy' },
+        { label: t('common.authenticity_high_copy') || 'High Copy', value: 'high_copy' },
+      ],
+    },
+    {
+      name: 'sku',
+      label: t('listing.form.sku') || 'SKU',
+      type: 'text',
+      placeholder: t('listing.form.sku_placeholder') || 'SKU number',
+    },
+  ], [t, categoryOptions]);
+
+  const handleFormChange = (data: Record<string, unknown>, field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
-    }
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.title?.trim()) newErrors.title = t('listing.form.title_required') || 'Title is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
+  const handleSubmit = async (data: Record<string, unknown>) => {
     try {
       setSubmitError(null);
       let uploadedAttachmentId: number | null = null;
@@ -115,6 +200,7 @@ export const ListingFormPage: React.FC = () => {
       } else {
         await createMutation.mutateAsync(payload);
       }
+      markClean();
       router.push('/listings');
     } catch (err: any) {
       setSubmitError(err?.message || t('common.error_occurred') || 'Submission failed');
@@ -171,10 +257,13 @@ export const ListingFormPage: React.FC = () => {
           </AmberButton>
           <AmberButton
             className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-10 shadow-lg border-none active:scale-95 transition-all gap-2"
-            onClick={handleSubmit}
-            disabled={createMutation.isPending || updateMutation.isPending || isUploading}
+            onClick={() => {
+              const form = document.querySelector('form');
+              if (form) form.requestSubmit();
+            }}
+            disabled={isSubmitting}
           >
-            {(createMutation.isPending || updateMutation.isPending || isUploading) ? (
+            {isSubmitting ? (
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
             ) : (
               <Save className="w-5 h-5" />
@@ -184,125 +273,62 @@ export const ListingFormPage: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Product Info Section */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-              <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
-                <Package className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.form.section.product_info')}</h3>
-            </div>
-
-            <div className="space-y-6">
-              <AmberInput
-                label={t('listing.form.title')}
-                placeholder={t('listing.form.title_placeholder')}
-                value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                error={errors.title}
-              />
-
-              <AmberInput
-                label={t('listing.form.description')}
-                placeholder={t('listing.form.description_placeholder')}
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                multiline
-                rows={4}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberDropdown
-                  label={t('listing.form.category')}
-                  options={[{ label: t('common.select') || 'Select...', value: '' }, ...categoryOptions]}
-                  value={String(formData.categoryId || '')}
-                  onChange={(val) => handleChange('categoryId', val ? Number(val) : undefined)}
-                />
-                <AmberInput
-                  label={t('listing.form.brand')}
-                  placeholder={t('listing.form.brand_placeholder')}
-                  value={formData.brand || ''}
-                  onChange={(e) => handleChange('brand', e.target.value)}
-                />
-                <AmberInput
-                  label={t('listing.form.model')}
-                  placeholder={t('listing.form.model_placeholder')}
-                  value={formData.model || ''}
-                  onChange={(e) => handleChange('model', e.target.value)}
-                />
-                <AmberDropdown
-                  label={t('listing.form.condition')}
-                  options={[
-                    { label: t('common.select') || 'Select...', value: '' },
-                    { label: t('common.condition_new') || 'New', value: 'new' },
-                    { label: t('common.condition_used') || 'Used', value: 'used' },
-                    { label: t('common.condition_open_box') || 'Open Box', value: 'open_box' },
-                    { label: t('common.condition_refurbished') || 'Refurbished', value: 'refurbished' },
-                  ]}
-                  value={formData.condition || ''}
-                  onChange={(val) => handleChange('condition', val)}
-                />
-                <AmberDropdown
-                  label={t('listing.form.authenticity')}
-                  options={[
-                    { label: t('common.select') || 'Select...', value: '' },
-                    { label: t('common.authenticity_original') || 'Original', value: 'original' },
-                    { label: t('common.authenticity_copy') || 'Copy', value: 'copy' },
-                    { label: t('common.authenticity_high_copy') || 'High Copy', value: 'high_copy' },
-                  ]}
-                  value={formData.authenticity || ''}
-                  onChange={(val) => handleChange('authenticity', val)}
-                />
-                <AmberInput
-                  label={t('listing.form.sku')}
-                  placeholder={t('listing.form.sku_placeholder')}
-                  value={formData.sku || ''}
-                  onChange={(e) => handleChange('sku', e.target.value)}
-                />
-              </div>
-            </div>
-          </Card>
+        <div className="lg:col-span-2">
+          <FormSection
+            icon={<Package className="w-5 h-5" />}
+            iconBgColor="brand"
+            title={t('listing.form.section.product_info') || 'Product Information'}
+          >
+            <FormBuilder
+              fields={formFields}
+              initialValues={formData as Record<string, unknown>}
+              onSubmit={handleSubmit}
+              isLoading={isSubmitting}
+              showActions={false}
+              layout="vertical"
+              onChange={handleFormChange}
+            />
+          </FormSection>
         </div>
 
         {/* Images & Actions Sidebar */}
         <div className="space-y-8">
           {/* Image Upload Card */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-              <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
-                <ImageIcon className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.form.section.media')}</h3>
-            </div>
-            <div className="space-y-4">
-              <AmberImageUpload
-                value={formData.images || []}
-                onChange={(files) => {
-                  if (files?.[0]) {
-                    setSelectedImageFile(files[0]);
-                    handleChange('images', [...(formData.images || []), URL.createObjectURL(files[0])]);
-                  }
-                }}
-                onRemove={(index) => {
-                  const newImages = [...(formData.images || [])];
-                  newImages.splice(index, 1);
-                  handleChange('images', newImages);
-                }}
-                onReorder={(newOrder) => handleChange('images', newOrder)}
-                multiple={true}
-                sortable={true}
-                disabled={isUploading}
-                isUploading={isUploading}
-                uploadProgress={uploadProgress}
-                uploadError={uploadError}
-              />
-              <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest">
-                {t('common.image_upload_hint') || 'PNG, JPG up to 10MB'}
-              </p>
-            </div>
-          </Card>
+          <FormSection
+            icon={<ImageIcon className="w-5 h-5" />}
+            iconBgColor="info"
+            title={t('listing.form.section.media') || 'Media'}
+          >
+            <AmberImageUpload
+              value={formData.images || []}
+              onChange={(files) => {
+                if (files?.[0]) {
+                  setSelectedImageFile(files[0]);
+                  setFormData(prev => ({
+                    ...prev,
+                    images: [...(prev.images || []), URL.createObjectURL(files[0])],
+                  }));
+                }
+              }}
+              onRemove={(index) => {
+                const newImages = [...(formData.images || [])];
+                newImages.splice(index, 1);
+                setFormData(prev => ({ ...prev, images: newImages }));
+              }}
+              onReorder={(newOrder) => setFormData(prev => ({ ...prev, images: newOrder }))}
+              multiple={true}
+              sortable={true}
+              disabled={isUploading}
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
+              uploadError={uploadError}
+            />
+            <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest mt-4">
+              {t('common.image_upload_hint') || 'PNG, JPG up to 10MB'}
+            </p>
+          </FormSection>
 
           {/* Info Note */}
           <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-4">
@@ -321,10 +347,13 @@ export const ListingFormPage: React.FC = () => {
           <div className="space-y-3">
             <AmberButton
               className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
-              disabled={updateMutation.isPending || createMutation.isPending || isUploading}
-              onClick={handleSubmit}
+              disabled={isSubmitting}
+              onClick={() => {
+                const form = document.querySelector('form');
+                if (form) form.requestSubmit();
+              }}
             >
-              {(updateMutation.isPending || createMutation.isPending || isUploading) && (
+              {isSubmitting && (
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               )}
               {t('listing.form.save')}
@@ -338,7 +367,7 @@ export const ListingFormPage: React.FC = () => {
             </AmberButton>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

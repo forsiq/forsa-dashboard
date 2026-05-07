@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -16,10 +16,11 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
-import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
+import { FormSection } from '@core/components/FormSection';
+import { useFormUX } from '@core/hooks/useFormUX';
 import { useGetListing, useDeployAsAuction, useDeployAsGroupBuy } from '../api/listing-hooks';
 
 type DeployType = 'auction' | 'group_buy' | null;
@@ -69,6 +70,22 @@ export const DeployListingPage: React.FC = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // useFormUX: unsaved-changes warning + draft auto-save
+  const currentValues = deployType === 'auction' ? auctionForm : groupBuyForm;
+  const initialValues = useMemo(() =>
+    deployType === 'auction'
+      ? { startPrice: 0, buyNowPrice: '', reservePrice: '', bidIncrement: 5000, startTime: '', endTime: '' }
+      : { originalPrice: 0, dealPrice: 0, minParticipants: 2, maxParticipants: 100, startTime: '', endTime: '', autoCreateOrder: true },
+    [deployType]
+  );
+
+  const { isDirty, markClean } = useFormUX({
+    values: currentValues,
+    initialValues,
+    isSubmitting: deployAuctionMutation.isPending || deployGroupBuyMutation.isPending,
+    storageKey: 'draft-deploy-listing',
+  });
+
   const handleSubmit = async () => {
     setSubmitError(null);
     try {
@@ -84,7 +101,6 @@ export const DeployListingPage: React.FC = () => {
             endTime: new Date(auctionForm.endTime).toISOString(),
           },
         });
-        router.push('/auctions');
       } else if (deployType === 'group_buy') {
         await deployGroupBuyMutation.mutateAsync({
           id: Number(id),
@@ -98,6 +114,11 @@ export const DeployListingPage: React.FC = () => {
             autoCreateOrder: groupBuyForm.autoCreateOrder,
           },
         });
+      }
+      markClean();
+      if (deployType === 'auction') {
+        router.push('/auctions');
+      } else {
         router.push('/group-buying');
       }
     } catch (err: any) {
@@ -205,20 +226,11 @@ export const DeployListingPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-          <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center border",
-              deployType === 'auction'
-                ? "bg-brand/10 text-brand border-brand/20"
-                : "bg-info/10 text-info border-info/20"
-            )}>
-              {deployType === 'auction' ? <Gavel className="w-5 h-5" /> : <Users className="w-5 h-5" />}
-            </div>
-            <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
-              {deployType === 'auction' ? t('listing.deploy.auction_settings') : t('listing.deploy.group_buy_settings')}
-            </h3>
-          </div>
+        <FormSection
+          icon={deployType === 'auction' ? <Gavel className="w-5 h-5" /> : <Users className="w-5 h-5" />}
+          iconBgColor={deployType === 'auction' ? 'brand' : 'info'}
+          title={deployType === 'auction' ? t('listing.deploy.auction_settings') : t('listing.deploy.group_buy_settings')}
+        >
 
           {deployType === 'auction' && (
             <div className="space-y-6">
@@ -346,7 +358,7 @@ export const DeployListingPage: React.FC = () => {
               {t('listing.deploy.deploy')}
             </AmberButton>
           </div>
-        </Card>
+        </FormSection>
       )}
     </div>
   );

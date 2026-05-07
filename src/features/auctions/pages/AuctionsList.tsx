@@ -32,6 +32,7 @@ import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useGetAuctions, useGetAuctionStats, useDeleteAuction, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
@@ -67,6 +68,7 @@ export const AuctionsList: React.FC = () => {
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
     const [activeTab, setActiveTab] = useState<TabValue>('all');
     const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
     const [page, setPage] = useState(1);
@@ -86,7 +88,7 @@ export const AuctionsList: React.FC = () => {
     const { data: auctionsData, isLoading: listLoading } = useGetAuctions({
         status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
-        search: searchQuery || undefined,
+        search: debouncedSearch || undefined,
         sortBy: 'createdAt',
         sortOrder: 'desc',
         page,

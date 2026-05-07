@@ -29,7 +29,9 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
+import { FormSection } from '@core/components/FormSection';
 import { useFileUpload } from '@core/hooks/useFileUpload';
+import { useFormUX } from '@core/hooks/useFormUX';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
@@ -94,6 +96,31 @@ export const AuctionFormPage: React.FC = () => {
     sources: [],
   });
 
+  const initialFormData: Partial<AuctionCreateInput> & { productId?: number } = {
+    title: '',
+    description: '',
+    startPrice: 0,
+    buyNowPrice: undefined,
+    reservePrice: undefined,
+    startTime: (() => {
+      const now = new Date();
+      now.setHours(now.getHours() + 1, 0, 0, 0);
+      return now.toISOString().slice(0, 16);
+    })(),
+    endTime: (() => {
+      const end = new Date();
+      end.setDate(end.getDate() + 7);
+      end.setHours(end.getHours() + 1, 0, 0, 0);
+      return end.toISOString().slice(0, 16);
+    })(),
+    bidIncrement: 5000,
+    categoryId: 1,
+    images: [],
+    productId: undefined,
+    specs: [],
+    sources: [],
+  };
+
   // Compute endTime from startTime + durationDays
   const computedEndTime = formData.startTime
     ? (() => {
@@ -102,6 +129,13 @@ export const AuctionFormPage: React.FC = () => {
         return start.toISOString().slice(0, 16);
       })()
     : '';
+
+  const { isDirty, markClean } = useFormUX({
+    values: formData,
+    initialValues: initialFormData,
+    isSubmitting: createMutation.isPending || updateMutation.isPending,
+    storageKey: isEdit ? `auction-draft-${auctionId}` : 'auction-draft-new',
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -210,6 +244,7 @@ export const AuctionFormPage: React.FC = () => {
         // Create (also handles clone - always creates new auction)
         await createMutation.mutateAsync(payload as AuctionCreateInput);
       }
+      markClean();
       router.push('/auctions');
     } catch (err: any) {
       const errorMessage = err?.message || err?.details?.[0] || t('auction.validation.submit_failed') || 'Submission failed. Please check your data and try again.';
@@ -282,14 +317,7 @@ export const AuctionFormPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Primary Data Cluster */}
         <div className="lg:col-span-2 space-y-8">
-            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
-                      <Gavel className="w-5 h-5" />
-                   </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.core')}</h3>
-                </div>
-
+            <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('auction.form.section.core')}>
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="w-full">
@@ -336,17 +364,10 @@ export const AuctionFormPage: React.FC = () => {
                         rows={6}
                     />
                 </div>
-            </Card>
+            </FormSection>
 
             {/* Premium Multi-tier Pricing */}
-            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                      <DollarSign className="w-5 h-5" />
-                   </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.pricing')}</h3>
-                </div>
-
+            <FormSection icon={<DollarSign className="w-5 h-5" />} iconBgColor="success" title={t('auction.form.section.pricing')}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <AmberInput
                         label={t('auction.form.fields.start_price')}
@@ -388,7 +409,7 @@ export const AuctionFormPage: React.FC = () => {
                          <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('auction.form.pricing_note_desc')}</p>
                     </div>
                 </div>
-            </Card>
+            </FormSection>
 
             {/* Product Specifications */}
             <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
@@ -540,13 +561,7 @@ export const AuctionFormPage: React.FC = () => {
         {/* Temporal & Visual Logistics */}
         <div className="space-y-8">
             {/* Visual Identity Ingestion */}
-            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
-                      <ImageIcon className="w-5 h-5" />
-                   </div>
-                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.visualization')}</h3>
-                </div>
+            <FormSection icon={<ImageIcon className="w-5 h-5" />} iconBgColor="info" title={t('auction.form.section.visualization')}>
                 <div className="space-y-4">
                     <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1">
                         {t('auction.form.imagery_specs')}
@@ -576,7 +591,7 @@ export const AuctionFormPage: React.FC = () => {
                     />
                     <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest">{t('auction.form.imagery_format_note')}</p>
                 </div>
-            </Card>
+            </FormSection>
 
             {/* Deployment Window Control */}
             <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">

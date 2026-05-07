@@ -26,6 +26,8 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useFileUpload } from '@core/hooks/useFileUpload';
+import { FormSection } from '@core/components/FormSection';
+import { useFormUX } from '@core/hooks/useFormUX';
 import { 
   useGetGroupBuying, 
   useCreateGroupBuying, 
@@ -78,6 +80,40 @@ export const GroupBuyingFormPage: React.FC = () => {
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending || isUploading;
+
+  // useFormUX: unsaved-changes warning + dirty tracking
+  const { isDirty, markClean } = useFormUX({
+    values: formData,
+    initialValues: isEdit && existingCampaign ? {
+      title: existingCampaign.title || '',
+      description: existingCampaign.description || '',
+      categoryId: existingCampaign.categoryId?.toString() || '',
+      productId: existingCampaign.productId?.toString() || '',
+      originalPrice: existingCampaign.originalPrice || 0,
+      dealPrice: existingCampaign.dealPrice || 0,
+      minParticipants: existingCampaign.minParticipants || 2,
+      maxParticipants: existingCampaign.maxParticipants || 100,
+      startTime: existingCampaign.startTime ? new Date(existingCampaign.startTime).toISOString().slice(0, 16) : '',
+      endTime: existingCampaign.endTime ? new Date(existingCampaign.endTime).toISOString().slice(0, 16) : '',
+      autoCreateOrder: existingCampaign.autoCreateOrder ?? true,
+    } : {
+      title: '',
+      description: '',
+      categoryId: '',
+      productId: '',
+      originalPrice: 0,
+      dealPrice: 0,
+      minParticipants: 2,
+      maxParticipants: 100,
+      startTime: '',
+      endTime: '',
+      autoCreateOrder: true,
+    },
+    isSubmitting,
+    storageKey: isEdit ? `draft-group-buying-${id}` : 'draft-group-buying-new',
+  });
 
   // Sync when editing
   useEffect(() => {
@@ -170,6 +206,7 @@ export const GroupBuyingFormPage: React.FC = () => {
       } else {
         await createMutation.mutateAsync(input);
       }
+      markClean();
       router.push('/group-buying');
     } catch (err: any) {
       const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Submission failed. Please try again.';

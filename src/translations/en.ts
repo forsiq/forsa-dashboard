@@ -111,6 +111,10 @@ export const en: Record<string, string> = {
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",
+  "sidebar.marketplace": "Marketplace",
+  "sidebar.commerce": "Commerce",
+  "sidebar.management": "Management",
+  "sidebar.settings_section": "Settings",
   "sidebar.live_monitor": "Live Monitor",
   "sidebar.users": "Users",
   "sidebar.settings": "Settings",
@@ -215,6 +219,14 @@ export const en: Record<string, string> = {
   "listing.empty.title": "No listings yet",
   "listing.empty.description": "Create your first product listing to get started.",
   "listing.empty.create": "Create Listing",
+  "listing.quick_add.title": "Quick Add Product",
+  "listing.quick_add.description": "Create a product listing in seconds. You can edit details later.",
+  "listing.quick_add.create": "Create & Edit",
+  "listing.quick_deploy.title": "Quick Deploy",
+  "listing.quick_deploy.deploying": "Deploying",
+  "listing.quick_deploy.select_listing": "Select a listing to deploy",
+  "listing.quick_deploy.deploy_auction": "Deploy Auction",
+  "listing.quick_deploy.deploy_deal": "Deploy Deal",
 
   // Customer page
   "customer.independent": "Independent",

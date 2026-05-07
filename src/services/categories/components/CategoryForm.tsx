@@ -11,6 +11,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { IconPicker } from '@core/components/IconPicker';
+import { useFormUX } from '@core/hooks/useFormUX';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 
 // --- Validation Schema ---
@@ -84,6 +85,30 @@ export function CategoryForm({
   });
 
   const watchedName = watch('name');
+  const watchedValues = watch();
+
+  // useFormUX: warn about unsaved changes when navigating away
+  useFormUX({
+    values: watchedValues as any,
+    initialValues: initialData ? {
+      name: initialData.name,
+      nameAr: initialData.nameAr || initialData.translations?.ar?.name || '',
+      slug: initialData.slug || '',
+      description: initialData.description || '',
+      icon: initialData.icon || '',
+      sortOrder: initialData.sortOrder ?? 0,
+      isActive: initialData.isActive ?? true,
+    } : {
+      name: '',
+      nameAr: '',
+      slug: '',
+      description: '',
+      icon: '',
+      sortOrder: 0,
+      isActive: true,
+    },
+    isSubmitting: isSubmitting || isLoading,
+  });
 
   // Auto-generate slug from name
   useEffect(() => {

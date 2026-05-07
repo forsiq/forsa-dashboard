@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { AmberDashboardLayout } from '@core/layout/AmberDashboardLayout';
 import { sidebarSections } from '@services/general/sidebar';
 import { resolveIcon } from '@config/navigation';
+import { useSidebarBadges } from '@core/hooks/useSidebarBadges';
 import type { MenuSection } from '@config/navigation';
 
 /** Pre-resolve all string icons to Lucide components */
@@ -13,6 +14,7 @@ const generalResolved = sidebarSections.map(s => ({
 
 export function ForsaDashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { data: badges } = useSidebarBadges();
 
   const menuSections = useMemo<MenuSection[]>(() => {
     if (!router.isReady) return generalResolved;
@@ -20,8 +22,20 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
 
     if (p === '/portal' || p === '/') return [];
 
-    return generalResolved;
-  }, [router.isReady, router.pathname]);
+    // Apply badge counts to relevant items
+    if (!badges) return generalResolved;
+
+    return generalResolved.map(section => ({
+      ...section,
+      items: section.items.map(item => {
+        let badge: string | number | undefined;
+        if (item.path === '/auctions') badge = badges.activeAuctions || undefined;
+        else if (item.path === '/orders') badge = badges.pendingOrders || undefined;
+        else if (item.path === '/listings') badge = badges.orphanListings || undefined;
+        return { ...item, badge };
+      }),
+    }));
+  }, [router.isReady, router.pathname, badges]);
 
   return (
     <AmberDashboardLayout

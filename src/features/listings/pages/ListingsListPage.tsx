@@ -26,6 +26,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import type { ProductListing } from '../../../types/services/listings.types';
 
@@ -36,6 +37,7 @@ export const ListingsListPage: React.FC = () => {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [page, setPage] = useState(1);
   const [limit] = useState(12);
   const [isClient, setIsClient] = useState(false);
@@ -45,7 +47,7 @@ export const ListingsListPage: React.FC = () => {
   useEffect(() => { setIsClient(true); }, []);
 
   const { data: listingsData, isLoading } = useGetListings({
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
     condition: conditionFilter !== 'all' ? conditionFilter : undefined,
     brand: brandFilter !== 'all' ? brandFilter : undefined,
     sortBy: 'createdAt',

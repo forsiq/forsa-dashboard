@@ -14,6 +14,7 @@ import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { PageHeader } from '@core/components/Layout/PageHeader';
+import { useFormUX } from '@core/hooks/useFormUX';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export function UserFormPage() {
@@ -49,6 +50,29 @@ export function UserFormPage() {
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // useFormUX: unsaved-changes warning
+  useFormUX({
+    values: formData,
+    initialValues: isEdit && user ? {
+      userName: user.userName || '',
+      fullName: user.fullName || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      role: user.role || 'user',
+      password: '',
+      isActive: user.isActive ?? true,
+    } : {
+      userName: '',
+      fullName: '',
+      email: '',
+      phone: '',
+      role: 'user' as const,
+      password: '',
+      isActive: true,
+    },
+    isSubmitting: createMutation.isPending || updateMutation.isPending,
+  });
 
   // Load user data into form when editing
   useEffect(() => {

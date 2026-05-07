@@ -111,6 +111,10 @@ export const ar: Record<string, string> = {
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",
+  "sidebar.marketplace": "السوق",
+  "sidebar.commerce": "التجارة",
+  "sidebar.management": "الإدارة",
+  "sidebar.settings_section": "الإعدادات",
   "sidebar.live_monitor": "المراقبة المباشرة",
   "sidebar.users": "المستخدمين",
   "sidebar.settings": "الإعدادات",
@@ -215,6 +219,14 @@ export const ar: Record<string, string> = {
   "listing.empty.title": "لا توجد منتجات بعد",
   "listing.empty.description": "أنشئ أول منتج للبدء.",
   "listing.empty.create": "إضافة منتج",
+  "listing.quick_add.title": "إضافة سريعة",
+  "listing.quick_add.description": "أنشئ منتجاً في ثوانٍ. يمكنك تعديل التفاصيل لاحقاً.",
+  "listing.quick_add.create": "إنشاء وتعديل",
+  "listing.quick_deploy.title": "نشر سريع",
+  "listing.quick_deploy.deploying": "جاري النشر",
+  "listing.quick_deploy.select_listing": "اختر منتجاً للنشر",
+  "listing.quick_deploy.deploy_auction": "نشر ك مزاد",
+  "listing.quick_deploy.deploy_deal": "نشر ك صفقة",
 
   // Customer page
   "customer.independent": "مشغل مستقل",

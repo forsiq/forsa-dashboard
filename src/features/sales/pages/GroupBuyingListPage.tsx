@@ -40,6 +40,7 @@ import {
   useCompleteGroupBuying
 } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
@@ -60,13 +61,14 @@ export const GroupBuyingListPage: React.FC = () => {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<any>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
 
   const { data: campaignsData, isLoading: listLoading } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
     categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
   });
 
   const { data: stats } = useGetGroupBuyingStats();
