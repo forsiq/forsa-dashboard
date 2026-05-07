@@ -5,16 +5,11 @@ frontend:
       commands:
         - node -v
         - npm -v
-        - echo "Installing dependencies..."
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - echo "Cleaning cache..."
         - rm -rf .next/cache
-        - echo "Starting Next.js build..."
-        - NODE_OPTIONS='--max-old-space-size=4096' npm run build 2>&1 | tee /tmp/build.log || (echo "BUILD FAILED - Last 50 lines:" && tail -50 /tmp/build.log && exit 1)
-        - echo "BUILD COMPLETED SUCCESSFULLY"
-        - ls -la .next/ | head -15
+        - NODE_OPTIONS='--max-old-space-size=4096' npm run build
   artifacts:
     baseDirectory: .next
     files:
