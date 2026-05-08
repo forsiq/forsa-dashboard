@@ -428,6 +428,27 @@ export function useExtendAuction() {
   });
 }
 
+export function useRescheduleAuction() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, endTime }: { id: number | string; endTime: string }) =>
+      liveMonitorApi.rescheduleAuction(id, endTime),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'] });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
+      toast.success('Auction rescheduled successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to reschedule auction: ${error.message || 'Unknown error'}`, 8000);
+    },
+  });
+}
+
 // ============================================================================
 // Settlement Hooks
 // ============================================================================

@@ -22,6 +22,8 @@ export {
   useResumeAuction,
   useEndAuction,
   useCancelAuction,
+  useExtendAuction,
+  useRescheduleAuction,
 } from './auction-hooks';
 
 // API Client

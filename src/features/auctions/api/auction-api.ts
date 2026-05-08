@@ -282,6 +282,12 @@ export const liveMonitorApi = {
     const response = await client.post(`/auctions/${id}/extend`, { minutes });
     return response.data.data;
   },
+
+  rescheduleAuction: async (id: number | string, endTime: string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/reschedule`, { endTime });
+    return response.data.data;
+  },
 };
 
 export interface SettlementItem {

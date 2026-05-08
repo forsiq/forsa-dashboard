@@ -18,6 +18,7 @@ import {
   RotateCcw,
   Square,
   XCircle,
+  Calendar,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -36,6 +37,7 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
+import { RescheduleModal } from '../components/RescheduleModal';
 import type { AuctionStatus, Auction } from '../types/auction.types';
 
 type TabValue = 'all' | AuctionStatus;
@@ -75,6 +77,8 @@ export const AuctionsList: React.FC = () => {
     const [limit] = useState(12);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isClient, setIsClient] = useState(false);
+    const [rescheduleAuction, setRescheduleAuction] = useState<Auction | null>(null);
+    const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -254,6 +258,14 @@ export const AuctionsList: React.FC = () => {
           variant: 'danger',
         }),
         variant: 'danger',
+      },
+      {
+        label: (auction) => ['active', 'scheduled', 'paused', 'draft'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as any,
+        icon: Calendar,
+        onClick: (auction) => {
+          setRescheduleAuction(auction);
+          setIsRescheduleOpen(true);
+        },
       },
       {
         label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null as any,
@@ -516,6 +528,11 @@ export const AuctionsList: React.FC = () => {
                 </div>
             </AmberSlideOver>
             <ConfirmModal />
+            <RescheduleModal
+              isOpen={isRescheduleOpen}
+              onClose={() => { setIsRescheduleOpen(false); setRescheduleAuction(null); }}
+              auction={rescheduleAuction}
+            />
         </div>
     );
 };
