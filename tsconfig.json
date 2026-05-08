@@ -22,7 +22,7 @@
     "paths": {
       "@core/*": [
         "src/core/*",
-        "node_modules/@yousef2001/core-ui/src/*"
+        "node_modules/@yousef2001/core-ui/dist/*"
       ],
       "@features/*": [
         "src/features/*"

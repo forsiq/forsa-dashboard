@@ -88,6 +88,11 @@ export const menuSections: MenuSection[] = [
         serviceId: 'auctions',
       },
       {
+        path: '/amazon-import',
+        label: 'sidebar.amazon_import',
+        icon: 'ShoppingBag',
+      },
+      {
         path: '/auctions/add',
         label: 'auction.create',
         icon: 'PlusCircle',

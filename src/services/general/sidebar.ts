@@ -16,12 +16,13 @@ export const sidebarSections: MenuSection[] = [
       { path: '/moderation', label: 'sidebar.moderation', icon: 'Shield' },
     ]
   },
-  // 2. Marketplace (Auctions + Catalog)
+  // 2. Marketplace (Auctions + Catalog + Amazon Import)
   {
     title: 'sidebar.marketplace',
     items: [
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
       { path: '/listings', label: 'sidebar.listings', icon: 'Package' },
+      { path: '/amazon-import', label: 'sidebar.amazon_import', icon: 'ShoppingBag' },
       { path: '/categories', label: 'sidebar.categories', icon: 'FolderTree' },
       { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
     ]
