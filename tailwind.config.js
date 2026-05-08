@@ -3,7 +3,8 @@ module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/@yousef2001/core-ui/src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@yousef2001/core-ui/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@yousef2001/core-ui/src/**/*.{js,ts,jsx,tsx,css}",
   ],
   darkMode: 'class',
   theme: {
