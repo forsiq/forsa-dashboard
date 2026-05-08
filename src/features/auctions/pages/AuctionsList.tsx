@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Gavel,
   Plus,
@@ -324,12 +323,13 @@ export const AuctionsList: React.FC = () => {
                         <SlidersHorizontal className="w-4 h-4" />
                         {t('common.filters')}
                     </AmberButton>
-                    <Link href="/auctions/add">
-                        <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8">
+                    <AmberButton
+                        className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+                        onClick={() => router.push('/auctions/add')}
+                    >
                             <Plus className="w-5 h-5" />
                             <span>{t('auction.create_auction')}</span>
-                        </AmberButton>
-                    </Link>
+                    </AmberButton>
                 </div>
             </div>
 

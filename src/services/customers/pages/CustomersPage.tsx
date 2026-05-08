@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, Search, Mail, Phone, Building2, User, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -192,12 +191,10 @@ export function CustomersPage() {
             {t('customer.subtitle') || 'إدارة وتتبع حسابات العملاء'}
           </p>
         </div>
-        <Link href="/customers/new">
-          <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95">
-            <Plus className="w-5 h-5" />
-            <span>{t('customer.add_new') || 'Initialize Customer'}</span>
-          </AmberButton>
-        </Link>
+        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/customers/new')}>
+          <Plus className="w-5 h-5" />
+          <span>{t('customer.add_new') || 'Initialize Customer'}</span>
+        </AmberButton>
       </div>
 
       {/* Statistics Grid */}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Users,
   Plus,
@@ -279,12 +278,10 @@ export const GroupBuyingListPage: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
             {t('common.filters') || 'Filters'}
           </AmberButton>
-          <Link href="/group-buying/new">
-            <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8">
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
               <Plus className="w-5 h-5" />
               <span>{t('groupBuying.create') || 'Create Campaign'}</span>
-            </AmberButton>
-          </Link>
+          </AmberButton>
         </div>
       </div>
 

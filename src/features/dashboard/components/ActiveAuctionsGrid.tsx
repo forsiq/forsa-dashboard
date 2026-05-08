@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock,
   Gavel,
@@ -15,6 +15,21 @@ import type { Auction } from '../../auctions/types/auction.types';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
+function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
+  const end = new Date(endTime).getTime();
+  const diff = end - now;
+
+  if (diff <= 0) return t('live.endedTime');
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
 export const ActiveAuctionsGrid: React.FC = () => {
   const { t } = useLanguage();
   const { data: auctionsData, isLoading } = useGetAuctions({
@@ -30,39 +45,30 @@ export const ActiveAuctionsGrid: React.FC = () => {
 
   const auctions = auctionsData?.data || [];
 
-  function formatTimeRemaining(endTime: string): string {
-    const now = Date.now();
-    const end = new Date(endTime).getTime();
-    const diff = end - now;
+  // Single timer for all cards
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
-    if (diff <= 0) return t('live.endedTime');
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds}s`;
-  }
-
-  const getUrgencyClass = (endTime: string) => {
+  const getUrgencyClass = useCallback((endTime: string) => {
     const diff = new Date(endTime).getTime() - Date.now();
     const minutesLeft = diff / (1000 * 60);
 
     if (minutesLeft <= 5) return 'border-danger/30 bg-danger/5';
     if (minutesLeft <= 15) return 'border-warning/30 bg-warning/5';
     return 'border-success/20 bg-success/5';
-  };
+  }, []);
 
-  const getUrgencyDot = (endTime: string) => {
+  const getUrgencyDot = useCallback((endTime: string) => {
     const diff = new Date(endTime).getTime() - Date.now();
     const minutesLeft = diff / (1000 * 60);
 
     if (minutesLeft <= 5) return 'bg-danger';
     if (minutesLeft <= 15) return 'bg-warning';
     return 'bg-success';
-  };
+  }, []);
 
   return (
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
@@ -96,9 +102,9 @@ export const ActiveAuctionsGrid: React.FC = () => {
             <AuctionCard
               key={auction.id}
               auction={auction}
+              now={now}
               getUrgencyClass={getUrgencyClass}
               getUrgencyDot={getUrgencyDot}
-              formatTimeRemaining={formatTimeRemaining}
               onEnd={() => {
                 openConfirm({
                   title: t('live.endAuction'),
@@ -130,9 +136,9 @@ export const ActiveAuctionsGrid: React.FC = () => {
 
 interface AuctionCardProps {
   auction: Auction;
+  now: number;
   getUrgencyClass: (endTime: string) => string;
   getUrgencyDot: (endTime: string) => string;
-  formatTimeRemaining: (endTime: string) => string;
   onEnd: () => void;
   onPause: () => void;
   onExtend: () => void;
@@ -140,23 +146,16 @@ interface AuctionCardProps {
 
 const AuctionCard: React.FC<AuctionCardProps> = ({
   auction,
+  now,
   getUrgencyClass,
   getUrgencyDot,
-  formatTimeRemaining,
   onEnd,
   onPause,
   onExtend,
 }) => {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
-  const [timeStr, setTimeStr] = useState(formatTimeRemaining(auction.endTime));
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeStr(formatTimeRemaining(auction.endTime));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [auction.endTime, formatTimeRemaining]);
+  const timeStr = formatTimeRemaining(auction.endTime, now, t);
 
   return (
     <div

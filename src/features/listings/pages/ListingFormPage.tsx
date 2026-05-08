@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Package,
   Save,
@@ -233,11 +232,9 @@ export const ListingFormPage: React.FC = () => {
       {/* Dynamic Navigation Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <Link href="/listings">
-            <AmberButton variant="secondary" className="p-0 w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border">
+          <AmberButton variant="secondary" className="p-0 w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border" onClick={() => router.push('/listings')}>
               <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
-            </AmberButton>
-          </Link>
+          </AmberButton>
           <div>
             <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {isEdit ? t('listing.form.header.edit') : t('listing.form.header.create')}

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import NextImage from 'next/image';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -227,12 +226,10 @@ export const InventoryPage = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/inventory">
-            <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95">
+          <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory')}>
               <span>{t('inventory.add_item')}</span>
               <Plus className="w-5 h-5" />
-            </AmberButton>
-          </Link>
+          </AmberButton>
           <AmberButton variant="outline" className="gap-2 px-6 h-11 border-[var(--color-border)] text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-[var(--color-obsidian-hover)]">
             <History className="w-4 h-4" />
             {t('inventory.transactions')}

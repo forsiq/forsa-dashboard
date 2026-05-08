@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Users,
   Clock,
@@ -210,11 +209,9 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>
-          <Link href={`/group-buying/${campaign.id}/edit`}>
-            <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs">
+          <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => router.push(`/group-buying/${campaign.id}/edit`)}>
               {t('common.edit') || 'Edit'}
-            </AmberButton>
-          </Link>
+          </AmberButton>
         </div>
       </div>
 

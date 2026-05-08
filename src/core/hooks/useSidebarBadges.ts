@@ -41,7 +41,8 @@ export function useSidebarBadges() {
       return { activeAuctions, pendingOrders, orphanListings };
     },
     staleTime: 30_000,
-    refetchInterval: 30_000,
+    refetchInterval: (query) =>
+      document.visibilityState === 'visible' ? 30_000 : false,
     retry: false,
   });
 }

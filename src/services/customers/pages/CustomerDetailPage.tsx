@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberAvatar } from '@core/components/AmberAvatar';
@@ -168,12 +167,10 @@ export function CustomerDetailPage() {
           </div>
         </div>
 
-        <Link href={`/customers/${id}/edit`}>
-          <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95">
-            <Edit3 className="w-4 h-4" />
-            <span>{t('customer.modify_identity') || 'Modify Identity'}</span>
-          </AmberButton>
-        </Link>
+        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push(`/customers/${id}/edit`)}>
+          <Edit3 className="w-4 h-4" />
+          <span>{t('customer.modify_identity') || 'Modify Identity'}</span>
+        </AmberButton>
       </div>
 
       {/* Activity Summary Cards */}

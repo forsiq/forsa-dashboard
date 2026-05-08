@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import {
@@ -167,18 +166,14 @@ export const InventoryOverviewPage: React.FC = () => {
                 <SlidersHorizontal className="w-4 h-4" />
                 {t('inventory.filters') || 'Configuration'}
             </AmberButton>
-            <Link href="/inventory/add">
-                <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8">
+            <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/inventory/add')}>
                     <Plus className="w-5 h-5" />
                     <span>{t('inventory.add_item') || 'Ingest Asset'}</span>
-                </AmberButton>
-            </Link>
-            <Link href="/inventory">
-                <AmberButton variant="outline" className="gap-2 h-11 border-border font-bold rounded-xl hover:bg-obsidian-hover active:scale-95">
+            </AmberButton>
+            <AmberButton variant="outline" className="gap-2 h-11 border-border font-bold rounded-xl hover:bg-obsidian-hover active:scale-95" onClick={() => router.push('/inventory')}>
                     <HistoryIcon className="w-4 h-4" />
                     <span>{t('inventory.transactions') || 'Ledger'}</span>
-                </AmberButton>
-            </Link>
+            </AmberButton>
         </div>
       </div>
 

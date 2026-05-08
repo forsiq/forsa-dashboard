@@ -44,38 +44,14 @@ export const useGlobalTicker = ({
   const pingIntervalRef = useRef<NodeJS.Timeout>();
   const MAX_RECONNECT = 10;
 
-  const addEvent = useCallback(
-    (event: TickerEvent) => {
-      setEvents((prev) => [event, ...prev].slice(0, maxEvents));
-      onEvent?.(event);
-    },
-    [maxEvents, onEvent],
-  );
+  // Use refs for callback props to avoid reconnect loops
+  const onEventRef = useRef(onEvent);
+  onEventRef.current = onEvent;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
-  const handleMessage = useCallback(
-    (raw: TickerWSMessage) => {
-      const eventType = wsMessageTypeToTickerEvent[raw.type];
-      if (!eventType) return;
-
-      const event: TickerEvent = {
-        type: eventType,
-        auctionId: raw.auctionId || raw.data?.auctionId,
-        auctionTitle: raw.data?.auctionTitle,
-        categoryName: raw.data?.categoryName,
-        bidId: raw.data?.bidId,
-        bidderId: raw.data?.bidderId,
-        bidderName: raw.data?.bidderName,
-        amount: raw.data?.amount,
-        previousBid: raw.data?.previousBid,
-        winnerId: raw.data?.winnerId,
-        minutesLeft: raw.data?.minutesLeft,
-        timestamp: raw.data?.timestamp || new Date().toISOString(),
-      };
-
-      addEvent(event);
-    },
-    [addEvent],
-  );
+  const maxEventsRef = useRef(maxEvents);
+  maxEventsRef.current = maxEvents;
 
   const startPing = useCallback(() => {
     if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
@@ -104,8 +80,6 @@ export const useGlobalTicker = ({
         setError(null);
         reconnectAttempts.current = 0;
         startPing();
-
-        // Join the global ticker room
         ws.send(JSON.stringify({ action: 'ticker:join' }));
       };
 
@@ -117,7 +91,26 @@ export const useGlobalTicker = ({
             return;
           }
 
-          handleMessage(message);
+          const eventType = wsMessageTypeToTickerEvent[message.type];
+          if (!eventType) return;
+
+          const tickerEvent: TickerEvent = {
+            type: eventType,
+            auctionId: message.auctionId || message.data?.auctionId,
+            auctionTitle: message.data?.auctionTitle,
+            categoryName: message.data?.categoryName,
+            bidId: message.data?.bidId,
+            bidderId: message.data?.bidderId,
+            bidderName: message.data?.bidderName,
+            amount: message.data?.amount,
+            previousBid: message.data?.previousBid,
+            winnerId: message.data?.winnerId,
+            minutesLeft: message.data?.minutesLeft,
+            timestamp: message.data?.timestamp || new Date().toISOString(),
+          };
+
+          setEvents((prev) => [tickerEvent, ...prev].slice(0, maxEventsRef.current));
+          onEventRef.current?.(tickerEvent);
         } catch (err) {
           console.error('Failed to parse ticker WS message:', err);
         }
@@ -136,22 +129,22 @@ export const useGlobalTicker = ({
           reconnectTimeoutRef.current = setTimeout(() => connect(), delay);
         } else {
           setError('WebSocket connection lost. Using polling fallback.');
-          onError?.('WebSocket connection lost');
+          onErrorRef.current?.('WebSocket connection lost');
         }
       };
 
       ws.onerror = () => {
         setError('WebSocket connection error');
-        onError?.('Connection error');
+        onErrorRef.current?.('Connection error');
       };
 
       wsRef.current = ws;
     } catch (err) {
       console.error('Failed to create WebSocket:', err);
       setError('Failed to initialize WebSocket');
-      onError?.('Failed to connect');
+      onErrorRef.current?.('Failed to connect');
     }
-  }, [enabled, handleMessage, startPing, stopPing, onError]);
+  }, [enabled, startPing, stopPing]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {

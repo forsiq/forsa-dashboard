@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Package,
   Plus,
@@ -235,12 +234,10 @@ export const ListingsListPage: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
             {t('listing.filter')}
           </AmberButton>
-          <Link href="/listings/new">
-            <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8">
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/listings/new')}>
               <Plus className="w-5 h-5" />
               <span>{t('listing.create')}</span>
-            </AmberButton>
-          </Link>
+          </AmberButton>
         </div>
       </div>
 
@@ -312,11 +309,9 @@ export const ListingsListPage: React.FC = () => {
               <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('listing.empty.title')}</h3>
               <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('listing.empty.description')}</p>
             </div>
-            <Link href="/listings/new">
-              <AmberButton className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all">
+            <AmberButton className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => router.push('/listings/new')}>
                 {t('listing.empty.create')}
-              </AmberButton>
-            </Link>
+            </AmberButton>
           </Card>
         ) : (
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">

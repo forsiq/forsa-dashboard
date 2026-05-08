@@ -82,11 +82,9 @@ export const RegisterForm: React.FC = () => {
             {t('auth.register.success_desc')}
           </p>
         </div>
-        <Link href="/login" className="inline-block w-full">
-          <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl">
+        <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl" onClick={() => window.location.href = '/login'}>
             <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.proceed_login')}</span>
-          </AmberButton>
-        </Link>
+        </AmberButton>
       </motion.div>
     );
   }

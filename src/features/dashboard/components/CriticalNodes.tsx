@@ -6,8 +6,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { useCriticalAuctions, useExtendAuction, useEndAuction } from '../../auctions/api/auction-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 
-function formatTimeRemaining(endTime: string, t: (key: string) => string): string {
-  const now = Date.now();
+function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
   const end = new Date(endTime).getTime();
   const diff = end - now;
 
@@ -30,6 +29,13 @@ export const CriticalNodes: React.FC = () => {
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const criticalAuctions = (auctions || []).slice(0, 3);
+
+  // Single timer for all cards
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   if (isLoading) {
     return (
@@ -91,6 +97,7 @@ export const CriticalNodes: React.FC = () => {
             currentBid={auction.currentBid}
             totalBids={auction.totalBids}
             endTime={auction.endTime}
+            now={now}
             onExtend={() => {
               openConfirm({
                 title: t('critical.extend_title'),
@@ -124,6 +131,7 @@ interface CriticalNodeCardProps {
   currentBid: number;
   totalBids: number;
   endTime: string;
+  now: number;
   onExtend: () => void;
   onEnd: () => void;
 }
@@ -133,20 +141,14 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
   currentBid,
   totalBids,
   endTime,
+  now,
   onExtend,
   onEnd,
 }) => {
   const { t } = useLanguage();
-  const [timeStr, setTimeStr] = useState(formatTimeRemaining(endTime, t));
+  const timeStr = formatTimeRemaining(endTime, now, t);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeStr(formatTimeRemaining(endTime, t));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [endTime, t]);
-
-  const diff = new Date(endTime).getTime() - Date.now();
+  const diff = new Date(endTime).getTime() - now;
   const minutesLeft = diff / (1000 * 60);
   const isUrgent = minutesLeft <= 5;
 

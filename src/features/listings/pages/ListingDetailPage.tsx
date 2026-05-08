@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   ChevronLeft,
   Package,
@@ -48,11 +48,9 @@ export const ListingDetailPage: React.FC = () => {
           <Package className="w-10 h-10 text-zinc-muted/30" />
         </div>
         <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest mt-6">{t('listing.detail.not_found')}</h3>
-        <Link href="/listings">
-          <AmberButton className="mt-6 h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all">
+        <AmberButton className="mt-6 h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => router.push('/listings')}>
             {t('listing.form.cancel')}
-          </AmberButton>
-        </Link>
+        </AmberButton>
       </div>
     );
   }
@@ -62,11 +60,9 @@ export const ListingDetailPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <Link href="/listings">
-            <AmberButton variant="secondary" className="p-0 w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border">
+          <AmberButton variant="secondary" className="p-0 w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border" onClick={() => router.push('/listings')}>
               <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
-            </AmberButton>
-          </Link>
+          </AmberButton>
           <div>
             <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {listing.title}
@@ -79,24 +75,18 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href={`/listings/${id}/edit`}>
-            <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all">
+          <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/edit`)}>
               <Edit className="w-4 h-4" />
               {t('listing.edit')}
-            </AmberButton>
-          </Link>
-          <Link href={`/listings/${id}/deploy?type=auction`}>
-            <AmberButton className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all">
+          </AmberButton>
+          <AmberButton className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=auction`)}>
               <Gavel className="w-4 h-4" />
               {t('listing.detail.deploy_auction')}
-            </AmberButton>
-          </Link>
-          <Link href={`/listings/${id}/deploy?type=group-buy`}>
-            <AmberButton className="h-11 bg-info hover:bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all">
+          </AmberButton>
+          <AmberButton className="h-11 bg-info hover:bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=group-buy`)}>
               <Users className="w-4 h-4" />
               {t('listing.detail.deploy_group_buy')}
-            </AmberButton>
-          </Link>
+          </AmberButton>
           <AmberButton
             variant="secondary"
             className="h-11 text-danger border-danger/20 hover:bg-danger/10 rounded-xl px-4 gap-2 active:scale-95 transition-all"
@@ -203,18 +193,14 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
                 <p className="text-sm text-zinc-muted font-bold">{t('listing.detail.no_sales')}</p>
                 <div className="flex gap-3 justify-center">
-                  <Link href={`/listings/${id}/deploy?type=auction`}>
-                    <AmberButton className="h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all">
+                  <AmberButton className="h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=auction`)}>
                       <Gavel className="w-4 h-4" />
                       {t('listing.detail.deploy_auction')}
-                    </AmberButton>
-                  </Link>
-                  <Link href={`/listings/${id}/deploy?type=group-buy`}>
-                    <AmberButton className="h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all">
+                  </AmberButton>
+                  <AmberButton className="h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=group-buy`)}>
                       <Users className="w-4 h-4" />
                       {t('listing.detail.deploy_group_buy')}
-                    </AmberButton>
-                  </Link>
+                  </AmberButton>
                 </div>
               </div>
             ) : (

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers, Power, PowerOff } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -222,12 +221,10 @@ export function CategoriesPage() {
             {t('category.subtitle') || 'عرض وإدارة جميع فئات المنتجات في الكتالوج'}
           </p>
         </div>
-        <Link href="/categories/new" className="flex-shrink-0">
-          <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none">
+        <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none" onClick={() => router.push('/categories/new')}>
             <span>{t('category.add_new') || 'إضافة فئة جديدة'}</span>
             <Plus className="w-5 h-5" />
-          </AmberButton>
-        </Link>
+        </AmberButton>
       </div>
 
       {/* Statistics Grid */}

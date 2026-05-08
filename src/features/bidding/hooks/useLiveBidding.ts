@@ -37,6 +37,14 @@ export const useLiveBidding = ({
   const reconnectAttempts = useRef(0);
   const MAX_RECONNECT_ATTEMPTS = 5;
 
+  // Use refs for callback props to avoid reconnect loops
+  const onBidPlacedRef = useRef(onBidPlaced);
+  onBidPlacedRef.current = onBidPlaced;
+  const onAuctionEndedRef = useRef(onAuctionEnded);
+  onAuctionEndedRef.current = onAuctionEnded;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const connect = useCallback(() => {
     if (!enabled) return;
 
@@ -58,9 +66,9 @@ export const useLiveBidding = ({
                 ...prev,
                 currentBid: message.data.amount,
                 bidCount: prev.bidCount + 1,
-                bids: [message.data, ...prev.bids].slice(0, 50), // Keep last 50
+                bids: [message.data, ...prev.bids].slice(0, 50),
               }));
-              onBidPlaced?.(message.data);
+              onBidPlacedRef.current?.(message.data);
               break;
 
             case 'price_updated':
@@ -80,11 +88,11 @@ export const useLiveBidding = ({
             case 'auction_ended':
               setState(prev => ({ ...prev, isConnected: false }));
               ws.close();
-              onAuctionEnded?.();
+              onAuctionEndedRef.current?.();
               break;
 
             case 'error':
-              onError?.(message.data.message);
+              onErrorRef.current?.(message.data.message);
               break;
           }
         } catch (error) {
@@ -95,7 +103,6 @@ export const useLiveBidding = ({
       ws.onclose = () => {
         setState(prev => ({ ...prev, isConnected: false }));
 
-        // Attempt to reconnect
         if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
           reconnectAttempts.current += 1;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
@@ -107,15 +114,15 @@ export const useLiveBidding = ({
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        onError?.('Connection error');
+        onErrorRef.current?.('Connection error');
       };
 
       wsRef.current = ws;
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
-      onError?.('Failed to connect');
+      onErrorRef.current?.('Failed to connect');
     }
-  }, [auctionId, enabled, onBidPlaced, onAuctionEnded, onError]);
+  }, [auctionId, enabled]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {

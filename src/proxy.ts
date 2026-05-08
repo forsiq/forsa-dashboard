@@ -9,7 +9,7 @@ import type { NextRequest } from 'next/server';
  * 2. Check for 'access' cookie
  * 3. Redirect to login if unauthenticated on protected paths
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   const parseJwtExp = (token?: string): number | null => {
@@ -39,6 +39,7 @@ export function middleware(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/otp' ||
+    pathname === '/zvs.config.json' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/public') ||
     pathname.startsWith('/public') ||

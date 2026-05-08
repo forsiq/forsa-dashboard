@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { 
   Users, 
   DollarSign, 
@@ -244,11 +243,9 @@ export const GroupBuyingFormPage: React.FC = () => {
       {/* Strategic Header Cluster */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <Link href="/group-buying">
-             <AmberButton variant="secondary" className="p-0 w-12 h-12 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border shadow-lg">
+          <AmberButton variant="secondary" className="p-0 w-12 h-12 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border shadow-lg" onClick={() => router.push('/group-buying')}>
                 <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
-             </AmberButton>
-          </Link>
+          </AmberButton>
           <div>
             <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {isEdit ? t('groupBuying.form.authorize_mod') : t('groupBuying.form.init_consolidation')}

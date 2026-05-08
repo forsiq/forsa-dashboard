@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Clock,
   Users,
@@ -248,17 +247,13 @@ export const AuctionDetails: React.FC = () => {
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>
-          <Link href={`/auctions/clone/${auction.id}`}>
-            <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5">
+          <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5" onClick={() => router.push(`/auctions/clone/${auction.id}`)}>
               <Copy className="w-3.5 h-3.5" />
               {t('auction.detail.clone') || 'Clone'}
-            </AmberButton>
-          </Link>
-          <Link href={`/auctions/edit/${auction.id}`}>
-            <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs">
+          </AmberButton>
+          <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => router.push(`/auctions/edit/${auction.id}`)}>
               {t('common.edit') || 'Edit'}
-            </AmberButton>
-          </Link>
+          </AmberButton>
         </div>
       </div>
 

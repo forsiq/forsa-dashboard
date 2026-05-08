@@ -40,16 +40,12 @@ function useIsAuthenticated(): boolean {
 
   useEffect(() => {
     const check = () => setAuthenticated(hasAuthToken());
-    // Check on mount and on storage events (cross-tab) and focus (same-tab after login)
     check();
     window.addEventListener('storage', check);
     window.addEventListener('focus', check);
-    // Also poll every 2 seconds for same-tab cookie changes
-    const interval = setInterval(check, 2000);
     return () => {
       window.removeEventListener('storage', check);
       window.removeEventListener('focus', check);
-      clearInterval(interval);
     };
   }, []);
 
@@ -117,7 +113,7 @@ export function useGetAuctionStats(): UseQueryResult<AuctionStats> {
     queryKey: auctionKeys.stats(),
     queryFn: auctionApi.getStats,
     staleTime: 2 * 60 * 1000,
-    refetchInterval: 60 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 60 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load auction stats');
@@ -375,7 +371,7 @@ export function useLiveStats() {
     queryKey: [...auctionKeys.all, 'live-stats'] as const,
     queryFn: () => liveMonitorApi.getLiveStats(),
     staleTime: 10 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 30 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load live stats');
@@ -388,7 +384,7 @@ export function useCriticalAuctions() {
     queryKey: [...auctionKeys.all, 'critical'] as const,
     queryFn: () => liveMonitorApi.getCriticalAuctions(),
     staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 60 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load critical auctions');
@@ -534,7 +530,7 @@ export function useModerationActivity(filters?: {
     queryKey: [...auctionKeys.all, 'moderation-activity', filters] as const,
     queryFn: () => moderationApi.getActivity(filters),
     staleTime: 15 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 30 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load activity');
@@ -546,7 +542,7 @@ export function useModerationActivityStats() {
     queryKey: [...auctionKeys.all, 'moderation-activity-stats'] as const,
     queryFn: () => moderationApi.getActivityStats(),
     staleTime: 15 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 30 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load activity stats');
@@ -558,7 +554,7 @@ export function useModerationTimeline(limit = 10) {
     queryKey: [...auctionKeys.all, 'moderation-timeline', limit] as const,
     queryFn: () => moderationApi.getTimeline(limit),
     staleTime: 10 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: (_q) => document.visibilityState === 'visible' ? 30 * 1000 : false,
   });
 
   useErrorHandler(query.error, 'Failed to load timeline');

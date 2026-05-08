@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   ArrowLeft,
   Edit,
@@ -128,12 +127,10 @@ export function CategoryDetailPage() {
           >
             <Trash2 className="w-5 h-5 text-zinc-muted" />
           </AmberButton>
-          <Link href={`/categories/${category.id}/edit`}>
-            <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all">
+          <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all" onClick={() => router.push(`/categories/${category.id}/edit`)}>
               <Edit className="w-4 h-4 me-2" />
               {t('common.edit') || 'Edit'}
-            </AmberButton>
-          </Link>
+          </AmberButton>
         </div>
       </div>
 
@@ -272,15 +269,14 @@ export function CategoryDetailPage() {
             </div>
 
             <div className="pt-4">
-              <Link href={`/categories/${category.id}/edit`}>
-                <AmberButton
+              <AmberButton
                   variant="secondary"
                   className="w-full gap-2 font-black uppercase tracking-widest text-[10px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all"
-                >
+                  onClick={() => router.push(`/categories/${category.id}/edit`)}
+              >
                   <Edit className="w-4 h-4" />
                   {t('common.edit') || 'Edit Category'}
-                </AmberButton>
-              </Link>
+              </AmberButton>
             </div>
           </AmberCard>
         </div>
