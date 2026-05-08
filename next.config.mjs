@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/src');
+const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/dist');
 const localCorePath = path.resolve(__dirname, 'src/core');
 
 /** @type {import('next').NextConfig} */
