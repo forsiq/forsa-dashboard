@@ -19,6 +19,10 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
+      // Force single React/Next instance to avoid hook dispatcher issues
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      next: path.resolve(__dirname, 'node_modules/next'),
       '@config': path.resolve(__dirname, 'src/config'),
       '@features': path.resolve(__dirname, 'src/features'),
       '@services': path.resolve(__dirname, 'src/services'),

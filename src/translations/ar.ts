@@ -119,6 +119,11 @@ export const ar: Record<string, string> = {
   "service.sidebar.orders.name": "الطلبات",
   "service.sidebar.dashboards.name": "لوحات التحكم",
   "service.sidebar.settings.name": "الإعدادات",
+  "service.sidebar.dashboard.name": "لوحة التحكم",
+  "service.sidebar.marketplace.name": "السوق",
+  "service.sidebar.commerce.name": "التجارة",
+  "service.sidebar.management.name": "الإدارة",
+  "service.sidebar.settings_section.name": "الإعدادات",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",

@@ -107,7 +107,7 @@ export const en: Record<string, string> = {
   "auction.lifecycle.buy_now_title": "Buy Now",
   "auction.lifecycle.buy_now_confirm": "Are you sure you want to buy this auction?",
 
-  // Sidebar service labels (used by Sidebar component: t(`service.${sectionTitle}.name`))
+  // Sidebar service labels (core-ui Sidebar: t(`service.${sectionTitle}.name`) where sectionTitle is e.g. sidebar.dashboard)
   "service.sidebar.general.name": "General",
   "service.sidebar.operations.name": "Operations",
   "service.sidebar.auctions.name": "Auctions",
@@ -119,6 +119,11 @@ export const en: Record<string, string> = {
   "service.sidebar.orders.name": "Orders",
   "service.sidebar.dashboards.name": "Dashboards",
   "service.sidebar.settings.name": "Settings",
+  "service.sidebar.dashboard.name": "Dashboard",
+  "service.sidebar.marketplace.name": "Marketplace",
+  "service.sidebar.commerce.name": "Commerce",
+  "service.sidebar.management.name": "Management",
+  "service.sidebar.settings_section.name": "Settings",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",
