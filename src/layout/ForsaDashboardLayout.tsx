@@ -39,7 +39,7 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
 
   return (
     <AmberDashboardLayout
-      {...({ menuSections } as Record<string, unknown>)}
+      {...({ menuSections, appLabel: 'Forsa' } as Record<string, unknown>)}
     >
       {children}
     </AmberDashboardLayout>
