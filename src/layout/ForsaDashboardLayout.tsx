@@ -38,9 +38,7 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
   }, [router.isReady, router.pathname, badges]);
 
   return (
-    <AmberDashboardLayout
-      {...({ menuSections, appLabel: 'Forsa' } as Record<string, unknown>)}
-    >
+    <AmberDashboardLayout menuSections={menuSections} appLabel="Forsa">
       {children}
     </AmberDashboardLayout>
   );
