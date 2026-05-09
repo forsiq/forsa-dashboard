@@ -12,9 +12,12 @@ import type {
 /**
  * Base Order API implementation
  */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+
 export const orderBaseApi = createApiClient<Order, CreateOrderInput, UpdateOrderInput, OrderFilters>({
   serviceName: 'orders',
   endpoint: '/orders',
+  apiBaseUrl: API_BASE_URL,
 });
 
 const mapToOrder = (raw: any): Order => ({

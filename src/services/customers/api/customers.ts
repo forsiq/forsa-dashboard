@@ -12,9 +12,12 @@ import type {
 /**
  * Base Customer API implementation
  */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+
 export const customerBaseApi = createApiClient<Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilters>({
   serviceName: 'customers',
   endpoint: '/customers',
+  apiBaseUrl: API_BASE_URL,
 });
 
 export async function getCustomers(filters: CustomerFilters = {} as any): Promise<CustomersResponse> {

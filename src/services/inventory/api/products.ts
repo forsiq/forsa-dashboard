@@ -12,9 +12,12 @@ import type {
 /**
  * Base Inventory API implementation
  */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+
 export const inventoryBaseApi = createApiClient<Product, CreateProductInput, UpdateProductInput, ProductFilters>({
   serviceName: 'inventory',
   endpoint: '/inventory',
+  apiBaseUrl: API_BASE_URL,
 });
 
 export async function getProducts(filters: ProductFilters = {} as any): Promise<ProductsResponse> {

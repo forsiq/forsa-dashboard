@@ -12,9 +12,12 @@ import type {
 /**
  * Base Category API implementation
  */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+
 export const categoryBaseApi = createApiClient<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   serviceName: 'categories',
   endpoint: '/categories',
+  apiBaseUrl: API_BASE_URL,
 });
 
 export async function getCategories(filters: CategoryFilters = {} as any): Promise<CategoriesResponse> {

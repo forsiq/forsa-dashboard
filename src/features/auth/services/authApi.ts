@@ -1,4 +1,3 @@
-import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
 import { LoginCredentials, RegisterData, OTPData, AuthResponse, ForgotPasswordData } from '../types';
 
 /**

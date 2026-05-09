@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
-import { getResolvedApiBaseUrl } from '@core/lib/apiBaseUrl';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
 
 interface BadgeCounts {
   activeAuctions: number;
@@ -12,7 +13,7 @@ export function useSidebarBadges() {
   return useQuery<BadgeCounts>({
     queryKey: ['sidebar-badges'],
     queryFn: async () => {
-      const baseUrl = getResolvedApiBaseUrl();
+      const baseUrl = API_BASE_URL;
       const token = Cookies.get('access');
       const projectId = localStorage.getItem('zv_project') || '11';
       const headers: Record<string, string> = {

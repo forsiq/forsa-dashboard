@@ -217,7 +217,7 @@ export const AuctionsList: React.FC = () => {
         onClick: (auction) => router.push(`/auctions/edit/${auction.id}`),
       },
       {
-        label: (auction) => (auction.status === 'draft' || auction.status === 'scheduled') ? (t('auction.lifecycle.start') || 'Start') : null as any,
+        label: (auction) => (auction.status === 'draft' || auction.status === 'scheduled') ? (t('auction.lifecycle.start') || 'Start') : null as unknown as string,
         icon: Play,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.start_title') || 'Start Auction',
@@ -228,7 +228,7 @@ export const AuctionsList: React.FC = () => {
         variant: 'success',
       },
       {
-        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null as any,
+        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null as unknown as string,
         icon: Pause,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.pause_title') || 'Pause Auction',
@@ -237,7 +237,7 @@ export const AuctionsList: React.FC = () => {
         }),
       },
       {
-        label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null as any,
+        label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null as unknown as string,
         icon: RotateCcw,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.resume_title') || 'Resume Auction',
@@ -248,7 +248,7 @@ export const AuctionsList: React.FC = () => {
         variant: 'success',
       },
       {
-        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.end') || 'End') : null as any,
+        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.end') || 'End') : null as unknown as string,
         icon: Square,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.end_title') || 'End Auction',
@@ -259,15 +259,17 @@ export const AuctionsList: React.FC = () => {
         variant: 'danger',
       },
       {
-        label: (auction) => ['active', 'scheduled', 'paused', 'draft'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as any,
+        label: (auction) => ['active', 'scheduled', 'paused', 'draft'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as unknown as string,
         icon: Calendar,
         onClick: (auction) => {
+          console.log('[AuctionsList] Reschedule clicked for auction:', auction.id, auction.title, 'status:', auction.status);
           setRescheduleAuction(auction);
           setIsRescheduleOpen(true);
+          console.log('[AuctionsList] Reschedule state set - isRescheduleOpen: true, rescheduleAuction:', auction.id);
         },
       },
       {
-        label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null as any,
+        label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null as unknown as string,
         icon: XCircle,
         variant: 'danger',
         onClick: (auction) => openConfirm({

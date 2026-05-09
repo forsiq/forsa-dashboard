@@ -9,9 +9,12 @@ import type {
   DeployGroupBuyInput,
 } from '../../../types/services/listings.types';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+
 const listingBaseApi = createApiClient<ProductListing, CreateListingInput, UpdateListingInput, ListingFilters>({
   serviceName: 'listings',
   endpoint: '/listings',
+  apiBaseUrl: API_BASE_URL,
 });
 
 export const listingApi = {
