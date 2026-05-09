@@ -106,7 +106,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={() => onClose()}
       />
 
       <motion.div
@@ -116,7 +116,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
         className="relative bg-obsidian-card border border-white/10 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto"
       >
         <button
-          onClick={onClose}
+          onClick={() => onClose()}
           disabled={rescheduleMutation.isPending}
           className={cn(
             'absolute top-3 p-2 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/10 transition-colors disabled:opacity-50 z-10',

@@ -4,7 +4,15 @@
 
 export type AuctionStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'ended' | 'cancelled';
 
-export type BidStatus = 'pending' | 'accepted' | 'rejected' | 'refunded';
+export type BidStatus = 'active' | 'outbid' | 'winning' | 'cancelled';
+
+export type BidDisplayStatus = 'winning' | 'outbid' | 'won' | 'lost' | 'active' | 'cancelled';
+
+export function computeBidDisplayStatus(bidStatus: BidStatus, auctionStatus: AuctionStatus | string): BidDisplayStatus {
+  if (bidStatus === 'winning' && (auctionStatus === 'sold' || auctionStatus === 'ended')) return 'won';
+  if (bidStatus === 'outbid' && (auctionStatus === 'sold' || auctionStatus === 'ended')) return 'lost';
+  return bidStatus;
+}
 
 export interface Auction {
   id: number;
@@ -121,6 +129,7 @@ export interface AuctionStats {
   cancelledAuctions: number;
   endingSoonAuctions: number;
   soldAuctions: number;
+  totalBids?: number;
   totalCurrentBid: number;
   totalRevenue: number;
 }

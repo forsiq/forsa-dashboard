@@ -244,12 +244,12 @@ export const bidApi = {
    * Get my bids
    */
   getMyBids: async (page = 1, limit = 20): Promise<{ data: Bid[]; total: number }> => {
-    const response = await auctionBaseApi.getInstance().get('/bids/history', {
+    const response = await auctionBaseApi.getInstance().get('/my-bids', {
       params: { page, limit }
     });
     return {
       data: response.data.data,
-      total: response.data.total,
+      total: response.data.pagination?.total ?? response.data.total ?? 0,
     };
   },
 };
