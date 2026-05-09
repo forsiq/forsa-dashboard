@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -18,6 +18,10 @@ import {
   Play,
   XCircle,
   CheckCheck,
+  Timer,
+  CalendarClock,
+  Ban,
+  Heart,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -56,6 +60,8 @@ export const GroupBuyingListPage: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -63,6 +69,7 @@ export const GroupBuyingListPage: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<any>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const { data: campaignsData, isLoading: listLoading } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -96,6 +103,27 @@ export const GroupBuyingListPage: React.FC = () => {
     const key = `groupBuying.status.${status.toLowerCase()}`;
     return t(key) || status;
   };
+
+  const getTimeStatus = useCallback((campaign: GroupBuying): { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'inactive' | 'cancelled' | 'pending'; icon: React.ReactNode } => {
+    if (campaign.status === 'cancelled') {
+      return { label: t('groupBuying.time_status.cancelled') || 'ملغي', variant: 'cancelled', icon: <Ban className="w-3 h-3" /> };
+    }
+    if (campaign.status === 'completed') {
+      return { label: t('groupBuying.time_status.completed') || 'مكتمل', variant: 'success', icon: <CheckCircle className="w-3 h-3" /> };
+    }
+
+    const now = currentTime.getTime();
+    const start = new Date(campaign.startTime).getTime();
+    const end = new Date(campaign.endTime).getTime();
+
+    if (now >= end) {
+      return { label: t('groupBuying.time_status.ended') || 'انتهى الوقت', variant: 'error', icon: <Clock className="w-3 h-3" /> };
+    }
+    if (now >= start) {
+      return { label: t('groupBuying.time_status.active') || 'نشط', variant: 'success', icon: <Timer className="w-3 h-3" /> };
+    }
+    return { label: t('groupBuying.time_status.upcoming') || 'قادم', variant: 'info', icon: <CalendarClock className="w-3 h-3" /> };
+  }, [currentTime, t]);
 
   // Table columns
   const columns: Column<GroupBuying>[] = [
@@ -143,7 +171,7 @@ export const GroupBuyingListPage: React.FC = () => {
     },
     {
       key: 'currentParticipants',
-      label: t('groupBuying.participants') || 'Participants',
+      label: t('groupBuying.participants_count') || 'Participants',
       render: (campaign) => {
         const progress = campaign.maxParticipants > 0 ? (campaign.currentParticipants / campaign.maxParticipants) * 100 : 0;
         return (
@@ -184,6 +212,44 @@ export const GroupBuyingListPage: React.FC = () => {
         </span>
       ),
       sortable: true,
+      align: 'center',
+    },
+    {
+      key: 'favoritesCount',
+      label: t('groupBuying.favorites') || 'Favorites',
+      render: (campaign) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <Heart className="w-3.5 h-3.5 text-rose-400" />
+          <span className="text-sm font-bold text-zinc-text tabular-nums">{campaign.favoritesCount ?? 0}</span>
+        </div>
+      ),
+      align: 'center',
+    },
+    {
+      key: 'viewCount',
+      label: t('groupBuying.views') || 'Views',
+      render: (campaign) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <Eye className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-sm font-bold text-zinc-text tabular-nums">{campaign.viewCount ?? 0}</span>
+        </div>
+      ),
+      align: 'center',
+    },
+    {
+      key: 'timeStatus',
+      label: t('groupBuying.time_status.label') || 'Time Status',
+      cardBadge: true,
+      render: (campaign) => {
+        const ts = getTimeStatus(campaign);
+        return (
+          <StatusBadge
+            status={ts.label}
+            variant={ts.variant}
+            size="sm"
+          />
+        );
+      },
       align: 'center',
     },
   ];

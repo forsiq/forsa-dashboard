@@ -16,6 +16,34 @@ import { createClient } from '@core/services/ApiClientFactory';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
 
+const ALLOWED_IMAGE_HOSTNAMES = [
+  'file.zonevast.com',
+  'test.zonevast.com',
+  'api.zonevast.com',
+  'localhost',
+];
+
+function isAllowedImageHostname(hostname: string): boolean {
+  if (ALLOWED_IMAGE_HOSTNAMES.includes(hostname)) return true;
+  if (hostname.endsWith('.amazonaws.com')) return true;
+  return false;
+}
+
+export function isValidImageUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+    return isAllowedImageHostname(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function filterImageUrls(urls: (string | null | undefined)[]): string[] {
+  return urls.filter((u): u is string => typeof u === 'string' && isValidImageUrl(u));
+}
+
 function getApiOrigin(): string {
   try {
     return new URL(API_BASE_URL).origin;
@@ -78,12 +106,13 @@ export function getAuctionImageUrl(auction: {
   attachmentIds?: string | string[] | null;
   images?: string[] | null;
 }): string | null {
-  if (auction.imageUrl) {
+  if (auction.imageUrl && isValidImageUrl(auction.imageUrl)) {
     return auction.imageUrl;
   }
 
   if (auction.images && auction.images.length > 0) {
-    return auction.images[0];
+    const valid = filterImageUrls(auction.images);
+    if (valid.length > 0) return valid[0];
   }
 
   const mainId = auction.mainAttachmentId;
@@ -108,12 +137,12 @@ export function getAuctionImageUrls(auction: {
 }): string[] {
   const urls: string[] = [];
 
-  if (auction.imageUrl) {
+  if (auction.imageUrl && isValidImageUrl(auction.imageUrl)) {
     urls.push(auction.imageUrl);
   }
 
   if (auction.images && auction.images.length > 0) {
-    urls.push(...auction.images);
+    urls.push(...filterImageUrls(auction.images));
   }
 
   const ids = parseAttachmentIds(auction.attachmentIds);

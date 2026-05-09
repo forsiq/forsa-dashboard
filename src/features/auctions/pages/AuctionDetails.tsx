@@ -130,6 +130,7 @@ export const AuctionDetails: React.FC = () => {
 
   // Detail rows data
   const detailRows = [
+    { icon: DollarSign, label: currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price'), value: formatCurrency(currentBid || startPrice) },
     { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
     { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
     { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
@@ -420,7 +421,9 @@ export const AuctionDetails: React.FC = () => {
             {/* Price + Timer */}
             <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
               <div className="space-y-1 min-w-0 flex-1">
-                <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.current_premium') || 'Current Bid'}</span>
+                <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">
+                  {currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}
+                </span>
                 <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
                   {formatCurrency(currentBid || startPrice)}
                 </p>

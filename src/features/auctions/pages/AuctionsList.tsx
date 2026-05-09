@@ -259,7 +259,7 @@ export const AuctionsList: React.FC = () => {
         variant: 'danger',
       },
       {
-        label: (auction) => ['active', 'scheduled', 'paused', 'draft'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as unknown as string,
+        label: (auction) => ['active', 'scheduled', 'paused', 'draft', 'ended', 'sold'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as unknown as string,
         icon: Calendar,
         onClick: (auction) => {
           console.log('[AuctionsList] Reschedule clicked for auction:', auction.id, auction.title, 'status:', auction.status);
@@ -532,7 +532,13 @@ export const AuctionsList: React.FC = () => {
             <ConfirmModal />
             <RescheduleModal
               isOpen={isRescheduleOpen}
-              onClose={() => { setIsRescheduleOpen(false); setRescheduleAuction(null); }}
+              onClose={(success) => {
+                setIsRescheduleOpen(false);
+                setRescheduleAuction(null);
+                if (success) {
+                  handleTabChange('active');
+                }
+              }}
               auction={rescheduleAuction}
             />
         </div>

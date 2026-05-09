@@ -22,6 +22,18 @@ export interface GroupBuying {
   projectId?: number;
   createdAt: string;
   updatedAt: string;
+  favoritesCount?: number;
+  viewCount?: number;
+  reviewsCount?: number;
+  rating?: number;
+  imageUrl?: string;
+  images?: string[];
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
+  brand?: string;
+  model?: string;
+  condition?: string;
+  listingId?: number;
   category?: {
     id: string;
     name: string;
@@ -33,6 +45,9 @@ export interface GroupBuying {
     title: string;
     description?: string;
     images?: string[];
+    imageUrl?: string;
+    mainAttachmentId?: number;
+    attachmentIds?: number[];
   };
 }
 

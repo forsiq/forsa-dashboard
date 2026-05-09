@@ -116,7 +116,11 @@ export interface AuctionStats {
   activeAuctions: number;
   scheduledAuctions: number;
   endedAuctions: number;
-  totalBids: number;
+  pausedAuctions: number;
+  draftAuctions: number;
+  cancelledAuctions: number;
+  endingSoonAuctions: number;
+  soldAuctions: number;
+  totalCurrentBid: number;
   totalRevenue: number;
-  avgWinningBid: number;
 }

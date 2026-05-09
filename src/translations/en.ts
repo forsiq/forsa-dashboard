@@ -61,6 +61,10 @@ export const en: Record<string, string> = {
   "auction.config.state_protocol": "Status",
   "auction.config.protocol_identifier_search": "Search by ID or Title",
 
+  // Auction Detail
+  "auction.detail.current_bid": "Current Bid",
+  "auction.detail.start_price": "Start Price",
+
   // Auction Tabs
   "auction.tabs.all": "All",
   "auction.tabs.active": "Active",

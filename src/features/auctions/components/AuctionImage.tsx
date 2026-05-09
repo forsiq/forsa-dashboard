@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Gavel } from 'lucide-react';
-import { getAuctionImageUrl, parseAttachmentIds } from '../utils/auction-utils';
+import { getAuctionImageUrl, parseAttachmentIds, isValidImageUrl } from '../utils/auction-utils';
 import { createClient } from '@core/services/ApiClientFactory';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
@@ -162,7 +162,11 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
         Boolean(normalizedAuction.images && normalizedAuction.images.length > 0);
 
       if (hasDirectUrl && directUrl) {
-        // Use direct URL (no auth needed for imageUrl/images array)
+        if (!isValidImageUrl(directUrl)) {
+          setHasError(true);
+          setIsLoading(false);
+          return;
+        }
         setImageUrl(directUrl);
         setIsLoading(false);
         return;
@@ -177,7 +181,7 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
 
       if (attachmentId) {
         const resolvedUrl = await resolveAttachmentFileUrl(attachmentId);
-        if (resolvedUrl) {
+        if (resolvedUrl && isValidImageUrl(resolvedUrl)) {
           setImageUrl(resolvedUrl);
         } else {
           setHasError(true);

@@ -146,16 +146,19 @@ export const auctionApi = {
    */
   getStats: async (): Promise<AuctionStats> => {
     const response = await auctionBaseApi.getStats();
-    // Map REST stats to AuctionStats interface
     const stats = response.data;
     return {
-      totalAuctions: stats.totalAuctions || stats.total || 0,
-      activeAuctions: stats.activeAuctions || stats.active || 0,
-      scheduledAuctions: stats.endingSoonAuctions || stats.scheduled || 0,
-      endedAuctions: stats.soldAuctions || stats.ended || 0,
-      totalBids: stats.totalBids || stats.bids || 0,
-      totalRevenue: stats.totalRevenue || stats.revenue || 0,
-      avgWinningBid: stats.avgWinningBid || stats.avg_bid || 0,
+      totalAuctions: stats.totalAuctions || 0,
+      activeAuctions: stats.activeAuctions || 0,
+      scheduledAuctions: stats.scheduledAuctions || 0,
+      endedAuctions: stats.endedAuctions || 0,
+      pausedAuctions: stats.pausedAuctions || 0,
+      draftAuctions: stats.draftAuctions || 0,
+      cancelledAuctions: stats.cancelledAuctions || 0,
+      endingSoonAuctions: stats.endingSoonAuctions || 0,
+      soldAuctions: stats.soldAuctions || 0,
+      totalCurrentBid: stats.totalCurrentBid || 0,
+      totalRevenue: stats.totalRevenue || 0,
     };
   },
 

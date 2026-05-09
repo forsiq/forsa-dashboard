@@ -31,6 +31,9 @@ export const ar: Record<string, string> = {
 
   // Group Buying
   "group_buying.general": "عام",
+  "groupBuying.participants_count": "مشاركين",
+  "groupBuying.favorites": "المفضلة",
+  "groupBuying.views": "المشاهدات",
 
   // Register Form
   "auth.register.password_mismatch_inline": "كلمات المرور غير متطابقة",
@@ -60,6 +63,10 @@ export const ar: Record<string, string> = {
   "auction.table.protocol_duration": "المدة",
   "auction.config.state_protocol": "الحالة",
   "auction.config.protocol_identifier_search": "بحث بالمعـرّف أو العنوان",
+
+  // Auction Detail
+  "auction.detail.current_bid": "المزايدة الحالية",
+  "auction.detail.start_price": "سعر البداية",
 
   // Auction Tabs
   "auction.tabs.all": "الكل",

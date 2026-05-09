@@ -10,7 +10,7 @@ import type { Auction } from '../types/auction.types';
 
 interface RescheduleModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (success?: boolean) => void;
   auction: Auction | null;
 }
 
@@ -46,7 +46,9 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
 
   const currentEndTime = useMemo(() => {
     if (!auction?.endTime) return new Date();
-    return new Date(auction.endTime);
+    const end = new Date(auction.endTime);
+    const now = new Date();
+    return end > now ? end : now;
   }, [auction?.endTime]);
 
   const [newEndTime, setNewEndTime] = useState<string>('');
@@ -82,7 +84,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
     const newDate = new Date(currentEndTime.getTime() + minutes * 60000);
     rescheduleMutation.mutate(
       { id: auction.id, endTime: newDate.toISOString() },
-      { onSuccess: () => onClose() }
+      { onSuccess: () => onClose(true) }
     );
   };
 
@@ -90,7 +92,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
     if (!newEndTime || !auction) return;
     rescheduleMutation.mutate(
       { id: auction.id, endTime: new Date(newEndTime).toISOString() },
-      { onSuccess: () => onClose() }
+      { onSuccess: () => onClose(true) }
     );
   };
 

@@ -432,11 +432,11 @@ export function useRescheduleAuction() {
     mutationFn: ({ id, endTime }: { id: number | string; endTime: string }) =>
       liveMonitorApi.rescheduleAuction(id, endTime),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id) });
-      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'] });
-      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'] });
-      queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id), refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists(), refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.stats(), refetchType: 'all' });
       toast.success('Auction rescheduled successfully');
     },
     onError: (error: any) => {
