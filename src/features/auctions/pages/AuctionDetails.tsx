@@ -292,7 +292,12 @@ export const AuctionDetails: React.FC = () => {
                 </div>
                 <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.high_frequency_telemetry') || 'Bid History'}</h3>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-6">
+                <div className="text-end">
+                  <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}</span>
+                  <p className="text-lg font-bold text-brand leading-none mt-0.5 tabular-nums">{formatCurrency(currentBid || startPrice)}</p>
+                </div>
+                <div className="w-px h-8 bg-white/5" />
                 <div className="text-end">
                   <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.total_bids')}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{auction.totalBids || 0}</p>
