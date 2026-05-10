@@ -132,6 +132,12 @@ export const ar: Record<string, string> = {
   "service.sidebar.management.name": "الإدارة",
   "service.sidebar.settings_section.name": "الإعدادات",
 
+  // Topbar module names
+  "service.dashboard.name": "لوحة التحكم",
+  "service.marketplace.name": "السوق",
+  "service.sales.name": "المبيعات",
+  "service.reports.name": "التقارير",
+
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",
   "sidebar.marketplace": "السوق",
@@ -351,4 +357,10 @@ export const ar: Record<string, string> = {
   "amazon.no_results_desc": "لم يتم العثور على منتجات. جرب كلمة بحث مختلفة.",
   "amazon.search_results": "نتائج البحث",
   "amazon.bestsellers": "الأكثر مبيعاً",
+
+  // Report labels (sidebar)
+  "report.dashboard": "لوحة التقارير",
+  "report.analytics": "التحليلات",
+  "report.sales": "تقارير المبيعات",
+  "report.inventory": "تقارير المخزون",
 };

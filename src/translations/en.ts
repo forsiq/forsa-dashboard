@@ -132,6 +132,12 @@ export const en: Record<string, string> = {
   "service.sidebar.management.name": "Management",
   "service.sidebar.settings_section.name": "Settings",
 
+  // Topbar module names
+  "service.dashboard.name": "Dashboard",
+  "service.marketplace.name": "Marketplace",
+  "service.sales.name": "Sales",
+  "service.reports.name": "Reports",
+
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",
   "sidebar.marketplace": "Marketplace",
@@ -331,4 +337,10 @@ export const en: Record<string, string> = {
   "amazon.no_results_desc": "No products found. Try a different search term.",
   "amazon.search_results": "Search Results",
   "amazon.bestsellers": "Best Sellers",
+
+  // Report labels (sidebar)
+  "report.dashboard": "Reports Dashboard",
+  "report.analytics": "Analytics",
+  "report.sales": "Sales Reports",
+  "report.inventory": "Inventory Reports",
 };

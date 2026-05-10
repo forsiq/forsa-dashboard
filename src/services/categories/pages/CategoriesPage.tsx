@@ -302,6 +302,7 @@ export function CategoriesPage() {
             dir === 'rtl' ? 'start-3' : 'end-3'
           )} />
           <AmberInput
+            dir={dir}
             placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

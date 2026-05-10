@@ -3,14 +3,20 @@ import Cookies from 'js-cookie';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
 
-interface BadgeCounts {
+export interface SidebarBadgeCounts {
   activeAuctions: number;
   pendingOrders: number;
-  orphanListings: number;
+  totalListings: number;
 }
 
+const EMPTY_BADGES: SidebarBadgeCounts = {
+  activeAuctions: 0,
+  pendingOrders: 0,
+  totalListings: 0,
+};
+
 export function useSidebarBadges() {
-  return useQuery<BadgeCounts>({
+  return useQuery<SidebarBadgeCounts>({
     queryKey: ['sidebar-badges'],
     queryFn: async () => {
       const baseUrl = API_BASE_URL;
@@ -33,17 +39,18 @@ export function useSidebarBadges() {
         }
       };
 
-      const [activeAuctions, pendingOrders, orphanListings] = await Promise.all([
+      const [activeAuctions, pendingOrders, totalListings] = await Promise.all([
         fetchCount('/auctions?status=active&limit=1'),
         fetchCount('/orders?status=pending&limit=1'),
         fetchCount('/listings?limit=1'),
       ]);
 
-      return { activeAuctions, pendingOrders, orphanListings };
+      return { activeAuctions, pendingOrders, totalListings };
     },
-    staleTime: 30_000,
-    refetchInterval: (query) =>
-      document.visibilityState === 'visible' ? 30_000 : false,
+    placeholderData: EMPTY_BADGES,
+    staleTime: 60_000,
+    refetchInterval: () =>
+      typeof document !== 'undefined' && document.visibilityState === 'visible' ? 60_000 : false,
     retry: false,
   });
 }

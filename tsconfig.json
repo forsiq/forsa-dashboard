@@ -20,6 +20,9 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
+      "@yousef2001/core-ui/layout/components/Topbar": [
+        "node_modules/@yousef2001/core-ui/dist/layout/components/Topbar"
+      ],
       "@core/*": [
         "src/core/*",
         "node_modules/@yousef2001/core-ui/dist/*"

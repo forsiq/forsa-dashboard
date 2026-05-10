@@ -1,10 +1,13 @@
 /**
  * Service Registry Configuration
  *
- * This file defines all available services in the application.
- * Services can be internal (within this app) or external (separate apps).
+ * This file defines all available services (modules) in the application.
+ * Each service maps to a sidebar view with its own navigation items.
  *
- * DEVELOPERS: Add new services here and update config/navigation.ts for menu items.
+ * When a service is clicked in the topbar, it:
+ * 1. Sets sidebarView in NavigationContext
+ * 2. Navigates to the service's main route
+ * 3. The sidebar renders only that module's items
  */
 
 import * as Icons from 'lucide-react';
@@ -23,17 +26,14 @@ export interface Service {
 }
 
 /**
- * All available services
- *
- * GENERAL is the main service with full sidebar (Dashboard, Categories, Inventory, etc.)
- * Additional services can be added as custom modules.
+ * Internal modules - each one has its own sidebar config
+ * Order here determines order in the topbar dropdown
  */
 export const services: Service[] = [
-  // Main Service
   {
-    id: 'general',
-    name: 'General',
-    description: 'service.general.description',
+    id: 'dashboard',
+    name: 'Dashboard',
+    description: 'service.dashboard.description',
     icon: 'LayoutDashboard',
     type: 'internal',
     route: '/dashboard',
@@ -41,17 +41,37 @@ export const services: Service[] = [
     color: 'from-purple-500 to-purple-600',
   },
   {
+    id: 'marketplace',
+    name: 'Marketplace',
+    description: 'service.marketplace.description',
+    icon: 'ShoppingBag',
+    type: 'internal',
+    route: '/auctions',
+    enabled: true,
+    color: 'from-blue-500 to-blue-600',
+  },
+  {
+    id: 'sales',
+    name: 'Sales',
+    description: 'service.sales.description',
+    icon: 'ShoppingCart',
+    type: 'internal',
+    route: '/orders',
+    enabled: true,
+    color: 'from-amber-500 to-amber-600',
+  },
+  {
     id: 'reports',
     name: 'Reports',
     description: 'service.reports.description',
     icon: 'BarChart3',
     type: 'internal',
-    route: '/reports/sales-overview',
+    route: '/reports',
     enabled: true,
     color: 'from-emerald-500 to-emerald-600',
   },
 
-  // External Services (Separate Apps) - add as needed
+  // External Services (Separate Apps)
   {
     id: 'products',
     name: 'ProductSuite',
@@ -59,7 +79,7 @@ export const services: Service[] = [
     icon: 'Box',
     type: 'external',
     url: 'http://localhost:3002',
-    enabled: false,  // Disabled by default - enable when needed
+    enabled: false,
     color: 'from-indigo-500 to-indigo-600',
   },
   {
