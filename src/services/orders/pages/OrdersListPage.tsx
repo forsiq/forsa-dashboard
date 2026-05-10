@@ -23,7 +23,6 @@ import { useDebounce } from '@core/hooks/useDebounce';
 export const OrdersListPage = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
-  const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -219,18 +218,12 @@ export const OrdersListPage = () => {
 
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm w-full group">
-          <Search className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'start-4' : 'end-4'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
           <AmberInput
             placeholder={t('orders.search') || 'البحث في الطلبات...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              isRTL ? 'ps-4 pe-10' : 'pe-4 ps-10'
-            )}
+            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
           />
         </div>
       </div>

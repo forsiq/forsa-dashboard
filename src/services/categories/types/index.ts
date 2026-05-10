@@ -22,7 +22,7 @@ export interface Category {
 
 /**
  * Get the localized name for a category based on the current language.
- * Falls back to the default `name` if no translation is available.
+ * Falls back through: translation → nameAr → name → slug (capitalized).
  */
 export function getLocalizedName(
   category: Category,
@@ -30,21 +30,30 @@ export function getLocalizedName(
 ): string {
   if (!category) return '';
   const translated = category.translations?.[language]?.name;
-  if (translated) return translated;
-  if (language === 'ar' && category.nameAr) return category.nameAr;
-  return category.name;
+  if (translated?.trim()) return translated;
+  if (language === 'ar' && category.nameAr?.trim()) return category.nameAr;
+  if (category.name?.trim()) return category.name;
+  if (category.slug) {
+    return category.slug
+      .split(/[-_]/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+  return '';
 }
 
 /**
  * Get the localized description for a category based on the current language.
- * Falls back to the default `description` if no translation is available.
+ * Falls back through: translation → description.
  */
 export function getLocalizedDescription(
   category: Category,
   language: string,
 ): string {
   if (!category) return '';
-  return category.translations?.[language]?.description || category.description || '';
+  const translated = category.translations?.[language]?.description;
+  if (translated?.trim()) return translated;
+  return category.description || '';
 }
 
 export interface CreateCategoryInput {

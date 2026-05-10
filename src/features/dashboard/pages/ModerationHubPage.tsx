@@ -302,19 +302,13 @@ export const ModerationHubPage = () => {
 
             {/* Search */}
             <div className="relative flex-1 max-w-xs w-full group">
-              <Search className={cn(
-                'absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors',
-                'end-3',
-              )} />
+              <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => { setSearchInput(e.target.value); setPage(1); }}
                 placeholder={t('moderation.activity.search')}
-                className={cn(
-                  'w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm rounded-xl h-9 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20',
-                  'ps-3 pe-9 text-start',
-                )}
+                className="w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm rounded-xl h-9 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 ps-9 pe-3"
               />
             </div>
 

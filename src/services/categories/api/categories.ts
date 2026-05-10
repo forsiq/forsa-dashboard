@@ -10,7 +10,11 @@ import type {
 } from '../types';
 
 /**
- * Base Category API implementation
+ * Base Category API implementation.
+ * Requests use the shared axios client (`createApiClient`), which sets `Accept-Language`
+ * from the language cookie (`getLanguage()`). Localized category **names** in responses
+ * still depend on the auction-service returning `translations`, `nameAr`, or locale-aware fields;
+ * if only `name` is populated, the UI shows that default (often English) via `getLocalizedName`.
  */
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
 

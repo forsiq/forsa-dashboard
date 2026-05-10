@@ -570,16 +570,10 @@ export const AuctionsList: React.FC = () => {
                         <Layers className="w-4 h-4" /> {t('auction.operational_listings_matrix')}
                     </h2>
                     <div className="relative group min-w-[320px]">
-                        <Search className={cn(
-                            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                            isRTL ? 'right-4' : 'left-4'
-                        )} />
+                        <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
                         <AmberInput
                             placeholder={t('auction.listings.search')}
-                            className={cn(
-                                "h-11 bg-obsidian-card border-border text-xs font-bold",
-                                isRTL ? "pr-11 pl-4 text-right" : "pl-11 pr-4 text-left"
-                            )}
+                            className="h-11 bg-obsidian-card border-border text-xs font-bold ps-11 pe-4"
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                         />

@@ -55,9 +55,8 @@ export function CategoriesPage() {
       const query = debouncedSearch.toLowerCase();
       categories = categories.filter((c: Category) =>
         getLocalizedName(c, language)?.toLowerCase().includes(query) ||
-        c.name?.toLowerCase().includes(query) ||
         c.slug?.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        getLocalizedDescription(c, language)?.toLowerCase().includes(query)
       );
     }
 
@@ -78,7 +77,7 @@ export function CategoriesPage() {
     },
   });
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
 
@@ -200,7 +199,7 @@ export function CategoriesPage() {
           message: `${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${getLocalizedName(category, language)}"`,
           variant: 'destructive',
           onConfirm: () => {
-            handleDelete(category.id, category.name);
+            handleDelete(category.id);
           },
         });
       },
@@ -297,19 +296,13 @@ export function CategoriesPage() {
 
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm w-full">
-          <Search className={cn(
-            'absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted',
-            dir === 'rtl' ? 'start-3' : 'end-3'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted" />
           <AmberInput
             dir={dir}
             placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              dir === 'rtl' ? 'ps-10 pe-4 text-end' : 'pe-10 ps-4 text-start'
-            )}
+            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
           />
         </div>
       </div>
@@ -341,6 +334,11 @@ export function CategoriesPage() {
             pagination
             pageSize={10}
             showViewToggle
+            emptyMessage={
+              (debouncedSearch ?? '').trim()
+                ? t('category.no_results')
+                : t('category.empty')
+            }
           />
         )}
       </div>

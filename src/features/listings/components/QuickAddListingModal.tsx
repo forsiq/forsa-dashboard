@@ -7,6 +7,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
 import { useCreateListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
+import { getLocalizedName } from '../../../services/categories/types';
 import type { FormFieldConfig } from '@core/services/types';
 
 interface QuickAddListingModalProps {
@@ -15,17 +16,17 @@ interface QuickAddListingModalProps {
 }
 
 export function QuickAddListingModal({ isOpen, onClose }: QuickAddListingModalProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const createMutation = useCreateListing();
   const { data: categoriesData } = useCategories({ limit: 100 });
 
   const categoryOptions = useMemo(() =>
     (categoriesData as any)?.categories?.map((c: any) => ({
-      label: c.name,
+      label: getLocalizedName(c, language) || c.name || c.slug,
       value: String(c.id),
     })) || []
-  , [categoriesData]);
+  , [categoriesData, language]);
 
   const fields: FormFieldConfig[] = useMemo(() => [
     {

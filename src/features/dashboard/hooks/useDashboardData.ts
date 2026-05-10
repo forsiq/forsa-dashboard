@@ -5,6 +5,7 @@ import { ActivityItem, StatCard } from '@core/core/dashboard/types';
 import { auctionBaseApi } from '../../auctions/api/auction-api';
 import { orderBaseApi } from '../../../services/orders/api/orders';
 import { categoryBaseApi } from '../../../services/categories/api/categories';
+import { getLocalizedName } from '../../../services/categories/types';
 import { groupBuyingBaseApi } from '../../sales/api/group-buying-api';
 
 // ============================================================================
@@ -166,7 +167,7 @@ export const useTopProducts = () => {
       const auctions = (auctionsRes as any).data || [];
       const categories = (categoriesRes as any).data || [];
 
-      const categoryMap = new Map(categories.map((c: any) => [c.id, c.name]));
+      const categoryMap = new Map(categories.map((c: any) => [c.id, c.name || c.slug || 'Uncategorized']));
 
       return auctions
         .map((a: any) => ({
@@ -204,7 +205,7 @@ export const useCategoryDistribution = () => {
       ];
 
       return categories.slice(0, 5).map((c: any, index: number) => ({
-        category: c.translations?.ar?.name || c.name,
+        category: c.name || c.translations?.ar?.name || c.slug || 'Unknown',
         orders: c.productCount || 0,
         fill: colors[index % colors.length],
       }));

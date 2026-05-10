@@ -314,18 +314,12 @@ export function CustomersPage() {
 
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm w-full group">
-          <Search className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'start-4' : 'end-4'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-5 h-5 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
           <AmberInput
             placeholder={t('customer.search_placeholder') || 'البحث عن العملاء...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              "bg-white/5 border-[var(--color-border)] shadow-sm h-14 focus:ring-[var(--color-brand)]/20 text-lg",
-              isRTL ? 'ps-4 pe-12' : 'pe-4 ps-12'
-            )}
+            className="bg-white/5 border-[var(--color-border)] shadow-sm h-14 focus:ring-[var(--color-brand)]/20 text-lg ps-12 pe-4"
           />
         </div>
       </div>

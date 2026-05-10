@@ -118,10 +118,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
             {/* Tactical Selection Control */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-obsidian-panel/40 p-4 rounded-3xl border border-border/40 backdrop-blur-md">
                 <div className="relative flex-1 max-w-lg group">
-                    <Search className={cn(
-                        "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                        'start-4'
-                    )} />
+                    <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
                     <AmberInput
                         placeholder={t('sales.searchCampaigns')}
                         className="h-12 bg-obsidian-card border-border ps-11 pe-4 text-xs font-black shadow-inner"

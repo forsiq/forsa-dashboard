@@ -17,7 +17,6 @@ import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton'
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
-import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { Search, Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
 import type { UserFilters } from '../types';
@@ -290,18 +289,12 @@ export function UsersListPage() {
       <div className="flex flex-col sm:flex-row items-center gap-4">
         {/* Search — debounced */}
         <div className="relative flex-1 max-w-sm w-full">
-          <Search className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted",
-            'end-3'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted" />
           <AmberInput
             placeholder={t('user.search_placeholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className={cn(
-              "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              "ps-4 pe-10 text-start"
-            )}
+            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-4 pe-10"
           />
         </div>
 

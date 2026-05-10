@@ -14,8 +14,7 @@ const QUICK_SEARCHES_EN = ['Smartphones', 'Laptop', 'Headphones', 'Smart Watch',
 const QUICK_SEARCHES_AR = ['هواتف ذكية', 'لابتوب', 'سماعات', 'ساعة ذكية', 'كاميرا'];
 
 export function AmazonSearchBar({ onSearch, isLoading }: AmazonSearchBarProps) {
-  const { t, dir, language } = useLanguage();
-  const isRTL = dir === 'rtl';
+  const { t, language } = useLanguage();
   const [query, setQuery] = useState('');
 
   const quickSearches = language === 'ar' ? QUICK_SEARCHES_AR : QUICK_SEARCHES_EN;
@@ -36,16 +35,10 @@ export function AmazonSearchBar({ onSearch, isLoading }: AmazonSearchBarProps) {
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="flex gap-3">
         <div className="relative flex-1 group">
-          <Search className={cn(
-            'absolute top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted/50 group-focus-within:text-brand transition-colors',
-            isRTL ? 'right-4' : 'left-4'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-5 h-5 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
           <AmberInput
             placeholder={t('amazon.search_placeholder') || 'Search Amazon products...'}
-            className={cn(
-              'h-12 bg-obsidian-card border-border text-sm font-bold',
-              isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'
-            )}
+            className="h-12 bg-obsidian-card border-border text-sm font-bold ps-12 pe-4"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             disabled={isLoading}

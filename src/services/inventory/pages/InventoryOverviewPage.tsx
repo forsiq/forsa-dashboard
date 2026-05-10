@@ -256,10 +256,7 @@ export const InventoryOverviewPage: React.FC = () => {
                <Layers className="w-4 h-4" /> {t('inventory.globalResourceDistribution')}
             </h2>
             <div className="relative group min-w-[280px]">
-                <Search className={cn(
-                    "absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-                    isRTL ? 'end-4' : 'start-4'
-                )} />
+                <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-3.5 h-3.5 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
                 <AmberInput 
                     placeholder={t('inventory.searchAllocation')} 
                     className="h-10 bg-obsidian-card border-border ps-10 pe-4 text-[11px] font-bold"

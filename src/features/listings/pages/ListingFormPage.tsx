@@ -22,11 +22,12 @@ import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
+import { getLocalizedName } from '../../../services/categories/types';
 import type { CreateListingInput } from '../../../types/services/listings.types';
 import type { FormFieldConfig } from '@core/services/types';
 
 export const ListingFormPage: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
@@ -40,10 +41,10 @@ export const ListingFormPage: React.FC = () => {
   const { data: categoriesData } = useCategories({ limit: 100 });
   const categoryOptions = useMemo(() =>
     (categoriesData as any)?.categories?.map((c: any) => ({
-      label: c.name,
+      label: getLocalizedName(c, language) || c.name || c.slug,
       value: String(c.id),
     })) || []
-  , [categoriesData]);
+  , [categoriesData, language]);
 
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();

@@ -392,13 +392,10 @@ export const GroupBuyingListPage: React.FC = () => {
             <Layers className="w-4 h-4" /> {t('groupBuying.orchestration_matrix') || 'Campaigns'}
           </h2>
           <div className="relative group min-w-[320px]">
-            <Search className={cn(
-              "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors",
-              isRTL ? 'right-4' : 'left-4'
-            )} />
+            <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
             <AmberInput
               placeholder={t('groupBuying.scan_nomenclature') || "Search campaigns..."}
-              className="h-11 bg-obsidian-card border-border pl-11 pr-4 text-xs font-bold shadow-inner"
+              className="h-11 bg-obsidian-card border-border ps-11 pe-4 text-xs font-bold shadow-inner"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

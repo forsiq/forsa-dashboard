@@ -37,9 +37,10 @@ import {
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
+import { getLocalizedName } from '../../../services/categories/types';
 import type { GroupBuyingCreateInput, GroupBuyingUpdateInput } from '../types';
 export const GroupBuyingFormPage: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
@@ -57,7 +58,7 @@ export const GroupBuyingFormPage: React.FC = () => {
   const { data: categoriesData } = useCategories({ limit: 100 });
   const inventoryItems = (inventoryData as any)?.items || [];
   const categoryOptions = (categoriesData as any)?.categories?.map((c: any) => ({
-    label: c.name,
+    label: getLocalizedName(c, language) || c.name || c.slug,
     value: String(c.id)
   })) || [];
 

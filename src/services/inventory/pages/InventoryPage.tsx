@@ -287,18 +287,12 @@ export const InventoryPage = () => {
         </div>
 
         <div className="relative flex-1 max-w-sm w-full group">
-          <Search className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors",
-            isRTL ? 'start-4' : 'end-4'
-          )} />
+          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
           <AmberInput
             placeholder={t('inventory.search') || 'Search inventory...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              "bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20",
-              isRTL ? 'ps-4 pe-10' : 'pe-4 ps-10'
-            )}
+            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
           />
         </div>
       </div>
@@ -431,16 +425,13 @@ export const InventoryPage = () => {
               </label>
             </div>
             <div className="relative group">
-              <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand", isRTL ? 'end-3' : 'start-3')} />
+              <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('inventory.search')}
-                className={cn(
-                  "w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40",
-                  isRTL ? 'pe-10 ps-4' : 'ps-10 pe-4'
-                )}
+                className="w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40 ps-10 pe-4"
               />
             </div>
           </div>
