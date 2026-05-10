@@ -18,6 +18,7 @@ export type AmberDatePickerProps = Omit<
   showTime?: boolean;
   min?: string;
   max?: string;
+  icon?: React.ReactNode;
 };
 
 /* ------------------------------------------------------------------ */
