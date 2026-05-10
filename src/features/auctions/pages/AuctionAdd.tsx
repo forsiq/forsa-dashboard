@@ -16,7 +16,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
+import { AmberDatePicker } from '@core/components/AmberDatePicker';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton as Button } from '@core/components/AmberButton';
 import { AmberDropdown } from '@core/components/AmberDropdown';
@@ -255,17 +255,17 @@ export const AuctionAdd = () => {
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AmberDateTimeInput
+            <AmberDatePicker
               label={t('auction.form.start_time')}
               value={formData.startTime}
-              onChange={(e) => handleInputChange('startTime', e.target.value)}
+              onChange={(val) => handleInputChange('startTime', val)}
               error={errors.startTime}
             />
 
-            <AmberDateTimeInput
+            <AmberDatePicker
               label={t('auction.form.end_time')}
               value={formData.endTime}
-              onChange={(e) => handleInputChange('endTime', e.target.value)}
+              onChange={(val) => handleInputChange('endTime', val)}
               error={errors.endTime}
             />
           </div>

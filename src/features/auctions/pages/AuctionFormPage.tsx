@@ -24,7 +24,7 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
+import { AmberDatePicker } from '@core/components/AmberDatePicker';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
@@ -672,11 +672,12 @@ export const AuctionFormPage: React.FC = () => {
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <AmberDateTimeInput
+                    <AmberDatePicker
                         label={t('auction.form.temporal_start')}
                         value={formData.startTime}
-                        onChange={(e) => handleChange('startTime', e.target.value)}
+                        onChange={(val) => handleChange('startTime', val)}
                         error={errors.startTime}
+                        icon={<Calendar className="w-4 h-4" />}
                     />
 
                     {useDurationMode ? (
@@ -724,11 +725,12 @@ export const AuctionFormPage: React.FC = () => {
                         </>
                     ) : (
                         /* Manual mode: pick exact end date */
-                        <AmberDateTimeInput
+                        <AmberDatePicker
                             label={t('auction.form.temporal_end')}
                             value={formData.endTime}
-                            onChange={(e) => handleChange('endTime', e.target.value)}
+                            onChange={(val) => handleChange('endTime', val)}
                             error={errors.endTime}
+                            icon={<Clock className="w-4 h-4" />}
                         />
                     )}
                 </div>

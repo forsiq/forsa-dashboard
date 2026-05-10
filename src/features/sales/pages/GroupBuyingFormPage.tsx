@@ -21,7 +21,7 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
+import { AmberDatePicker } from '@core/components/AmberDatePicker';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useFileUpload } from '@core/hooks/useFileUpload';
@@ -483,21 +483,19 @@ export const GroupBuyingFormPage: React.FC = () => {
                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.temporal_spectrum')}</h3>
                 </div>
                 <div className="space-y-6">
-                    <AmberDateTimeInput
+                    <AmberDatePicker
                         label={t('groupBuying.form.node_init_start')}
                         value={formData.startTime}
-                        onChange={(e) => handleChange('startTime', e.target.value)}
+                        onChange={(val) => handleChange('startTime', val)}
                         icon={<Calendar className="w-4 h-4" />}
                         error={errors.startTime}
-                        inputClassName="h-12 min-h-12 py-2.5 text-sm"
                     />
-                    <AmberDateTimeInput
+                    <AmberDatePicker
                         label={t('groupBuying.form.protocol_termination_window')}
                         value={formData.endTime}
-                        onChange={(e) => handleChange('endTime', e.target.value)}
+                        onChange={(val) => handleChange('endTime', val)}
                         icon={<Clock className="w-4 h-4" />}
                         error={errors.endTime}
-                        inputClassName="h-12 min-h-12 py-2.5 text-sm"
                     />
                 </div>
                 {/* Dynamic Duration Logic Mask */}

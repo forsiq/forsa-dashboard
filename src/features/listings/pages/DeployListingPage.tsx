@@ -15,7 +15,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
+import { AmberDatePicker } from '@core/components/AmberDatePicker';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
 import { IqdSymbol } from '@core/components/IqdSymbol';
@@ -318,22 +318,22 @@ export const DeployListingPage: React.FC = () => {
                 error={fieldErrors.bidIncrement}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberDateTimeInput
+                <AmberDatePicker
                   label={t('listing.deploy.start_time')}
                   value={auctionForm.startTime}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     clearFieldError('startTime');
-                    setAuctionForm(p => ({ ...p, startTime: e.target.value }));
+                    setAuctionForm(p => ({ ...p, startTime: val }));
                   }}
                   icon={<Calendar className="w-4 h-4" />}
                   error={fieldErrors.startTime}
                 />
-                <AmberDateTimeInput
+                <AmberDatePicker
                   label={t('listing.deploy.end_time')}
                   value={auctionForm.endTime}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     clearFieldError('endTime');
-                    setAuctionForm(p => ({ ...p, endTime: e.target.value }));
+                    setAuctionForm(p => ({ ...p, endTime: val }));
                   }}
                   icon={<Calendar className="w-4 h-4" />}
                   error={fieldErrors.endTime}
@@ -393,22 +393,22 @@ export const DeployListingPage: React.FC = () => {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberDateTimeInput
+                <AmberDatePicker
                   label={t('listing.deploy.start_time')}
                   value={groupBuyForm.startTime}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     clearFieldError('startTime');
-                    setGroupBuyForm(p => ({ ...p, startTime: e.target.value }));
+                    setGroupBuyForm(p => ({ ...p, startTime: val }));
                   }}
                   icon={<Calendar className="w-4 h-4" />}
                   error={fieldErrors.startTime}
                 />
-                <AmberDateTimeInput
+                <AmberDatePicker
                   label={t('listing.deploy.end_time')}
                   value={groupBuyForm.endTime}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     clearFieldError('endTime');
-                    setGroupBuyForm(p => ({ ...p, endTime: e.target.value }));
+                    setGroupBuyForm(p => ({ ...p, endTime: val }));
                   }}
                   icon={<Calendar className="w-4 h-4" />}
                   error={fieldErrors.endTime}
