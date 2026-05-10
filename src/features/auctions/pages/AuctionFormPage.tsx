@@ -3,11 +3,10 @@ import { useRouter } from 'next/router';
 import { 
   Gavel, 
   TrendingUp, 
-  DollarSign,
   Clock, 
-  ImageIcon, 
-  Save, 
-  X, 
+  ImageIcon,
+  Save,
+  X,
   ChevronLeft,
   AlertCircle,
   Info,
@@ -18,20 +17,25 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  FileText
+  FileText,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
+import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useFormUX } from '@core/hooks/useFormUX';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
+import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
+import { createAuctionFormPageSchema } from '../validation/auctionFormPageSchema';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
@@ -42,6 +46,7 @@ import type { AuctionCreateInput, AuctionUpdateInput, Spec, Source } from '../ty
  */
 export const AuctionFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
+  const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
   const isClone = router.pathname.includes('/clone/');
@@ -197,13 +202,37 @@ export const AuctionFormPage: React.FC = () => {
   };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.title?.trim()) newErrors.title = t('auction.validation.title_required');
-    if (!formData.startTime) newErrors.startTime = t('auction.validation.start_time_required');
-    if ((formData.startPrice || 0) <= 0) newErrors.startPrice = t('auction.validation.start_price_gt_0');
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
+    const buyRaw = formData.buyNowPrice;
+    const resRaw = formData.reservePrice;
+    const parsed = createAuctionFormPageSchema(t).safeParse({
+      title: formData.title ?? '',
+      startPrice: Number(formData.startPrice),
+      bidIncrement: Number(formData.bidIncrement),
+      categoryId: Number(formData.categoryId),
+      startTime: formData.startTime ?? '',
+      endTime: finalEndTime ?? '',
+      buyNowPrice:
+        buyRaw !== undefined &&
+        buyRaw !== null &&
+        Number.isFinite(Number(buyRaw)) &&
+        Number(buyRaw) > 0
+          ? Number(buyRaw)
+          : undefined,
+      reservePrice:
+        resRaw !== undefined &&
+        resRaw !== null &&
+        Number.isFinite(Number(resRaw)) &&
+        Number(resRaw) > 0
+          ? Number(resRaw)
+          : undefined,
+    });
+    if (!parsed.success) {
+      setErrors(zodIssuesToFieldMap(parsed.error));
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -246,8 +275,14 @@ export const AuctionFormPage: React.FC = () => {
       markClean();
       router.push('/auctions');
     } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t('auction.validation.submit_failed') || 'Submission failed. Please check your data and try again.';
-      setSubmitError(errorMessage);
+      const mapped = mapApiError(err);
+      const errorMessage =
+        mapped ||
+        err?.message ||
+        err?.details?.[0] ||
+        t('auction.validation.submit_failed') ||
+        'Submission failed. Please check your data and try again.';
+      setSubmitError(typeof errorMessage === 'string' ? errorMessage : String(errorMessage));
     }
   };
 
@@ -267,7 +302,7 @@ export const AuctionFormPage: React.FC = () => {
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
           <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
@@ -341,6 +376,9 @@ export const AuctionFormPage: React.FC = () => {
                                 value={String(formData.categoryId || '')}
                                 onChange={(val) => handleChange('categoryId', val ? Number(val) : undefined)}
                             />
+                            {errors.categoryId ? (
+                              <p className="text-xs text-danger font-medium mt-1.5 px-1">{errors.categoryId}</p>
+                            ) : null}
                         </div>
                     </div>
 
@@ -364,7 +402,7 @@ export const AuctionFormPage: React.FC = () => {
             </FormSection>
 
             {/* Premium Multi-tier Pricing */}
-            <FormSection icon={<DollarSign className="w-5 h-5" />} iconBgColor="success" title={t('auction.form.section.pricing')}>
+            <FormSection icon={<IqdSymbol className="text-sm" />} iconBgColor="success" title={t('auction.form.section.pricing')}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <AmberInput
                         label={t('auction.form.fields.start_price')}
@@ -380,13 +418,15 @@ export const AuctionFormPage: React.FC = () => {
                         value={formData.bidIncrement}
                         onChange={(e) => handleChange('bidIncrement', Number(e.target.value))}
                         icon={<Gavel className="w-4 h-4" />}
+                        error={errors.bidIncrement}
                     />
                     <AmberInput
                         label={t('auction.form.fields.buy_now')}
                         type="number"
                         value={formData.buyNowPrice || ''}
                         onChange={(e) => handleChange('buyNowPrice', Number(e.target.value))}
-                        icon={<DollarSign className="w-4 h-4" />}
+                        icon={<IqdSymbol />}
+                        error={errors.buyNowPrice}
                     />
                     <AmberInput
                         label={t('auction.form.fields.reserve_price') || 'Reserve Price'}
@@ -394,6 +434,7 @@ export const AuctionFormPage: React.FC = () => {
                         value={formData.reservePrice || ''}
                         onChange={(e) => handleChange('reservePrice', Number(e.target.value))}
                         icon={<History className="w-4 h-4" />}
+                        error={errors.reservePrice}
                     />
                 </div>
 
@@ -630,9 +671,8 @@ export const AuctionFormPage: React.FC = () => {
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <AmberInput 
+                    <AmberDateTimeInput
                         label={t('auction.form.temporal_start')}
-                        type="datetime-local"
                         value={formData.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
                         error={errors.startTime}
@@ -676,13 +716,15 @@ export const AuctionFormPage: React.FC = () => {
                                     <span className="text-zinc-muted">{durationDays} {durationDays === 1 ? 'day' : 'days'}</span>
                                     <span className="text-warning">{Math.round((durationDays / 30) * 100)}%</span>
                                 </div>
+                                {errors.endTime ? (
+                                  <p className="text-xs text-danger font-medium pt-2">{errors.endTime}</p>
+                                ) : null}
                             </div>
                         </>
                     ) : (
                         /* Manual mode: pick exact end date */
-                        <AmberInput 
+                        <AmberDateTimeInput
                             label={t('auction.form.temporal_end')}
-                            type="datetime-local"
                             value={formData.endTime}
                             onChange={(e) => handleChange('endTime', e.target.value)}
                             error={errors.endTime}

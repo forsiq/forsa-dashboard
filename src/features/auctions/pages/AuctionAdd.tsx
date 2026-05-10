@@ -13,8 +13,10 @@ import { getLocalizedName } from '../../../services/categories/types';
 
 import type { AuctionCreateInput } from '../types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton as Button } from '@core/components/AmberButton';
 import { AmberDropdown } from '@core/components/AmberDropdown';
@@ -23,6 +25,7 @@ import { AmberImageUpload } from '@core/components/AmberImageUpload';
 export const AuctionAdd = () => {
   const router = useRouter();
   const { t, language, dir } = useLanguage();
+  const mapApiError = useMapApiValidationError();
   const createAuction = useCreateAuction();
 
   const [formData, setFormData] = useState<Partial<AuctionCreateInput>>({
@@ -110,8 +113,14 @@ export const AuctionAdd = () => {
       } as AuctionCreateInput);
       router.push('/auctions');
     } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t('auction.validation.submit_failed') || 'Failed to create auction. Please try again.';
-      setSubmitError(errorMessage);
+      const mapped = mapApiError(err);
+      const errorMessage =
+        mapped ||
+        err?.message ||
+        err?.details?.[0] ||
+        t('auction.validation.submit_failed') ||
+        'Failed to create auction. Please try again.';
+      setSubmitError(typeof errorMessage === 'string' ? errorMessage : String(errorMessage));
     }
   };
 
@@ -125,7 +134,7 @@ export const AuctionAdd = () => {
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
           <button onClick={() => setSubmitError(null)} className={isRTL ? 'mr-auto text-danger/60 hover:text-danger' : 'ml-auto text-danger/60 hover:text-danger'}>
             <X className="w-4 h-4" />
           </button>
@@ -246,22 +255,18 @@ export const AuctionAdd = () => {
           <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AmberInput
+            <AmberDateTimeInput
               label={t('auction.form.start_time')}
-              type="datetime-local"
               value={formData.startTime}
               onChange={(e) => handleInputChange('startTime', e.target.value)}
               error={errors.startTime}
-              dir={dir}
             />
 
-            <AmberInput
+            <AmberDateTimeInput
               label={t('auction.form.end_time')}
-              type="datetime-local"
               value={formData.endTime}
               onChange={(e) => handleInputChange('endTime', e.target.value)}
               error={errors.endTime}
-              dir={dir}
             />
           </div>
         </Card>

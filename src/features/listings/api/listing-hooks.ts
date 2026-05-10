@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { useErrorHandler } from '@core/hooks';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { listingApi } from './listing-api';
 import type {
   ProductListing,
@@ -72,6 +74,7 @@ export function useGetListingDeals(id: number, enabled = true) {
 export function useCreateListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (input: CreateListingInput) => listingApi.create(input),
@@ -80,7 +83,8 @@ export function useCreateListing() {
       toast.success('Listing created successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to create listing: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to create listing: ${detail}`, 8000);
     },
   });
 }
@@ -88,6 +92,7 @@ export function useCreateListing() {
 export function useUpdateListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateListingInput }) =>
@@ -98,7 +103,8 @@ export function useUpdateListing() {
       toast.success('Listing updated successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to update listing: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to update listing: ${detail}`, 8000);
     },
   });
 }
@@ -106,6 +112,7 @@ export function useUpdateListing() {
 export function useDeleteListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number) => listingApi.delete(id),
@@ -114,7 +121,8 @@ export function useDeleteListing() {
       toast.success('Listing deleted successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to delete listing: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to delete listing: ${detail}`, 8000);
     },
   });
 }
@@ -122,6 +130,8 @@ export function useDeleteListing() {
 export function useDeployAsAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: DeployAuctionInput }) =>
@@ -133,8 +143,11 @@ export function useDeployAsAuction() {
       queryClient.invalidateQueries({ queryKey: ['auctions'] });
       toast.success('Auction deployed from listing');
     },
-    onError: (error: any) => {
-      toast.error(`Failed to deploy auction: ${error.message || 'Unknown error'}`, 8000);
+    onError: (error: unknown) => {
+      const mapped = mapApiError(error, { firstOnly: true });
+      const errMsg = typeof (error as { message?: string })?.message === 'string' ? (error as { message: string }).message.trim() : '';
+      const reason = mapped?.trim() || errMsg || t('listing.deploy.error_reason_unknown');
+      toast.error(t('listing.deploy.toast_auction_failed', { reason }), 8000);
     },
   });
 }
@@ -142,6 +155,8 @@ export function useDeployAsAuction() {
 export function useDeployAsGroupBuy() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: DeployGroupBuyInput }) =>
@@ -151,8 +166,11 @@ export function useDeployAsGroupBuy() {
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(variables.id) });
       toast.success('Group deal deployed from listing');
     },
-    onError: (error: any) => {
-      toast.error(`Failed to deploy group deal: ${error.message || 'Unknown error'}`, 8000);
+    onError: (error: unknown) => {
+      const mapped = mapApiError(error, { firstOnly: true });
+      const errMsg = typeof (error as { message?: string })?.message === 'string' ? (error as { message: string }).message.trim() : '';
+      const reason = mapped?.trim() || errMsg || t('listing.deploy.error_reason_unknown');
+      toast.error(t('listing.deploy.toast_group_buy_failed', { reason }), 8000);
     },
   });
 }

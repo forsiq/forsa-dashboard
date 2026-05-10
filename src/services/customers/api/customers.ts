@@ -9,6 +9,67 @@ import type {
   CustomersResponse 
 } from '../types';
 
+function pickNonEmptyString(...candidates: unknown[]): string {
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.trim().length > 0) return c.trim();
+  }
+  return '';
+}
+
+/** Map list API rows (camelCase / snake_case / nested) to Customer for UI. */
+export function normalizeCustomerRow(raw: Record<string, unknown>): Customer {
+  const r = raw as Record<string, any>;
+  const firstLast = pickNonEmptyString(
+    [r.firstName, r.lastName].filter(Boolean).join(' '),
+    [r.first_name, r.last_name].filter(Boolean).join(' '),
+  );
+
+  const name =
+    pickNonEmptyString(
+      r.name,
+      r.fullName,
+      r.full_name,
+      r.displayName,
+      r.display_name,
+      firstLast,
+    ) ||
+    pickNonEmptyString(r.email, r.primary_email) ||
+    pickNonEmptyString(r.phone, r.phone_number, r.mobile) ||
+    (typeof r.id === 'string' && r.id.length > 0 ? r.id.slice(0, 12) : '') ||
+    '—';
+
+  const email = pickNonEmptyString(r.email, r.primary_email);
+  const phone = pickNonEmptyString(r.phone, r.phone_number, r.mobile) || undefined;
+  const statusRaw = (r.status as string) || 'active';
+  const status: Customer['status'] =
+    statusRaw === 'inactive' || statusRaw === 'blocked' || statusRaw === 'active' ? statusRaw : 'active';
+  const type: Customer['type'] =
+    r.type === 'business' || r.type === 'company' ? 'business' : 'individual';
+
+  const createdAt = pickNonEmptyString(r.createdAt, r.created_at) || new Date().toISOString();
+  const updatedAt = pickNonEmptyString(r.updatedAt, r.updated_at, r.createdAt, r.created_at) || createdAt;
+
+  const id = String(r.id ?? r.uuid ?? '').trim();
+
+  return {
+    id: id || 'unknown',
+    name,
+    email,
+    phone,
+    avatar: pickNonEmptyString(r.avatar, r.avatar_url, r.profile_image) || undefined,
+    status,
+    type,
+    company: pickNonEmptyString(r.company, r.company_name) || undefined,
+    address: r.address,
+    totalOrders: Number(r.totalOrders ?? r.total_orders ?? 0) || 0,
+    totalSpent: r.totalSpent ?? r.total_spent,
+    lastOrderDate: r.lastOrderDate ?? r.last_order_date,
+    createdAt,
+    joinDate: r.joinDate ?? r.join_date,
+    updatedAt,
+  };
+}
+
 /**
  * Base Customer API implementation
  */
@@ -22,8 +83,9 @@ export const customerBaseApi = createApiClient<Customer, CreateCustomerInput, Up
 
 export async function getCustomers(filters: CustomerFilters = {} as any): Promise<CustomersResponse> {
   const response = await customerBaseApi.list(filters) as any;
-  const customers = response.data || [];
-  const total = response.total || customers.length;
+  const rawList = Array.isArray(response.data) ? response.data : [];
+  const customers = rawList.map((row: Record<string, unknown>) => normalizeCustomerRow(row));
+  const total = response.total ?? customers.length;
   
   return {
     customers,

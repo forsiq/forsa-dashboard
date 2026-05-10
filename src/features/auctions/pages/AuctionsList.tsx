@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Gavel,
   Plus,
@@ -28,9 +29,21 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { useToast } from '@core/contexts/ToastContext';
+import { DataTable, Column, Action, BulkAction } from '@core/components/Data/DataTable';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
-import { useGetAuctions, useGetAuctionStats, useDeleteAuction, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
+import {
+  useGetAuctions,
+  useGetAuctionStats,
+  useDeleteAuction,
+  useStartAuction,
+  usePauseAuction,
+  useResumeAuction,
+  useEndAuction,
+  useCancelAuction,
+  auctionKeys,
+} from '../api';
+import { liveMonitorApi, auctionApi } from '../api/auction-api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
@@ -38,6 +51,14 @@ import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
 import { RescheduleModal } from '../components/RescheduleModal';
 import type { AuctionStatus, Auction } from '../types/auction.types';
+
+/** Per-row quick extend end time (aligned with RescheduleModal). */
+function computeBulkQuickEndIso(auction: Auction, minutes: number): string {
+  const currentEnd = auction.endTime ? new Date(auction.endTime) : new Date();
+  const now = new Date();
+  const base = currentEnd > now ? currentEnd : now;
+  return new Date(base.getTime() + minutes * 60000).toISOString();
+}
 
 type TabValue = 'all' | AuctionStatus;
 
@@ -107,6 +128,149 @@ export const AuctionsList: React.FC = () => {
     const endAuction = useEndAuction();
     const cancelAuction = useCancelAuction();
     const { openConfirm, ConfirmModal } = useConfirmModal();
+    const queryClient = useQueryClient();
+    const toast = useToast();
+    const [bulkBusy, setBulkBusy] = useState(false);
+
+    const invalidateAuctionQueries = useCallback(async () => {
+        await queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+        await queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
+    }, [queryClient]);
+
+    const reportSettled = useCallback(
+        (results: PromiseSettledResult<unknown>[], okKey: string, partialKey: string) => {
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            const ok = results.length - failed;
+            if (failed === 0) toast.success(t(okKey));
+            else toast.warning(t(partialKey).replace('{ok}', String(ok)).replace('{failed}', String(failed)));
+        },
+        [toast, t],
+    );
+
+    /**
+     * Bulk bar uses parallel per-auction calls (no batch PATCH in auction-service):
+     * reschedule → POST /auctions/:id/reschedule; lifecycle → POST .../start|pause|cancel.
+     */
+    const bulkActions: BulkAction<Auction>[] = useMemo(
+        () => [
+            {
+                label: t('auction.bulk.extend_15m'),
+                icon: Calendar,
+                onClick: (_ids, rows) => {
+                    if (bulkBusy || !rows.length) return;
+                    void (async () => {
+                        setBulkBusy(true);
+                        try {
+                            const results = await Promise.allSettled(
+                                rows.map((a) =>
+                                    liveMonitorApi.rescheduleAuction(a.id, computeBulkQuickEndIso(a, 15)),
+                                ),
+                            );
+                            reportSettled(results, 'auction.bulk.reschedule_ok', 'auction.bulk.reschedule_partial');
+                            await invalidateAuctionQueries();
+                        } finally {
+                            setBulkBusy(false);
+                        }
+                    })();
+                },
+            },
+            {
+                label: t('auction.bulk.extend_1h'),
+                icon: Clock,
+                onClick: (_ids, rows) => {
+                    if (bulkBusy || !rows.length) return;
+                    void (async () => {
+                        setBulkBusy(true);
+                        try {
+                            const results = await Promise.allSettled(
+                                rows.map((a) =>
+                                    liveMonitorApi.rescheduleAuction(a.id, computeBulkQuickEndIso(a, 60)),
+                                ),
+                            );
+                            reportSettled(results, 'auction.bulk.reschedule_ok', 'auction.bulk.reschedule_partial');
+                            await invalidateAuctionQueries();
+                        } finally {
+                            setBulkBusy(false);
+                        }
+                    })();
+                },
+            },
+            {
+                label: t('auction.bulk.start'),
+                icon: Play,
+                variant: 'success',
+                onClick: (_ids, rows) => {
+                    if (bulkBusy || !rows.length) return;
+                    const eligible = rows.filter((a) => a.status === 'draft' || a.status === 'scheduled');
+                    if (!eligible.length) {
+                        toast.warning(t('auction.bulk.none_eligible'));
+                        return;
+                    }
+                    void (async () => {
+                        setBulkBusy(true);
+                        try {
+                            const results = await Promise.allSettled(eligible.map((a) => auctionApi.start(a.id)));
+                            reportSettled(results, 'auction.bulk.lifecycle_ok', 'auction.bulk.lifecycle_partial');
+                            await invalidateAuctionQueries();
+                        } finally {
+                            setBulkBusy(false);
+                        }
+                    })();
+                },
+            },
+            {
+                label: t('auction.bulk.pause'),
+                icon: Pause,
+                onClick: (_ids, rows) => {
+                    if (bulkBusy || !rows.length) return;
+                    const eligible = rows.filter((a) => a.status === 'active');
+                    if (!eligible.length) {
+                        toast.warning(t('auction.bulk.none_eligible'));
+                        return;
+                    }
+                    void (async () => {
+                        setBulkBusy(true);
+                        try {
+                            const results = await Promise.allSettled(eligible.map((a) => auctionApi.pause(a.id)));
+                            reportSettled(results, 'auction.bulk.lifecycle_ok', 'auction.bulk.lifecycle_partial');
+                            await invalidateAuctionQueries();
+                        } finally {
+                            setBulkBusy(false);
+                        }
+                    })();
+                },
+            },
+            {
+                label: t('auction.bulk.cancel'),
+                icon: XCircle,
+                variant: 'danger',
+                onClick: (_ids, rows) => {
+                    if (bulkBusy || !rows.length) return;
+                    const eligible = rows.filter((a) => !['ended', 'sold', 'cancelled'].includes(a.status));
+                    if (!eligible.length) {
+                        toast.warning(t('auction.bulk.none_eligible'));
+                        return;
+                    }
+                    openConfirm({
+                        title: t('auction.bulk.cancel_confirm_title'),
+                        message: t('auction.bulk.cancel_confirm_message').replace('{count}', String(eligible.length)),
+                        variant: 'danger',
+                        onConfirm: async () => {
+                            setBulkBusy(true);
+                            try {
+                                const results = await Promise.allSettled(eligible.map((a) => auctionApi.cancel(a.id)));
+                                reportSettled(results, 'auction.bulk.lifecycle_ok', 'auction.bulk.lifecycle_partial');
+                                await invalidateAuctionQueries();
+                            } finally {
+                                setBulkBusy(false);
+                            }
+                        },
+                    });
+                },
+            },
+        ],
+        [t, bulkBusy, toast, openConfirm, reportSettled, invalidateAuctionQueries],
+    );
 
     const auctions = auctionsData?.data || [];
 
@@ -262,10 +426,8 @@ export const AuctionsList: React.FC = () => {
         label: (auction) => ['active', 'scheduled', 'paused', 'draft', 'ended', 'sold'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as unknown as string,
         icon: Calendar,
         onClick: (auction) => {
-          console.log('[AuctionsList] Reschedule clicked for auction:', auction.id, auction.title, 'status:', auction.status);
           setRescheduleAuction(auction);
           setIsRescheduleOpen(true);
-          console.log('[AuctionsList] Reschedule state set - isRescheduleOpen: true, rescheduleAuction:', auction.id);
         },
       },
       {
@@ -440,12 +602,26 @@ export const AuctionsList: React.FC = () => {
                         </AmberButton>
                     </Card>
                 ) : (
-                    <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+                    <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+                        {bulkBusy && (
+                            <div
+                                className="absolute inset-0 z-[90] flex flex-col items-center justify-center gap-3 bg-black/50 backdrop-blur-[2px]"
+                                aria-busy="true"
+                                aria-live="polite"
+                            >
+                                <Clock className="w-8 h-8 text-brand animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-text">
+                                    {t('common.loading') || 'Loading...'}
+                                </span>
+                            </div>
+                        )}
                         <DataTable
                             columns={columns}
                             data={auctions}
                             keyField="id"
                             rowActions={rowActions}
+                            selectable
+                            bulkActions={bulkActions}
                             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
                             pagination
                             pageSize={limit}

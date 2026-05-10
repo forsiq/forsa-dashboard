@@ -9,7 +9,9 @@ import { AmberInput } from '@core/components/AmberInput';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberAvatar } from '@core/components/AmberAvatar';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
-import { DataTable } from '@core/components/Data/DataTable';
+import { DataTable, Column } from '@core/components/Data/DataTable';
+import { DataTableColumnOrderToolbar } from '@core/components/Data/DataTableColumnOrderToolbar';
+import { usePersistedColumnOrder } from '@core/hooks/usePersistedColumnOrder';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
@@ -69,25 +71,32 @@ export function CustomersPage() {
     });
   };
 
-  const columns = [
+  const columns: Column<any>[] = [
     {
       key: 'name',
       label: t('customer.name') || 'Entity Name',
       cardTitle: true,
       cardSubtitle: true,
-      render: (customer: any) => {
-        const fullName = customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email || customer.phone || 'N/A';
+      render: (customer: Customer) => {
+        const fullName =
+          customer.name ||
+          `${(customer as any).firstName || ''} ${(customer as any).lastName || ''}`.trim() ||
+          customer.email ||
+          customer.phone ||
+          'N/A';
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <AmberAvatar
               src={customer.avatar}
               fallback={fullName}
               size="sm"
-              className=""
+              className="shrink-0"
             />
-            <div>
-              <p className="text-sm font-black text-zinc-text uppercase tracking-tight leading-tight">{fullName}</p>
-              <p className="text-[11px] font-bold text-zinc-muted mt-0.5">{customer.email}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black leading-tight tracking-tight text-zinc-text">{fullName}</p>
+              {customer.email ? (
+                <p className="mt-0.5 truncate text-[11px] font-bold text-zinc-muted">{customer.email}</p>
+              ) : null}
             </div>
           </div>
         );
@@ -148,6 +157,11 @@ export function CustomersPage() {
       sortable: true,
     },
   ];
+
+  const { orderedColumns, moveColumn, selectedKey, setSelectedKey } = usePersistedColumnOrder(
+    columns,
+    'datatable:customers:v1',
+  );
 
   const rowActions = [
     {
@@ -333,16 +347,32 @@ export function CustomersPage() {
             </AmberButton>
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={data?.customers || []}
-            pagination
-            pageSize={10}
-            selectable
-            rowActions={rowActions}
-            onRowClick={(row) => router.push(`/customers/${row.id}`)}
-            showViewToggle
-          />
+          <div>
+            <DataTableColumnOrderToolbar
+              columns={orderedColumns}
+              selectedKey={selectedKey}
+              onSelectKey={setSelectedKey}
+              onMove={(delta) => moveColumn(selectedKey, delta)}
+              disabled={!(data?.customers || []).length}
+              dir={isRTL ? 'rtl' : 'ltr'}
+              labels={{
+                title: t('datatable.column_order') || 'Columns',
+                selectColumn: t('datatable.select_column') || 'Select column',
+                moveUp: t('datatable.move_column_up') || 'Move column up',
+                moveDown: t('datatable.move_column_down') || 'Move column down',
+              }}
+            />
+            <DataTable
+              columns={orderedColumns}
+              data={data?.customers || []}
+              pagination
+              pageSize={10}
+              selectable
+              rowActions={rowActions}
+              onRowClick={(row) => router.push(`/customers/${row.id}`)}
+              showViewToggle
+            />
+          </div>
         )}
       </div>
 

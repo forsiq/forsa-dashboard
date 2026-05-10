@@ -4,7 +4,7 @@ import { Clock, Calendar, X, Loader2, Plus } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
+import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
 import { useRescheduleAuction } from '../api';
 import type { Auction } from '../types/auction.types';
 
@@ -185,14 +185,13 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
             <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
               {t('auction.reschedule.custom_time') || 'Set Custom Time'}
             </label>
-            <AmberInput
-              type="datetime-local"
+            <AmberDateTimeInput
               value={newEndTime}
               onChange={(e) => {
                 setNewEndTime(e.target.value);
                 setMode('custom');
               }}
-              className="h-12 bg-obsidian-outer border-white/5 text-sm font-bold tabular-nums"
+              inputClassName="min-h-12 h-12 bg-obsidian-outer border-white/5 text-sm font-bold tabular-nums"
               min={toLocalDatetimeString(new Date())}
             />
             <AmberButton

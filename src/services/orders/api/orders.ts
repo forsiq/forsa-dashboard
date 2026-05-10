@@ -32,7 +32,7 @@ const mapToOrder = (raw: any): Order => ({
   shipping: 0,
   discount: 0,
   total: Number(raw?.finalPrice || raw?.total || raw?.amount || 0),
-  currency: 'USD',
+  currency: 'IQD',
   status: raw?.status || 'pending',
   paymentStatus: raw?.isPaid ? 'paid' : 'pending',
   priority: 'medium' as const,

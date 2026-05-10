@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { 
   Users, 
-  DollarSign, 
   Clock, 
   Image as ImageIcon, 
   Save, 
@@ -22,11 +21,14 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { FormSection } from '@core/components/FormSection';
+import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFormUX } from '@core/hooks/useFormUX';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { 
   useGetGroupBuying, 
   useCreateGroupBuying, 
@@ -38,6 +40,7 @@ import { useList as useCategories } from '../../../services/categories/hooks';
 import type { GroupBuyingCreateInput, GroupBuyingUpdateInput } from '../types';
 export const GroupBuyingFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
+  const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
   const isEdit = !!id;
@@ -208,8 +211,14 @@ export const GroupBuyingFormPage: React.FC = () => {
       markClean();
       router.push('/group-buying');
     } catch (err: any) {
-      const errorMessage = err?.message || err?.details?.[0] || t('error.save_failed') || 'Submission failed. Please try again.';
-      setSubmitError(errorMessage);
+      const mapped = mapApiError(err);
+      const errorMessage =
+        mapped ||
+        err?.message ||
+        err?.details?.[0] ||
+        t('error.save_failed') ||
+        'Submission failed. Please try again.';
+      setSubmitError(typeof errorMessage === 'string' ? errorMessage : String(errorMessage));
     }
   };
 
@@ -234,7 +243,7 @@ export const GroupBuyingFormPage: React.FC = () => {
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
           <button onClick={() => setSubmitError(null)} className="ms-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
@@ -442,7 +451,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                         type="number"
                         value={formData.originalPrice}
                         onChange={(e) => handleChange('originalPrice', Number(e.target.value))}
-                        icon={<DollarSign className="w-4 h-4" />}
+                        icon={<IqdSymbol />}
                         className="h-12 tabular-nums"
                         dir={dir}
                     />
@@ -473,25 +482,21 @@ export const GroupBuyingFormPage: React.FC = () => {
                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.temporal_spectrum')}</h3>
                 </div>
                 <div className="space-y-6">
-                    <AmberInput 
+                    <AmberDateTimeInput
                         label={t('groupBuying.form.node_init_start')}
-                        type="datetime-local"
                         value={formData.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
                         icon={<Calendar className="w-4 h-4" />}
                         error={errors.startTime}
-                        className="h-12"
-                        dir={dir}
+                        inputClassName="h-12 min-h-12 py-2.5 text-sm"
                     />
-                    <AmberInput 
+                    <AmberDateTimeInput
                         label={t('groupBuying.form.protocol_termination_window')}
-                        type="datetime-local"
                         value={formData.endTime}
                         onChange={(e) => handleChange('endTime', e.target.value)}
                         icon={<Clock className="w-4 h-4" />}
                         error={errors.endTime}
-                        className="h-12"
-                        dir={dir}
+                        inputClassName="h-12 min-h-12 py-2.5 text-sm"
                     />
                 </div>
                 {/* Dynamic Duration Logic Mask */}

@@ -8,24 +8,33 @@ import {
   AlertCircle,
   X,
   Package,
-  DollarSign,
-  Clock,
   TrendingUp,
-  Info,
+  Calendar,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberDateTimeInput } from '@core/components/AmberDateTimeInput';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
+import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFormUX } from '@core/hooks/useFormUX';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
+import {
+  parseBidIncrement,
+  parseOptionalListingPrice,
+  parseRequiredListingPrice,
+} from '@core/utils/listingDeployPrices';
 import { useGetListing, useDeployAsAuction, useDeployAsGroupBuy } from '../api/listing-hooks';
+import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
+import { deployAuctionFormSchema, deployGroupBuyFormSchema } from '../validation/deployListingSchemas';
 
 type DeployType = 'auction' | 'group_buy' | null;
 
 export const DeployListingPage: React.FC = () => {
   const { t, dir } = useLanguage();
+  const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
   const isRTL = dir === 'rtl';
@@ -68,6 +77,7 @@ export const DeployListingPage: React.FC = () => {
   });
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // useFormUX: unsaved-changes warning + draft auto-save
   const currentValues = deployType === 'auction' ? auctionForm : groupBuyForm;
@@ -85,22 +95,44 @@ export const DeployListingPage: React.FC = () => {
     storageKey: 'draft-deploy-listing',
   });
 
+  const clearFieldError = (key: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
   const handleSubmit = async () => {
     setSubmitError(null);
+    setFieldErrors({});
     try {
       if (deployType === 'auction') {
+        const parsed = deployAuctionFormSchema.safeParse(auctionForm);
+        if (!parsed.success) {
+          setFieldErrors(zodIssuesToFieldMap(parsed.error));
+          return;
+        }
+        const buyNowPrice = parseOptionalListingPrice(auctionForm.buyNowPrice);
+        const reservePrice = parseOptionalListingPrice(auctionForm.reservePrice);
         await deployAuctionMutation.mutateAsync({
           id: Number(id),
           data: {
-            startPrice: Number(auctionForm.startPrice),
-            buyNowPrice: auctionForm.buyNowPrice ? Number(auctionForm.buyNowPrice) : undefined,
-            reservePrice: auctionForm.reservePrice ? Number(auctionForm.reservePrice) : undefined,
-            bidIncrement: Number(auctionForm.bidIncrement),
+            startPrice: parseRequiredListingPrice(auctionForm.startPrice),
+            ...(buyNowPrice !== undefined ? { buyNowPrice } : {}),
+            ...(reservePrice !== undefined ? { reservePrice } : {}),
+            bidIncrement: parseBidIncrement(auctionForm.bidIncrement, 5000),
             startTime: new Date(auctionForm.startTime).toISOString(),
             endTime: new Date(auctionForm.endTime).toISOString(),
           },
         });
       } else if (deployType === 'group_buy') {
+        const parsed = deployGroupBuyFormSchema.safeParse(groupBuyForm);
+        if (!parsed.success) {
+          setFieldErrors(zodIssuesToFieldMap(parsed.error));
+          return;
+        }
         await deployGroupBuyMutation.mutateAsync({
           id: Number(id),
           data: {
@@ -120,8 +152,10 @@ export const DeployListingPage: React.FC = () => {
       } else {
         router.push('/group-buying');
       }
-    } catch (err: any) {
-      setSubmitError(err?.message || t('common.error_occurred') || 'Deploy failed');
+    } catch (err: unknown) {
+      const mapped = mapApiError(err, { firstOnly: false });
+      const errMsg = typeof (err as { message?: string })?.message === 'string' ? (err as { message: string }).message.trim() : '';
+      setSubmitError(mapped?.trim() || errMsg || t('listing.deploy.error_reason_unknown'));
     }
   };
 
@@ -152,7 +186,7 @@ export const DeployListingPage: React.FC = () => {
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
           <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
@@ -200,7 +234,10 @@ export const DeployListingPage: React.FC = () => {
           <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">{t('listing.deploy.choose')}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
-              onClick={() => setDeployType('auction')}
+              onClick={() => {
+                setFieldErrors({});
+                setDeployType('auction');
+              }}
               className="p-8 rounded-2xl bg-obsidian-card border border-white/5 hover:border-brand/30 transition-all text-left group"
             >
               <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center text-brand border border-brand/20 mb-6 group-hover:scale-110 transition-transform">
@@ -211,7 +248,10 @@ export const DeployListingPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setDeployType('group_buy')}
+              onClick={() => {
+                setFieldErrors({});
+                setDeployType('group_buy');
+              }}
               className="p-8 rounded-2xl bg-obsidian-card border border-white/5 hover:border-info/30 transition-all text-left group"
             >
               <div className="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center text-info border border-info/20 mb-6 group-hover:scale-110 transition-transform">
@@ -235,44 +275,68 @@ export const DeployListingPage: React.FC = () => {
                 label={t('listing.deploy.start_price')}
                 type="number"
                 value={auctionForm.startPrice}
-                onChange={(e) => setAuctionForm(p => ({ ...p, startPrice: Number(e.target.value) }))}
-                icon={<DollarSign className="w-4 h-4" />}
+                onChange={(e) => {
+                  clearFieldError('startPrice');
+                  setAuctionForm(p => ({ ...p, startPrice: Number(e.target.value) }));
+                }}
+                icon={<IqdSymbol />}
+                error={fieldErrors.startPrice}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <AmberInput
                   label={t('listing.deploy.buy_now_price')}
                   type="number"
                   value={auctionForm.buyNowPrice}
-                  onChange={(e) => setAuctionForm(p => ({ ...p, buyNowPrice: e.target.value }))}
+                  onChange={(e) => {
+                    clearFieldError('buyNowPrice');
+                    setAuctionForm(p => ({ ...p, buyNowPrice: e.target.value }));
+                  }}
                   icon={<TrendingUp className="w-4 h-4" />}
+                  error={fieldErrors.buyNowPrice}
                 />
                 <AmberInput
                   label={t('listing.deploy.reserve_price')}
                   type="number"
                   value={auctionForm.reservePrice}
-                  onChange={(e) => setAuctionForm(p => ({ ...p, reservePrice: e.target.value }))}
-                  icon={<DollarSign className="w-4 h-4" />}
+                  onChange={(e) => {
+                    clearFieldError('reservePrice');
+                    setAuctionForm(p => ({ ...p, reservePrice: e.target.value }));
+                  }}
+                  icon={<IqdSymbol />}
+                  error={fieldErrors.reservePrice}
                 />
               </div>
               <AmberInput
                 label={t('listing.deploy.bid_increment')}
                 type="number"
                 value={auctionForm.bidIncrement}
-                onChange={(e) => setAuctionForm(p => ({ ...p, bidIncrement: Number(e.target.value) }))}
+                onChange={(e) => {
+                  clearFieldError('bidIncrement');
+                  setAuctionForm(p => ({ ...p, bidIncrement: Number(e.target.value) }));
+                }}
                 icon={<Gavel className="w-4 h-4" />}
+                error={fieldErrors.bidIncrement}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberInput
+                <AmberDateTimeInput
                   label={t('listing.deploy.start_time')}
-                  type="datetime-local"
                   value={auctionForm.startTime}
-                  onChange={(e) => setAuctionForm(p => ({ ...p, startTime: e.target.value }))}
+                  onChange={(e) => {
+                    clearFieldError('startTime');
+                    setAuctionForm(p => ({ ...p, startTime: e.target.value }));
+                  }}
+                  icon={<Calendar className="w-4 h-4" />}
+                  error={fieldErrors.startTime}
                 />
-                <AmberInput
+                <AmberDateTimeInput
                   label={t('listing.deploy.end_time')}
-                  type="datetime-local"
                   value={auctionForm.endTime}
-                  onChange={(e) => setAuctionForm(p => ({ ...p, endTime: e.target.value }))}
+                  onChange={(e) => {
+                    clearFieldError('endTime');
+                    setAuctionForm(p => ({ ...p, endTime: e.target.value }));
+                  }}
+                  icon={<Calendar className="w-4 h-4" />}
+                  error={fieldErrors.endTime}
                 />
               </div>
             </div>
@@ -285,15 +349,23 @@ export const DeployListingPage: React.FC = () => {
                   label={t('listing.deploy.original_price')}
                   type="number"
                   value={groupBuyForm.originalPrice}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, originalPrice: Number(e.target.value) }))}
-                  icon={<DollarSign className="w-4 h-4" />}
+                  onChange={(e) => {
+                    clearFieldError('originalPrice');
+                    setGroupBuyForm(p => ({ ...p, originalPrice: Number(e.target.value) }));
+                  }}
+                  icon={<IqdSymbol />}
+                  error={fieldErrors.originalPrice}
                 />
                 <AmberInput
                   label={t('listing.deploy.deal_price')}
                   type="number"
                   value={groupBuyForm.dealPrice}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, dealPrice: Number(e.target.value) }))}
+                  onChange={(e) => {
+                    clearFieldError('dealPrice');
+                    setGroupBuyForm(p => ({ ...p, dealPrice: Number(e.target.value) }));
+                  }}
                   icon={<TrendingUp className="w-4 h-4" />}
+                  error={fieldErrors.dealPrice}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -301,29 +373,45 @@ export const DeployListingPage: React.FC = () => {
                   label={t('listing.deploy.min_participants')}
                   type="number"
                   value={groupBuyForm.minParticipants}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, minParticipants: Number(e.target.value) }))}
+                  onChange={(e) => {
+                    clearFieldError('minParticipants');
+                    setGroupBuyForm(p => ({ ...p, minParticipants: Number(e.target.value) }));
+                  }}
                   icon={<Users className="w-4 h-4" />}
+                  error={fieldErrors.minParticipants}
                 />
                 <AmberInput
                   label={t('listing.deploy.max_participants')}
                   type="number"
                   value={groupBuyForm.maxParticipants}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, maxParticipants: Number(e.target.value) }))}
+                  onChange={(e) => {
+                    clearFieldError('maxParticipants');
+                    setGroupBuyForm(p => ({ ...p, maxParticipants: Number(e.target.value) }));
+                  }}
                   icon={<Users className="w-4 h-4" />}
+                  error={fieldErrors.maxParticipants}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberInput
+                <AmberDateTimeInput
                   label={t('listing.deploy.start_time')}
-                  type="datetime-local"
                   value={groupBuyForm.startTime}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, startTime: e.target.value }))}
+                  onChange={(e) => {
+                    clearFieldError('startTime');
+                    setGroupBuyForm(p => ({ ...p, startTime: e.target.value }));
+                  }}
+                  icon={<Calendar className="w-4 h-4" />}
+                  error={fieldErrors.startTime}
                 />
-                <AmberInput
+                <AmberDateTimeInput
                   label={t('listing.deploy.end_time')}
-                  type="datetime-local"
                   value={groupBuyForm.endTime}
-                  onChange={(e) => setGroupBuyForm(p => ({ ...p, endTime: e.target.value }))}
+                  onChange={(e) => {
+                    clearFieldError('endTime');
+                    setGroupBuyForm(p => ({ ...p, endTime: e.target.value }));
+                  }}
+                  icon={<Calendar className="w-4 h-4" />}
+                  error={fieldErrors.endTime}
                 />
               </div>
             </div>
@@ -333,7 +421,10 @@ export const DeployListingPage: React.FC = () => {
             <AmberButton
               variant="outline"
               className="h-11 border-border rounded-xl px-6 active:scale-95 transition-all"
-              onClick={() => setDeployType(null)}
+              onClick={() => {
+                setFieldErrors({});
+                setDeployType(null);
+              }}
             >
               {t('listing.deploy.back')}
             </AmberButton>

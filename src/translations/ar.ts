@@ -58,6 +58,7 @@ export const ar: Record<string, string> = {
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "الكل",
   "common.all": "الكل",
+  "common.apply": "تطبيق",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "المدة",
@@ -67,6 +68,8 @@ export const ar: Record<string, string> = {
   // Auction Detail
   "auction.detail.current_bid": "المزايدة الحالية",
   "auction.detail.start_price": "سعر البداية",
+  "auction.detail.specifications": "المواصفات",
+  "auction.detail.sources": "المصادر والمراجع",
 
   // Auction Tabs
   "auction.tabs.all": "الكل",
@@ -109,6 +112,20 @@ export const ar: Record<string, string> = {
   "auction.reschedule.plus_30m": "+30 دقيقة",
   "auction.reschedule.plus_1h": "+1 ساعة",
   "auction.reschedule.plus_24h": "+24 ساعة",
+
+  "auction.bulk.extend_15m": "+15 د للجميع",
+  "auction.bulk.extend_1h": "+1 س للجميع",
+  "auction.bulk.start": "بدء",
+  "auction.bulk.pause": "إيقاف مؤقت",
+  "auction.bulk.cancel": "إلغاء",
+  "auction.bulk.none_eligible": "لا توجد صفوف مطابقة لهذا الإجراء ضمن التحديد الحالي.",
+  "auction.bulk.reschedule_ok": "تمت إعادة الجدولة لجميع المزادات المحددة.",
+  "auction.bulk.reschedule_partial": "نجح {ok}، فشل {failed}.",
+  "auction.bulk.lifecycle_ok": "اكتملت العملية لجميع المزادات المؤهلة.",
+  "auction.bulk.lifecycle_partial": "نجح {ok}، فشل {failed}.",
+  "auction.bulk.cancel_confirm_title": "إلغاء عدة مزادات",
+  "auction.bulk.cancel_confirm_message": "إلغاء {count} مزاد(ات)؟ لا يمكن التراجع.",
+
   "auction.lifecycle.cancel_title": "إلغاء المزاد",
   "auction.lifecycle.cancel_confirm": "هل أنت متأكد من إلغاء هذا المزاد؟ لا يمكن التراجع عن هذا الإجراء.",
   "auction.lifecycle.buy_now_title": "شراء الآن",
@@ -155,6 +172,17 @@ export const ar: Record<string, string> = {
   "sidebar.groupBuying": "الشراء الجماعي",
   "sidebar.inventory": "المخزون",
   "sidebar.about": "حول",
+  "sidebar.operations": "العمليات",
+  "sidebar.administration": "الإدارة",
+  "sidebar.sales_channels": "قنوات البيع",
+  "sidebar.products": "الكتالوج",
+  "sidebar.engagement": "التفاعل",
+  "sidebar.inventory_heading": "المستودع",
+  "sidebar.watchlist": "قائمة المراقبة",
+  "sidebar.orders_section": "الطلبات",
+  "sidebar.customers_section": "العملاء",
+  "sidebar.all_orders": "كل الطلبات",
+  "sidebar.pending_orders": "طلبات معلقة",
 
   // Listing labels
   "listing.title": "قائمة المنتجات",
@@ -243,6 +271,16 @@ export const ar: Record<string, string> = {
   "listing.deploy.max_participants": "الحد الأقصى للمشاركين",
   "listing.deploy.back": "رجوع",
   "listing.deploy.deploy": "نشر",
+  "listing.deploy.toast_auction_failed": "تعذر نشر المزاد: {reason}",
+  "listing.deploy.error_reason_unknown": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+  "listing.deploy.toast_group_buy_failed": "تعذر نشر الصفقة الجماعية: {reason}",
+
+  "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
+  "validation.buy_now_price_min": "سعر الشراء الفوري يجب أن يكون {min} على الأقل.",
+  "validation.reserve_price_min": "سعر الاحتياط يجب أن يكون {min} على الأقل.",
+  "validation.bid_increment_min": "حد المزايدة يجب أن يكون {min} على الأقل.",
+  "validation.field_must_be_at_least": "الحقل {field} يجب أن يكون {min} على الأقل.",
+  "validation.api_unmapped_fallback": "خطأ تحقق: {message}",
 
   // Listing empty
   "listing.empty.title": "لا توجد منتجات بعد",
@@ -258,6 +296,8 @@ export const ar: Record<string, string> = {
   "listing.quick_deploy.deploy_deal": "نشر ك صفقة",
 
   // Customer page
+  "customer.name": "الاسم",
+  "customer.title": "العملاء",
   "customer.independent": "مشغل مستقل",
   "customer.market_intelligence": "المعلومات التجارية",
   "customer.bids_count": "عدد المزايدات",
@@ -296,6 +336,12 @@ export const ar: Record<string, string> = {
   "customer.bid_status_outbid": "تم التفوق",
   "customer.bid_status_cancelled": "ملغي",
   "customer.bid_status_active": "نشط",
+
+  // DataTable column reorder (toolbar)
+  "datatable.column_order": "ترتيب الأعمدة",
+  "datatable.select_column": "اختر عموداً",
+  "datatable.move_column_up": "نقل العمود لأعلى",
+  "datatable.move_column_down": "نقل العمود لأسفل",
 
   // الإشراف
   "moderation.just_now": "الآن",
@@ -363,4 +409,8 @@ export const ar: Record<string, string> = {
   "report.analytics": "التحليلات",
   "report.sales": "تقارير المبيعات",
   "report.inventory": "تقارير المخزون",
+  "report.sales_overview": "نظرة عامة على المبيعات",
+  "report.auction_performance": "أداء المزادات",
+  "report.customer_insights": "رؤى العملاء",
+  "report.group_buying_analytics": "تحليلات الشراء الجماعي",
 };

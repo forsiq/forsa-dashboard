@@ -29,9 +29,20 @@ export const OrdersListPage = () => {
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'delivered' | 'cancelled'>('all');
+
+  useEffect(() => {
+    if (!router.isReady || router.pathname !== '/orders') return;
+    const raw = router.query.status;
+    const v = Array.isArray(raw) ? raw[0] : raw;
+    if (v === 'pending' || v === 'processing' || v === 'delivered' || v === 'cancelled') {
+      setStatusFilter(v);
+    } else if (raw === undefined) {
+      setStatusFilter('all');
+    }
+  }, [router.isReady, router.pathname, router.query.status]);
   const [debouncedSearch] = useDebounce(searchQuery, 300);
   const [filters, setFilters] = useState<OrderFilters>({
     page: 1,

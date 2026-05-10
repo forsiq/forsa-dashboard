@@ -58,6 +58,7 @@ export const en: Record<string, string> = {
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "All",
   "common.all": "All",
+  "common.apply": "Apply",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "Duration",
@@ -67,6 +68,8 @@ export const en: Record<string, string> = {
   // Auction Detail
   "auction.detail.current_bid": "Current Bid",
   "auction.detail.start_price": "Start Price",
+  "auction.detail.specifications": "Specifications",
+  "auction.detail.sources": "Sources & References",
 
   // Auction Tabs
   "auction.tabs.all": "All",
@@ -109,6 +112,20 @@ export const en: Record<string, string> = {
   "auction.reschedule.plus_30m": "+30 Minutes",
   "auction.reschedule.plus_1h": "+1 Hour",
   "auction.reschedule.plus_24h": "+24 Hours",
+
+  "auction.bulk.extend_15m": "+15m all",
+  "auction.bulk.extend_1h": "+1h all",
+  "auction.bulk.start": "Start",
+  "auction.bulk.pause": "Pause",
+  "auction.bulk.cancel": "Cancel",
+  "auction.bulk.none_eligible": "No rows match this action for the current selection.",
+  "auction.bulk.reschedule_ok": "Reschedule completed for all selected auctions.",
+  "auction.bulk.reschedule_partial": "{ok} succeeded, {failed} failed.",
+  "auction.bulk.lifecycle_ok": "Operation completed for all eligible auctions.",
+  "auction.bulk.lifecycle_partial": "{ok} succeeded, {failed} failed.",
+  "auction.bulk.cancel_confirm_title": "Cancel multiple auctions",
+  "auction.bulk.cancel_confirm_message": "Cancel {count} auction(s)? This cannot be undone.",
+
   "auction.lifecycle.cancel_title": "Cancel Auction",
   "auction.lifecycle.cancel_confirm": "Are you sure you want to cancel this auction? This action cannot be undone.",
   "auction.lifecycle.buy_now_title": "Buy Now",
@@ -155,6 +172,17 @@ export const en: Record<string, string> = {
   "sidebar.groupBuying": "Group Buying",
   "sidebar.inventory": "Inventory",
   "sidebar.about": "About",
+  "sidebar.operations": "Operations",
+  "sidebar.administration": "Administration",
+  "sidebar.sales_channels": "Sales channels",
+  "sidebar.products": "Catalog",
+  "sidebar.engagement": "Engagement",
+  "sidebar.inventory_heading": "Warehouse",
+  "sidebar.watchlist": "Watchlist",
+  "sidebar.orders_section": "Orders",
+  "sidebar.customers_section": "Customers",
+  "sidebar.all_orders": "All orders",
+  "sidebar.pending_orders": "Pending orders",
 
   // Listing labels
   "listing.title": "Product Listings",
@@ -243,6 +271,17 @@ export const en: Record<string, string> = {
   "listing.deploy.max_participants": "Max Participants",
   "listing.deploy.back": "Back",
   "listing.deploy.deploy": "Deploy",
+  "listing.deploy.toast_auction_failed": "Could not deploy auction: {reason}",
+  "listing.deploy.error_reason_unknown": "Something went wrong. Please try again.",
+  "listing.deploy.toast_group_buy_failed": "Could not deploy group deal: {reason}",
+
+  // API / form validation (NestJS class-validator → user copy)
+  "validation.start_price_min": "Starting price must be at least {min}.",
+  "validation.buy_now_price_min": "Buy-now price must be at least {min}.",
+  "validation.reserve_price_min": "Reserve price must be at least {min}.",
+  "validation.bid_increment_min": "Bid increment must be at least {min}.",
+  "validation.field_must_be_at_least": "{field} must be at least {min}.",
+  "validation.api_unmapped_fallback": "Validation error: {message}",
 
   // Listing empty
   "listing.empty.title": "No listings yet",
@@ -258,6 +297,8 @@ export const en: Record<string, string> = {
   "listing.quick_deploy.deploy_deal": "Deploy Deal",
 
   // Customer page
+  "customer.name": "Name",
+  "customer.title": "Customers",
   "customer.independent": "Independent",
   "customer.market_intelligence": "Market Intelligence",
   "customer.bids_count": "Bids Count",
@@ -276,6 +317,12 @@ export const en: Record<string, string> = {
   "customer.street": "Street",
   "customer.city": "City",
   "customer.country": "Country",
+
+  // DataTable column reorder (toolbar)
+  "datatable.column_order": "Column order",
+  "datatable.select_column": "Select column",
+  "datatable.move_column_up": "Move column up",
+  "datatable.move_column_down": "Move column down",
 
   // Moderation
   "moderation.just_now": "just now",
@@ -343,4 +390,8 @@ export const en: Record<string, string> = {
   "report.analytics": "Analytics",
   "report.sales": "Sales Reports",
   "report.inventory": "Inventory Reports",
+  "report.sales_overview": "Sales overview",
+  "report.auction_performance": "Auction performance",
+  "report.customer_insights": "Customer insights",
+  "report.group_buying_analytics": "Group buying analytics",
 };

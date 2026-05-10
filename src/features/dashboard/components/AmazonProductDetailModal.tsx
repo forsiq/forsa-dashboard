@@ -71,7 +71,11 @@ export function AmazonProductDetailModal({
         images,
         brand: product.brand || '',
         sku: product.asin,
-        specifications: product.specifications || {},
+        metadata: {
+          ...(product.specifications || {}),
+          source: 'amazon',
+          asin: product.asin,
+        },
       };
 
       const result = await createMutation.mutateAsync(payload);

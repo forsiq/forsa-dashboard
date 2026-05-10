@@ -18,6 +18,7 @@ import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
 import { FormSection } from '@core/components/FormSection';
 import { useFormUX } from '@core/hooks/useFormUX';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
@@ -26,6 +27,7 @@ import type { FormFieldConfig } from '@core/services/types';
 
 export const ListingFormPage: React.FC = () => {
   const { t, dir } = useLanguage();
+  const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
   const isEdit = !!id;
@@ -202,7 +204,7 @@ export const ListingFormPage: React.FC = () => {
       markClean();
       router.push('/listings');
     } catch (err: any) {
-      setSubmitError(err?.message || t('common.error_occurred') || 'Submission failed');
+      setSubmitError(mapApiError(err) || err?.message || t('common.error_occurred') || 'Submission failed');
     }
   };
 
@@ -222,7 +224,7 @@ export const ListingFormPage: React.FC = () => {
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium">{submitError}</p>
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
           <button onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>

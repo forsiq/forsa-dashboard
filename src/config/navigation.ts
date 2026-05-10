@@ -1,6 +1,6 @@
 /**
  * Navigation types and icon resolution for the sidebar.
- * Menu structure lives in `src/services/general/sidebar.ts`.
+ * Menu structure lives in `src/config/sidebar/*.ts` (per topbar module).
  */
 
 import * as Icons from 'lucide-react';

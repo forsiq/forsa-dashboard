@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * App-specific sidebar (not the generic core-ui sidebar): Next.js routing, `getActiveSidebarItemPath`
+ * for query-aware links, `useFeatureConfig` gating, and portal exit. Prefer extending this file over
+ * patching `node_modules/@yousef2001/core-ui` so upgrades stay predictable.
+ */
+
 import React, { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,7 +14,7 @@ import { AmberLogo } from '@yousef2001/core-ui/components';
 import { useFeatureConfig, useLanguage, useNavigation } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
 import { resolveIcon } from '@config/navigation';
-import { getLongestMatchingNavPath } from '@core/utils/isNavItemActive';
+import { getActiveSidebarItemPath, getNavPathBase } from '@core/utils/isNavItemActive';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
@@ -80,6 +86,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
   }, [router.pathname, menuSections, sidebarView, enabledFeatures, isPortal, sidebarLoader]);
 
   const getFeatureForPath = (path: string): string | null => {
+    const base = getNavPathBase(path);
     const featureMap: Record<string, string> = {
       '/auctions': 'auctions',
       '/bidding': 'bidding',
@@ -96,7 +103,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
       '/watchlist': 'auctions',
     };
     for (const [prefix, feature] of Object.entries(featureMap)) {
-      if (path === prefix || path.startsWith(`${prefix}/`)) return feature;
+      if (base === prefix || base.startsWith(`${prefix}/`)) return feature;
     }
     return null;
   };
@@ -135,7 +142,10 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
   }
 
   const allPaths = filteredSections.flatMap(s => s.items.map(i => i.path));
-  const activePath = getLongestMatchingNavPath(router.pathname, allPaths);
+  const activePath =
+    router.isReady && allPaths.length > 0
+      ? getActiveSidebarItemPath(router.pathname, router.query, allPaths)
+      : null;
 
   return (
     <aside

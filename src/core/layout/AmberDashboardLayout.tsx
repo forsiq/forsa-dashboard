@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Forsa fork of the Amber shell layout: same UX as `@yousef2001/core-ui` dashboard layout
+ * but uses `ForsaSidebar` (Next.js `Link`, longest-prefix active state, feature flags, exit-to-portal).
+ * Path alias `@core/layout/*` points here intentionally — keep in sync with core-ui when upgrading the package.
+ */
+
 import React, { useCallback, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/router';
 import { AmberTopbar } from '@yousef2001/core-ui/layout/components/Topbar';

@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tan
 import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import { useErrorHandler } from '@core/hooks';
+import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import Cookies from 'js-cookie';
 import { auctionApi, bidApi, liveMonitorApi, settlementApi, moderationApi } from './auction-api';
 import type {
@@ -164,6 +165,7 @@ export function useGetMyBids(page = 1, limit = 20) {
 export function useCreateAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (input: AuctionCreateInput) => auctionApi.create(input),
@@ -173,7 +175,8 @@ export function useCreateAuction() {
       toast.success('Auction created successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to create auction: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to create auction: ${detail}`, 8000);
     },
   });
 }
@@ -184,6 +187,7 @@ export function useCreateAuction() {
 export function useUpdateAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (input: AuctionUpdateInput) => auctionApi.update(Number(input.id), input),
@@ -194,7 +198,8 @@ export function useUpdateAuction() {
       toast.success('Auction updated successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to update auction: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to update auction: ${detail}`, 8000);
     },
   });
 }
@@ -205,6 +210,7 @@ export function useUpdateAuction() {
 export function useDeleteAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number) => auctionApi.delete(id),
@@ -214,7 +220,8 @@ export function useDeleteAuction() {
       toast.success('Auction deleted successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to delete auction: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to delete auction: ${detail}`, 8000);
     },
   });
 }
@@ -225,6 +232,7 @@ export function useDeleteAuction() {
 export function usePlaceBid() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (input: BidCreateInput & { auctionId: number }) => 
@@ -235,7 +243,8 @@ export function usePlaceBid() {
       toast.success('Bid placed successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to place bid: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to place bid: ${detail}`, 8000);
     },
   });
 }
@@ -246,6 +255,7 @@ export function usePlaceBid() {
 export function useToggleWatch() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ auctionId, isLiked }: { auctionId: number, isLiked: boolean }) => 
@@ -256,7 +266,8 @@ export function useToggleWatch() {
       toast.success(variables.isLiked ? 'Removed from watchlist' : 'Added to watchlist');
     },
     onError: (error: any) => {
-      toast.error(`Failed to update watchlist: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to update watchlist: ${detail}`, 8000);
     },
   });
 }
@@ -310,6 +321,7 @@ function createLifecycleHook(
   return function useLifecycleAction() {
     const queryClient = useQueryClient();
     const toast = useToast();
+    const mapApiError = useMapApiValidationError();
 
     return useMutation({
       mutationFn: (id: number | string) => action(id),
@@ -320,7 +332,8 @@ function createLifecycleHook(
         toast.success(successMessage);
       },
       onError: (error: any) => {
-        toast.error(`${errorMessage}: ${error.message || 'Unknown error'}`, 8000);
+        const detail = mapApiError(error) || error?.message || 'Unknown error';
+        toast.error(`${errorMessage}: ${detail}`, 8000);
       },
     });
   };
@@ -407,6 +420,7 @@ export function useTickerHistory(limit = 100) {
 export function useExtendAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, minutes }: { id: number | string; minutes?: number }) =>
@@ -419,7 +433,8 @@ export function useExtendAuction() {
       toast.success('Auction extended successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to extend auction: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to extend auction: ${detail}`, 8000);
     },
   });
 }
@@ -427,6 +442,7 @@ export function useExtendAuction() {
 export function useRescheduleAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, endTime }: { id: number | string; endTime: string }) =>
@@ -440,7 +456,8 @@ export function useRescheduleAuction() {
       toast.success('Auction rescheduled successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to reschedule auction: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to reschedule auction: ${detail}`, 8000);
     },
   });
 }
@@ -465,6 +482,7 @@ export function useSettlements(filters?: { status?: string; page?: number; limit
 export function useUpdatePaymentStatus() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: ({ id, paymentStatus }: { id: number | string; paymentStatus: string }) =>
@@ -474,13 +492,15 @@ export function useUpdatePaymentStatus() {
       toast.success('Payment status updated');
     },
     onError: (error: any) => {
-      toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to update payment status: ${detail}`, 8000);
     },
   });
 }
 
 export function useNudgeWinner() {
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.nudgeWinner(id),
@@ -492,13 +512,15 @@ export function useNudgeWinner() {
       }
     },
     onError: (error: any) => {
-      toast.error(`Failed to nudge winner: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to nudge winner: ${detail}`, 8000);
     },
   });
 }
 
 export function useOfferToUnderbidder() {
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.offerToUnderbidder(id),
@@ -510,7 +532,8 @@ export function useOfferToUnderbidder() {
       }
     },
     onError: (error: any) => {
-      toast.error(`Failed to offer to underbidder: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to offer to underbidder: ${detail}`, 8000);
     },
   });
 }
@@ -583,6 +606,7 @@ export function useAllBids(filters?: {
 export function useVoidBid() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (bidId: number | string) => moderationApi.voidBid(bidId),
@@ -593,7 +617,8 @@ export function useVoidBid() {
       toast.success('Bid voided successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to void bid: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to void bid: ${detail}`, 8000);
     },
   });
 }
@@ -601,6 +626,7 @@ export function useVoidBid() {
 export function useSuspendUser() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.suspendUser(userId),
@@ -609,13 +635,15 @@ export function useSuspendUser() {
       toast.success('User suspended successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to suspend user: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to suspend user: ${detail}`, 8000);
     },
   });
 }
 
 export function useUnsuspendUser() {
   const toast = useToast();
+  const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.unsuspendUser(userId),
@@ -623,7 +651,8 @@ export function useUnsuspendUser() {
       toast.success('User unsuspended successfully');
     },
     onError: (error: any) => {
-      toast.error(`Failed to unsuspend user: ${error.message || 'Unknown error'}`, 8000);
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to unsuspend user: ${detail}`, 8000);
     },
   });
 }
