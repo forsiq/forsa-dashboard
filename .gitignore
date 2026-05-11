@@ -43,3 +43,6 @@ next-env.d.ts
 .npm/
 image-review.html
 auction2.code-workspace
+
+# Sentry Config File
+.env.sentry-build-plugin
