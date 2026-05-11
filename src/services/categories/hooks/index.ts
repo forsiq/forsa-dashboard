@@ -64,6 +64,26 @@ export const useDelete = (options?: any) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: api.categoryKeys.all });
+      const previousData = queryClient.getQueriesData<CategoriesResponse>({ queryKey: api.categoryKeys.all });
+      queryClient.setQueriesData<CategoriesResponse>({ queryKey: api.categoryKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          categories: old.categories.filter((cat) => String(cat.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err: any, _id: any, context: any) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]: [any, any]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });

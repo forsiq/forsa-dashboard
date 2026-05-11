@@ -214,14 +214,33 @@ export function useDeleteAuction() {
 
   return useMutation({
     mutationFn: (id: number) => auctionApi.delete(id),
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: auctionKeys.lists() });
+      const previousData = queryClient.getQueriesData<AuctionsResponse>({ queryKey: auctionKeys.lists() });
+      queryClient.setQueriesData<AuctionsResponse>({ queryKey: auctionKeys.lists() }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((auction) => auction.id !== id),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (error: any, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to delete auction: ${detail}`, 8000);
+    },
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: auctionKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
       toast.success('Auction deleted successfully');
-    },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to delete auction: ${detail}`, 8000);
     },
   });
 }

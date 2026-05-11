@@ -65,6 +65,26 @@ export const useDeleteUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => userApi.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: userKeys.lists() });
+      const previousData = queryClient.getQueriesData<UsersResponse>({ queryKey: userKeys.lists() });
+      queryClient.setQueriesData<UsersResponse>({ queryKey: userKeys.lists() }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          users: old.users.filter((user) => String(user.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
       queryClient.invalidateQueries({ queryKey: userKeys.stats() });

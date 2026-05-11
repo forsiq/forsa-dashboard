@@ -61,6 +61,26 @@ export const useDeleteCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteCustomer(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: api.customerKeys.all });
+      const previousData = queryClient.getQueriesData<CustomersResponse>({ queryKey: api.customerKeys.all });
+      queryClient.setQueriesData<CustomersResponse>({ queryKey: api.customerKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          customers: old.customers.filter((customer) => String(customer.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
     },

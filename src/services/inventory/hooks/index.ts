@@ -53,6 +53,26 @@ export const useDelete = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteProduct(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: api.inventoryKeys.all });
+      const previousData = queryClient.getQueriesData<ProductsResponse>({ queryKey: api.inventoryKeys.all });
+      queryClient.setQueriesData<ProductsResponse>({ queryKey: api.inventoryKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((product) => String(product.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
     },

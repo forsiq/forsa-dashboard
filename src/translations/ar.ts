@@ -34,6 +34,8 @@ export const ar: Record<string, string> = {
   "groupBuying.participants_count": "مشاركين",
   "groupBuying.favorites": "المفضلة",
   "groupBuying.views": "المشاهدات",
+  "groupBuying.time_status.label": "حالة الوقت",
+  "groupBuying.time_status.active": "نشط",
 
   // Register Form
   "auth.register.password_mismatch_inline": "كلمات المرور غير متطابقة",

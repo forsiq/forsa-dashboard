@@ -8,7 +8,8 @@ import type {
   GroupBuying, 
   GroupBuyingCreateInput, 
   GroupBuyingUpdateInput, 
-  GroupBuyingFilters 
+  GroupBuyingFilters,
+  GroupBuyingsResponse,
 } from '../types';
 
 export const groupBuyingKeys = {
@@ -78,6 +79,26 @@ export const useDeleteGroupBuying = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => groupBuyingApi.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: groupBuyingKeys.lists() });
+      const previousData = queryClient.getQueriesData<GroupBuyingsResponse>({ queryKey: groupBuyingKeys.lists() });
+      queryClient.setQueriesData<GroupBuyingsResponse>({ queryKey: groupBuyingKeys.lists() }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          groupBuyings: old.groupBuyings.filter((gb) => String(gb.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupBuyingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: groupBuyingKeys.stats() });

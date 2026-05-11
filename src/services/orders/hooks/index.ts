@@ -53,6 +53,26 @@ export const useDelete = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.deleteOrder(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: api.orderKeys.all });
+      const previousData = queryClient.getQueriesData<OrdersResponse>({ queryKey: api.orderKeys.all });
+      queryClient.setQueriesData<OrdersResponse>({ queryKey: api.orderKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((order) => String(order.id) !== String(id)),
+          total: Math.max(0, old.total - 1),
+        };
+      });
+      return { previousData };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
     },

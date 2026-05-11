@@ -116,13 +116,31 @@ export function useDeleteListing() {
 
   return useMutation({
     mutationFn: (id: number) => listingApi.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: listingKeys.lists() });
+      const previousData = queryClient.getQueriesData<ListingsResponse>({ queryKey: listingKeys.lists() });
+      queryClient.setQueriesData<ListingsResponse>({ queryKey: listingKeys.lists() }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((listing) => listing.id !== id),
+          pagination: { ...old.pagination, total: Math.max(0, old.pagination.total - 1) },
+        };
+      });
+      return { previousData };
+    },
+    onError: (error: any, _id, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+      }
+      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      toast.error(`Failed to delete listing: ${detail}`, 8000);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
       toast.success('Listing deleted successfully');
-    },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to delete listing: ${detail}`, 8000);
     },
   });
 }

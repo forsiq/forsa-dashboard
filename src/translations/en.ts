@@ -34,6 +34,8 @@ export const en: Record<string, string> = {
   "groupBuying.participants_count": "Participants",
   "groupBuying.favorites": "Favorites",
   "groupBuying.views": "Views",
+  "groupBuying.time_status.label": "Time Status",
+  "groupBuying.time_status.active": "Active",
 
   // Register Form
   "auth.register.password_mismatch_inline": "Passwords do not match",
