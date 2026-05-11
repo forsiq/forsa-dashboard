@@ -40,8 +40,38 @@ export function isValidImageUrl(url: string): boolean {
   }
 }
 
-export function filterImageUrls(urls: (string | null | undefined)[]): string[] {
-  return urls.filter((u): u is string => typeof u === 'string' && isValidImageUrl(u));
+/** Coerce API `images` field (array | JSON string | record | null) into a flat list of candidates. */
+export function normalizeImageUrlList(images: unknown): (string | null | undefined)[] {
+  if (images == null) return [];
+  if (Array.isArray(images)) return images;
+  if (typeof images === 'string') {
+    const s = images.trim();
+    if (!s) return [];
+    try {
+      const parsed = JSON.parse(s) as unknown;
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === 'string') return [parsed];
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return Object.values(parsed as Record<string, unknown>).filter(
+          (v): v is string => typeof v === 'string',
+        );
+      }
+    } catch {
+      return [images];
+    }
+    return [images];
+  }
+  if (typeof images === 'object') {
+    return Object.values(images as Record<string, unknown>).filter(
+      (v): v is string => typeof v === 'string',
+    );
+  }
+  return [];
+}
+
+export function filterImageUrls(urls: unknown): string[] {
+  const list = normalizeImageUrlList(urls);
+  return list.filter((u): u is string => typeof u === 'string' && isValidImageUrl(u));
 }
 
 function getApiOrigin(): string {
@@ -104,14 +134,15 @@ export function getAuctionImageUrl(auction: {
   imageUrl?: string | null;
   mainAttachmentId?: number | null;
   attachmentIds?: string | string[] | null;
-  images?: string[] | null;
+  images?: string[] | Record<string, string> | string | null;
 }): string | null {
   if (auction.imageUrl && isValidImageUrl(auction.imageUrl)) {
     return auction.imageUrl;
   }
 
-  if (auction.images && auction.images.length > 0) {
-    const valid = filterImageUrls(auction.images);
+  const imageCandidates = normalizeImageUrlList(auction.images);
+  if (imageCandidates.length > 0) {
+    const valid = filterImageUrls(imageCandidates);
     if (valid.length > 0) return valid[0];
   }
 
@@ -133,7 +164,7 @@ export function getAuctionImageUrls(auction: {
   imageUrl?: string | null;
   mainAttachmentId?: number | null;
   attachmentIds?: string | string[] | null;
-  images?: string[] | null;
+  images?: string[] | Record<string, string> | string | null;
 }): string[] {
   const urls: string[] = [];
 
@@ -141,8 +172,9 @@ export function getAuctionImageUrls(auction: {
     urls.push(auction.imageUrl);
   }
 
-  if (auction.images && auction.images.length > 0) {
-    urls.push(...filterImageUrls(auction.images));
+  const imageCandidates = normalizeImageUrlList(auction.images);
+  if (imageCandidates.length > 0) {
+    urls.push(...filterImageUrls(imageCandidates));
   }
 
   const ids = parseAttachmentIds(auction.attachmentIds);

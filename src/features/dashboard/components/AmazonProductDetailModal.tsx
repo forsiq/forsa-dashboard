@@ -75,6 +75,7 @@ export function AmazonProductDetailModal({
           ...(product.specifications || {}),
           source: 'amazon',
           asin: product.asin,
+          originalImageUrls: images,
         },
       };
 

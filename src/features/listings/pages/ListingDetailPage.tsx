@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -20,6 +20,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing } from '../api/listing-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { getListingImageGalleryUrls } from '../utils/listing-media';
 
 export const ListingDetailPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -38,6 +39,11 @@ export const ListingDetailPage: React.FC = () => {
 
   const auctions = auctionsData || [];
   const deals = dealsData || [];
+
+  const listingGalleryUrls = useMemo(() => {
+    if (!listing) return [];
+    return getListingImageGalleryUrls(listing);
+  }, [listing]);
 
   if (!isClient || isLoading) return null;
 
@@ -113,10 +119,10 @@ export const ListingDetailPage: React.FC = () => {
               </div>
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.media')}</h3>
             </div>
-            {listing.images?.length > 0 ? (
+            {listingGalleryUrls.length > 0 ? (
               <div className="grid grid-cols-2 gap-2">
-                {listing.images.map((img, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-white/5">
+                {listingGalleryUrls.map((img, idx) => (
+                  <div key={`${img}-${idx}`} className="aspect-square rounded-lg overflow-hidden border border-white/5">
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}

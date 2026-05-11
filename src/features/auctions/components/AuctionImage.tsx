@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Gavel } from 'lucide-react';
-import { getAuctionImageUrl, parseAttachmentIds, isValidImageUrl } from '../utils/auction-utils';
+import {
+  getAuctionImageUrl,
+  normalizeImageUrlList,
+  parseAttachmentIds,
+  isValidImageUrl,
+} from '../utils/auction-utils';
 import { createClient } from '@core/services/ApiClientFactory';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
@@ -24,7 +29,7 @@ interface AuctionImageProps {
     main_attachment_id?: number | null;
     attachmentIds?: string | string[] | null;
     attachment_ids?: string | string[] | null;
-    images?: string[] | null;
+    images?: string[] | Record<string, string> | string | null;
   };
   alt?: string;
   className?: string;
@@ -88,7 +93,7 @@ async function resolveAttachmentFileUrl(attachmentId: number): Promise<string | 
   const apiClient = createClient(PROJECT_API_URL);
   
   try {
-    const response = await apiClient.get(`/project/project/attachment/${attachmentId}/`);
+    const response = await apiClient.get(`/project/attachment/${attachmentId}/`);
     const payload = response.data;
     const fileUrl = payload?.file_url || payload?.data?.file_url || null;
     
@@ -159,7 +164,7 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
       const directUrl = getAuctionImageUrl(normalizedAuction);
       const hasDirectUrl =
         Boolean(normalizedAuction.imageUrl) ||
-        Boolean(normalizedAuction.images && normalizedAuction.images.length > 0);
+        normalizeImageUrlList(normalizedAuction.images).length > 0;
 
       if (hasDirectUrl && directUrl) {
         if (!isValidImageUrl(directUrl)) {

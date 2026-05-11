@@ -29,6 +29,7 @@ import {
 import { useGetListing, useDeployAsAuction, useDeployAsGroupBuy } from '../api/listing-hooks';
 import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
 import { deployAuctionFormSchema, deployGroupBuyFormSchema } from '../validation/deployListingSchemas';
+import { getListingPrimaryImageUrl } from '../utils/listing-media';
 
 type DeployType = 'auction' | 'group_buy' | null;
 
@@ -180,6 +181,8 @@ export const DeployListingPage: React.FC = () => {
     );
   }
 
+  const listingCoverUrl = getListingPrimaryImageUrl(listing);
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
       {/* Error Banner */}
@@ -213,8 +216,8 @@ export const DeployListingPage: React.FC = () => {
       {/* Listing Summary */}
       <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-center gap-4">
         <div className="w-12 h-12 rounded-lg bg-obsidian-outer border border-white/5 flex items-center justify-center overflow-hidden shrink-0">
-          {listing.images?.[0] ? (
-            <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+          {listingCoverUrl ? (
+            <img src={listingCoverUrl} alt="" className="w-full h-full object-cover" />
           ) : (
             <Package className="w-6 h-6 text-zinc-muted/40" />
           )}

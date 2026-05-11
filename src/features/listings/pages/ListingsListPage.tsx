@@ -28,6 +28,7 @@ import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import type { ProductListing } from '../../../types/services/listings.types';
+import { getListingPrimaryImageUrl } from '../utils/listing-media';
 
 export const ListingsListPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -89,11 +90,13 @@ export const ListingsListPage: React.FC = () => {
       key: 'title',
       label: t('listing.table.title') || 'Title',
       cardTitle: true,
-      render: (listing) => (
+      render: (listing) => {
+        const thumb = getListingPrimaryImageUrl(listing);
+        return (
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
-            {listing.images?.[0] ? (
-              <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
+            {thumb ? (
+              <img src={thumb} alt={listing.title} className="w-full h-full object-cover" />
             ) : (
               <Package className="w-5 h-5 text-zinc-muted/40" />
             )}
@@ -105,7 +108,8 @@ export const ListingsListPage: React.FC = () => {
             </p>
           </div>
         </div>
-      ),
+        );
+      },
       sortable: true,
     },
     {
