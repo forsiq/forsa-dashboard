@@ -25,7 +25,7 @@ export const groupBuyingKeys = {
 export const useGetGroupBuyings = (filters: GroupBuyingFilters = {}) => {
   return useQuery({
     queryKey: groupBuyingKeys.list(filters),
-    queryFn: () => groupBuyingApi.list(filters),
+    queryFn: ({ signal }) => groupBuyingApi.list(filters, signal),
   });
 };
 
@@ -80,14 +80,14 @@ export const useDeleteGroupBuying = () => {
   return useMutation({
     mutationFn: (id: string) => groupBuyingApi.delete(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: groupBuyingKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: groupBuyingKeys.all });
       const previousData = queryClient.getQueriesData<GroupBuyingsResponse>({ queryKey: groupBuyingKeys.lists() });
       queryClient.setQueriesData<GroupBuyingsResponse>({ queryKey: groupBuyingKeys.lists() }, (old) => {
-        if (!old) return old;
+        if (!old || !Array.isArray(old.groupBuyings)) return old;
         return {
           ...old,
           groupBuyings: old.groupBuyings.filter((gb) => String(gb.id) !== String(id)),
-          total: Math.max(0, old.total - 1),
+          total: Math.max(0, (old.total ?? old.groupBuyings.length) - 1),
         };
       });
       return { previousData };
@@ -99,9 +99,18 @@ export const useDeleteGroupBuying = () => {
         });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupBuyingKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: groupBuyingKeys.stats() });
+    onSuccess: async (_void, id) => {
+      queryClient.removeQueries({ queryKey: groupBuyingKeys.detail(String(id)) });
+      queryClient.setQueriesData<GroupBuyingsResponse>({ queryKey: groupBuyingKeys.lists() }, (old) => {
+        if (!old || !Array.isArray(old.groupBuyings)) return old;
+        return {
+          ...old,
+          groupBuyings: old.groupBuyings.filter((gb) => String(gb.id) !== String(id)),
+          total: Math.max(0, (old.total ?? old.groupBuyings.length) - 1),
+        };
+      });
+      await queryClient.invalidateQueries({ queryKey: groupBuyingKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: groupBuyingKeys.stats() });
     },
   });
 };

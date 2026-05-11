@@ -16,6 +16,7 @@ const BADGE_BY_BASE_PATH: Partial<
   marketplace: {
     '/auctions': 'activeAuctions',
     '/listings': 'totalListings',
+    '/group-buying': 'totalGroupBuyings',
   },
   sales: {
     '/orders': 'pendingOrders',

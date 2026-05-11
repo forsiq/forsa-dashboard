@@ -28,6 +28,7 @@ import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { StatValue } from '@core/components/Data/StatValue';
 import { useList, useStats } from '../hooks';
 
 /**
@@ -185,7 +186,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
                       {t('inventory.global_units') || 'Global Inventory Units'}
                     </span>
-                    <h3 className="text-3xl font-black text-zinc-text tracking-tighter tabular-nums">{products.length}</h3>
+                    <StatValue value={products.length} />
                 </div>
                 <div className="p-3 bg-brand/10 text-brand rounded-xl border border-brand/20">
                     <Package className="w-5 h-5" />
@@ -203,7 +204,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <span className="text-[10px] font-black text-danger uppercase tracking-widest">
                       {t('inventory.critical_alert') || 'Critical Supply Alert'}
                     </span>
-                    <h3 className="text-3xl font-black text-danger tracking-tighter tabular-nums">{lowStockItems.length}</h3>
+                    <StatValue value={lowStockItems.length} className="!text-danger" />
                 </div>
                 <div className="p-3 bg-danger/10 text-danger rounded-xl border border-danger/20">
                     <AlertCircle className="w-5 h-5" />
@@ -219,7 +220,7 @@ export const InventoryOverviewPage: React.FC = () => {
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
                     <span className="text-[10px] font-black text-info uppercase tracking-widest">{t('inventory.activeLogisticsNodes')}</span>
-                    <h3 className="text-3xl font-black text-info tracking-tighter tabular-nums">{warehouses.length}</h3>
+                    <StatValue value={warehouses.length} className="!text-info" />
                 </div>
                 <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
                     <Warehouse className="w-5 h-5" />
@@ -234,9 +235,10 @@ export const InventoryOverviewPage: React.FC = () => {
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
                     <span className="text-[10px] font-black text-success uppercase tracking-widest">{t('inventory.aggregatedFiscalValue')}</span>
-                    <h3 className="text-3xl font-black text-success tracking-tighter tabular-nums">
-                        {formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
-                    </h3>
+                    <StatValue
+                        value={formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
+                        className="!text-success"
+                    />
                 </div>
                 <div className="p-3 bg-success/10 text-success rounded-xl border border-success/20">
                     <TrendingUp className="w-5 h-5" />

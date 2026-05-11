@@ -149,15 +149,16 @@ export const AuctionDetails: React.FC = () => {
   return (
     <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
-        <div className="flex items-center gap-4 w-full">
+      <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
+        <div className="flex min-w-0 w-full flex-1 items-center gap-4">
           <button
+            type="button"
             onClick={() => router.push('/auctions')}
-            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
+            className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
           >
             <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <StatusBadge
                 status={t(`auction.status.${auction.status.toLowerCase()}`) || auction.status}
@@ -166,12 +167,18 @@ export const AuctionDetails: React.FC = () => {
               />
               <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">#{auction.id}</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 truncate">
+            <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words lg:truncate">
               {auction.title}
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        <div
+          className={cn(
+            'flex w-full min-w-0 flex-wrap items-center gap-2',
+            isRTL ? 'justify-end' : 'justify-start',
+            'lg:ms-auto lg:w-auto lg:shrink-0 lg:flex-nowrap',
+          )}
+        >
           {/* Lifecycle Buttons */}
           {auction?.status === 'draft' || auction?.status === 'scheduled' ? (
             <AmberButton

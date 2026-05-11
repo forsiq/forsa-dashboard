@@ -5,6 +5,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberAvatar } from '@core/components/AmberAvatar';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { StatValue } from '@core/components/Data/StatValue';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import {
@@ -405,19 +406,19 @@ export function CustomerDetailPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-end">
                 <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.bids_count') || 'عدد المزايدات'}</span>
-                <span className="text-2xl font-black text-zinc-text tabular-nums leading-none">{summary?.totalBids ?? customer.totalOrders ?? 0}</span>
+                <StatValue value={summary?.totalBids ?? customer.totalOrders ?? 0} className="!text-2xl" />
               </div>
               <div className="flex justify-between items-end">
                 <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.activity_auctions') || 'المزادات'}</span>
-                <span className="text-2xl font-black text-purple-400 tabular-nums leading-none">{summary?.totalAuctions ?? 0}</span>
+                <StatValue value={summary?.totalAuctions ?? 0} className="!text-2xl !text-purple-400" />
               </div>
               <div className="flex justify-between items-end">
                 <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.activity_winning_bids') || 'مزايدات فائزة'}</span>
-                <span className="text-2xl font-black text-emerald-400 tabular-nums leading-none">{summary?.winningBids ?? 0}</span>
+                <StatValue value={summary?.winningBids ?? 0} className="!text-2xl !text-emerald-400" />
               </div>
               <div className="flex justify-between items-end">
                 <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.total_spent') || 'إجمالي الإنفاق'}</span>
-                <span className="text-2xl font-black text-[var(--color-brand)] tabular-nums leading-none">{formatCurrency(summary?.totalSpent ?? customer.totalSpent ?? 0)}</span>
+                <StatValue value={formatCurrency(summary?.totalSpent ?? customer.totalSpent ?? 0)} className="!text-2xl !text-[var(--color-brand)]" />
               </div>
             </div>
           </Card>

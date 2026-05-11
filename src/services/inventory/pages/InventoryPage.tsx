@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { StatValue } from '@core/components/Data/StatValue';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberSlideOver } from '@core/components';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
@@ -374,9 +375,7 @@ export const InventoryPage = () => {
                 {t('inventory.total_value')}
               </h3>
             </div>
-            <p className="text-3xl font-black text-success tracking-tighter tabular-nums">
-              {formatCurrency(totalValue)}
-            </p>
+            <StatValue value={formatCurrency(totalValue)} className="!text-success" />
             <p className="text-xs text-zinc-muted mt-2">
               {data.length} {t('inventory.items')}
             </p>

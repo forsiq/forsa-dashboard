@@ -3,6 +3,7 @@ import { Folder, CheckCircle2, Heart, Tag } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
+import { StatValue } from '@core/components/Data/StatValue';
 import type { CategoryStats as Stats } from '../types';
 
 // --- Types ---
@@ -34,9 +35,7 @@ function StatCard({ label, value, icon: Icon, className, iconClassName, isLoadin
           {isLoading ? (
             <div className="h-8 w-12 bg-zinc-card/50 rounded animate-pulse mt-1" />
           ) : (
-            <span className="text-3xl font-black text-zinc-text tracking-tight tabular-nums leading-none">
-              {value}
-            </span>
+            <StatValue value={value} className="!text-3xl" />
           )}
         </div>
         <div className={cn('p-3 rounded-xl flex-shrink-0', className)}>
@@ -129,9 +128,7 @@ export function CompactCategoriesStats({ stats, isLoading }: CompactCategoriesSt
           {isLoading ? (
             <div className="h-5 w-10 bg-zinc-card/50 rounded animate-pulse mt-1" />
           ) : (
-            <p className="text-xl font-black text-zinc-text tabular-nums mt-0.5">
-              {stat.value}
-            </p>
+            <StatValue value={stat.value} className="!text-xl" />
           )}
         </div>
       ))}

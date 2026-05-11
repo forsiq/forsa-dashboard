@@ -4,6 +4,7 @@
  */
 
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { getWithListFilters } from '@core/services/serviceListFetch';
 import type {
   Auction,
   AuctionsResponse,
@@ -33,8 +34,18 @@ export const auctionApi = {
   /**
    * Get paginated list of auctions
    */
-  list: async (filters?: AuctionFilters): Promise<AuctionsResponse> => {
-    const response = await auctionBaseApi.list(filters) as any;
+  list: async (filters?: AuctionFilters, signal?: AbortSignal): Promise<AuctionsResponse> => {
+    const axiosRes = await getWithListFilters(
+      auctionBaseApi.getInstance(),
+      '/auctions/',
+      filters as Record<string, unknown> | undefined,
+      signal,
+    );
+    const response = axiosRes.data as {
+      data?: Auction[];
+      total?: number;
+      pagination?: { total?: number; hasNext?: boolean };
+    };
     const page = filters?.page || 1;
     const limit = filters?.limit || 50;
     const total = response.pagination?.total || response.total || (response.data?.length || 0);

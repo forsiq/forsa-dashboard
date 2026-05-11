@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, LucideIcon } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
+import { StatValue } from '@core/components/Data/StatValue';
 import { cn } from '@core/lib/utils/cn';
 
 interface ReportStatsCardProps {
@@ -36,9 +37,7 @@ export const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
           <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1">
             {label}
           </span>
-          <span className="text-2xl font-black text-zinc-text tracking-tight tabular-nums leading-tight">
-            {value}
-          </span>
+          <StatValue value={value} className="!text-2xl" />
           {change !== undefined && (
             <div className="mt-2 flex items-center gap-1">
               {isPositive ? (

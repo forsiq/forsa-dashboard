@@ -81,7 +81,7 @@ export const auctionKeys = {
 export function useGetAuctions(filters: AuctionFilters = {}): UseQueryResult<AuctionsResponse> {
   const query = useQuery({
     queryKey: auctionKeys.list(filters),
-    queryFn: () => auctionApi.list(filters),
+    queryFn: ({ signal }) => auctionApi.list(filters, signal),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -215,14 +215,14 @@ export function useDeleteAuction() {
   return useMutation({
     mutationFn: (id: number) => auctionApi.delete(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: auctionKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: auctionKeys.all });
       const previousData = queryClient.getQueriesData<AuctionsResponse>({ queryKey: auctionKeys.lists() });
       queryClient.setQueriesData<AuctionsResponse>({ queryKey: auctionKeys.lists() }, (old) => {
-        if (!old) return old;
+        if (!old || !Array.isArray(old.data)) return old;
         return {
           ...old,
           data: old.data.filter((auction) => auction.id !== id),
-          total: Math.max(0, old.total - 1),
+          total: Math.max(0, (old.total ?? old.data.length) - 1),
         };
       });
       return { previousData };
@@ -236,10 +236,18 @@ export function useDeleteAuction() {
       const detail = mapApiError(error) || error?.message || 'Unknown error';
       toast.error(`Failed to delete auction: ${detail}`, 8000);
     },
-    onSuccess: (_data, id) => {
+    onSuccess: async (_data, id) => {
       queryClient.removeQueries({ queryKey: auctionKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
+      queryClient.setQueriesData<AuctionsResponse>({ queryKey: auctionKeys.lists() }, (old) => {
+        if (!old || !Array.isArray(old.data)) return old;
+        return {
+          ...old,
+          data: old.data.filter((auction) => auction.id !== id),
+          total: Math.max(0, (old.total ?? old.data.length) - 1),
+        };
+      });
+      await queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
       toast.success('Auction deleted successfully');
     },
   });

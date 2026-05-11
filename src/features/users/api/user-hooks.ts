@@ -18,7 +18,7 @@ export const userKeys = {
 export const useGetUsers = (filters: UserFilters = {}) => {
   return useQuery<UsersResponse>({
     queryKey: userKeys.list(filters),
-    queryFn: () => userApi.list(filters),
+    queryFn: ({ signal }) => userApi.list(filters, signal),
   });
 };
 
@@ -66,14 +66,14 @@ export const useDeleteUser = () => {
   return useMutation({
     mutationFn: (id: string) => userApi.delete(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: userKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: userKeys.all });
       const previousData = queryClient.getQueriesData<UsersResponse>({ queryKey: userKeys.lists() });
       queryClient.setQueriesData<UsersResponse>({ queryKey: userKeys.lists() }, (old) => {
-        if (!old) return old;
+        if (!old || !Array.isArray(old.users)) return old;
         return {
           ...old,
           users: old.users.filter((user) => String(user.id) !== String(id)),
-          total: Math.max(0, old.total - 1),
+          total: Math.max(0, (old.total ?? old.users.length) - 1),
         };
       });
       return { previousData };
@@ -85,9 +85,18 @@ export const useDeleteUser = () => {
         });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: userKeys.stats() });
+    onSuccess: async (_void, id) => {
+      queryClient.removeQueries({ queryKey: userKeys.detail(String(id)) });
+      queryClient.setQueriesData<UsersResponse>({ queryKey: userKeys.lists() }, (old) => {
+        if (!old || !Array.isArray(old.users)) return old;
+        return {
+          ...old,
+          users: old.users.filter((user) => String(user.id) !== String(id)),
+          total: Math.max(0, (old.total ?? old.users.length) - 1),
+        };
+      });
+      await queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: userKeys.stats() });
     },
   });
 };

@@ -31,6 +31,7 @@ import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useToast } from '@core/contexts/ToastContext';
 import { DataTable, Column, Action, BulkAction } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import {
   useGetAuctions,
@@ -307,12 +308,12 @@ export const AuctionsList: React.FC = () => {
         label: t('auction.table.identification') || 'Auction',
         cardTitle: true,
         render: (auction) => (
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
               <AuctionImage auction={auction} alt={auction.title} fallbackClassName="w-full h-full object-cover" />
             </div>
-            <div>
-              <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{auction.title}</p>
+            <div className="min-w-0">
+              <DataTableEntityTitle text={auction.title} />
               <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
             </div>
           </div>

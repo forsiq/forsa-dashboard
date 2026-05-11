@@ -36,6 +36,15 @@ export const en: Record<string, string> = {
   "groupBuying.views": "Views",
   "groupBuying.time_status.label": "Time Status",
   "groupBuying.time_status.active": "Active",
+  "groupBuying.end_time": "End time",
+  "groupBuying.engagement": "Engagement",
+  "groupBuying.form.auto_create_order": "Create order automatically",
+  "groupBuying.form.auto_create_order_desc":
+    "When the deal completes, create an order without manual selection.",
+  "groupBuying.form.manual_select": "Manual selection",
+  "group_buying.title": "Title",
+  "group_buying.deal_price": "Deal price",
+  "group_buying.min_participants": "Min participants",
 
   // Register Form
   "auth.register.password_mismatch_inline": "Passwords do not match",
@@ -61,6 +70,20 @@ export const en: Record<string, string> = {
   "common.all_protocols": "All",
   "common.all": "All",
   "common.apply": "Apply",
+  "common.image_upload_hint": "PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.",
+  "common.authenticity_copy": "Replica / copy",
+  "common.authenticity_high_copy": "High-quality replica",
+  "common.authenticity_original": "Original / authentic",
+  "common.color": "Color",
+  "common.coming_soon": "Coming soon",
+  "common.condition_new": "New",
+  "common.condition_open_box": "Open box",
+  "common.condition_refurbished": "Refurbished",
+  "common.condition_used": "Used",
+  "common.error_occurred": "Something went wrong",
+  "common.manufacturer": "Manufacturer",
+  "common.origin": "Country of origin",
+  "common.warranty": "Warranty",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "Duration",
@@ -72,6 +95,24 @@ export const en: Record<string, string> = {
   "auction.detail.start_price": "Start Price",
   "auction.detail.specifications": "Specifications",
   "auction.detail.sources": "Sources & References",
+
+  "auction.form.section.sources": "Sources & references",
+  "auction.form.section.specs": "Specifications",
+  "auction.form.add_source": "Add source",
+  "auction.form.add_spec": "Add specification",
+  "auction.form.no_sources": "No sources added",
+  "auction.form.no_specs": "No specifications added",
+  "auction.form.source_label": "Label",
+  "auction.form.source_url": "URL",
+  "auction.form.spec_label": "Specification",
+  "auction.form.spec_value": "Value",
+
+  "auction.sheet.bid_again": "Bid again",
+  "auction.sheet.current_bid": "Current bid",
+  "auction.sheet.time_left": "Time left",
+  "auction.sheet.view_auction": "View auction",
+  "auction.sheet.your_bid": "Your bid",
+  "auction.sheet.your_status": "Your status",
 
   // Auction Tabs
   "auction.tabs.all": "All",
@@ -319,6 +360,22 @@ export const en: Record<string, string> = {
   "customer.street": "Street",
   "customer.city": "City",
   "customer.country": "Country",
+  "customer.activity_auctions": "Auctions",
+  "customer.activity_total_bids": "Total bids",
+  "customer.activity_total_spent": "Total spent",
+  "customer.activity_win_rate": "Win rate",
+  "customer.activity_winning_bids": "Winning bids",
+  "customer.bid_amount": "Amount",
+  "customer.bid_auction": "Auction",
+  "customer.bid_date": "Date",
+  "customer.bid_status": "Status",
+  "customer.bid_status_active": "Active",
+  "customer.bid_status_cancelled": "Cancelled",
+  "customer.bid_status_outbid": "Outbid",
+  "customer.bid_status_winning": "Winning",
+  "customer.no_bids_yet": "No bids yet",
+  "customer.recent_bids": "Recent bids",
+  "customer.showing_latest": "Showing latest",
 
   // DataTable column reorder (toolbar)
   "datatable.column_order": "Column order",
@@ -423,4 +480,7 @@ export const en: Record<string, string> = {
   "category.delete_confirm": "Are you sure you want to delete this category?",
   "category.deactivate": "Deactivate",
   "category.activate": "Activate",
+
+  // Auction category slugs (DataTable / charts when API returns English `name` only)
+  "auction.category.computers": "Computers",
 };

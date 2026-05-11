@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, Users, Zap, Clock } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
+import { StatValue } from '@core/components/Data/StatValue';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
@@ -56,14 +57,13 @@ export const LiveStatsBar: React.FC<LiveStatsBarProps> = ({
                 {t(labelKeys[item.key])}
               </p>
               <div className="flex items-center justify-between">
-                <p
+                <StatValue
+                  value={isLoading ? '--' : value.toLocaleString()}
                   className={cn(
-                    'text-2xl font-bold tracking-tight',
+                    '!text-2xl !font-bold',
                     isLoading ? 'text-zinc-muted/40' : 'text-zinc-text',
                   )}
-                >
-                  {isLoading ? '--' : value.toLocaleString()}
-                </p>
+                />
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 shadow-inner">
                   <Icon className={cn('w-5 h-5', item.color)} />
                 </div>

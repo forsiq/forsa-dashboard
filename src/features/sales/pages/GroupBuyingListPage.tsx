@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -7,7 +7,6 @@ import {
   SlidersHorizontal,
   TrendingUp,
   Clock,
-  DollarSign,
   Eye,
   Edit,
   Trash2,
@@ -18,9 +17,6 @@ import {
   Play,
   XCircle,
   CheckCheck,
-  Timer,
-  CalendarClock,
-  Ban,
   Heart,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -33,6 +29,7 @@ import { AmberSlideOver } from '@core/components';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import {
   useGetGroupBuyings,
@@ -104,26 +101,21 @@ export const GroupBuyingListPage: React.FC = () => {
     return t(key) || status;
   };
 
-  const getTimeStatus = useCallback((campaign: GroupBuying): { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'inactive' | 'cancelled' | 'pending'; icon: React.ReactNode } => {
-    if (campaign.status === 'cancelled') {
-      return { label: t('groupBuying.time_status.cancelled') || 'ملغي', variant: 'cancelled', icon: <Ban className="w-3 h-3" /> };
-    }
-    if (campaign.status === 'completed') {
-      return { label: t('groupBuying.time_status.completed') || 'مكتمل', variant: 'success', icon: <CheckCircle className="w-3 h-3" /> };
-    }
+  /** Countdown for endTime */
+  const getCountdown = (endTimeStr: string) => {
+    if (!endTimeStr) return 'TBD';
+    const end = new Date(endTimeStr);
+    const diff = end.getTime() - currentTime.getTime();
 
-    const now = currentTime.getTime();
-    const start = new Date(campaign.startTime).getTime();
-    const end = new Date(campaign.endTime).getTime();
+    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
 
-    if (now >= end) {
-      return { label: t('groupBuying.time_status.ended') || 'انتهى الوقت', variant: 'error', icon: <Clock className="w-3 h-3" /> };
-    }
-    if (now >= start) {
-      return { label: t('groupBuying.time_status.active') || 'نشط', variant: 'success', icon: <Timer className="w-3 h-3" /> };
-    }
-    return { label: t('groupBuying.time_status.upcoming') || 'قادم', variant: 'info', icon: <CalendarClock className="w-3 h-3" /> };
-  }, [currentTime, t]);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h ${mins}m`;
+  };
 
   // Table columns
   const columns: Column<GroupBuying>[] = [
@@ -132,7 +124,7 @@ export const GroupBuyingListPage: React.FC = () => {
       label: t('groupBuying.capital_allocation') || 'Campaign',
       cardTitle: true,
       render: (campaign) => (
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
             <AuctionImage
               auction={{
@@ -146,8 +138,8 @@ export const GroupBuyingListPage: React.FC = () => {
               fallbackClassName="w-full h-full object-cover"
             />
           </div>
-          <div>
-            <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{campaign.title}</p>
+          <div className="min-w-0">
+            <DataTableEntityTitle text={campaign.title} />
             <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {campaign.category?.name || 'GENERAL'}
             </p>
@@ -168,6 +160,7 @@ export const GroupBuyingListPage: React.FC = () => {
         />
       ),
       sortable: true,
+      align: 'center',
     },
     {
       key: 'currentParticipants',
@@ -178,7 +171,7 @@ export const GroupBuyingListPage: React.FC = () => {
           <div className="w-36 space-y-1.5">
             <AmberProgress value={progress} className="h-1.5" variant={progress >= 100 ? 'success' : 'primary'} />
             <div className="flex justify-between text-[10px] font-black">
-              <span className="text-zinc-text">{campaign.currentParticipants}</span>
+              <span className="text-zinc-text">{campaign.currentParticipants}/{campaign.maxParticipants}</span>
               <span className="text-zinc-muted">{Math.round(progress)}%</span>
             </div>
           </div>
@@ -189,67 +182,65 @@ export const GroupBuyingListPage: React.FC = () => {
     {
       key: 'dealPrice',
       label: t('groupBuying.consolidate_price') || 'Deal Price',
-      render: (campaign) => (
-        <div>
-          <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
-            {formatCurrency(campaign.dealPrice)}
-          </span>
-          <p className="text-[10px] font-black text-zinc-muted line-through mt-0.5">
-            {formatCurrency(campaign.originalPrice)}
-          </p>
-        </div>
-      ),
+      render: (campaign) => {
+        const discount = campaign.originalPrice > 0
+          ? Math.round(((campaign.originalPrice - campaign.dealPrice) / campaign.originalPrice) * 100)
+          : 0;
+        return (
+          <div className="text-end">
+            <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
+              {formatCurrency(campaign.dealPrice)}
+            </span>
+            <div className="flex items-center justify-end gap-1.5 mt-0.5">
+              <p className="text-[10px] font-black text-zinc-muted line-through">
+                {formatCurrency(campaign.originalPrice)}
+              </p>
+              {discount > 0 && (
+                <span className="text-[9px] font-black text-success bg-success/10 px-1.5 py-0.5 rounded-full">
+                  -{discount}%
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      },
       sortable: true,
       align: 'right',
     },
     {
       key: 'endTime',
-      label: t('common.date') || 'End Date',
-      hideInCard: true,
+      label: t('groupBuying.end_time') || 'Ends In',
       render: (campaign) => (
-        <span className="text-sm text-zinc-muted">
-          {new Date(campaign.endTime).toLocaleDateString()}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <div className="inline-flex items-center gap-1.5 text-[10px] font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
+            <Clock className="w-3 h-3" />
+            {getCountdown(campaign.endTime)}
+          </div>
+          <span className="text-[9px] text-zinc-muted">
+            {new Date(campaign.endTime).toLocaleDateString()}
+          </span>
+        </div>
       ),
       sortable: true,
       align: 'center',
     },
     {
-      key: 'favoritesCount',
-      label: t('groupBuying.favorites') || 'Favorites',
+      key: 'engagement',
+      label: t('groupBuying.engagement') || 'Engagement',
+      hideInCard: true,
       render: (campaign) => (
-        <div className="flex items-center justify-center gap-1.5">
-          <Heart className="w-3.5 h-3.5 text-rose-400" />
-          <span className="text-sm font-bold text-zinc-text tabular-nums">{campaign.favoritesCount ?? 0}</span>
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center gap-1" title={t('groupBuying.favorites') || 'Favorites'}>
+            <Heart className="w-3 h-3 text-rose-400" />
+            <span className="text-xs font-bold text-zinc-text tabular-nums">{campaign.favoritesCount ?? 0}</span>
+          </div>
+          <div className="w-px h-3 bg-white/5" />
+          <div className="flex items-center gap-1" title={t('groupBuying.views') || 'Views'}>
+            <Eye className="w-3 h-3 text-blue-400" />
+            <span className="text-xs font-bold text-zinc-text tabular-nums">{campaign.viewCount ?? 0}</span>
+          </div>
         </div>
       ),
-      align: 'center',
-    },
-    {
-      key: 'viewCount',
-      label: t('groupBuying.views') || 'Views',
-      render: (campaign) => (
-        <div className="flex items-center justify-center gap-1.5">
-          <Eye className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-sm font-bold text-zinc-text tabular-nums">{campaign.viewCount ?? 0}</span>
-        </div>
-      ),
-      align: 'center',
-    },
-    {
-      key: 'timeStatus',
-      label: t('groupBuying.time_status.label') || 'Time Status',
-      cardBadge: true,
-      render: (campaign) => {
-        const ts = getTimeStatus(campaign);
-        return (
-          <StatusBadge
-            status={ts.label}
-            variant={ts.variant}
-            size="sm"
-          />
-        );
-      },
       align: 'center',
     },
   ];

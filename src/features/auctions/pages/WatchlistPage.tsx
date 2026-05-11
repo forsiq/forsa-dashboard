@@ -14,6 +14,7 @@ import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useWatchedAuctions } from '../api';
 import type { Auction } from '../types/auction.types';
 
@@ -52,12 +53,12 @@ export const WatchlistPage: React.FC = () => {
       label: t('auction.table.identification') || 'Auction',
       cardTitle: true,
       render: (auction) => (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-danger/10 flex items-center justify-center shrink-0">
             <Heart className="w-4 h-4 text-danger fill-danger" />
           </div>
-          <div>
-            <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{auction.title}</p>
+          <div className="min-w-0">
+            <DataTableEntityTitle text={auction.title} />
             <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
               {auction.categoryName || t('auction.detail.general')}
             </p>

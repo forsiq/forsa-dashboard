@@ -273,6 +273,43 @@ export const ListingFormPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Media (full-width, above the form grid so previews get breathing room) */}
+      <FormSection
+        icon={<ImageIcon className="w-5 h-5" />}
+        iconBgColor="info"
+        title={t('listing.form.section.media') || 'Media'}
+      >
+        <div className="space-y-4">
+          <AmberImageUpload
+            value={formData.images || []}
+            onChange={(files) => {
+              if (files?.[0]) {
+                setSelectedImageFile(files[0]);
+                setFormData(prev => ({
+                  ...prev,
+                  images: [...(prev.images || []), URL.createObjectURL(files[0])],
+                }));
+              }
+            }}
+            onRemove={(index) => {
+              const newImages = [...(formData.images || [])];
+              newImages.splice(index, 1);
+              setFormData(prev => ({ ...prev, images: newImages }));
+            }}
+            onReorder={(newOrder) => setFormData(prev => ({ ...prev, images: newOrder }))}
+            multiple={true}
+            sortable={true}
+            disabled={isUploading}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            uploadError={uploadError}
+          />
+          <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest text-center">
+            {t('common.image_upload_hint') || 'PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.'}
+          </p>
+        </div>
+      </FormSection>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Product Info Section */}
         <div className="lg:col-span-2">
@@ -293,43 +330,8 @@ export const ListingFormPage: React.FC = () => {
           </FormSection>
         </div>
 
-        {/* Images & Actions Sidebar */}
+        {/* Actions Sidebar */}
         <div className="space-y-8">
-          {/* Image Upload Card */}
-          <FormSection
-            icon={<ImageIcon className="w-5 h-5" />}
-            iconBgColor="info"
-            title={t('listing.form.section.media') || 'Media'}
-          >
-            <AmberImageUpload
-              value={formData.images || []}
-              onChange={(files) => {
-                if (files?.[0]) {
-                  setSelectedImageFile(files[0]);
-                  setFormData(prev => ({
-                    ...prev,
-                    images: [...(prev.images || []), URL.createObjectURL(files[0])],
-                  }));
-                }
-              }}
-              onRemove={(index) => {
-                const newImages = [...(formData.images || [])];
-                newImages.splice(index, 1);
-                setFormData(prev => ({ ...prev, images: newImages }));
-              }}
-              onReorder={(newOrder) => setFormData(prev => ({ ...prev, images: newOrder }))}
-              multiple={true}
-              sortable={true}
-              disabled={isUploading}
-              isUploading={isUploading}
-              uploadProgress={uploadProgress}
-              uploadError={uploadError}
-            />
-            <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest mt-4">
-              {t('common.image_upload_hint') || 'PNG, JPG up to 10MB'}
-            </p>
-          </FormSection>
-
           {/* Info Note */}
           <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-4">
             <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0">

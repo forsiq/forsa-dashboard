@@ -27,7 +27,7 @@ const listingKeys = {
 export function useGetListings(filters: ListingFilters = {}): UseQueryResult<ListingsResponse> {
   const query = useQuery({
     queryKey: listingKeys.list(filters),
-    queryFn: () => listingApi.list(filters),
+    queryFn: ({ signal }) => listingApi.list(filters, signal),
     staleTime: 2 * 60 * 1000,
   });
 
@@ -117,14 +117,17 @@ export function useDeleteListing() {
   return useMutation({
     mutationFn: (id: number) => listingApi.delete(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: listingKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: listingKeys.all });
       const previousData = queryClient.getQueriesData<ListingsResponse>({ queryKey: listingKeys.lists() });
       queryClient.setQueriesData<ListingsResponse>({ queryKey: listingKeys.lists() }, (old) => {
-        if (!old) return old;
+        if (!old || !Array.isArray(old.data)) return old;
         return {
           ...old,
           data: old.data.filter((listing) => listing.id !== id),
-          pagination: { ...old.pagination, total: Math.max(0, old.pagination.total - 1) },
+          pagination: {
+            ...old.pagination,
+            total: Math.max(0, (old.pagination?.total ?? old.data.length) - 1),
+          },
         };
       });
       return { previousData };
@@ -138,8 +141,20 @@ export function useDeleteListing() {
       const detail = mapApiError(error) || error?.message || 'Unknown error';
       toast.error(`Failed to delete listing: ${detail}`, 8000);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
+    onSuccess: async (_void, id) => {
+      queryClient.removeQueries({ queryKey: listingKeys.detail(id) });
+      queryClient.setQueriesData<ListingsResponse>({ queryKey: listingKeys.lists() }, (old) => {
+        if (!old || !Array.isArray(old.data)) return old;
+        return {
+          ...old,
+          data: old.data.filter((listing) => listing.id !== id),
+          pagination: {
+            ...old.pagination,
+            total: Math.max(0, (old.pagination?.total ?? old.data.length) - 1),
+          },
+        };
+      });
+      await queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
       toast.success('Listing deleted successfully');
     },
   });

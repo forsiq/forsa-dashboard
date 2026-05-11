@@ -5,6 +5,7 @@
  */
 
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { getWithListFilters } from '@core/services/serviceListFetch';
 import type {
   User,
   UserCreateInput,
@@ -45,8 +46,14 @@ export const userApi = {
   /**
    * Get paginated list of users
    */
-  list: async (filters?: UserFilters): Promise<UsersResponse> => {
-    const response = await userBaseApi.list(filters) as any;
+  list: async (filters?: UserFilters, signal?: AbortSignal): Promise<UsersResponse> => {
+    const axiosRes = await getWithListFilters(
+      userBaseApi.getInstance(),
+      '/users/',
+      filters as Record<string, unknown> | undefined,
+      signal,
+    );
+    const response = axiosRes.data as { data?: unknown[]; total?: number };
     const users = (response.data || []).map(mapToUser);
     const total = response.total || users.length;
     

@@ -23,6 +23,7 @@ import { AmberInput } from '@core/components/AmberInput';
 import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
@@ -93,7 +94,7 @@ export const ListingsListPage: React.FC = () => {
       render: (listing) => {
         const thumb = getListingPrimaryImageUrl(listing);
         return (
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
             {thumb ? (
               <img src={thumb} alt={listing.title} className="w-full h-full object-cover" />
@@ -101,8 +102,8 @@ export const ListingsListPage: React.FC = () => {
               <Package className="w-5 h-5 text-zinc-muted/40" />
             )}
           </div>
-          <div>
-            <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{listing.title}</p>
+          <div className="min-w-0">
+            <DataTableEntityTitle text={listing.title} />
             <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {listing.sku || listing.brand || '—'}
             </p>

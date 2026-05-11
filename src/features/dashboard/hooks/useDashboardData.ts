@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { getLanguage } from '@core/lib/utils/cookieStorage';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { ActivityItem, StatCard } from '@core/core/dashboard/types';
 import { auctionBaseApi } from '../../auctions/api/auction-api';
@@ -166,14 +167,17 @@ export const useTopProducts = () => {
 
       const auctions = (auctionsRes as any).data || [];
       const categories = (categoriesRes as any).data || [];
+      const lang = getLanguage();
 
-      const categoryMap = new Map(categories.map((c: any) => [c.id, c.name || c.slug || 'Uncategorized']));
+      const categoryMap = new Map(
+        categories.map((c: any) => [c.id, getLocalizedName(c, lang) || c.slug || 'Uncategorized']),
+      );
 
       return auctions
         .map((a: any) => ({
           id: String(a.id),
           name: a.title || `Auction #${a.id}`,
-          category: categoryMap.get(a.categoryId) || a.category?.name || 'Uncategorized',
+          category: categoryMap.get(a.categoryId) || getLocalizedName(a.category, lang) || 'Uncategorized',
           sales: a.totalBids || 0,
           revenue: parseFloat(a.currentBid || a.startPrice || '0'),
           stock: a.viewCount || 0,
@@ -195,6 +199,7 @@ export const useCategoryDistribution = () => {
     queryFn: async (): Promise<CategoryDistribution[]> => {
       const categoriesRes = await categoryBaseApi.list().catch(() => ({ data: [] }));
       const categories = (categoriesRes as any).data || [];
+      const lang = getLanguage();
 
       const colors = [
         'var(--chart-1)',
@@ -205,7 +210,7 @@ export const useCategoryDistribution = () => {
       ];
 
       return categories.slice(0, 5).map((c: any, index: number) => ({
-        category: c.name || c.translations?.ar?.name || c.slug || 'Unknown',
+        category: getLocalizedName(c, lang) || 'Unknown',
         orders: c.productCount || 0,
         fill: colors[index % colors.length],
       }));

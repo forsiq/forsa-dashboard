@@ -36,6 +36,15 @@ export const ar: Record<string, string> = {
   "groupBuying.views": "المشاهدات",
   "groupBuying.time_status.label": "حالة الوقت",
   "groupBuying.time_status.active": "نشط",
+  "groupBuying.end_time": "وقت الانتهاء",
+  "groupBuying.engagement": "التفاعل",
+  "groupBuying.form.auto_create_order": "إنشاء الطلب تلقائياً",
+  "groupBuying.form.auto_create_order_desc":
+    "عند اكتمال الصفقة، إنشاء طلب دون اختيار يدوي.",
+  "groupBuying.form.manual_select": "اختيار يدوي",
+  "group_buying.title": "العنوان",
+  "group_buying.deal_price": "سعر الصفقة",
+  "group_buying.min_participants": "الحد الأدنى للمشاركين",
 
   // Register Form
   "auth.register.password_mismatch_inline": "كلمات المرور غير متطابقة",
@@ -56,11 +65,27 @@ export const ar: Record<string, string> = {
   "auth.password.weak": "ضعيفة",
   "auth.password.fair": "متوسطة",
   "auth.password.strong": "قوية",
+  "auth.otp.sent_to": "تم إرسال رمز التحقق إلى",
+  "auth.otp.verify_identity": "تحقق من هويتك",
 
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "الكل",
   "common.all": "الكل",
   "common.apply": "تطبيق",
+  "common.image_upload_hint": "PNG أو JPG حتى 10 ميجابايت. اسحب لإعادة الترتيب — الصورة الأولى هي صورة الغلاف.",
+  "common.authenticity_copy": "نسخة / مقلّد",
+  "common.authenticity_high_copy": "نسخة عالية الجودة",
+  "common.authenticity_original": "أصلي / موثّق",
+  "common.color": "اللون",
+  "common.coming_soon": "قريباً",
+  "common.condition_new": "جديد",
+  "common.condition_open_box": "مفتوح العلبة",
+  "common.condition_refurbished": "مجدّد",
+  "common.condition_used": "مستعمل",
+  "common.error_occurred": "حدث خطأ",
+  "common.manufacturer": "الشركة المصنّعة",
+  "common.origin": "بلد المنشأ",
+  "common.warranty": "الضمان",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "المدة",
@@ -72,6 +97,24 @@ export const ar: Record<string, string> = {
   "auction.detail.start_price": "سعر البداية",
   "auction.detail.specifications": "المواصفات",
   "auction.detail.sources": "المصادر والمراجع",
+
+  "auction.form.section.sources": "المصادر والمراجع",
+  "auction.form.section.specs": "المواصفات",
+  "auction.form.add_source": "إضافة مصدر",
+  "auction.form.add_spec": "إضافة مواصفة",
+  "auction.form.no_sources": "لا توجد مصادر",
+  "auction.form.no_specs": "لا توجد مواصفات",
+  "auction.form.source_label": "التسمية",
+  "auction.form.source_url": "الرابط",
+  "auction.form.spec_label": "المواصفة",
+  "auction.form.spec_value": "القيمة",
+
+  "auction.sheet.bid_again": "مزايدة مجدداً",
+  "auction.sheet.current_bid": "المزايدة الحالية",
+  "auction.sheet.time_left": "الوقت المتبقي",
+  "auction.sheet.view_auction": "عرض المزاد",
+  "auction.sheet.your_bid": "مزايدتك",
+  "auction.sheet.your_status": "حالتك",
 
   // Auction Tabs
   "auction.tabs.all": "الكل",
@@ -442,4 +485,7 @@ export const ar: Record<string, string> = {
   "category.delete_confirm": "هل أنت متأكد من حذف هذه الفئة؟",
   "category.deactivate": "تعطيل",
   "category.activate": "تفعيل",
+
+  // Auction category slugs — app override (see getLocalizedName fallback)
+  "auction.category.computers": "أجهزة كمبيوتر",
 };

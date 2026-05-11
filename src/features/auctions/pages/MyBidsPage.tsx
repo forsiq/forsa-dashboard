@@ -7,6 +7,7 @@ import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useGetMyBids } from '../api';
 import { BidActionSheet } from '../components/BidActionSheet';
 import { computeBidDisplayStatus, type BidDisplayStatus } from '../types/auction.types';
@@ -115,7 +116,7 @@ export const MyBidsPage: React.FC = () => {
       label: t('auction.table.identification') || 'Auction',
       cardTitle: true,
       render: (bid) => (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center shrink-0 overflow-hidden">
             {bid.auctionImage ? (
               <img src={bid.auctionImage} alt="" className="w-full h-full object-cover rounded-lg" />
@@ -123,8 +124,8 @@ export const MyBidsPage: React.FC = () => {
               <Gavel className="w-4 h-4 text-brand" />
             )}
           </div>
-          <div>
-            <p className="text-sm font-black text-zinc-text uppercase tracking-tight">{bid.auctionTitle}</p>
+          <div className="min-w-0">
+            <DataTableEntityTitle text={bid.auctionTitle} />
             <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
           </div>
         </div>

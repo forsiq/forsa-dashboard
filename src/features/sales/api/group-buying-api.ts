@@ -3,6 +3,7 @@
  */
 
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { getWithListFilters } from '@core/services/serviceListFetch';
 import type {
   GroupBuying,
   GroupBuyingCreateInput,
@@ -31,8 +32,14 @@ export const groupBuyingApi = {
   /**
    * Get paginated list of campaigns
    */
-  list: async (filters?: GroupBuyingFilters): Promise<GroupBuyingsResponse> => {
-    const response = await groupBuyingBaseApi.list(filters) as any;
+  list: async (filters?: GroupBuyingFilters, signal?: AbortSignal): Promise<GroupBuyingsResponse> => {
+    const axiosRes = await getWithListFilters(
+      groupBuyingBaseApi.getInstance(),
+      '/group-deals/',
+      filters as Record<string, unknown> | undefined,
+      signal,
+    );
+    const response = axiosRes.data as { data?: GroupBuying[]; total?: number };
     const groupBuyings = response.data || [];
     const total = response.total || groupBuyings.length;
     

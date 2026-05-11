@@ -1,4 +1,5 @@
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { getWithListFilters } from '@core/services/serviceListFetch';
 import type {
   ProductListing,
   CreateListingInput,
@@ -18,9 +19,18 @@ const listingBaseApi = createApiClient<ProductListing, CreateListingInput, Updat
 });
 
 export const listingApi = {
-  list: async (filters?: ListingFilters): Promise<ListingsResponse> => {
-    const response = await listingBaseApi.list(filters);
-    const raw = response as any;
+  list: async (filters?: ListingFilters, signal?: AbortSignal): Promise<ListingsResponse> => {
+    const axiosRes = await getWithListFilters(
+      listingBaseApi.getInstance(),
+      '/listings/',
+      filters as Record<string, unknown> | undefined,
+      signal,
+    );
+    const raw = axiosRes.data as {
+      data?: ProductListing[];
+      pagination?: ListingsResponse['pagination'];
+      total?: number;
+    };
     return {
       data: raw.data || [],
       pagination: raw.pagination || {
