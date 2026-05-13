@@ -66,6 +66,10 @@ export const en: Record<string, string> = {
   "auth.password.fair": "Fair",
   "auth.password.strong": "Strong",
 
+  // OTP (align with ar.ts + OTP screen; core-ui also defines these — kept here for parity / ku merge)
+  "auth.otp.sent_to": "OTP sent to",
+  "auth.otp.verify_identity": "Verify your identity",
+
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "All",
   "common.all": "All",
@@ -84,6 +88,7 @@ export const en: Record<string, string> = {
   "common.manufacturer": "Manufacturer",
   "common.origin": "Country of origin",
   "common.warranty": "Warranty",
+  "common.field_help": "Explain this field",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "Duration",
@@ -197,6 +202,24 @@ export const en: Record<string, string> = {
   "service.marketplace.name": "Marketplace",
   "service.sales.name": "Sales",
   "service.reports.name": "Reports",
+  "service.dashboard.description": "Overview and KPIs",
+  "service.marketplace.description": "Auctions, listings, and catalog",
+  "service.sales.description": "Orders and customers",
+  "service.reports.description": "Analytics and exports",
+
+  "portal.loading_services": "Loading services…",
+  "portal.using_cached_config": "Using cached configuration",
+
+  "auction.validation.title_required": "Title is required",
+  "auction.validation.start_price_gt_0": "Start price must be at least 1",
+  "auction.validation.bid_increment_min": "Bid increment must be at least 1",
+  "auction.validation.category_required": "Category is required",
+  "auction.validation.start_time_required": "Start time is required",
+  "auction.validation.end_time_required": "End time is required",
+  "auction.validation.start_time_invalid": "Invalid start time",
+  "auction.validation.end_time_invalid": "Invalid end time",
+  "auction.validation.end_after_start": "End time must be after start time",
+  "auction.validation.buy_now_gte_start": "Buy now must be greater than or equal to start price",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",
@@ -319,6 +342,24 @@ export const en: Record<string, string> = {
   "listing.deploy.toast_auction_failed": "Could not deploy auction: {reason}",
   "listing.deploy.error_reason_unknown": "Something went wrong. Please try again.",
   "listing.deploy.toast_group_buy_failed": "Could not deploy group deal: {reason}",
+  "listing.deploy.hint.start_price":
+    "The first bid must be at least this amount (IQD). The auction opens at this starting value.",
+  "listing.deploy.hint.reserve_price":
+    "Optional floor price (IQD). If the highest bid at the end is below this, the item may not sell—depending on your rules.",
+  "listing.deploy.hint.bid_increment":
+    "Each new bid must be higher than the current bid by at least this amount (IQD). Keeps bidding steps clear.",
+  "listing.deploy.hint.start_time":
+    "When the auction goes live and users can start placing bids.",
+  "listing.deploy.hint.end_time":
+    "When bidding stops automatically. Must be after the start time.",
+  "listing.deploy.hint.original_price":
+    "Reference retail or list price (IQD) shown with the group deal so buyers see the discount.",
+  "listing.deploy.hint.deal_price":
+    "The price participants pay (IQD) if the group deal succeeds. Should be lower than the original price.",
+  "listing.deploy.hint.min_participants":
+    "Minimum number of people who must join for the deal to complete. If fewer join before the end time, the deal may fail.",
+  "listing.deploy.hint.max_participants":
+    "Maximum number of people allowed in this deal. Prevents the group from growing past what you can fulfill.",
 
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",

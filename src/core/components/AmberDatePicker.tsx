@@ -12,6 +12,8 @@ export type AmberDatePickerProps = Omit<
   'type' | 'value' | 'onChange'
 > & {
   label?: string;
+  /** Shown inline after the label (e.g. help icon + popover) */
+  labelEndSlot?: React.ReactNode;
   error?: string;
   value: string; // "YYYY-MM-DDTHH:mm"
   onChange: (value: string) => void;
@@ -240,7 +242,7 @@ const TimePicker: React.FC<TimePickerProps> = ({ hour, minute, onChange, isRTL, 
 export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePickerProps>(
   (
     {
-      label, error, className, value, onChange, showTime = true,
+      label, labelEndSlot, error, className, value, onChange, showTime = true,
       min, max, required, disabled, placeholder, icon, ...rest
     },
     ref
@@ -327,7 +329,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
       }
     };
 
-    const handleClear = (e: React.MouseEvent) => {
+    const handleClear = (e: React.SyntheticEvent) => {
       e.stopPropagation();
       onChange('');
       setIsOpen(false);
@@ -367,9 +369,10 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
               error ? 'text-danger' : 'text-zinc-muted/90 dark:text-zinc-muted/80'
             )}
           >
-            <span>
+            <span className="inline-flex items-center gap-1.5">
               {label}
               {required ? <span className="text-brand ml-0.5">*</span> : null}
+              {labelEndSlot}
             </span>
             {error ? <span className="normal-case opacity-90 text-[10px]">{error}</span> : null}
           </label>
@@ -415,13 +418,21 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
             </span>
             {value && (
               <div className="flex items-center shrink-0">
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={handleClear}
-                  className="p-1 rounded-md hover:bg-white/10 text-zinc-muted hover:text-danger transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleClear(e);
+                    }
+                  }}
+                  className="p-1 rounded-md hover:bg-white/10 text-zinc-muted hover:text-danger transition-colors cursor-pointer inline-flex"
+                  aria-label="Clear"
                 >
                   <X className="w-3.5 h-3.5" />
-                </button>
+                </span>
               </div>
             )}
           </button>

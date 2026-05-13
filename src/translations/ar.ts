@@ -86,6 +86,7 @@ export const ar: Record<string, string> = {
   "common.manufacturer": "الشركة المصنّعة",
   "common.origin": "بلد المنشأ",
   "common.warranty": "الضمان",
+  "common.field_help": "شرح الحقل",
 
   // Auction overrides - simplify confusing "protocol" terminology
   "auction.table.protocol_duration": "المدة",
@@ -199,6 +200,24 @@ export const ar: Record<string, string> = {
   "service.marketplace.name": "السوق",
   "service.sales.name": "المبيعات",
   "service.reports.name": "التقارير",
+  "service.dashboard.description": "نظرة عامة ومؤشرات الأداء",
+  "service.marketplace.description": "المزادات والقوائم والكتالوج",
+  "service.sales.description": "الطلبات والعملاء",
+  "service.reports.description": "التحليلات والتصدير",
+
+  "portal.loading_services": "جاري تحميل الخدمات…",
+  "portal.using_cached_config": "استخدام إعدادات مخبأة",
+
+  "auction.validation.title_required": "العنوان مطلوب",
+  "auction.validation.start_price_gt_0": "سعر البداية يجب أن يكون 1 على الأقل",
+  "auction.validation.bid_increment_min": "زيادة المزايدة يجب أن تكون 1 على الأقل",
+  "auction.validation.category_required": "التصنيف مطلوب",
+  "auction.validation.start_time_required": "وقت البدء مطلوب",
+  "auction.validation.end_time_required": "وقت الانتهاء مطلوب",
+  "auction.validation.start_time_invalid": "وقت بدء غير صالح",
+  "auction.validation.end_time_invalid": "وقت انتهاء غير صالح",
+  "auction.validation.end_after_start": "وقت الانتهاء يجب أن يكون بعد وقت البدء",
+  "auction.validation.buy_now_gte_start": "سعر الشراء الفوري يجب أن يكون أكبر من أو يساوي سعر البداية",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",
@@ -321,6 +340,24 @@ export const ar: Record<string, string> = {
   "listing.deploy.toast_auction_failed": "تعذر نشر المزاد: {reason}",
   "listing.deploy.error_reason_unknown": "حدث خطأ غير متوقع. حاول مرة أخرى.",
   "listing.deploy.toast_group_buy_failed": "تعذر نشر الصفقة الجماعية: {reason}",
+  "listing.deploy.hint.start_price":
+    "أقل مبلغ يبدأ منه المزاد (د.ع). أول مزايدة يجب أن تكون بهذا السعر أو أعلى.",
+  "listing.deploy.hint.reserve_price":
+    "اختياري: أقل سعر تقبله للبيع (د.ع). إذا كان أعلى مزايدة أقل منه، قد لا يكتمل البيع حسب قواعد المنصة.",
+  "listing.deploy.hint.bid_increment":
+    "الحد الأدنى لزيادة كل مزايدة جديدة فوق السعر الحالي (د.ع) لتوضيح خطوات المزايدة.",
+  "listing.deploy.hint.start_time":
+    "متى يصبح المزاد نشطاً ويستطيع المستخدمون البدء بالمزايدة.",
+  "listing.deploy.hint.end_time":
+    "متى تُغلق المزايدة تلقائياً. يجب أن يكون بعد وقت البدء.",
+  "listing.deploy.hint.original_price":
+    "السعر المرجعي أو سعر السوق (د.ع) يُعرض مع الصفقة ليوضح حجم الخصم.",
+  "listing.deploy.hint.deal_price":
+    "السعر الذي يدفعه المشاركون (د.ع) عند نجاح الصفقة. عادة أقل من السعر الأصلي.",
+  "listing.deploy.hint.min_participants":
+    "أقل عدد أشخاص يجب أن ينضموا لاكتمال الصفقة. إذا لم يُحقق قبل النهاية قد تفشل الصفقة.",
+  "listing.deploy.hint.max_participants":
+    "أقصى عدد مسموح في الصفقة لتجنب تجاوز الكمية التي يمكنك تلبيتها.",
 
   "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
   "validation.buy_now_price_min": "سعر الشراء الفوري يجب أن يكون {min} على الأقل.",

@@ -21,6 +21,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing } from '../api/listing-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { getListingImageGalleryUrls } from '../utils/listing-media';
+import { isSafePathResourceId } from '@core/utils/safeRouteId';
 
 export const ListingDetailPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -217,8 +218,8 @@ export const ListingDetailPage: React.FC = () => {
                     <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
                       <Gavel className="w-3 h-3 text-brand" /> {t('listing.detail.linked_auctions')}
                     </h4>
-                    {auctions.map((auction: any) => (
-                      <Link key={auction.id} href={`/auctions/${auction.id}`}>
+                    {auctions.map((auction: any) => {
+                      const row = (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer border border-white/5 hover:border-brand/20 transition-all cursor-pointer group">
                           <Gavel className="w-4 h-4 text-brand" />
                           <span className="text-sm text-zinc-text font-bold">{auction.title}</span>
@@ -229,8 +230,17 @@ export const ListingDetailPage: React.FC = () => {
                           />
                           <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-brand transition-colors ml-auto" />
                         </div>
-                      </Link>
-                    ))}
+                      );
+                      return isSafePathResourceId(auction.id) ? (
+                        <Link key={auction.id} href={`/auctions/${auction.id}`}>
+                          {row}
+                        </Link>
+                      ) : (
+                        <div key={String(auction.id ?? auction.title)} className="opacity-80">
+                          {row}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -240,8 +250,8 @@ export const ListingDetailPage: React.FC = () => {
                     <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
                       <Users className="w-3 h-3 text-info" /> {t('listing.detail.linked_deals')}
                     </h4>
-                    {deals.map((deal: any) => (
-                      <Link key={deal.id} href={`/group-buying/${deal.id}`}>
+                    {deals.map((deal: any) => {
+                      const row = (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer border border-white/5 hover:border-info/20 transition-all cursor-pointer group">
                           <Users className="w-4 h-4 text-info" />
                           <span className="text-sm text-zinc-text font-bold">{deal.title}</span>
@@ -252,8 +262,17 @@ export const ListingDetailPage: React.FC = () => {
                           />
                           <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-info transition-colors ml-auto" />
                         </div>
-                      </Link>
-                    ))}
+                      );
+                      return isSafePathResourceId(deal.id) ? (
+                        <Link key={deal.id} href={`/group-buying/${deal.id}`}>
+                          {row}
+                        </Link>
+                      ) : (
+                        <div key={String(deal.id ?? deal.title)} className="opacity-80">
+                          {row}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

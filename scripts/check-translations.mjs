@@ -80,6 +80,11 @@ function main() {
   const missingEn = [...used].filter((k) => !mergedEn.has(k)).sort();
   const missingAr = [...used].filter((k) => !mergedAr.has(k)).sort();
 
+  const appEnKeys = loadKeysFromFile(path.join(translationsDir, 'en.ts'));
+  const appArKeys = loadKeysFromFile(path.join(translationsDir, 'ar.ts'));
+  const onlyInEn = [...appEnKeys].filter((k) => !appArKeys.has(k)).sort();
+  const onlyInAr = [...appArKeys].filter((k) => !appEnKeys.has(k)).sort();
+
   let exit = 0;
   if (missingEn.length === 0) {
     console.log('OK: no static t(...) keys from src/ are missing from merged English bundles.');
@@ -95,6 +100,20 @@ function main() {
     exit = 1;
     console.error(`\nMissing ${missingAr.length} key(s) for Arabic (core-ui locales + src/translations):\n`);
     for (const k of missingAr) console.error(`  ${k}`);
+  }
+
+  if (onlyInEn.length === 0 && onlyInAr.length === 0) {
+    console.log('OK: src/translations/en.ts and ar.ts define the same keys.');
+  } else {
+    exit = 1;
+    if (onlyInEn.length) {
+      console.error(`\nKeys in en.ts but missing in ar.ts (${onlyInEn.length}):\n`);
+      for (const k of onlyInEn) console.error(`  ${k}`);
+    }
+    if (onlyInAr.length) {
+      console.error(`\nKeys in ar.ts but missing in en.ts (${onlyInAr.length}):\n`);
+      for (const k of onlyInAr) console.error(`  ${k}`);
+    }
   }
 
   process.exit(exit);

@@ -29,6 +29,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { useToast } from '@core/contexts/ToastContext';
 import { DataTable, Column, Action, BulkAction } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
@@ -374,12 +375,18 @@ export const AuctionsList: React.FC = () => {
       {
         label: t('auction.action.inspect_node') || 'View',
         icon: Eye,
-        onClick: (auction) => router.push(`/auctions/${auction.id}`),
+        onClick: (auction) => {
+          if (!isSafePathResourceId(auction.id)) return;
+          void router.push(`/auctions/${auction.id}`);
+        },
       },
       {
         label: t('common.edit') || 'Edit',
         icon: Edit,
-        onClick: (auction) => router.push(`/auctions/edit/${auction.id}`),
+        onClick: (auction) => {
+          if (!isSafePathResourceId(auction.id)) return;
+          void router.push(`/auctions/edit/${auction.id}`);
+        },
       },
       {
         label: (auction) => (auction.status === 'draft' || auction.status === 'scheduled') ? (t('auction.lifecycle.start') || 'Start') : null as unknown as string,

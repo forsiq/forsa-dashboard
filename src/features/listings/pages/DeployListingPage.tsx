@@ -30,6 +30,7 @@ import { useGetListing, useDeployAsAuction, useDeployAsGroupBuy } from '../api/l
 import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
 import { deployAuctionFormSchema, deployGroupBuyFormSchema } from '../validation/deployListingSchemas';
 import { getListingPrimaryImageUrl } from '../utils/listing-media';
+import { FieldHelpHint } from '../components/FieldHelpHint';
 
 type DeployType = 'auction' | 'group_buy' | null;
 
@@ -284,31 +285,20 @@ export const DeployListingPage: React.FC = () => {
                 }}
                 icon={<IqdSymbol />}
                 error={fieldErrors.startPrice}
+                rightElement={<FieldHelpHint text={t('listing.deploy.hint.start_price')} />}
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberInput
-                  label={t('listing.deploy.buy_now_price')}
-                  type="number"
-                  value={auctionForm.buyNowPrice}
-                  onChange={(e) => {
-                    clearFieldError('buyNowPrice');
-                    setAuctionForm(p => ({ ...p, buyNowPrice: e.target.value }));
-                  }}
-                  icon={<TrendingUp className="w-4 h-4" />}
-                  error={fieldErrors.buyNowPrice}
-                />
-                <AmberInput
-                  label={t('listing.deploy.reserve_price')}
-                  type="number"
-                  value={auctionForm.reservePrice}
-                  onChange={(e) => {
-                    clearFieldError('reservePrice');
-                    setAuctionForm(p => ({ ...p, reservePrice: e.target.value }));
-                  }}
-                  icon={<IqdSymbol />}
-                  error={fieldErrors.reservePrice}
-                />
-              </div>
+              <AmberInput
+                label={t('listing.deploy.reserve_price')}
+                type="number"
+                value={auctionForm.reservePrice}
+                onChange={(e) => {
+                  clearFieldError('reservePrice');
+                  setAuctionForm(p => ({ ...p, reservePrice: e.target.value }));
+                }}
+                icon={<IqdSymbol />}
+                error={fieldErrors.reservePrice}
+                rightElement={<FieldHelpHint text={t('listing.deploy.hint.reserve_price')} />}
+              />
               <AmberInput
                 label={t('listing.deploy.bid_increment')}
                 type="number"
@@ -319,10 +309,12 @@ export const DeployListingPage: React.FC = () => {
                 }}
                 icon={<Gavel className="w-4 h-4" />}
                 error={fieldErrors.bidIncrement}
+                rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <AmberDatePicker
                   label={t('listing.deploy.start_time')}
+                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
                   value={auctionForm.startTime}
                   onChange={(val) => {
                     clearFieldError('startTime');
@@ -333,6 +325,7 @@ export const DeployListingPage: React.FC = () => {
                 />
                 <AmberDatePicker
                   label={t('listing.deploy.end_time')}
+                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
                   value={auctionForm.endTime}
                   onChange={(val) => {
                     clearFieldError('endTime');
@@ -358,6 +351,7 @@ export const DeployListingPage: React.FC = () => {
                   }}
                   icon={<IqdSymbol />}
                   error={fieldErrors.originalPrice}
+                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.original_price')} />}
                 />
                 <AmberInput
                   label={t('listing.deploy.deal_price')}
@@ -369,6 +363,7 @@ export const DeployListingPage: React.FC = () => {
                   }}
                   icon={<TrendingUp className="w-4 h-4" />}
                   error={fieldErrors.dealPrice}
+                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.deal_price')} />}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -382,6 +377,7 @@ export const DeployListingPage: React.FC = () => {
                   }}
                   icon={<Users className="w-4 h-4" />}
                   error={fieldErrors.minParticipants}
+                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.min_participants')} />}
                 />
                 <AmberInput
                   label={t('listing.deploy.max_participants')}
@@ -393,11 +389,13 @@ export const DeployListingPage: React.FC = () => {
                   }}
                   icon={<Users className="w-4 h-4" />}
                   error={fieldErrors.maxParticipants}
+                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.max_participants')} />}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <AmberDatePicker
                   label={t('listing.deploy.start_time')}
+                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
                   value={groupBuyForm.startTime}
                   onChange={(val) => {
                     clearFieldError('startTime');
@@ -408,6 +406,7 @@ export const DeployListingPage: React.FC = () => {
                 />
                 <AmberDatePicker
                   label={t('listing.deploy.end_time')}
+                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
                   value={groupBuyForm.endTime}
                   onChange={(val) => {
                     clearFieldError('endTime');
