@@ -192,6 +192,8 @@ export const ListingFormPage: React.FC = () => {
         ...formData,
         categoryId: formData.categoryId ? Number(formData.categoryId) : undefined,
       };
+      // Remove blob: preview URLs — real images are tracked via attachmentIds
+      delete payload.images;
       if (uploadedAttachmentId) {
         payload.mainAttachmentId = uploadedAttachmentId;
         payload.attachmentIds = [uploadedAttachmentId];
