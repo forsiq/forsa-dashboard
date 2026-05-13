@@ -186,11 +186,12 @@ export const AuctionFormPage: React.FC = () => {
       const titleSuffix = isClone ? ' (Copy)' : '';
       const startTime = isClone ? '' : existingAuction.startTime?.split('Z')[0];
       const endTime = isClone ? '' : existingAuction.endTime?.split('Z')[0];
+      let durationDaysFromAuction = 7;
       // Calculate duration in days from existing auction
       if (startTime && endTime) {
         const diffMs = new Date(endTime).getTime() - new Date(startTime).getTime();
-        const days = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
-        setDurationDays(days);
+        durationDaysFromAuction = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        setDurationDays(durationDaysFromAuction);
       }
       setFormData({
         title: existingAuction.title + titleSuffix,
@@ -201,7 +202,7 @@ export const AuctionFormPage: React.FC = () => {
         endTime,
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
-        durationDays: days,
+        durationDays: durationDaysFromAuction,
         images: normalize(existingAuction.images) as string[],
         specs: normalize(existingAuction.specs) as Spec[],
         sources: normalize(existingAuction.sources) as Source[],

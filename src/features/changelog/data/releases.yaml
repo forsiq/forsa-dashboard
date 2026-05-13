@@ -1,0 +1,127 @@
+- version: "1.3.0"
+  date: "2026-05-13"
+  title:
+    en: "Group Buying Reviews & Auction Improvements"
+    ar: "مراجعات الشراء الجماعي وتحسينات المزادات"
+  entries:
+    - description:
+        en: "Added review system for group buying deals"
+        ar: "تمت إضافة نظام المراجعات لصفقات الشراء الجماعي"
+      type: added
+      sidebarPath: /group-buying
+
+    - description:
+        en: "New moderation hub for managing auction reports"
+        ar: "مركز إشراف جديد لإدارة تقارير المزادات"
+      type: added
+      sidebarPath: /moderation
+
+    - description:
+        en: "Added live monitor for real-time auction tracking"
+        ar: "تمت إضافة مراقب مباشر لتتبع المزادات"
+      type: added
+      sidebarPath: /live-monitor
+
+    - description:
+        en: "Fixed bid calculation error in overtime auctions"
+        ar: "تم إصلاح خطأ حساب المزايدة في المزادات الإضافية"
+      type: fixed
+
+    - description:
+        en: "Fixed group buying participant count not updating"
+        ar: "تم إصلاح عدم تحديث عدد المشاركين في الشراء الجماعي"
+      type: fixed
+      sidebarPath: /group-buying
+
+    - description:
+        en: "Improved dashboard loading performance by 40%"
+        ar: "تم تحسين أداء تحميل لوحة التحكم بنسبة 40%"
+      type: improved
+      sidebarPath: /dashboard
+
+    - description:
+        en: "Improved auction image gallery with drag-to-reorder"
+        ar: "تم تحسين معرض صور المزادات مع سحب لإعادة الترتيب"
+      type: improved
+      sidebarPath: /auctions
+
+- version: "1.2.0"
+  date: "2026-04-28"
+  title:
+    en: "Settlement Desk & User Management"
+    ar: "مكتب التسويات وإدارة المستخدمين"
+  entries:
+    - description:
+        en: "Added settlement desk for managing financial settlements"
+        ar: "تمت إضافة مكتب تسويات لإدارة التسويات المالية"
+      type: added
+      sidebarPath: /settlements
+
+    - description:
+        en: "Added user detail page with activity history"
+        ar: "تمت إضافة صفحة تفاصيل المستخدم مع سجل النشاط"
+      type: added
+      sidebarPath: /users
+
+    - description:
+        en: "Added customer insights report page"
+        ar: "تمت إضافة صفحة تقرير رؤى العملاء"
+      type: added
+      sidebarPath: /reports
+
+    - description:
+        en: "Fixed session expiration not redirecting to login"
+        ar: "تم إصلاح عدم إعادة التوجيه لتسجيل الدخول عند انتهاء الجلسة"
+      type: fixed
+
+    - description:
+        en: "Fixed RTL layout issues in forms"
+        ar: "تم إصلاح مشاكل تخطيط RTL في النماذج"
+      type: fixed
+
+    - description:
+        en: "Improved sidebar navigation with collapsible sections"
+        ar: "تم تحسين التنقل في الشريط الجانبي مع أقسام قابلة للطي"
+      type: improved
+
+- version: "1.1.0"
+  date: "2026-04-10"
+  title:
+    en: "Marketplace & Listings"
+    ar: "السوق والإعلانات"
+  entries:
+    - description:
+        en: "Added listing deployment with pricing tiers"
+        ar: "تمت إضافة نشر الإعلانات مع مستويات التسعير"
+      type: added
+      sidebarPath: /listings
+
+    - description:
+        en: "Added Amazon product import feature"
+        ar: "تمت إضافة ميزة استيراد منتجات أمازون"
+      type: added
+      sidebarPath: /amazon-import
+
+    - description:
+        en: "Added watchlist for tracking favorite auctions"
+        ar: "تمت إضافة قائمة المراقبة لتتبع المزادات المفضلة"
+      type: added
+      sidebarPath: /watchlist
+
+    - description:
+        en: "Fixed listing images not uploading on slow connections"
+        ar: "تم إصلاح عدم رفع صور الإعلانات على الاتصالات البطيئة"
+      type: fixed
+      sidebarPath: /listings
+
+    - description:
+        en: "Improved search performance across marketplace"
+        ar: "تم تحسين أداء البحث عبر السوق"
+      type: improved
+      sidebarPath: /auctions
+
+    - description:
+        en: "Changed category management workflow"
+        ar: "تم تغيير سير عمل إدارة الفئات"
+      type: changed
+      sidebarPath: /categories

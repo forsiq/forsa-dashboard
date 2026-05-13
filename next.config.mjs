@@ -39,6 +39,13 @@ const nextConfig = {
       '@core': [localCorePath, corePkgPath],
     };
 
+    // YAML → JS module (yaml-loader emits `export default …`; do NOT use `type: 'json'` — that parses output as JSON and breaks).
+    config.module.rules.push({
+      test: /\.ya?ml$/,
+      include: path.resolve(__dirname, 'src'),
+      use: 'yaml-loader',
+    });
+
     if (dev) {
       config.watchOptions = {
         aggregateTimeout: 300,

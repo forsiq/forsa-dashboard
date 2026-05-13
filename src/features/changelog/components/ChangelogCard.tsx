@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberCard } from '@core/components/AmberCard';
-import type { ChangelogRelease, ChangeType } from '@features/changelog/types';
+import type { ChangelogRelease, ChangeType, LocalizedText } from '@features/changelog/types';
 
 const TYPE_CONFIG: Record<
   ChangeType,
@@ -44,20 +44,30 @@ const TYPE_CONFIG: Record<
   },
 };
 
+/** Get localized text with fallback to English */
+function localize(text: LocalizedText, lang: string): string {
+  return text[lang] || text.en || Object.values(text)[0] || '';
+}
+
 interface ChangelogCardProps {
   release: ChangelogRelease;
   isLatest?: boolean;
 }
 
 export const ChangelogCard: React.FC<ChangelogCardProps> = ({ release, isLatest = false }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isExpanded, setIsExpanded] = React.useState(isLatest);
 
   const daysSinceRelease = dayjs().diff(dayjs(release.date), 'day');
   const isNew = daysSinceRelease < 30;
 
   const formatDate = (date: string) => {
-    return dayjs(date).format('MMM D, YYYY');
+    const d = dayjs(date);
+    const months =
+      language === 'ar'
+        ? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+        : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.month()]} ${d.date()}, ${d.year()}`;
   };
 
   // Group entries by type
@@ -102,7 +112,7 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({ release, isLatest 
               </span>
             </div>
             <h4 className="text-sm font-black text-white tracking-tight truncate">
-              {release.title}
+              {localize(release.title, language)}
             </h4>
           </div>
         </div>
@@ -157,7 +167,7 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({ release, isLatest 
                           className="flex items-start gap-2 text-[12px] text-zinc-text/80 leading-relaxed"
                         >
                           <span className="mt-1.5 w-1 h-1 rounded-full bg-zinc-muted/30 shrink-0" />
-                          <span>{entry.description}</span>
+                          <span>{localize(entry.description, language)}</span>
                         </li>
                       ))}
                     </ul>

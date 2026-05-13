@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 
-import releasesData from '@features/changelog/data/releases.json';
+import releasesData from '@features/changelog/data/releases.yaml';
 import type { ChangelogRelease, ChangelogState } from '@features/changelog/types';
 
 const STORAGE_KEY = 'forsa_changelog_last_seen';
@@ -35,7 +35,7 @@ function isReleaseNew(release: ChangelogRelease): boolean {
 }
 
 export function useChangelog(): ChangelogState {
-  const releases = releasesData as ChangelogRelease[];
+  const releases = useMemo(() => releasesData as ChangelogRelease[], []);
   const [, bump] = useState(0);
 
   const unseenCount = (() => {

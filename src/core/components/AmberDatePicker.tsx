@@ -379,7 +379,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
         )}
 
         <div className="relative group">
-          {/* Trigger input */}
+          {/* Trigger: open picker (clear is a separate sibling button — avoids invalid nested buttons) */}
           <button
             type="button"
             disabled={disabled}
@@ -393,7 +393,8 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
               error
                 ? 'border-danger focus:border-danger bg-danger/[0.03]'
                 : 'border-zinc-200 dark:border-white/5',
-              icon ? (isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4') : 'px-4'
+              icon ? (isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4') : 'px-4',
+              value ? (isRTL ? 'pl-12' : 'pr-12') : ''
             )}
             dir="ltr"
           >
@@ -416,26 +417,20 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
             >
               {displayValue || placeholderText}
             </span>
-            {value && (
-              <div className="flex items-center shrink-0">
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleClear}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleClear(e);
-                    }
-                  }}
-                  className="p-1 rounded-md hover:bg-white/10 text-zinc-muted hover:text-danger transition-colors cursor-pointer inline-flex"
-                  aria-label="Clear"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            )}
           </button>
+          {value && !disabled && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className={cn(
+                'absolute top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-md hover:bg-white/10 text-zinc-muted hover:text-danger transition-colors',
+                isRTL ? 'left-2' : 'right-2'
+              )}
+              aria-label="Clear"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           {/* Hidden input for form compatibility */}
           <input
