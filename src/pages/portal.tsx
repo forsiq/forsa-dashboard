@@ -1,5 +1,5 @@
-import { PortalPage } from '@core/pages/PortalPage';
+import { ForsaPortalPage } from '@core/pages/ForsaPortalPage';
 
 export default function Portal() {
-  return <PortalPage />;
+  return <ForsaPortalPage />;
 }

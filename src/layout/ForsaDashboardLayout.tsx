@@ -11,6 +11,7 @@ import {
 } from '@config/sidebar/applySidebarBadges';
 import { resolveIcon } from '@config/navigation';
 import { useSidebarBadges } from '@core/hooks/useSidebarBadges';
+import { useChangelog } from '@features/changelog/hooks/useChangelog';
 import { useNavigation } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
 
@@ -50,6 +51,7 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
   const router = useRouter();
   const { data: badges } = useSidebarBadges();
   const { sidebarView } = useNavigation();
+  const { isNewFeature } = useChangelog();
 
   const menuSections = useMemo<MenuSection[]>(() => {
     if (!router.isReady) {
@@ -63,8 +65,8 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
     const activeView = urlView || (sidebarView as SidebarModuleView);
     const baseSections = moduleSidebars[activeView] || moduleSidebars.dashboard;
 
-    return applySidebarBadges(activeView, baseSections, badges);
-  }, [router.isReady, router.pathname, badges, sidebarView]);
+    return applySidebarBadges(activeView, baseSections, badges, isNewFeature);
+  }, [router.isReady, router.pathname, badges, sidebarView, isNewFeature]);
 
   return (
     <AmberDashboardLayout menuSections={menuSections} appLabel="Forsa">

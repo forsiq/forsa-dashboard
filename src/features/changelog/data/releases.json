@@ -1,0 +1,114 @@
+[
+  {
+    "version": "1.3.0",
+    "date": "2026-05-13",
+    "title": "Group Buying Reviews & Auction Improvements",
+    "entries": [
+      {
+        "description": "Added review system for group buying deals",
+        "type": "added",
+        "sidebarPath": "/group-buying"
+      },
+      {
+        "description": "New moderation hub for managing auction reports",
+        "type": "added",
+        "sidebarPath": "/moderation"
+      },
+      {
+        "description": "Added live monitor for real-time auction tracking",
+        "type": "added",
+        "sidebarPath": "/live-monitor"
+      },
+      {
+        "description": "Fixed bid calculation error in overtime auctions",
+        "type": "fixed"
+      },
+      {
+        "description": "Fixed group buying participant count not updating",
+        "type": "fixed",
+        "sidebarPath": "/group-buying"
+      },
+      {
+        "description": "Improved dashboard loading performance by 40%",
+        "type": "improved",
+        "sidebarPath": "/dashboard"
+      },
+      {
+        "description": "Improved auction image gallery with drag-to-reorder",
+        "type": "improved",
+        "sidebarPath": "/auctions"
+      }
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-04-28",
+    "title": "Settlement Desk & User Management",
+    "entries": [
+      {
+        "description": "Added settlement desk for managing financial settlements",
+        "type": "added",
+        "sidebarPath": "/settlements"
+      },
+      {
+        "description": "Added user detail page with activity history",
+        "type": "added",
+        "sidebarPath": "/users"
+      },
+      {
+        "description": "Added customer insights report page",
+        "type": "added",
+        "sidebarPath": "/reports"
+      },
+      {
+        "description": "Fixed session expiration not redirecting to login",
+        "type": "fixed"
+      },
+      {
+        "description": "Fixed RTL layout issues in forms",
+        "type": "fixed"
+      },
+      {
+        "description": "Improved sidebar navigation with collapsible sections",
+        "type": "improved"
+      }
+    ]
+  },
+  {
+    "version": "1.1.0",
+    "date": "2026-04-10",
+    "title": "Marketplace & Listings",
+    "entries": [
+      {
+        "description": "Added listing deployment with pricing tiers",
+        "type": "added",
+        "sidebarPath": "/listings"
+      },
+      {
+        "description": "Added Amazon product import feature",
+        "type": "added",
+        "sidebarPath": "/amazon-import"
+      },
+      {
+        "description": "Added watchlist for tracking favorite auctions",
+        "type": "added",
+        "sidebarPath": "/watchlist"
+      },
+      {
+        "description": "Fixed listing images not uploading on slow connections",
+        "type": "fixed",
+        "sidebarPath": "/listings"
+      },
+      {
+        "description": "Improved search performance across marketplace",
+        "type": "improved",
+        "sidebarPath": "/auctions"
+      },
+      {
+        "description": "Changed category management workflow",
+        "type": "changed",
+        "sidebarPath": "/categories"
+      }
+    ]
+  }
+]

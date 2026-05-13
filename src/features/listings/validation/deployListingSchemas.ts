@@ -19,28 +19,16 @@ export const deployAuctionFormSchema = z
     bidIncrement: z.coerce.number().refine((n) => Number.isFinite(n) && n >= 1, {
       message: 'Bid increment must be at least 1',
     }),
-    buyNowPrice: z.union([z.string(), z.number()]).optional(),
     reservePrice: z.union([z.string(), z.number()]).optional(),
     startTime: startDateTime,
     endTime: endDateTime,
   })
   .superRefine((data, ctx) => {
-    const buyRaw = data.buyNowPrice;
-    let buyNum: number | undefined;
-    if (buyRaw !== '' && buyRaw !== undefined && buyRaw !== null) {
-      buyNum = typeof buyRaw === 'number' ? buyRaw : Number(String(buyRaw).trim());
-      if (!Number.isFinite(buyNum) || buyNum < 1) {
-        ctx.addIssue({ code: 'custom', path: ['buyNowPrice'], message: 'Buy now must be at least 1 when set' });
-        buyNum = undefined;
-      }
-    }
     const resRaw = data.reservePrice;
-    let resNum: number | undefined;
     if (resRaw !== '' && resRaw !== undefined && resRaw !== null) {
-      resNum = typeof resRaw === 'number' ? resRaw : Number(String(resRaw).trim());
+      const resNum = typeof resRaw === 'number' ? resRaw : Number(String(resRaw).trim());
       if (!Number.isFinite(resNum) || resNum < 1) {
         ctx.addIssue({ code: 'custom', path: ['reservePrice'], message: 'Reserve must be at least 1 when set' });
-        resNum = undefined;
       }
     }
     const t0 = new Date(data.startTime).getTime();
@@ -51,13 +39,6 @@ export const deployAuctionFormSchema = z
     }
     if (t1 <= t0) {
       ctx.addIssue({ code: 'custom', path: ['endTime'], message: 'End time must be after start time' });
-    }
-    if (buyNum !== undefined && buyNum < data.startPrice) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['buyNowPrice'],
-        message: 'Buy now must be greater than or equal to start price',
-      });
     }
   });
 

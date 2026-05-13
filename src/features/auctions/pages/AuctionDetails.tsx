@@ -28,7 +28,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuction, useGetAuctionBids, usePlaceBid, useBuyNow, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
+import { useGetAuction, useGetAuctionBids, usePlaceBid, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
@@ -54,7 +54,6 @@ export const AuctionDetails: React.FC = () => {
   const resumeAuction = useResumeAuction();
   const endAuction = useEndAuction();
   const cancelAuction = useCancelAuction();
-  const buyNow = useBuyNow();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [bidAmount, setBidAmount] = useState<string>('');
@@ -488,23 +487,6 @@ export const AuctionDetails: React.FC = () => {
                 )}
               </AmberButton>
             </div>
-
-            {/* Buy Now */}
-            {auction.buyNowPrice && (
-              <AmberButton
-                variant="outline"
-                className="w-full h-10 border-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider text-xs hover:bg-emerald-500/10 active:scale-95 transition-all rounded-xl"
-                onClick={() => openConfirm({
-                  title: t('auction.lifecycle.buy_now_title') || 'Buy Now',
-                  message: t('auction.lifecycle.buy_now_confirm') || `Are you sure you want to buy this auction for ${formatCurrency(auction.buyNowPrice)}?`,
-                  onConfirm: () => buyNow.mutate(auction.id),
-                  variant: 'success',
-                })}
-                disabled={buyNow.isPending}
-              >
-                {buyNow.isPending ? <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" /> : t('auction.detail.instant_acquisition') || 'Buy Now'} ({formatCurrency(auction.buyNowPrice)})
-              </AmberButton>
-            )}
 
             {/* Trust */}
             <div className="flex items-center gap-2.5 p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">

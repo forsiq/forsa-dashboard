@@ -21,7 +21,6 @@ export interface Auction {
   slug: string;
   startPrice: number;
   currentBid: number;
-  buyNowPrice?: number;
   reservePrice?: number;
   totalBids: number;
   startTime: string;
@@ -75,7 +74,6 @@ export interface AuctionCreateInput {
   title: string;
   description: string;
   startPrice: number;
-  buyNowPrice?: number;
   reservePrice?: number;
   startTime: string;
   endTime: string;

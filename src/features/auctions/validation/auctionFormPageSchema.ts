@@ -26,7 +26,6 @@ export function createAuctionFormPageSchema(t: TFn) {
       }),
       startTime: z.string().min(1, msg(t, 'auction.validation.start_time_required', 'Start time is required')),
       endTime: z.string().min(1, msg(t, 'auction.validation.end_time_required', 'End time is required')),
-      buyNowPrice: z.number().optional(),
       reservePrice: z.number().optional(),
     })
     .superRefine((data, ctx) => {
@@ -52,18 +51,6 @@ export function createAuctionFormPageSchema(t: TFn) {
           code: 'custom',
           path: ['endTime'],
           message: msg(t, 'auction.validation.end_after_start', 'End time must be after start time'),
-        });
-      }
-      const buy = data.buyNowPrice;
-      if (buy !== undefined && buy !== null && Number.isFinite(buy) && buy > 0 && buy < data.startPrice) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['buyNowPrice'],
-          message: msg(
-            t,
-            'auction.validation.buy_now_gte_start',
-            'Buy now must be greater than or equal to start price'
-          ),
         });
       }
     });

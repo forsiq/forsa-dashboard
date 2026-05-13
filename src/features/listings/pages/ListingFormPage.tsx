@@ -26,6 +26,18 @@ import { getLocalizedName } from '../../../services/categories/types';
 import type { CreateListingInput } from '../../../types/services/listings.types';
 import type { FormFieldConfig } from '@core/services/types';
 
+const HISTORY_KEY = 'history_listing';
+
+function readListingHistory(): Record<string, any> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const ListingFormPage: React.FC = () => {
   const { t, dir, language } = useLanguage();
   const mapApiError = useMapApiValidationError();
@@ -49,16 +61,19 @@ export const ListingFormPage: React.FC = () => {
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();
 
-  const [formData, setFormData] = useState<Partial<CreateListingInput>>({
-    title: '',
-    description: '',
-    categoryId: undefined,
-    brand: '',
-    model: '',
-    condition: '',
-    authenticity: '',
-    sku: '',
-    images: [],
+  const [formData, setFormData] = useState<Partial<CreateListingInput>>(() => {
+    const h = readListingHistory();
+    return {
+      title: '',
+      description: '',
+      categoryId: h?.categoryId ?? undefined,
+      brand: '',
+      model: '',
+      condition: h?.condition ?? '',
+      authenticity: h?.authenticity ?? '',
+      sku: '',
+      images: [],
+    };
   });
 
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -109,6 +124,8 @@ export const ListingFormPage: React.FC = () => {
     },
     isSubmitting,
     storageKey: isEdit ? `draft-listing-${id}` : 'draft-listing-new',
+    historyKey: HISTORY_KEY,
+    historyFields: ['categoryId', 'condition', 'authenticity'],
   });
 
   // Form fields config for FormBuilder

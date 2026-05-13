@@ -42,6 +42,18 @@ import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
 import type { AuctionCreateInput, AuctionUpdateInput, Spec, Source } from '../types/auction.types';
 
+const HISTORY_KEY = 'history_auction';
+
+function readAuctionHistory(): Record<string, any> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Normalize fields that may come as JSON strings from the backend.
  * The backend sometimes returns arrays as serialized JSON strings (e.g. `'["url"]'`).
@@ -90,39 +102,40 @@ export const AuctionFormPage: React.FC = () => {
   const createMutation = useCreateAuction();
   const updateMutation = useUpdateAuction();
 
-  const [durationDays, setDurationDays] = useState<number>(7);
+  const [durationDays, setDurationDays] = useState<number>(() => {
+    const h = readAuctionHistory();
+    return h?.durationDays ?? 7;
+  });
   const [useDurationMode, setUseDurationMode] = useState<boolean>(true);
 
-  const [formData, setFormData] = useState<Partial<AuctionCreateInput> & { productId?: number }>({
-    title: '',
-    description: '',
-    startPrice: 0,
-    buyNowPrice: undefined,
-    reservePrice: undefined,
-    startTime: (() => {
-      const now = new Date();
-      now.setHours(now.getHours() + 1, 0, 0, 0);
-      return now.toISOString().slice(0, 16);
-    })(),
-    endTime: (() => {
-      const end = new Date();
-      end.setDate(end.getDate() + 7);
-      end.setHours(end.getHours() + 1, 0, 0, 0);
-      return end.toISOString().slice(0, 16);
-    })(),
-    bidIncrement: 5000,
-    categoryId: 1,
-    images: [],
-    productId: undefined,
-    specs: [],
-    sources: [],
+  const [formData, setFormData] = useState<Partial<AuctionCreateInput> & { productId?: number; durationDays?: number }>(() => {
+    const h = readAuctionHistory();
+    const now = new Date();
+    now.setHours(now.getHours() + 1, 0, 0, 0);
+    const end = new Date();
+    end.setDate(end.getDate() + (h?.durationDays ?? 7));
+    end.setHours(end.getHours() + 1, 0, 0, 0);
+    return {
+      title: '',
+      description: '',
+      startPrice: h?.startPrice ?? 0,
+      reservePrice: undefined,
+      startTime: now.toISOString().slice(0, 16),
+      endTime: end.toISOString().slice(0, 16),
+      bidIncrement: h?.bidIncrement ?? 5000,
+      categoryId: h?.categoryId ?? 1,
+      durationDays: h?.durationDays ?? 7,
+      images: [],
+      productId: undefined,
+      specs: [],
+      sources: [],
+    };
   });
 
   const initialFormData: Partial<AuctionCreateInput> & { productId?: number } = {
     title: '',
     description: '',
     startPrice: 0,
-    buyNowPrice: undefined,
     reservePrice: undefined,
     startTime: (() => {
       const now = new Date();
@@ -157,6 +170,8 @@ export const AuctionFormPage: React.FC = () => {
     initialValues: initialFormData,
     isSubmitting: createMutation.isPending || updateMutation.isPending,
     storageKey: isEdit ? `auction-draft-${auctionId}` : 'auction-draft-new',
+    historyKey: HISTORY_KEY,
+    historyFields: ['categoryId', 'bidIncrement', 'durationDays', 'startPrice'],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -181,12 +196,12 @@ export const AuctionFormPage: React.FC = () => {
         title: existingAuction.title + titleSuffix,
         description: existingAuction.description,
         startPrice: existingAuction.startPrice,
-        buyNowPrice: existingAuction.buyNowPrice,
         reservePrice: existingAuction.reservePrice,
         startTime,
         endTime,
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
+        durationDays: days,
         images: normalize(existingAuction.images) as string[],
         specs: normalize(existingAuction.specs) as Spec[],
         sources: normalize(existingAuction.sources) as Source[],
@@ -221,7 +236,6 @@ export const AuctionFormPage: React.FC = () => {
 
   const validate = () => {
     const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
-    const buyRaw = formData.buyNowPrice;
     const resRaw = formData.reservePrice;
     const parsed = createAuctionFormPageSchema(t).safeParse({
       title: formData.title ?? '',
@@ -230,13 +244,6 @@ export const AuctionFormPage: React.FC = () => {
       categoryId: Number(formData.categoryId),
       startTime: formData.startTime ?? '',
       endTime: finalEndTime ?? '',
-      buyNowPrice:
-        buyRaw !== undefined &&
-        buyRaw !== null &&
-        Number.isFinite(Number(buyRaw)) &&
-        Number(buyRaw) > 0
-          ? Number(buyRaw)
-          : undefined,
       reservePrice:
         resRaw !== undefined &&
         resRaw !== null &&
@@ -270,7 +277,7 @@ export const AuctionFormPage: React.FC = () => {
         }
       }
       // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
-      const { productId, ...formPayload } = formData;
+      const { productId, durationDays: _durationDays, ...formPayload } = formData;
       const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
       const payload: any = {
         ...formPayload,
@@ -440,14 +447,6 @@ export const AuctionFormPage: React.FC = () => {
                         onChange={(e) => handleChange('bidIncrement', Number(e.target.value))}
                         icon={<Gavel className="w-4 h-4" />}
                         error={errors.bidIncrement}
-                    />
-                    <AmberInput
-                        label={t('auction.form.fields.buy_now')}
-                        type="number"
-                        value={formData.buyNowPrice || ''}
-                        onChange={(e) => handleChange('buyNowPrice', Number(e.target.value))}
-                        icon={<IqdSymbol />}
-                        error={errors.buyNowPrice}
                     />
                     <AmberInput
                         label={t('auction.form.fields.reserve_price') || 'Reserve Price'}
@@ -710,6 +709,7 @@ export const AuctionFormPage: React.FC = () => {
                                 onChange={(e) => {
                                   const val = Math.max(1, Math.min(90, Number(e.target.value) || 1));
                                   setDurationDays(val);
+                                  setFormData(prev => ({ ...prev, durationDays: val }));
                                 }}
                                 icon={<Clock className="w-4 h-4" />}
                                 min={1}

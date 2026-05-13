@@ -144,15 +144,6 @@ export const auctionApi = {
   },
 
   /**
-   * Buy Now - purchase auction at buyNowPrice
-   */
-  buyNow: async (id: number | string): Promise<Auction> => {
-    const client = auctionBaseApi.getInstance();
-    const response = await client.post(`/auctions/${id}/buy-now/`);
-    return response.data.data;
-  },
-
-  /**
    * Get auction statistics
    */
   getStats: async (): Promise<AuctionStats> => {

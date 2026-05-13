@@ -10,6 +10,31 @@ import { getLocalizedName } from '../../../services/categories/types';
 import type { FormFieldConfig } from '@core/services/types';
 import type { ProductListing } from '../../../types/services/listings.types';
 
+const HISTORY_KEY = 'history_listing';
+
+function readListingHistory(): Record<string, any> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveListingHistory(data: Record<string, any>) {
+  try {
+    const existing = readListingHistory() || {};
+    const updated = { ...existing };
+    if (data.categoryId !== undefined && data.categoryId !== null && data.categoryId !== '') {
+      updated.categoryId = data.categoryId;
+    }
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  } catch {
+    // ignore
+  }
+}
+
 interface QuickAddListingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -51,6 +76,7 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
         title: data.title as string,
         categoryId: data.categoryId ? Number(data.categoryId) : undefined,
       };
+      saveListingHistory(data);
       const result = await createMutation.mutateAsync(payload);
       onClose();
       if (onSuccess) {
@@ -60,6 +86,8 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
       // Error handled by mutation
     }
   };
+
+  const listingHistory = useMemo(() => readListingHistory(), []);
 
   return (
     <AmberSlideOver
@@ -96,7 +124,7 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
     >
       <FormBuilder
         fields={fields}
-        initialValues={{ title: '', categoryId: '' }}
+        initialValues={{ title: '', categoryId: listingHistory?.categoryId ?? '' }}
         onSubmit={handleSubmit}
         isLoading={createMutation.isPending}
         showActions={false}

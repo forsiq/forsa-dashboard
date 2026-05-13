@@ -32,7 +32,6 @@ export const AuctionAdd = () => {
     title: '',
     description: '',
     startPrice: 0,
-    buyNowPrice: undefined,
     reservePrice: undefined,
     startTime: '',
     endTime: '',
@@ -92,8 +91,6 @@ export const AuctionAdd = () => {
       newErrors.startPrice = t('auction.validation.start_price_gt_0') || 'Starting price must be greater than 0';
     if (!formData.startTime) newErrors.startTime = t('auction.validation.start_time_required') || 'Start time is required';
     if (!formData.endTime) newErrors.endTime = t('auction.validation.end_time_required') || 'End time is required';
-    if (formData.buyNowPrice && formData.buyNowPrice <= formData.startPrice)
-      newErrors.buyNowPrice = t('auction.validation.buy_now_gt_start') || 'Buy now price must be greater than starting price';
     if (uploadedImages.length === 0) newErrors.images = t('auction.validation.image_required') || 'At least one image is required';
 
     setErrors(newErrors);
@@ -226,16 +223,6 @@ export const AuctionAdd = () => {
               value={formData.reservePrice || ''}
               onChange={(e) => handleInputChange('reservePrice', parseFloat(e.target.value) || undefined)}
               error={errors.reservePrice}
-              dir={dir}
-            />
-
-            <AmberInput
-              label={`${t('auction.form.buy_now_price')} - ${t('auction.form.optional')}`}
-              type="number"
-              min="0"
-              value={formData.buyNowPrice || ''}
-              onChange={(e) => handleInputChange('buyNowPrice', parseFloat(e.target.value) || undefined)}
-              error={errors.buyNowPrice}
               dir={dir}
             />
           </div>

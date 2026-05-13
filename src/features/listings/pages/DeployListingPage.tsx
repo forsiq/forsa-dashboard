@@ -61,7 +61,6 @@ export const DeployListingPage: React.FC = () => {
 
   const [auctionForm, setAuctionForm] = useState({
     startPrice: 0,
-    buyNowPrice: '',
     reservePrice: '',
     bidIncrement: 5000,
     startTime: '',
@@ -85,7 +84,7 @@ export const DeployListingPage: React.FC = () => {
   const currentValues = deployType === 'auction' ? auctionForm : groupBuyForm;
   const initialValues = useMemo(() =>
     deployType === 'auction'
-      ? { startPrice: 0, buyNowPrice: '', reservePrice: '', bidIncrement: 5000, startTime: '', endTime: '' }
+      ? { startPrice: 0, reservePrice: '', bidIncrement: 5000, startTime: '', endTime: '' }
       : { originalPrice: 0, dealPrice: 0, minParticipants: 2, maxParticipants: 100, startTime: '', endTime: '', autoCreateOrder: true },
     [deployType]
   );
@@ -116,13 +115,11 @@ export const DeployListingPage: React.FC = () => {
           setFieldErrors(zodIssuesToFieldMap(parsed.error));
           return;
         }
-        const buyNowPrice = parseOptionalListingPrice(auctionForm.buyNowPrice);
         const reservePrice = parseOptionalListingPrice(auctionForm.reservePrice);
         await deployAuctionMutation.mutateAsync({
           id: Number(id),
           data: {
             startPrice: parseRequiredListingPrice(auctionForm.startPrice),
-            ...(buyNowPrice !== undefined ? { buyNowPrice } : {}),
             ...(reservePrice !== undefined ? { reservePrice } : {}),
             bidIncrement: parseBidIncrement(auctionForm.bidIncrement, 5000),
             startTime: new Date(auctionForm.startTime).toISOString(),

@@ -39,6 +39,19 @@ import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
 import type { GroupBuyingCreateInput, GroupBuyingUpdateInput } from '../types';
+
+const HISTORY_KEY = 'history_group_buying';
+
+function readGroupBuyingHistory(): Record<string, any> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const GroupBuyingFormPage: React.FC = () => {
   const { t, dir, language } = useLanguage();
   const mapApiError = useMapApiValidationError();
@@ -65,18 +78,21 @@ export const GroupBuyingFormPage: React.FC = () => {
   const createMutation = useCreateGroupBuying();
   const updateMutation = useUpdateGroupBuying();
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    categoryId: '',
-    productId: '',
-    originalPrice: 0,
-    dealPrice: 0,
-    minParticipants: 2,
-    maxParticipants: 100,
-    startTime: '',
-    endTime: '',
-    autoCreateOrder: true,
+  const [formData, setFormData] = useState(() => {
+    const h = readGroupBuyingHistory();
+    return {
+      title: '',
+      description: '',
+      categoryId: h?.categoryId ?? '',
+      productId: '',
+      originalPrice: 0,
+      dealPrice: 0,
+      minParticipants: h?.minParticipants ?? 2,
+      maxParticipants: h?.maxParticipants ?? 100,
+      startTime: '',
+      endTime: '',
+      autoCreateOrder: true,
+    };
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -116,6 +132,8 @@ export const GroupBuyingFormPage: React.FC = () => {
     },
     isSubmitting,
     storageKey: isEdit ? `draft-group-buying-${id}` : 'draft-group-buying-new',
+    historyKey: HISTORY_KEY,
+    historyFields: ['categoryId', 'minParticipants', 'maxParticipants'],
   });
 
   // Sync when editing

@@ -10,6 +10,10 @@ interface UseFormUXOptions {
   isSubmitting?: boolean;
   /** Key for localStorage auto-save (omit to disable) */
   storageKey?: string;
+  /** Key for persisting last-used field values after successful submit (omit to disable) */
+  historyKey?: string;
+  /** List of field names to persist as "last used" on markClean (only these fields are saved) */
+  historyFields?: string[];
   /** Custom warning message */
   warningMessage?: string;
 }
@@ -21,6 +25,8 @@ interface UseFormUXReturn {
   markClean: () => void;
   /** Restore saved draft from localStorage */
   restoreDraft: () => Record<string, any> | null;
+  /** Restore last-used values from history (returns only the tracked fields) */
+  restoreHistory: () => Record<string, any> | null;
   /** Clear saved draft */
   clearDraft: () => void;
   /** Check if there's a saved draft */
@@ -47,6 +53,8 @@ export function useFormUX({
   initialValues,
   isSubmitting = false,
   storageKey,
+  historyKey,
+  historyFields,
   warningMessage,
 }: UseFormUXOptions): UseFormUXReturn {
   const router = useRouter();
@@ -133,9 +141,31 @@ export function useFormUX({
   }, [isDirty, isSubmitting, router.asPath, router.events, warningMessage]);
 
   const markClean = useCallback(() => {
+    // Save specified fields to history BEFORE clearing draft
+    if (historyKey && historyFields?.length) {
+      const historyValues: Record<string, any> = {};
+      for (const field of historyFields) {
+        if (values[field] !== undefined && values[field] !== null && values[field] !== '') {
+          historyValues[field] = values[field];
+        }
+      }
+      try {
+        localStorage.setItem(historyKey, JSON.stringify(historyValues));
+      } catch {
+        // localStorage might be full or unavailable
+      }
+    }
+    // Clear draft
+    if (storageKey) {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // ignore
+      }
+    }
     prevDirtyRef.current = false;
     setIsDirty(false);
-  }, []);
+  }, [historyKey, historyFields, storageKey, values]);
 
   const restoreDraft = useCallback((): Record<string, any> | null => {
     if (!storageKey) return null;
@@ -156,6 +186,16 @@ export function useFormUX({
     }
   }, [storageKey]);
 
+  const restoreHistory = useCallback((): Record<string, any> | null => {
+    if (!historyKey) return null;
+    try {
+      const saved = localStorage.getItem(historyKey);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, [historyKey]);
+
   const hasDraft = useMemo(() => {
     if (!storageKey) return false;
     try {
@@ -169,6 +209,7 @@ export function useFormUX({
     isDirty,
     markClean,
     restoreDraft,
+    restoreHistory,
     clearDraft,
     hasDraft,
   };

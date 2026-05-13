@@ -174,8 +174,6 @@ export const ar: Record<string, string> = {
 
   "auction.lifecycle.cancel_title": "إلغاء المزاد",
   "auction.lifecycle.cancel_confirm": "هل أنت متأكد من إلغاء هذا المزاد؟ لا يمكن التراجع عن هذا الإجراء.",
-  "auction.lifecycle.buy_now_title": "شراء الآن",
-  "auction.lifecycle.buy_now_confirm": "هل أنت متأكد من شراء هذا المزاد؟",
 
   // Sidebar service labels
   "service.sidebar.general.name": "عام",
@@ -217,7 +215,6 @@ export const ar: Record<string, string> = {
   "auction.validation.start_time_invalid": "وقت بدء غير صالح",
   "auction.validation.end_time_invalid": "وقت انتهاء غير صالح",
   "auction.validation.end_after_start": "وقت الانتهاء يجب أن يكون بعد وقت البدء",
-  "auction.validation.buy_now_gte_start": "سعر الشراء الفوري يجب أن يكون أكبر من أو يساوي سعر البداية",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",
@@ -326,7 +323,6 @@ export const ar: Record<string, string> = {
   "listing.deploy.auction_settings": "إعدادات المزاد",
   "listing.deploy.group_buy_settings": "إعدادات الصفقة الجماعية",
   "listing.deploy.start_price": "سعر البداية",
-  "listing.deploy.buy_now_price": "سعر الشراء الفوري (اختياري)",
   "listing.deploy.reserve_price": "سعر الاحتياط (اختياري)",
   "listing.deploy.bid_increment": "حد المزايدة",
   "listing.deploy.start_time": "وقت البدء",
@@ -360,7 +356,6 @@ export const ar: Record<string, string> = {
     "أقصى عدد مسموح في الصفقة لتجنب تجاوز الكمية التي يمكنك تلبيتها.",
 
   "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
-  "validation.buy_now_price_min": "سعر الشراء الفوري يجب أن يكون {min} على الأقل.",
   "validation.reserve_price_min": "سعر الاحتياط يجب أن يكون {min} على الأقل.",
   "validation.bid_increment_min": "حد المزايدة يجب أن يكون {min} على الأقل.",
   "validation.field_must_be_at_least": "الحقل {field} يجب أن يكون {min} على الأقل.",
@@ -528,4 +523,19 @@ export const ar: Record<string, string> = {
 
   // Auction category slugs — app override (see getLocalizedName fallback)
   "auction.category.computers": "أجهزة كمبيوتر",
+
+  // Changelog / What's New
+  "changelog.title": "الجديد",
+  "changelog.subtitle": "آخر التحديثات والتحسينات",
+  "changelog.whats_new": "ما الجديد",
+  "changelog.new_badge": "جديد",
+  "changelog.mark_all_read": "تحديد الكل كمقروء",
+  "changelog.no_updates": "لا توجد تحديثات بعد",
+  "changelog.view_all": "عرض جميع التحديثات",
+  "changelog.released": "تم الإصدار",
+  "changelog.version": "الإصدار",
+  "changelog.type.added": "مضاف",
+  "changelog.type.fixed": "تم الإصلاح",
+  "changelog.type.improved": "تم التحسين",
+  "changelog.type.changed": "تم التغيير",
 };

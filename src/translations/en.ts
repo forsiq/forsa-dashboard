@@ -176,8 +176,6 @@ export const en: Record<string, string> = {
 
   "auction.lifecycle.cancel_title": "Cancel Auction",
   "auction.lifecycle.cancel_confirm": "Are you sure you want to cancel this auction? This action cannot be undone.",
-  "auction.lifecycle.buy_now_title": "Buy Now",
-  "auction.lifecycle.buy_now_confirm": "Are you sure you want to buy this auction?",
 
   // Sidebar service labels (core-ui Sidebar: t(`service.${sectionTitle}.name`) where sectionTitle is e.g. sidebar.dashboard)
   "service.sidebar.general.name": "General",
@@ -219,7 +217,6 @@ export const en: Record<string, string> = {
   "auction.validation.start_time_invalid": "Invalid start time",
   "auction.validation.end_time_invalid": "Invalid end time",
   "auction.validation.end_after_start": "End time must be after start time",
-  "auction.validation.buy_now_gte_start": "Buy now must be greater than or equal to start price",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",
@@ -328,7 +325,6 @@ export const en: Record<string, string> = {
   "listing.deploy.auction_settings": "Auction Settings",
   "listing.deploy.group_buy_settings": "Group Buy Settings",
   "listing.deploy.start_price": "Start Price",
-  "listing.deploy.buy_now_price": "Buy Now Price (optional)",
   "listing.deploy.reserve_price": "Reserve Price (optional)",
   "listing.deploy.bid_increment": "Bid Increment",
   "listing.deploy.start_time": "Start Time",
@@ -363,7 +359,6 @@ export const en: Record<string, string> = {
 
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",
-  "validation.buy_now_price_min": "Buy-now price must be at least {min}.",
   "validation.reserve_price_min": "Reserve price must be at least {min}.",
   "validation.bid_increment_min": "Bid increment must be at least {min}.",
   "validation.field_must_be_at_least": "{field} must be at least {min}.",
@@ -527,4 +522,19 @@ export const en: Record<string, string> = {
 
   // Auction category slugs (DataTable / charts when API returns English `name` only)
   "auction.category.computers": "Computers",
+
+  // Changelog / What's New
+  "changelog.title": "What's New",
+  "changelog.subtitle": "Latest updates and improvements",
+  "changelog.whats_new": "What's New",
+  "changelog.new_badge": "NEW",
+  "changelog.mark_all_read": "Mark all as read",
+  "changelog.no_updates": "No updates yet",
+  "changelog.view_all": "View all updates",
+  "changelog.released": "Released",
+  "changelog.version": "Version",
+  "changelog.type.added": "Added",
+  "changelog.type.fixed": "Fixed",
+  "changelog.type.improved": "Improved",
+  "changelog.type.changed": "Changed",
 };
