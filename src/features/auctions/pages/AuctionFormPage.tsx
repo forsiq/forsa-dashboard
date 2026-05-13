@@ -43,6 +43,23 @@ import { getLocalizedName } from '../../../services/categories/types';
 import type { AuctionCreateInput, AuctionUpdateInput, Spec, Source } from '../types/auction.types';
 
 /**
+ * Normalize fields that may come as JSON strings from the backend.
+ * The backend sometimes returns arrays as serialized JSON strings (e.g. `'["url"]'`).
+ */
+const normalize = (val: unknown, fallback: unknown[] = []): unknown[] => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+};
+
+/**
  * AuctionFormPage - Universal Creation and Modification Interface
  */
 export const AuctionFormPage: React.FC = () => {

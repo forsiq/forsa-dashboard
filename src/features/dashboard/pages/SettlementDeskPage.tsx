@@ -86,17 +86,20 @@ export const SettlementDeskPage = () => {
       key: 'title',
       label: t('settlement.auction'),
       cardTitle: true,
-      render: (item) => (
+      render: (item) => {
+        const imgSrc = Array.isArray(item.image) ? item.image[0] : item.image;
+        const isValidUrl = imgSrc && typeof imgSrc === 'string' && imgSrc.startsWith('http');
+        return (
         <div className="flex items-center gap-3">
-          {item.image ? (
+          {isValidUrl ? (
             <img
-              src={Array.isArray(item.image) ? item.image[0] : item.image}
+              src={imgSrc}
               alt=""
               className="w-10 h-10 rounded-lg object-cover border border-white/10"
             />
           ) : (
-            <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs text-zinc-muted">
-              N/A
+            <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[7px] text-zinc-muted font-bold uppercase tracking-wider leading-none">
+              No Img
             </div>
           )}
           <div>
@@ -106,7 +109,8 @@ export const SettlementDeskPage = () => {
             <p className="text-xs text-zinc-muted">#{item.id}</p>
           </div>
         </div>
-      ),
+        );
+      },
     },
     {
       key: 'winnerId',

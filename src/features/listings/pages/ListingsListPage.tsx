@@ -256,7 +256,15 @@ export const ListingsListPage: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
             {t('listing.filter')}
           </AmberButton>
-          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => setIsQuickAddOpen(true)}>
+          <AmberButton
+            variant="outline"
+            className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover"
+            onClick={() => setIsQuickAddOpen(true)}
+          >
+            <Zap className="w-4 h-4" />
+            {t('listing.quick_add.btn_label') || 'Quick Add'}
+          </AmberButton>
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/listings/new')}>
               <Plus className="w-5 h-5" />
               <span>{t('listing.add_product') || t('listing.create')}</span>
           </AmberButton>

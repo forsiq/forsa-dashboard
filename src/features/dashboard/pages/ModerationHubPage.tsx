@@ -108,17 +108,22 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
       <div className="flex gap-4">
         {/* Image */}
         <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)]">
-          {auction.image ? (
-            <img
-              src={Array.isArray(auction.image) ? auction.image[0] : auction.image}
-              alt={auction.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Eye className="w-5 h-5 text-zinc-muted" />
-            </div>
-          )}
+          {(() => {
+            const imgSrc = Array.isArray(auction.image) ? auction.image[0] : auction.image;
+            const isValidUrl = imgSrc && typeof imgSrc === 'string' && imgSrc.startsWith('http');
+            return isValidUrl ? (
+              <img
+                src={imgSrc}
+                alt={auction.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-0.5">
+                <Eye className="w-4 h-4 text-zinc-muted/40" />
+                <span className="text-[7px] text-zinc-muted/40 font-bold uppercase tracking-wider leading-none">No Image</span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Info */}

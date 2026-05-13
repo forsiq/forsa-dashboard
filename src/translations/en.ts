@@ -333,6 +333,7 @@ export const en: Record<string, string> = {
   "listing.empty.description": "Create your first product listing to get started.",
   "listing.empty.create": "Create Listing",
   "listing.quick_add.title": "Quick Add Product",
+  "listing.quick_add.btn_label": "Quick Add",
   "listing.quick_add.description": "Create a product listing in seconds. You can edit details later.",
   "listing.quick_add.create": "Create & Edit",
   "listing.quick_deploy.title": "Quick Deploy",

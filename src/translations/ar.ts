@@ -334,6 +334,7 @@ export const ar: Record<string, string> = {
   "listing.empty.description": "أنشئ أول منتج للبدء.",
   "listing.empty.create": "إضافة منتج",
   "listing.quick_add.title": "إضافة سريعة",
+  "listing.quick_add.btn_label": "إضافة سريعة",
   "listing.quick_add.description": "أنشئ منتجاً في ثوانٍ. يمكنك تعديل التفاصيل لاحقاً.",
   "listing.quick_add.create": "إنشاء وتعديل",
   "listing.quick_deploy.title": "نشر سريع",
