@@ -1,0 +1,57 @@
+---
+description: When and how to record product updates in Forsa changelog (releases.yaml)
+alwaysApply: true
+---
+
+# Changelog / version entries (Forsa)
+
+When a task ships **user-visible** behavior (dashboard, portal, mobile-facing flows), update the changelog in the same change unless it is purely internal.
+
+## Where
+
+- Data: [`src/features/changelog/data/releases.yaml`](src/features/changelog/data/releases.yaml)
+- Types: [`src/features/changelog/types/index.ts`](src/features/changelog/types/index.ts) (only if the schema changes)
+- UI labels only (headers, `changelog.type.*`): [`src/translations/en.ts`](src/translations/en.ts), [`src/translations/ar.ts`](src/translations/ar.ts). Release copy stays in YAML (`en` / `ar` per field).
+
+## When it is **required**
+
+Add or extend a release entry for:
+
+- New **features** or user-facing capability
+- **Bug fixes** that users could notice or that fixed broken flows
+- Meaningful **improvements** (performance, reliability, UX that changes how people work)
+- **Breaking** or workflow changes users must know (`type: changed`)
+
+Use `type`: `added` | `fixed` | `improved` | `changed`. Set `sidebarPath` when the change maps to a sidebar route (drives the **NEW** badge logic).
+
+## When **not** to mention
+
+Skip changelog lines for:
+
+- Typo-only, comment-only, or purely internal refactors
+- Trivial layout tweaks with no meaningful user outcome
+- Dependency bumps with no visible behavior change
+
+If unsure: **one short line** is better than silence for anything a support or ops person would care about.
+
+## Format (YAML)
+
+- New **semver** block at the **top** of the array (newest first).
+- Each `title` and each entry `description` must include **`en`** and **`ar`**.
+- Keep bullets factual; avoid marketing fluff.
+
+## Example entry shape
+
+```yaml
+- version: "1.4.0"
+  date: "2026-05-14"
+  title:
+    en: "Short English title"
+    ar: "عنوان عربي قصير"
+  entries:
+    - description:
+        en: "Fixed X when doing Y."
+        ar: "تم إصلاح X عند القيام بـ Y."
+      type: fixed
+      sidebarPath: /auctions
+```

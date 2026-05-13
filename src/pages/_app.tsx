@@ -46,9 +46,10 @@ function MyApp({ Component, pageProps }: AppProps) {
             <ThemeProvider>
               <NavigationProvider>
                 <ProjectProvider>
+                  {/* Outside Suspense so lazy pages suspending never unmount session UI/listeners */}
+                  <Toast />
+                  <SessionExpiredDialog />
                   <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">...</div>}>
-                    <Toast />
-                    <SessionExpiredDialog />
                     {isPublicRoute ? (
                       <Component {...pageProps} />
                     ) : (
