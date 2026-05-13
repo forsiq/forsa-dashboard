@@ -187,9 +187,9 @@ export const AuctionFormPage: React.FC = () => {
         endTime,
         bidIncrement: existingAuction.bidIncrement,
         categoryId: existingAuction.categoryId,
-        images: existingAuction.images || [],
-        specs: existingAuction.specs || [],
-        sources: existingAuction.sources || [],
+        images: normalize(existingAuction.images) as string[],
+        specs: normalize(existingAuction.specs) as Spec[],
+        sources: normalize(existingAuction.sources) as Source[],
       });
     }
   }, [isEdit, isClone, existingAuction]);
@@ -274,6 +274,9 @@ export const AuctionFormPage: React.FC = () => {
       const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
       const payload: any = {
         ...formPayload,
+        images: normalize(formPayload.images) as string[],
+        specs: normalize(formPayload.specs) as Spec[],
+        sources: normalize(formPayload.sources) as Source[],
         endTime: finalEndTime ? new Date(finalEndTime).toISOString() : undefined,
       };
       if (uploadedAttachmentId) {
