@@ -414,7 +414,7 @@ export interface TimelineEvent {
 export interface ActivityStats {
   activeAuctions: number;
   endedAuctions: number;
-  mostActiveAuction: { title: string } | null;
+  mostActiveAuction: { id: number; title: string } | null;
   totalBidsToday: number;
 }
 

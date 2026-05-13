@@ -230,6 +230,8 @@ export const en: Record<string, string> = {
   // Listing labels
   "listing.title": "Product Listings",
   "listing.description": "Manage your product catalog for auction and deal deployment",
+  "listing.add_product": "Add Product",
+  "listing.created_success": "Product added successfully!",
   "listing.create": "New Listing",
   "listing.edit": "Edit Listing",
   "listing.delete": "Delete Listing",

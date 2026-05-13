@@ -12,7 +12,8 @@ import {
   Users,
   Layers,
   Zap,
-  Image as ImageIcon,
+  Rocket,
+  X,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -28,6 +29,8 @@ import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
+import { QuickAddListingModal } from '../components/QuickAddListingModal';
+import { QuickDeployModal } from '../components/QuickDeployModal';
 import type { ProductListing } from '../../../types/services/listings.types';
 import { getListingPrimaryImageUrl } from '../utils/listing-media';
 
@@ -45,7 +48,21 @@ export const ListingsListPage: React.FC = () => {
   const [conditionFilter, setConditionFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
 
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [justCreatedListing, setJustCreatedListing] = useState<ProductListing | null>(null);
+  const [isQuickDeployOpen, setIsQuickDeployOpen] = useState(false);
+  const [quickDeployType, setQuickDeployType] = useState<'auction' | 'group-buy'>('auction');
+
   useEffect(() => { setIsClient(true); }, []);
+
+  const handleQuickAddSuccess = (listing: ProductListing) => {
+    setJustCreatedListing(listing);
+  };
+
+  const handleDeployFromBanner = (type: 'auction' | 'group-buy') => {
+    setQuickDeployType(type);
+    setIsQuickDeployOpen(true);
+  };
 
   const { data: listingsData, isLoading } = useGetListings({
     search: debouncedSearch || undefined,
@@ -239,12 +256,49 @@ export const ListingsListPage: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
             {t('listing.filter')}
           </AmberButton>
-          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/listings/new')}>
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => setIsQuickAddOpen(true)}>
               <Plus className="w-5 h-5" />
-              <span>{t('listing.create')}</span>
+              <span>{t('listing.add_product') || t('listing.create')}</span>
           </AmberButton>
         </div>
       </div>
+
+      {/* Deploy Banner - shows after product creation */}
+      {justCreatedListing && (
+        <div className="p-4 rounded-2xl bg-brand/[0.05] border border-brand/20 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+            <Rocket className="w-5 h-5 text-brand" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-black text-zinc-text">
+              {t('listing.created_success') || 'Product added successfully!'}
+            </p>
+            <p className="text-xs text-zinc-muted font-bold truncate">{justCreatedListing.title}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <AmberButton
+              className="h-9 bg-brand text-black font-black rounded-lg px-4 gap-1.5 border-none active:scale-95 transition-all text-xs"
+              onClick={() => handleDeployFromBanner('auction')}
+            >
+              <Gavel className="w-3.5 h-3.5" />
+              {t('listing.detail.deploy_auction') || 'Deploy as Auction'}
+            </AmberButton>
+            <AmberButton
+              className="h-9 bg-info text-white font-black rounded-lg px-4 gap-1.5 border-none active:scale-95 transition-all text-xs"
+              onClick={() => handleDeployFromBanner('group-buy')}
+            >
+              <Users className="w-3.5 h-3.5" />
+              {t('listing.detail.deploy_group_buy') || 'Deploy as Group Buy'}
+            </AmberButton>
+          </div>
+          <button
+            onClick={() => setJustCreatedListing(null)}
+            className="p-1 rounded-lg hover:bg-white/5 transition-colors"
+          >
+            <X className="w-4 h-4 text-zinc-muted" />
+          </button>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <StatsGrid
@@ -308,8 +362,8 @@ export const ListingsListPage: React.FC = () => {
               <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('listing.empty.title')}</h3>
               <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('listing.empty.description')}</p>
             </div>
-            <AmberButton className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => router.push('/listings/new')}>
-                {t('listing.empty.create')}
+            <AmberButton className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => setIsQuickAddOpen(true)}>
+                {t('listing.add_product') || t('listing.empty.create')}
             </AmberButton>
           </Card>
         ) : (
@@ -438,6 +492,24 @@ export const ListingsListPage: React.FC = () => {
         </div>
       </AmberSlideOver>
       <ConfirmModal />
+
+      {/* Quick Add Product Modal */}
+      <QuickAddListingModal
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        onSuccess={handleQuickAddSuccess}
+      />
+
+      {/* Quick Deploy Modal */}
+      <QuickDeployModal
+        isOpen={isQuickDeployOpen}
+        onClose={() => {
+          setIsQuickDeployOpen(false);
+          setJustCreatedListing(null);
+        }}
+        listing={justCreatedListing}
+        initialType={quickDeployType}
+      />
     </div>
   );
 };

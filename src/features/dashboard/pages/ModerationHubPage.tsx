@@ -110,7 +110,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
         <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)]">
           {auction.image ? (
             <img
-              src={auction.image}
+              src={Array.isArray(auction.image) ? auction.image[0] : auction.image}
               alt={auction.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -246,8 +246,10 @@ export const ModerationHubPage = () => {
           {
             label: t('moderation.activity.stat.most_active'),
             value: stats?.mostActiveAuction?.title || t('moderation.activity.no_most_active'),
+            valueClassName: 'text-zinc-text text-lg font-black leading-snug line-clamp-2 break-words',
             icon: Flame,
             color: 'warning',
+            href: stats?.mostActiveAuction?.id ? `/auctions/${stats.mostActiveAuction.id}` : undefined,
           },
           {
             label: t('moderation.activity.stat.bids_today'),

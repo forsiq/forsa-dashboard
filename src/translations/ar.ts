@@ -232,6 +232,8 @@ export const ar: Record<string, string> = {
   // Listing labels
   "listing.title": "قائمة المنتجات",
   "listing.description": "إدارة كتالوج المنتجات الخاصة بك لنشرها في المزادات أو الصفقات",
+  "listing.add_product": "إضافة منتج",
+  "listing.created_success": "تم إضافة المنتج بنجاح!",
   "listing.create": "إضافة منتج",
   "listing.edit": "تعديل المنتج",
   "listing.delete": "حذف المنتج",

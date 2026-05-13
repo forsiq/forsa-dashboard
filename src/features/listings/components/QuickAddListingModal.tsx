@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/router';
 import { Plus, Loader2 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
@@ -9,15 +8,16 @@ import { useCreateListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
 import type { FormFieldConfig } from '@core/services/types';
+import type { ProductListing } from '../../../types/services/listings.types';
 
 interface QuickAddListingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (listing: ProductListing) => void;
 }
 
-export function QuickAddListingModal({ isOpen, onClose }: QuickAddListingModalProps) {
+export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddListingModalProps) {
   const { t, language } = useLanguage();
-  const router = useRouter();
   const createMutation = useCreateListing();
   const { data: categoriesData } = useCategories({ limit: 100 });
 
@@ -53,11 +53,8 @@ export function QuickAddListingModal({ isOpen, onClose }: QuickAddListingModalPr
       };
       const result = await createMutation.mutateAsync(payload);
       onClose();
-      const listingId = (result as any)?.data?.id || (result as any)?.id;
-      if (listingId) {
-        router.push(`/listings/${listingId}/edit`);
-      } else {
-        router.push('/listings');
+      if (onSuccess) {
+        onSuccess((result as any)?.data || result);
       }
     } catch {
       // Error handled by mutation

@@ -90,7 +90,7 @@ export const SettlementDeskPage = () => {
         <div className="flex items-center gap-3">
           {item.image ? (
             <img
-              src={item.image}
+              src={Array.isArray(item.image) ? item.image[0] : item.image}
               alt=""
               className="w-10 h-10 rounded-lg object-cover border border-white/10"
             />
