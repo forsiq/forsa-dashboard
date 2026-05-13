@@ -523,19 +523,4 @@ export const ar: Record<string, string> = {
 
   // Auction category slugs — app override (see getLocalizedName fallback)
   "auction.category.computers": "أجهزة كمبيوتر",
-
-  // Changelog / What's New
-  "changelog.title": "الجديد",
-  "changelog.subtitle": "آخر التحديثات والتحسينات",
-  "changelog.whats_new": "ما الجديد",
-  "changelog.new_badge": "جديد",
-  "changelog.mark_all_read": "تحديد الكل كمقروء",
-  "changelog.no_updates": "لا توجد تحديثات بعد",
-  "changelog.view_all": "عرض جميع التحديثات",
-  "changelog.released": "تم الإصدار",
-  "changelog.version": "الإصدار",
-  "changelog.type.added": "مضاف",
-  "changelog.type.fixed": "تم الإصلاح",
-  "changelog.type.improved": "تم التحسين",
-  "changelog.type.changed": "تم التغيير",
 };

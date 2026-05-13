@@ -522,19 +522,4 @@ export const en: Record<string, string> = {
 
   // Auction category slugs (DataTable / charts when API returns English `name` only)
   "auction.category.computers": "Computers",
-
-  // Changelog / What's New
-  "changelog.title": "What's New",
-  "changelog.subtitle": "Latest updates and improvements",
-  "changelog.whats_new": "What's New",
-  "changelog.new_badge": "NEW",
-  "changelog.mark_all_read": "Mark all as read",
-  "changelog.no_updates": "No updates yet",
-  "changelog.view_all": "View all updates",
-  "changelog.released": "Released",
-  "changelog.version": "Version",
-  "changelog.type.added": "Added",
-  "changelog.type.fixed": "Fixed",
-  "changelog.type.improved": "Improved",
-  "changelog.type.changed": "Changed",
 };
