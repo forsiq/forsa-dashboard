@@ -48,8 +48,8 @@ import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
 import { FieldHelpHint } from '../components/FieldHelpHint';
-import { getListingPrimaryImageUrl } from '../utils/listing-media';
-import { buildImmediateDeployTimes, WIZARD_STEP_IDS } from '../utils/listing-wizard.utils';
+import { ListingImage } from '../components/ListingImage';
+import { WIZARD_STEP, WIZARD_TOTAL_STEPS } from '../utils/listing-wizard.utils';
 import {
   createWizardBasicStepSchema,
   createWizardDescriptionStepSchema,
@@ -77,7 +77,6 @@ function filterSources(sources: ListingSource[]): ListingSource[] {
   return sources.filter((s) => s.label.trim() || s.url.trim());
 }
 
-const TOTAL_STEPS = WIZARD_STEP_IDS.length;
 
 export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   mode: modeProp,
@@ -101,12 +100,12 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
-  const maxStep = maxStepProp ?? (wizardMode === 'edit' ? 5 : TOTAL_STEPS);
+  const maxStep = maxStepProp ?? (wizardMode === 'edit' ? WIZARD_STEP.MEDIA : WIZARD_TOTAL_STEPS);
 
   const initialStep = useMemo(() => {
     if (queryStep && queryStep >= 1 && queryStep <= maxStep) return queryStep;
-    if (wizardMode === 'publish-only') return 6;
-    return 1;
+    if (wizardMode === 'publish-only') return WIZARD_STEP.CHANNEL;
+    return WIZARD_STEP.PRODUCT;
   }, [queryStep, wizardMode, maxStep]);
 
   const [currentStep, setCurrentStep] = useState(initialStep);
@@ -282,7 +281,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     setFieldErrors({});
 
     try {
-      if (currentStep === 1) {
+      if (currentStep === WIZARD_STEP.PRODUCT) {
         const parsed = createWizardBasicStepSchema(t).safeParse({
           title: catalog.title,
           categoryId: catalog.categoryId,
@@ -296,69 +295,35 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           setFieldErrors(zodIssuesToFieldMap(parsed.error));
           return;
         }
-        goToStep(2);
-        return;
-      }
-
-      if (currentStep === 2) {
         createWizardDescriptionStepSchema().safeParse({ description: catalog.description });
-        goToStep(3);
+        goToStep(WIZARD_STEP.DETAILS);
         return;
       }
 
-      if (currentStep === 3) {
-        goToStep(4);
-        return;
-      }
-
-      if (currentStep === 4) {
+      if (currentStep === WIZARD_STEP.DETAILS) {
         const id = await saveCatalog();
         setListingId(id);
-        if (maxStep <= 4) {
-          router.push(`/listings/${id}`);
-          return;
-        }
-        goToStep(5);
+        goToStep(WIZARD_STEP.MEDIA);
         return;
       }
 
-      if (currentStep === 5) {
+      if (currentStep === WIZARD_STEP.MEDIA) {
         const id = listingId!;
         await saveMedia(id);
-        if (maxStep <= 5) {
+        if (maxStep <= WIZARD_STEP.MEDIA) {
           router.push(`/listings/${id}`);
           return;
         }
-        goToStep(6);
+        goToStep(WIZARD_STEP.CHANNEL);
         return;
       }
 
-      if (currentStep === 6) {
+      if (currentStep === WIZARD_STEP.CHANNEL) {
         if (!deployChannel) {
           setSubmitError(t('listing.wizard.channel_required') || 'Select a sales channel');
           return;
         }
-        goToStep(7);
-        return;
-      }
-
-      if (currentStep === 7) {
-        const deployAuctionSchema = createDeployAuctionClientSchema(t, { requireSchedule: false });
-        const deployGroupBuySchema = createDeployGroupBuyClientSchema(t, { requireSchedule: false });
-        if (deployChannel === 'auction') {
-          const parsed = deployAuctionSchema.safeParse(auctionPricing);
-          if (!parsed.success) {
-            setFieldErrors(zodIssuesToFieldMap(parsed.error));
-            return;
-          }
-        } else if (deployChannel === 'group_buy') {
-          const parsed = deployGroupBuySchema.safeParse(groupBuyPricing);
-          if (!parsed.success) {
-            setFieldErrors(zodIssuesToFieldMap(parsed.error));
-            return;
-          }
-        }
-        goToStep(8);
+        goToStep(WIZARD_STEP.PUBLISH);
         return;
       }
     } catch (err: unknown) {
@@ -370,7 +335,22 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     if (!listingId || !deployChannel) return;
     setSubmitError(null);
     setFieldErrors({});
-    const { startTime, endTime } = buildImmediateDeployTimes();
+
+    const deployAuctionSchema = createDeployAuctionClientSchema(t);
+    const deployGroupBuySchema = createDeployGroupBuyClientSchema(t);
+    if (deployChannel === 'auction') {
+      const parsed = deployAuctionSchema.safeParse(auctionPricing);
+      if (!parsed.success) {
+        setFieldErrors(zodIssuesToFieldMap(parsed.error));
+        return;
+      }
+    } else {
+      const parsed = deployGroupBuySchema.safeParse(groupBuyPricing);
+      if (!parsed.success) {
+        setFieldErrors(zodIssuesToFieldMap(parsed.error));
+        return;
+      }
+    }
 
     try {
       if (deployChannel === 'auction') {
@@ -381,8 +361,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             startPrice: parseRequiredListingPrice(auctionPricing.startPrice),
             ...(originalPrice !== undefined ? { originalPrice } : {}),
             bidIncrement: parseBidIncrement(auctionPricing.bidIncrement, 5000),
-            startTime,
-            endTime,
           },
         });
         const auctionId = auction?.id;
@@ -398,8 +376,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             minParticipants: Number(groupBuyPricing.minParticipants),
             maxParticipants: Number(groupBuyPricing.maxParticipants),
             autoCreateOrder: true,
-            startTime,
-            endTime,
           },
         });
         const dealId = deal?.id;
@@ -504,8 +480,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     return <EmptyState icon={Package} title={t('listing.detail.not_found') || 'Not Found'} />;
   }
 
-  const listingCoverUrl = existingListing ? getListingPrimaryImageUrl(existingListing) : null;
-  const showPublishSteps = maxStep > 5;
+  const listingCoverUrl = existingListing ?? null;
+  const showPublishSteps = maxStep > WIZARD_STEP.MEDIA;
 
   const pageTitle =
     wizardMode === 'create'
@@ -552,56 +528,57 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       <ListingWizardStepIndicator
         currentStep={currentStep}
         maxStep={maxStep}
-        minStep={wizardMode === 'publish-only' ? 6 : 1}
+        minStep={wizardMode === 'publish-only' ? WIZARD_STEP.CHANNEL : 1}
       />
 
-      {currentStep === 1 && (
-        <FormSection icon={<Package className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.basic')}>
-          <FormBuilder
-            fields={basicFields}
-            initialValues={{
-              title: catalog.title,
-              categoryId: catalog.categoryId ? String(catalog.categoryId) : '',
-              brand: catalog.brand,
-              model: catalog.model,
-              condition: catalog.condition,
-              authenticity: catalog.authenticity,
-              sku: catalog.sku,
-            }}
-            onSubmit={() => {}}
-            showActions={false}
-            layout="vertical"
-            onChange={handleCatalogChange}
+      {currentStep === WIZARD_STEP.PRODUCT && (
+        <div className="space-y-8">
+          <FormSection icon={<Package className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.product')}>
+            <FormBuilder
+              fields={basicFields}
+              initialValues={{
+                title: catalog.title,
+                categoryId: catalog.categoryId ? String(catalog.categoryId) : '',
+                brand: catalog.brand,
+                model: catalog.model,
+                condition: catalog.condition,
+                authenticity: catalog.authenticity,
+                sku: catalog.sku,
+              }}
+              onSubmit={() => {}}
+              showActions={false}
+              layout="vertical"
+              onChange={handleCatalogChange}
+            />
+            <div className="mt-6 space-y-2">
+              <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('listing.form.description')}
+              </label>
+              <textarea
+                className="w-full min-h-[160px] rounded-xl bg-obsidian-panel border border-border p-4 text-sm text-zinc-text font-medium"
+                placeholder={t('listing.form.description_placeholder')}
+                value={catalog.description}
+                onChange={(e) => setCatalog((p) => ({ ...p, description: e.target.value }))}
+              />
+            </div>
+          </FormSection>
+        </div>
+      )}
+
+      {currentStep === WIZARD_STEP.DETAILS && (
+        <div className="space-y-8">
+          <ListingSpecsEditor
+            specs={catalog.specs}
+            onChange={(specs) => setCatalog((p) => ({ ...p, specs }))}
           />
-        </FormSection>
-      )}
-
-      {currentStep === 2 && (
-        <FormSection icon={<FileText className="w-5 h-5" />} iconBgColor="info" title={t('listing.wizard.step.description')}>
-          <textarea
-            className="w-full min-h-[200px] rounded-xl bg-obsidian-panel border border-border p-4 text-sm text-zinc-text font-medium"
-            placeholder={t('listing.form.description_placeholder')}
-            value={catalog.description}
-            onChange={(e) => setCatalog((p) => ({ ...p, description: e.target.value }))}
+          <ListingSourcesEditor
+            sources={catalog.sources}
+            onChange={(sources) => setCatalog((p) => ({ ...p, sources }))}
           />
-        </FormSection>
+        </div>
       )}
 
-      {currentStep === 3 && (
-        <ListingSpecsEditor
-          specs={catalog.specs}
-          onChange={(specs) => setCatalog((p) => ({ ...p, specs }))}
-        />
-      )}
-
-      {currentStep === 4 && (
-        <ListingSourcesEditor
-          sources={catalog.sources}
-          onChange={(sources) => setCatalog((p) => ({ ...p, sources }))}
-        />
-      )}
-
-      {currentStep === 5 && (
+      {currentStep === WIZARD_STEP.MEDIA && (
         <FormSection icon={<ImageIcon className="w-5 h-5" />} iconBgColor="info" title={t('listing.wizard.step.media')}>
           <AmberImageUpload
             value={imageUpload.previewUrls}
@@ -629,7 +606,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </FormSection>
       )}
 
-      {currentStep === 6 && showPublishSteps && (
+      {currentStep === WIZARD_STEP.CHANNEL && showPublishSteps && (
         <div className="space-y-4">
           <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">
             {t('listing.deploy.choose')}
@@ -669,7 +646,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {currentStep === 7 && showPublishSteps && deployChannel === 'auction' && (
+      {currentStep === WIZARD_STEP.PUBLISH && showPublishSteps && deployChannel === 'auction' && (
         <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('listing.deploy.auction_settings')}>
           <div className="space-y-6">
             <AmberInput
@@ -724,7 +701,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </FormSection>
       )}
 
-      {currentStep === 7 && showPublishSteps && deployChannel === 'group_buy' && (
+      {currentStep === WIZARD_STEP.PUBLISH && showPublishSteps && deployChannel === 'group_buy' && (
         <FormSection icon={<Users className="w-5 h-5" />} iconBgColor="info" title={t('listing.deploy.group_buy_settings')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AmberInput
@@ -778,11 +755,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </FormSection>
       )}
 
-      {currentStep === 8 && showPublishSteps && (
-        <FormSection icon={<Rocket className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.review')}>
+      {currentStep === WIZARD_STEP.PUBLISH && showPublishSteps && (
+        <FormSection icon={<Rocket className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.publish')}>
           <div className="space-y-6 text-sm">
             {listingCoverUrl && (
-              <img src={listingCoverUrl} alt="" className="w-20 h-20 rounded-lg object-cover border border-white/10" />
+              <ListingImage listing={listingCoverUrl} className="w-20 h-20 rounded-lg object-cover border border-white/10" fallbackClassName="w-8 h-8 text-zinc-muted/40" />
             )}
             <div>
               <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.title')}</p>
@@ -820,7 +797,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 </div>
               </div>
             )}
-            <p className="text-[11px] text-zinc-muted font-bold">{t('listing.wizard.review_publish_note')}</p>
+            <p className="text-[11px] text-zinc-muted font-bold">{t('listing.wizard.review_publish_active')}</p>
           </div>
         </FormSection>
       )}
@@ -834,7 +811,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         >
           {t('listing.wizard.back')}
         </AmberButton>
-        {currentStep < 8 || !showPublishSteps ? (
+        {currentStep < WIZARD_STEP.PUBLISH || !showPublishSteps ? (
           <AmberButton
             className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
             disabled={isBusy}
@@ -844,7 +821,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
             )}
             <span>
-              {currentStep === 5 && maxStep === 5
+              {currentStep === WIZARD_STEP.MEDIA && maxStep === WIZARD_STEP.MEDIA
                 ? t('listing.form.save')
                 : t('listing.wizard.next')}
             </span>

@@ -13,12 +13,7 @@ import {
   Edit,
   Trash2,
   Layers,
-  Play,
-  Pause,
-  RotateCcw,
-  Square,
   XCircle,
-  Calendar,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -41,29 +36,16 @@ import {
   useGetAuctions,
   useGetAuctionStats,
   useDeleteAuction,
-  useStartAuction,
-  usePauseAuction,
-  useResumeAuction,
-  useEndAuction,
   useCancelAuction,
   auctionKeys,
 } from '../api';
-import { liveMonitorApi, auctionApi } from '../api/auction-api';
+import { auctionApi } from '../api/auction-api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
-import { RescheduleModal } from '../components/RescheduleModal';
 import type { AuctionStatus, Auction } from '../types/auction.types';
-
-/** Per-row quick extend end time (aligned with RescheduleModal). */
-function computeBulkQuickEndIso(auction: Auction, minutes: number): string {
-  const currentEnd = auction.endTime ? new Date(auction.endTime) : new Date();
-  const now = new Date();
-  const base = currentEnd > now ? currentEnd : now;
-  return new Date(base.getTime() + minutes * 60000).toISOString();
-}
 
 type TabValue = 'all' | AuctionStatus;
 
@@ -101,8 +83,6 @@ export const AuctionsList: React.FC = () => {
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
     const [isClient, setIsClient] = useState(false);
-    const [rescheduleAuction, setRescheduleAuction] = useState<Auction | null>(null);
-    const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -121,10 +101,6 @@ export const AuctionsList: React.FC = () => {
     const { data: stats } = useGetAuctionStats();
     const { data: categoriesData } = useCategories({ limit: 100 });
     const { mutate: deleteAuction } = useDeleteAuction();
-    const startAuction = useStartAuction();
-    const pauseAuction = usePauseAuction();
-    const resumeAuction = useResumeAuction();
-    const endAuction = useEndAuction();
     const cancelAuction = useCancelAuction();
     const { openConfirm, ConfirmModal } = useConfirmModal();
     const queryClient = useQueryClient();
@@ -146,99 +122,8 @@ export const AuctionsList: React.FC = () => {
         [toast, t],
     );
 
-    /**
-     * Bulk bar uses parallel per-auction calls (no batch PATCH in auction-service):
-     * reschedule → POST /auctions/:id/reschedule; lifecycle → POST .../start|pause|cancel.
-     */
     const bulkActions: BulkAction<Auction>[] = useMemo(
         () => [
-            {
-                label: t('auction.bulk.extend_15m'),
-                icon: Calendar,
-                onClick: (_ids, rows) => {
-                    if (bulkBusy || !rows.length) return;
-                    void (async () => {
-                        setBulkBusy(true);
-                        try {
-                            const results = await Promise.allSettled(
-                                rows.map((a) =>
-                                    liveMonitorApi.rescheduleAuction(a.id, computeBulkQuickEndIso(a, 15)),
-                                ),
-                            );
-                            reportSettled(results, 'auction.bulk.reschedule_ok', 'auction.bulk.reschedule_partial');
-                            await invalidateAuctionQueries();
-                        } finally {
-                            setBulkBusy(false);
-                        }
-                    })();
-                },
-            },
-            {
-                label: t('auction.bulk.extend_1h'),
-                icon: Clock,
-                onClick: (_ids, rows) => {
-                    if (bulkBusy || !rows.length) return;
-                    void (async () => {
-                        setBulkBusy(true);
-                        try {
-                            const results = await Promise.allSettled(
-                                rows.map((a) =>
-                                    liveMonitorApi.rescheduleAuction(a.id, computeBulkQuickEndIso(a, 60)),
-                                ),
-                            );
-                            reportSettled(results, 'auction.bulk.reschedule_ok', 'auction.bulk.reschedule_partial');
-                            await invalidateAuctionQueries();
-                        } finally {
-                            setBulkBusy(false);
-                        }
-                    })();
-                },
-            },
-            {
-                label: t('auction.bulk.start'),
-                icon: Play,
-                variant: 'success',
-                onClick: (_ids, rows) => {
-                    if (bulkBusy || !rows.length) return;
-                    const eligible = rows.filter((a) => a.status === 'draft' || a.status === 'scheduled');
-                    if (!eligible.length) {
-                        toast.warning(t('auction.bulk.none_eligible'));
-                        return;
-                    }
-                    void (async () => {
-                        setBulkBusy(true);
-                        try {
-                            const results = await Promise.allSettled(eligible.map((a) => auctionApi.start(a.id)));
-                            reportSettled(results, 'auction.bulk.lifecycle_ok', 'auction.bulk.lifecycle_partial');
-                            await invalidateAuctionQueries();
-                        } finally {
-                            setBulkBusy(false);
-                        }
-                    })();
-                },
-            },
-            {
-                label: t('auction.bulk.pause'),
-                icon: Pause,
-                onClick: (_ids, rows) => {
-                    if (bulkBusy || !rows.length) return;
-                    const eligible = rows.filter((a) => a.status === 'active');
-                    if (!eligible.length) {
-                        toast.warning(t('auction.bulk.none_eligible'));
-                        return;
-                    }
-                    void (async () => {
-                        setBulkBusy(true);
-                        try {
-                            const results = await Promise.allSettled(eligible.map((a) => auctionApi.pause(a.id)));
-                            reportSettled(results, 'auction.bulk.lifecycle_ok', 'auction.bulk.lifecycle_partial');
-                            await invalidateAuctionQueries();
-                        } finally {
-                            setBulkBusy(false);
-                        }
-                    })();
-                },
-            },
             {
                 label: t('auction.bulk.cancel'),
                 icon: XCircle,
@@ -375,57 +260,7 @@ export const AuctionsList: React.FC = () => {
         },
       },
       {
-        label: (auction) => (auction.status === 'draft' || auction.status === 'scheduled') ? (t('auction.lifecycle.start') || 'Start') : null as unknown as string,
-        icon: Play,
-        onClick: (auction) => openConfirm({
-          title: t('auction.lifecycle.start_title') || 'Start Auction',
-          message: t('auction.lifecycle.start_confirm') || 'Are you sure?',
-          onConfirm: () => startAuction.mutate(auction.id),
-          variant: 'success',
-        }),
-        variant: 'success',
-      },
-      {
-        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null as unknown as string,
-        icon: Pause,
-        onClick: (auction) => openConfirm({
-          title: t('auction.lifecycle.pause_title') || 'Pause Auction',
-          message: t('auction.lifecycle.pause_confirm') || 'Are you sure?',
-          onConfirm: () => pauseAuction.mutate(auction.id),
-        }),
-      },
-      {
-        label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null as unknown as string,
-        icon: RotateCcw,
-        onClick: (auction) => openConfirm({
-          title: t('auction.lifecycle.resume_title') || 'Resume Auction',
-          message: t('auction.lifecycle.resume_confirm') || 'Are you sure?',
-          onConfirm: () => resumeAuction.mutate(auction.id),
-          variant: 'success',
-        }),
-        variant: 'success',
-      },
-      {
-        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.end') || 'End') : null as unknown as string,
-        icon: Square,
-        onClick: (auction) => openConfirm({
-          title: t('auction.lifecycle.end_title') || 'End Auction',
-          message: t('auction.lifecycle.end_confirm') || 'Are you sure?',
-          onConfirm: () => endAuction.mutate(auction.id),
-          variant: 'danger',
-        }),
-        variant: 'danger',
-      },
-      {
-        label: (auction) => ['active', 'scheduled', 'paused', 'draft', 'ended', 'sold'].includes(auction.status) ? (t('auction.action.reschedule') || 'Reschedule') : null as unknown as string,
-        icon: Calendar,
-        onClick: (auction) => {
-          setRescheduleAuction(auction);
-          setIsRescheduleOpen(true);
-        },
-      },
-      {
-        label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null as unknown as string,
+        label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null,
         icon: XCircle,
         variant: 'danger',
         onClick: (auction) => openConfirm({
@@ -690,17 +525,6 @@ export const AuctionsList: React.FC = () => {
                 </div>
             </AmberSlideOver>
             <ConfirmModal />
-            <RescheduleModal
-              isOpen={isRescheduleOpen}
-              onClose={(success) => {
-                setIsRescheduleOpen(false);
-                setRescheduleAuction(null);
-                if (success) {
-                  handleTabChange('active');
-                }
-              }}
-              auction={rescheduleAuction}
-            />
         </div>
     );
 };

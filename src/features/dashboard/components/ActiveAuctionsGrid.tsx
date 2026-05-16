@@ -2,17 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock,
   Gavel,
-  Pause,
-  Square,
-  ArrowUp,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
-import { useGetAuctions, useEndAuction, usePauseAuction, useExtendAuction } from '../../auctions/api/auction-hooks';
+import { useGetAuctions } from '../../auctions/api/auction-hooks';
 import type { Auction } from '../../auctions/types/auction.types';
-import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
 function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
@@ -38,10 +34,6 @@ export const ActiveAuctionsGrid: React.FC = () => {
     sortBy: 'endTime',
     sortOrder: 'asc',
   });
-  const endAuction = useEndAuction();
-  const pauseAuction = usePauseAuction();
-  const extendAuction = useExtendAuction();
-  const { openConfirm, ConfirmModal: ConfirmModalComponent } = useConfirmModal();
 
   const auctions = auctionsData?.data || [];
 
@@ -105,25 +97,6 @@ export const ActiveAuctionsGrid: React.FC = () => {
               now={now}
               getUrgencyClass={getUrgencyClass}
               getUrgencyDot={getUrgencyDot}
-              onEnd={() => {
-                openConfirm({
-                  title: t('live.endAuction'),
-                  message: `End "${auction.title}" now? This cannot be undone.`,
-                  confirmText: t('live.endAuction'),
-                  variant: 'danger',
-                  onConfirm: () => endAuction.mutate(auction.id),
-                });
-              }}
-              onPause={() => pauseAuction.mutate(auction.id)}
-              onExtend={() => {
-                openConfirm({
-                  title: t('live.extend'),
-                  message: `Extend "${auction.title}" by 15 minutes?`,
-                  confirmText: t('live.extend'),
-                  variant: 'warning',
-                  onConfirm: () => extendAuction.mutate({ id: auction.id, minutes: 15 }),
-                });
-              }}
             />
           ))
         )}
@@ -139,9 +112,6 @@ interface AuctionCardProps {
   now: number;
   getUrgencyClass: (endTime: string) => string;
   getUrgencyDot: (endTime: string) => string;
-  onEnd: () => void;
-  onPause: () => void;
-  onExtend: () => void;
 }
 
 const AuctionCard: React.FC<AuctionCardProps> = ({
@@ -149,9 +119,6 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   now,
   getUrgencyClass,
   getUrgencyDot,
-  onEnd,
-  onPause,
-  onExtend,
 }) => {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
@@ -207,29 +174,6 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
       </div>
 
       {expanded && (
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5 ms-4 animate-in fade-in slide-in-from-top-1 duration-200">
-          <button
-            onClick={onExtend}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20 hover:bg-warning/20 transition-colors"
-          >
-            <ArrowUp className="w-3 h-3" />
-            {t('live.extend')}
-          </button>
-          <button
-            onClick={onPause}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-colors"
-          >
-            <Pause className="w-3 h-3" />
-            {t('live.pauseAuction')}
-          </button>
-          <button
-            onClick={onEnd}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
-          >
-            <Square className="w-3 h-3" />
-            {t('live.endAuction')}
-          </button>
-        </div>
       )}
     </div>
   );

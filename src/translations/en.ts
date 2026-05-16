@@ -355,6 +355,9 @@ export const en: Record<string, string> = {
   "listing.wizard.title_create": "New Product",
   "listing.wizard.title_edit": "Edit Product",
   "listing.wizard.title_publish": "Publish Product",
+  "listing.wizard.step.product": "Product",
+  "listing.wizard.step.details": "Details",
+  "listing.wizard.step.publish": "Publish",
   "listing.wizard.step.basic": "Basic",
   "listing.wizard.step.description": "Description",
   "listing.wizard.step.specs": "Specs",
@@ -367,6 +370,7 @@ export const en: Record<string, string> = {
   "listing.wizard.back": "Back",
   "listing.wizard.channel_required": "Select auction or group buy",
   "listing.wizard.review_publish_note": "Publishing starts shortly and runs for 7 days.",
+  "listing.wizard.review_publish_active": "Publish activates the sale immediately. Duration is managed by the server.",
 
   // Listing deploy
   "listing.deploy.title": "Deploy Listing",

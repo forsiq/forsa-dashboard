@@ -7,11 +7,8 @@ function msg(t: TFn, key: string, fallback: string) {
   return v && v !== key ? v : fallback;
 }
 
-/** Deploy listing → auction (client-side, localized). */
-export function createDeployAuctionClientSchema(
-  t: TFn,
-  options: { requireSchedule: boolean },
-) {
+/** Deploy listing → auction (pricing only; window is set server-side). */
+export function createDeployAuctionClientSchema(t: TFn) {
   return z
     .object({
       startPrice: z.coerce.number().refine((n) => Number.isFinite(n) && n >= 1, {
@@ -21,9 +18,6 @@ export function createDeployAuctionClientSchema(
         message: msg(t, 'listing.deploy.validation.bid_increment_min', 'Bid increment must be at least 1'),
       }),
       originalPrice: z.union([z.string(), z.number()]).optional(),
-      startTime: z.string().optional(),
-      endTime: z.string().optional(),
-      durationDays: z.coerce.number().optional(),
     })
     .superRefine((data, ctx) => {
       const origRaw = data.originalPrice;
@@ -51,57 +45,11 @@ export function createDeployAuctionClientSchema(
           });
         }
       }
-
-      if (options.requireSchedule) {
-        if (!data.startTime?.trim()) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['startTime'],
-            message: msg(t, 'listing.deploy.validation.start_time_required', 'Start time is required'),
-          });
-        } else if (Number.isNaN(new Date(data.startTime).getTime())) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['startTime'],
-            message: msg(t, 'listing.deploy.validation.start_time_invalid', 'Invalid start time'),
-          });
-        }
-        if (!data.endTime?.trim()) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['endTime'],
-            message: msg(t, 'listing.deploy.validation.end_time_required', 'End time is required'),
-          });
-        } else if (Number.isNaN(new Date(data.endTime).getTime())) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['endTime'],
-            message: msg(t, 'listing.deploy.validation.end_time_invalid', 'Invalid end time'),
-          });
-        } else if (data.startTime && !Number.isNaN(new Date(data.startTime).getTime())) {
-          const t0 = new Date(data.startTime).getTime();
-          const t1 = new Date(data.endTime).getTime();
-          if (t1 <= t0) {
-            ctx.addIssue({
-              code: 'custom',
-              path: ['endTime'],
-              message: msg(
-                t,
-                'listing.deploy.validation.end_after_start',
-                'End time must be after start time',
-              ),
-            });
-          }
-        }
-      }
     });
 }
 
-/** Deploy listing → group buy (client-side, localized). */
-export function createDeployGroupBuyClientSchema(
-  t: TFn,
-  options: { requireSchedule: boolean },
-) {
+/** Deploy listing → group buy (pricing only; window is set server-side). */
+export function createDeployGroupBuyClientSchema(t: TFn) {
   return z
     .object({
       originalPrice: z.coerce.number().refine((n) => Number.isFinite(n) && n >= 1, {
@@ -127,8 +75,6 @@ export function createDeployGroupBuyClientSchema(
           'Max participants must be at least 1',
         ),
       }),
-      startTime: z.string().optional(),
-      endTime: z.string().optional(),
       autoCreateOrder: z.boolean().optional(),
     })
     .superRefine((data, ctx) => {
@@ -153,49 +99,6 @@ export function createDeployGroupBuyClientSchema(
             'Deal price must be less than original price',
           ),
         });
-      }
-
-      if (options.requireSchedule) {
-        if (!data.startTime?.trim()) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['startTime'],
-            message: msg(t, 'listing.deploy.validation.start_time_required', 'Start time is required'),
-          });
-        } else if (Number.isNaN(new Date(data.startTime).getTime())) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['startTime'],
-            message: msg(t, 'listing.deploy.validation.start_time_invalid', 'Invalid start time'),
-          });
-        }
-        if (!data.endTime?.trim()) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['endTime'],
-            message: msg(t, 'listing.deploy.validation.end_time_required', 'End time is required'),
-          });
-        } else if (Number.isNaN(new Date(data.endTime).getTime())) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['endTime'],
-            message: msg(t, 'listing.deploy.validation.end_time_invalid', 'Invalid end time'),
-          });
-        } else if (data.startTime && !Number.isNaN(new Date(data.startTime).getTime())) {
-          const t0 = new Date(data.startTime).getTime();
-          const t1 = new Date(data.endTime).getTime();
-          if (t1 <= t0) {
-            ctx.addIssue({
-              code: 'custom',
-              path: ['endTime'],
-              message: msg(
-                t,
-                'listing.deploy.validation.end_after_start',
-                'End time must be after start time',
-              ),
-            });
-          }
-        }
       }
     });
 }

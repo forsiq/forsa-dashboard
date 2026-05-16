@@ -67,18 +67,44 @@ function getFirstDayOfWeek(year: number, month: number) {
 
 /** Estimated popover height before first layout measure (calendar + time + footer). */
 const POPOVER_HEIGHT_ESTIMATE = 335;
+const POPOVER_WIDTH = 320;
 const POPOVER_FLIP_MARGIN = 8;
 
-function shouldOpenPopoverAbove(
+type PopoverPlacement = 'below' | 'above';
+
+function computePopoverPlacement(
   triggerRect: DOMRect,
   popoverHeight: number
-): boolean {
+): PopoverPlacement {
   const spaceBelow = window.innerHeight - triggerRect.bottom;
   const spaceAbove = triggerRect.top;
-  return (
+  if (
     spaceBelow < popoverHeight + POPOVER_FLIP_MARGIN &&
     spaceAbove > spaceBelow
-  );
+  ) {
+    return 'above';
+  }
+  return 'below';
+}
+
+/** Clamp popover into the viewport horizontally and return the CSS left offset. */
+function computeHorizontalOffset(
+  triggerRect: DOMRect,
+  popoverWidth: number,
+  isRTL: boolean
+): number {
+  if (isRTL) {
+    const rightEdge = triggerRect.right;
+    if (rightEdge < popoverWidth) {
+      return -(popoverWidth - rightEdge - 8);
+    }
+    return 0;
+  }
+  const overflowRight = triggerRect.left + popoverWidth - window.innerWidth;
+  if (overflowRight > 0) {
+    return -overflowRight - 8;
+  }
+  return 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -265,7 +291,8 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
   ) => {
     const { dir, isRTL, language, t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
-    const [openAbove, setOpenAbove] = useState(false);
+    const [placement, setPlacement] = useState<PopoverPlacement>('below');
+    const [horizontalOffset, setHorizontalOffset] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
@@ -292,14 +319,27 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
       const triggerRect = trigger.getBoundingClientRect();
       const popoverHeight =
         popoverRef.current?.offsetHeight ?? POPOVER_HEIGHT_ESTIMATE;
-      setOpenAbove(shouldOpenPopoverAbove(triggerRect, popoverHeight));
-    }, []);
+      setPlacement(computePopoverPlacement(triggerRect, popoverHeight));
+      setHorizontalOffset(computeHorizontalOffset(triggerRect, POPOVER_WIDTH, isRTL));
+    }, [isRTL]);
 
-    // Refine vertical placement after popover mounts (actual height)
+    // Refine placement after popover mounts (actual height)
     useLayoutEffect(() => {
       if (!isOpen) return;
       updatePopoverPlacement();
     }, [isOpen, showTime, parsed, updatePopoverPlacement]);
+
+    // Re-check placement on scroll / resize while open
+    useEffect(() => {
+      if (!isOpen) return;
+      const handler = () => updatePopoverPlacement();
+      window.addEventListener('scroll', handler, true);
+      window.addEventListener('resize', handler);
+      return () => {
+        window.removeEventListener('scroll', handler, true);
+        window.removeEventListener('resize', handler);
+      };
+    }, [isOpen, updatePopoverPlacement]);
 
     const handleToggleOpen = useCallback(() => {
       if (disabled) return;
@@ -308,13 +348,12 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
         const trigger = triggerRef.current;
         if (trigger) {
           const triggerRect = trigger.getBoundingClientRect();
-          setOpenAbove(
-            shouldOpenPopoverAbove(triggerRect, POPOVER_HEIGHT_ESTIMATE)
-          );
+          setPlacement(computePopoverPlacement(triggerRect, POPOVER_HEIGHT_ESTIMATE));
+          setHorizontalOffset(computeHorizontalOffset(triggerRect, POPOVER_WIDTH, isRTL));
         }
         return true;
       });
-    }, [disabled]);
+    }, [disabled, isRTL]);
 
     // Close on outside click
     useEffect(() => {
@@ -494,11 +533,14 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
           {isOpen && (
             <div
               ref={popoverRef}
+              style={{
+                ...(horizontalOffset !== 0 ? { [isRTL ? 'marginRight' : 'marginLeft']: `${horizontalOffset}px` } : {}),
+              }}
               className={cn(
                 'absolute z-50 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/30',
                 'bg-white dark:bg-obsidian-card p-4',
                 'animate-in fade-in duration-200',
-                openAbove
+                placement === 'above'
                   ? 'bottom-full mb-2 slide-in-from-bottom-2'
                   : 'top-full mt-2 slide-in-from-top-2',
                 isRTL ? 'right-0' : 'left-0',

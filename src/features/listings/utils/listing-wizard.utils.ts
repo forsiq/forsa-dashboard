@@ -1,32 +1,23 @@
-/** Default active window when publishing without schedule UI. */
-export const DEFAULT_DEPLOY_DURATION_DAYS = 7;
-
-export function buildImmediateDeployTimes(durationDays = DEFAULT_DEPLOY_DURATION_DAYS): {
-  startTime: string;
-  endTime: string;
-} {
-  const startTime = new Date();
-  startTime.setMinutes(startTime.getMinutes() + 1);
-  const endTime = new Date(startTime);
-  endTime.setDate(endTime.getDate() + durationDays);
-  return {
-    startTime: startTime.toISOString(),
-    endTime: endTime.toISOString(),
-  };
-}
-
+/** Grouped wizard steps (important fields per screen). */
 export const WIZARD_STEP_IDS = [
-  'basic',
-  'description',
-  'specs',
-  'sources',
+  'product',
+  'details',
   'media',
   'channel',
-  'pricing',
-  'review',
+  'publish',
 ] as const;
 
 export type WizardStepId = (typeof WIZARD_STEP_IDS)[number];
+
+export const WIZARD_STEP = {
+  PRODUCT: 1,
+  DETAILS: 2,
+  MEDIA: 3,
+  CHANNEL: 4,
+  PUBLISH: 5,
+} as const;
+
+export const WIZARD_TOTAL_STEPS = WIZARD_STEP_IDS.length;
 
 export function wizardStepToNumber(step: WizardStepId): number {
   return WIZARD_STEP_IDS.indexOf(step) + 1;

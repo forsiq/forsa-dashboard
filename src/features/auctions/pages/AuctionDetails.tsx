@@ -28,7 +28,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuction, useGetAuctionBids, usePlaceBid, useStartAuction, usePauseAuction, useResumeAuction, useEndAuction, useCancelAuction } from '../api';
+import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
@@ -48,10 +48,6 @@ export const AuctionDetails: React.FC = () => {
   const { data: bidsResponse } = useGetAuctionBids(auctionId ?? 0);
   const bids = bidsResponse?.data || [];
   const placeBid = usePlaceBid();
-  const startAuction = useStartAuction();
-  const pauseAuction = usePauseAuction();
-  const resumeAuction = useResumeAuction();
-  const endAuction = useEndAuction();
   const cancelAuction = useCancelAuction();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
@@ -148,64 +144,7 @@ export const AuctionDetails: React.FC = () => {
             'lg:ms-auto lg:w-auto lg:shrink-0 lg:flex-nowrap',
           )}
         >
-          {/* Lifecycle Buttons */}
-          {auction?.status === 'draft' || auction?.status === 'scheduled' ? (
-            <AmberButton
-              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
-              onClick={() => openConfirm({
-                title: t('auction.lifecycle.start_title') || 'Start Auction',
-                message: t('auction.lifecycle.start_confirm') || 'Are you sure you want to start this auction?',
-                onConfirm: () => startAuction.mutate(auction.id),
-                variant: 'success',
-              })}
-              disabled={startAuction.isPending}
-            >
-              {startAuction.isPending ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Gavel className="w-3.5 h-3.5 me-1.5" />}
-              {t('auction.lifecycle.start') || 'Start'}
-            </AmberButton>
-          ) : null}
-          {auction?.status === 'active' ? (
-            <>
-              <AmberButton
-                className="h-10 bg-yellow-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-yellow-700 active:scale-95 transition-all border-none text-xs"
-                onClick={() => openConfirm({
-                  title: t('auction.lifecycle.pause_title') || 'Pause Auction',
-                  message: t('auction.lifecycle.pause_confirm') || 'Are you sure you want to pause this auction?',
-                  onConfirm: () => pauseAuction.mutate(auction.id),
-                  variant: 'warning',
-                })}
-                disabled={pauseAuction.isPending}
-              >
-                {t('auction.lifecycle.pause') || 'Pause'}
-              </AmberButton>
-              <AmberButton
-                className="h-10 bg-red-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-red-700 active:scale-95 transition-all border-none text-xs"
-                onClick={() => openConfirm({
-                  title: t('auction.lifecycle.end_title') || 'End Auction',
-                  message: t('auction.lifecycle.end_confirm') || 'Are you sure you want to end this auction?',
-                  onConfirm: () => endAuction.mutate(auction.id),
-                  variant: 'danger',
-                })}
-                disabled={endAuction.isPending}
-              >
-                {t('auction.lifecycle.end') || 'End'}
-              </AmberButton>
-            </>
-          ) : null}
-          {auction?.status === 'paused' ? (
-            <AmberButton
-              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
-              onClick={() => openConfirm({
-                title: t('auction.lifecycle.resume_title') || 'Resume Auction',
-                message: t('auction.lifecycle.resume_confirm') || 'Are you sure you want to resume this auction?',
-                onConfirm: () => resumeAuction.mutate(auction.id),
-                variant: 'success',
-              })}
-              disabled={resumeAuction.isPending}
-            >
-              {t('auction.lifecycle.resume') || 'Resume'}
-            </AmberButton>
-          ) : null}
+          {/* Lifecycle Buttons — Cancel only */}
           {!['ended', 'sold', 'cancelled'].includes(auction?.status) ? (
             <AmberButton
               className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-danger hover:border-danger/30 active:scale-95 transition-all text-xs"

@@ -72,8 +72,9 @@ export interface DeployAuctionInput {
   reservePrice?: number;
   originalPrice?: number;
   bidIncrement?: number;
-  startTime: string;
-  endTime: string;
+  /** Optional — server sets publish window when omitted */
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface DeployGroupBuyInput {
@@ -81,8 +82,8 @@ export interface DeployGroupBuyInput {
   dealPrice: number;
   minParticipants: number;
   maxParticipants: number;
-  startTime: string;
-  endTime: string;
+  startTime?: string;
+  endTime?: string;
   autoCreateOrder?: boolean;
 }
 

@@ -10,14 +10,11 @@ interface ListingWizardStepIndicatorProps {
 }
 
 const STEP_LABEL_KEYS = [
-  'listing.wizard.step.basic',
-  'listing.wizard.step.description',
-  'listing.wizard.step.specs',
-  'listing.wizard.step.sources',
+  'listing.wizard.step.product',
+  'listing.wizard.step.details',
   'listing.wizard.step.media',
   'listing.wizard.step.channel',
-  'listing.wizard.step.pricing',
-  'listing.wizard.step.review',
+  'listing.wizard.step.publish',
 ] as const;
 
 export function ListingWizardStepIndicator({
@@ -26,17 +23,11 @@ export function ListingWizardStepIndicator({
   minStep = 1,
 }: ListingWizardStepIndicatorProps) {
   const { t, dir } = useLanguage();
-  const isRTL = dir === 'rtl';
   const steps = STEP_LABEL_KEYS.slice(minStep - 1, maxStep);
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide pb-2">
-      <div
-        className={cn(
-          'flex items-center gap-1 min-w-max px-1',
-          isRTL && 'flex-row-reverse',
-        )}
-      >
+    <div className="w-full overflow-x-auto scrollbar-hide pb-2" dir={dir}>
+      <div className="flex items-center gap-1 min-w-max px-1">
         {steps.map((key, index) => {
           const stepNum = index + minStep;
           const isActive = stepNum === currentStep;

@@ -353,6 +353,9 @@ export const ar: Record<string, string> = {
   "listing.wizard.title_create": "منتج جديد",
   "listing.wizard.title_edit": "تعديل المنتج",
   "listing.wizard.title_publish": "نشر المنتج",
+  "listing.wizard.step.product": "المنتج",
+  "listing.wizard.step.details": "التفاصيل",
+  "listing.wizard.step.publish": "النشر",
   "listing.wizard.step.basic": "أساسي",
   "listing.wizard.step.description": "الوصف",
   "listing.wizard.step.specs": "المواصفات",
@@ -365,6 +368,7 @@ export const ar: Record<string, string> = {
   "listing.wizard.back": "رجوع",
   "listing.wizard.channel_required": "اختر مزاداً أو صفقة جماعية",
   "listing.wizard.review_publish_note": "النشر يبدأ قريباً لمدة 7 أيام.",
+  "listing.wizard.review_publish_active": "النشر يفعّل البيع فوراً. مدة العرض تُدار من الخادم.",
 
   // Listing deploy
   "listing.deploy.title": "نشر المنتج",

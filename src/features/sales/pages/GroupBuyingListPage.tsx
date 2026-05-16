@@ -244,7 +244,7 @@ export const GroupBuyingListPage: React.FC = () => {
       onClick: (campaign) => router.push(`/group-buying/${campaign.id}/edit`),
     },
     {
-      label: (campaign) => (campaign.status === 'draft' || campaign.status === 'scheduled') ? (t('groupBuying.lifecycle.start') || 'Start') : null as any,
+      label: (campaign) => (campaign.status === 'draft' || campaign.status === 'scheduled') ? (t('groupBuying.lifecycle.start') || 'Start') : null,
       icon: Play,
       onClick: (campaign) => openConfirm({
         title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
@@ -255,7 +255,7 @@ export const GroupBuyingListPage: React.FC = () => {
       variant: 'success',
     },
     {
-      label: (campaign) => (campaign.status === 'unlocked' || campaign.status === 'active') ? (t('groupBuying.lifecycle.complete') || 'Complete') : null as any,
+      label: (campaign) => (campaign.status === 'unlocked' || campaign.status === 'active') ? (t('groupBuying.lifecycle.complete') || 'Complete') : null,
       icon: CheckCheck,
       onClick: (campaign) => openConfirm({
         title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
@@ -266,7 +266,7 @@ export const GroupBuyingListPage: React.FC = () => {
       variant: 'success',
     },
     {
-      label: (campaign) => !['completed', 'cancelled'].includes(campaign.status) ? (t('groupBuying.lifecycle.cancel') || 'Cancel') : null as any,
+      label: (campaign) => !['completed', 'cancelled'].includes(campaign.status) ? (t('groupBuying.lifecycle.cancel') || 'Cancel') : null,
       icon: XCircle,
       variant: 'danger',
       onClick: (campaign) => openConfirm({

@@ -1,5 +1,5 @@
 import { ListingWizardPage } from '../../../features/listings/pages/ListingWizardPage';
 
 export default function EditListingPage() {
-  return <ListingWizardPage mode="edit" maxStep={5} />;
+  return <ListingWizardPage mode="edit" maxStep={3} />;
 }

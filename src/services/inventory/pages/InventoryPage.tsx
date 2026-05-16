@@ -197,12 +197,12 @@ export const InventoryPage = () => {
     {
       label: t('common.view') || 'View Details',
       icon: Eye,
-      onClick: (row) => router.push(`/inventory`),
+      onClick: (row) => router.push(`/inventory/${row.id}`),
     },
     {
       label: t('common.edit') || 'Edit',
       icon: Edit,
-      onClick: (row) => router.push(`/inventory`),
+      onClick: (row) => router.push(`/inventory/${row.id}/edit`),
     },
     {
       label: t('common.delete') || 'Delete',

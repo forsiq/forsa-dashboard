@@ -98,7 +98,7 @@ export function QuickDeployModal({
             </button>
           </div>
           <p className="text-[11px] text-zinc-muted font-bold">
-            {t('listing.wizard.review_publish_note')}
+            {t('listing.wizard.review_publish_active')}
           </p>
         </div>
       )}

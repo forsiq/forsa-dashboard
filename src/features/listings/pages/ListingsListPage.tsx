@@ -34,7 +34,7 @@ import { QuickAddListingModal } from '../components/QuickAddListingModal';
 import { QuickDeployModal } from '../components/QuickDeployModal';
 import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
-import { getListingPrimaryImageUrl } from '../utils/listing-media';
+import { ListingImage } from '../components/ListingImage';
 
 export const ListingsListPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -110,16 +110,10 @@ export const ListingsListPage: React.FC = () => {
       key: 'title',
       label: t('listing.table.title') || 'Title',
       cardTitle: true,
-      render: (listing) => {
-        const thumb = getListingPrimaryImageUrl(listing);
-        return (
+      render: (listing) => (
         <div className="flex min-w-0 items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
-            {thumb ? (
-              <img src={thumb} alt={listing.title} className="w-full h-full object-cover" />
-            ) : (
-              <Package className="w-5 h-5 text-zinc-muted/40" />
-            )}
+            <ListingImage listing={listing} className="w-full h-full object-cover" fallbackClassName="w-5 h-5 text-zinc-muted/40" />
           </div>
           <div className="min-w-0">
             <DataTableEntityTitle text={listing.title} />
@@ -128,8 +122,7 @@ export const ListingsListPage: React.FC = () => {
             </p>
           </div>
         </div>
-        );
-      },
+      ),
       sortable: true,
     },
     {
@@ -181,12 +174,6 @@ export const ListingsListPage: React.FC = () => {
         </div>
       ),
       align: 'center',
-    },
-    {
-      key: 'actions',
-      label: t('listing.table.actions') || 'Actions',
-      render: () => null,
-      align: 'right',
     },
   ];
 

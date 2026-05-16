@@ -5,8 +5,14 @@
     ar: "تفعيل تلقائي عند النشر"
   entries:
     - description:
-        en: "Publishing a listing as auction or group buy now activates immediately — no manual start from the product page"
-        ar: "نشر المنتج كمزاد أو صفقة جماعية يفعّلها فوراً دون الحاجة لتفعيل يدوي من صفحة المنتج"
+        en: "Product wizard grouped into 5 steps: product, details, photos, channel, then pricing and publish"
+        ar: "معالج المنتج مجمّع في 5 خطوات: المنتج، التفاصيل، الصور، القناة، ثم التسعير والنشر"
+      type: improved
+      sidebarPath: /listings
+
+    - description:
+        en: "Deploy from a product creates an active auction or group deal immediately — no schedule step and no manual start"
+        ar: "النشر من المنتج ينشئ مزاداً أو صفقة نشطة فوراً — بدون خطوة جدولة وبدون تفعيل يدوي"
       type: fixed
       sidebarPath: /listings
 

@@ -26,7 +26,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing } from '../api/listing-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
-import { getListingImageGalleryUrls } from '../utils/listing-media';
+import { ListingImage } from '../components/ListingImage';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
@@ -126,9 +126,9 @@ export const ListingDetailPage: React.FC = () => {
     return null;
   }, [auctions, deals]);
 
-  const listingGalleryUrls = useMemo(() => {
-    if (!listing) return [];
-    return getListingImageGalleryUrls(listing);
+  const attachmentCount = useMemo(() => {
+    if (!listing) return 0;
+    return listing.attachmentIds?.length || listing.images?.length || 0;
   }, [listing]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
@@ -201,13 +201,14 @@ export const ListingDetailPage: React.FC = () => {
               </div>
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.media')}</h3>
             </div>
-            {listingGalleryUrls.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {listingGalleryUrls.map((img, idx) => (
-                  <div key={`${img}-${idx}`} className="aspect-square rounded-lg overflow-hidden border border-white/5">
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
+            {attachmentCount > 0 ? (
+              <div className="space-y-2">
+                <ListingImage listing={listing} className="aspect-square rounded-lg overflow-hidden border border-white/5" />
+                {listing.attachmentIds?.length > 1 && (
+                  <p className="text-[10px] text-zinc-muted font-bold text-center">
+                    {listing.attachmentIds.length} {t('listing.detail.media') || 'photos'}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="aspect-square bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
