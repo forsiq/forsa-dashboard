@@ -7,8 +7,26 @@ import { AmberButton } from '@core/components/AmberButton';
 import { useAuth } from '../hooks/useAuth';
 import { LoginCredentials } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { AUTH_ERROR_CODES, isAuthErrorCode } from '../constants/authErrors';
+import { resolveAuthErrorMessage } from '../utils/resolveAuthError';
 
 function getErrorInfo(error: string): { icon: React.ReactNode; type: 'network' | 'auth' | 'validation' } {
+  if (isAuthErrorCode(error)) {
+    switch (error) {
+      case AUTH_ERROR_CODES.CONNECTION_TIMEOUT:
+      case AUTH_ERROR_CODES.NETWORK_ERROR:
+        return { icon: <WifiOff className="w-4 h-4 text-danger shrink-0" />, type: 'network' };
+      case AUTH_ERROR_CODES.INVALID_CREDENTIALS:
+      case AUTH_ERROR_CODES.ACCOUNT_LOCKED:
+      case AUTH_ERROR_CODES.SESSION_EXPIRED:
+        return { icon: <ShieldX className="w-4 h-4 text-danger shrink-0" />, type: 'auth' };
+      case AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS:
+        return { icon: <AlertTriangle className="w-4 h-4 text-warning shrink-0" />, type: 'validation' };
+      default:
+        break;
+    }
+  }
+
   const lower = error.toLowerCase();
   if (lower.includes('timeout') || lower.includes('network') || lower.includes('connection') || lower.includes('connectivity')) {
     return { icon: <WifiOff className="w-4 h-4 text-danger shrink-0" />, type: 'network' };
@@ -68,8 +86,12 @@ export const LoginForm: React.FC = () => {
     }
   };
 
-  const currentError = localError || authError;
-  const errorInfo = currentError ? getErrorInfo(currentError) : null;
+  const rawError = localError || authError;
+  const currentError = resolveAuthErrorMessage(rawError, t);
+  const errorInfo = rawError ? getErrorInfo(rawError) : null;
+  const isRateLimited =
+    rawError === AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS ||
+    Boolean(rawError?.toLowerCase().includes('too many'));
 
   return (
     <motion.div 
@@ -85,7 +107,7 @@ export const LoginForm: React.FC = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className={`p-4 rounded-2xl flex items-center gap-3 overflow-hidden ${
-              errorInfo.type === 'validation' && currentError.toLowerCase().includes('too many')
+              errorInfo.type === 'validation' && isRateLimited
                 ? 'bg-warning/10 border border-warning/20'
                 : 'bg-danger/10 border border-danger/20'
             }`}
@@ -93,7 +115,7 @@ export const LoginForm: React.FC = () => {
             {errorInfo.icon}
             <div className="flex-1 min-w-0">
               <p className={`text-xs font-bold ${
-                errorInfo.type === 'validation' && currentError.toLowerCase().includes('too many')
+                errorInfo.type === 'validation' && isRateLimited
                   ? 'text-warning'
                   : 'text-danger'
               }`}>

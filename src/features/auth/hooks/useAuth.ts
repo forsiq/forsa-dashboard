@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import * as authApi from '../services/authApi';
 import { LoginCredentials, RegisterData, OTPData } from '../types';
+import { AUTH_ERROR_CODES, isAuthApiError } from '../constants/authErrors';
 import {
   setAccessToken,
   setRefreshToken,
@@ -56,7 +57,11 @@ export const useAuth = () => {
       router.push(getRedirectPath());
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      if (isAuthApiError(err)) {
+        setError(err.backendMessage ?? err.code);
+      } else {
+        setError(AUTH_ERROR_CODES.LOGIN_FAILED);
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -72,7 +77,11 @@ export const useAuth = () => {
       router.push(getRedirectPath());
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      if (isAuthApiError(err)) {
+        setError(err.backendMessage ?? err.code);
+      } else {
+        setError(AUTH_ERROR_CODES.REGISTRATION_FAILED);
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -88,7 +97,11 @@ export const useAuth = () => {
       router.push(getRedirectPath());
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'OTP verification failed');
+      if (isAuthApiError(err)) {
+        setError(err.backendMessage ?? err.code);
+      } else {
+        setError(AUTH_ERROR_CODES.OTP_VERIFICATION_FAILED);
+      }
       throw err;
     } finally {
       setIsLoading(false);

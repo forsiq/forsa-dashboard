@@ -46,6 +46,19 @@ export const en: Record<string, string> = {
   "group_buying.deal_price": "Deal price",
   "group_buying.min_participants": "Min participants",
 
+  // Auth errors (login / session)
+  "auth.errors.invalidCredentials": "Invalid username or password. Please verify your credentials.",
+  "auth.errors.authenticationFailed": "Authentication failed. Please try again.",
+  "auth.errors.connectionTimeout": "Connection timed out. Please check your connectivity and try again.",
+  "auth.errors.networkError": "Unable to connect to the server. Please check your internet connection.",
+  "auth.errors.tooManyAttempts": "Too many login attempts. Please try again later.",
+  "auth.errors.accountLocked": "Your account is locked or disabled. Contact support for help.",
+  "auth.errors.sessionExpired": "Session expired. Please log in again.",
+  "auth.errors.registrationFailed": "Registration failed. Please try again.",
+  "auth.errors.resetEmailFailed": "Failed to send reset email. Please try again.",
+  "auth.errors.loginFailed": "Login failed. Please try again.",
+  "auth.errors.otpVerificationFailed": "OTP verification failed. Please try again.",
+
   // Register Form
   "auth.register.password_mismatch_inline": "Passwords do not match",
 

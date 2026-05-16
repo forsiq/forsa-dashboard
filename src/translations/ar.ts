@@ -46,6 +46,19 @@ export const ar: Record<string, string> = {
   "group_buying.deal_price": "سعر الصفقة",
   "group_buying.min_participants": "الحد الأدنى للمشاركين",
 
+  // Auth errors (login / session)
+  "auth.errors.invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة. يرجى التحقق من بيانات الدخول.",
+  "auth.errors.authenticationFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+  "auth.errors.connectionTimeout": "انتهت مهلة الاتصال. يرجى التحقق من الاتصال والمحاولة مرة أخرى.",
+  "auth.errors.networkError": "تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت.",
+  "auth.errors.tooManyAttempts": "محاولات تسجيل دخول كثيرة. يرجى المحاولة لاحقاً.",
+  "auth.errors.accountLocked": "حسابك مقفل أو معطّل. تواصل مع الدعم للمساعدة.",
+  "auth.errors.sessionExpired": "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.",
+  "auth.errors.registrationFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+  "auth.errors.resetEmailFailed": "تعذر إرسال بريد إعادة التعيين. يرجى المحاولة مرة أخرى.",
+  "auth.errors.loginFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+  "auth.errors.otpVerificationFailed": "فشل التحقق من الرمز. يرجى المحاولة مرة أخرى.",
+
   // Register Form
   "auth.register.password_mismatch_inline": "كلمات المرور غير متطابقة",
 

@@ -1,4 +1,5 @@
 import { LoginCredentials, RegisterData, OTPData, AuthResponse, ForgotPasswordData } from '../types';
+import { AUTH_ERROR_CODES, AuthApiError } from '../constants/authErrors';
 
 /**
  * Auth API base URL - dedicated env var for auth service,
@@ -46,6 +47,29 @@ function getProjectHeaders(): Record<string, string> {
 }
 
 /**
+ * Extract a human-readable error message from a backend error response.
+ */
+function extractBackendError(data: Record<string, unknown>): string {
+  if (typeof data.detail === 'string' && data.detail.trim()) {
+    return data.detail;
+  }
+  if (typeof data.message === 'string' && data.message.trim()) {
+    return data.message;
+  }
+  if (Array.isArray(data.non_field_errors) && data.non_field_errors.length > 0) {
+    return data.non_field_errors.join('. ');
+  }
+  return '';
+}
+
+function normalizeCredentials(credentials: LoginCredentials): LoginCredentials {
+  return {
+    username: credentials.username.trim(),
+    password: credentials.password,
+  };
+}
+
+/**
  * Fetch with timeout helper with better error reporting
  */
 async function fetchWithTimeout(
@@ -66,7 +90,7 @@ async function fetchWithTimeout(
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Connection timeout after ${timeout/1000}s. Please check your connectivity.`);
+      throw new AuthApiError(AUTH_ERROR_CODES.CONNECTION_TIMEOUT);
     }
     throw error;
   }
@@ -76,8 +100,9 @@ async function fetchWithTimeout(
  * Login with credentials
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  console.log('[authApi] Attempting login for:', credentials.username);
-  
+  const normalized = normalizeCredentials(credentials);
+  console.log('[authApi] Attempting login for:', normalized.username);
+
   const response = await fetchWithTimeout(buildAuthUrl('token/'), {
     method: 'POST',
     headers: {
@@ -85,20 +110,21 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
       ...getProjectHeaders()
     },
     body: JSON.stringify({
-      username: credentials.username,
-      password: credentials.password
+      username: normalized.username,
+      password: normalized.password
     })
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
     console.error('[authApi] Login failed:', response.status, errorData);
-    
+
     if (response.status === 401) {
-      throw new Error('Invalid username or password. Please verify your credentials.');
+      throw new AuthApiError(AUTH_ERROR_CODES.INVALID_CREDENTIALS);
     }
-    
-    throw new Error(errorData.detail || errorData.message || 'Authentication failed. Please try again.');
+
+    const backendMsg = extractBackendError(errorData);
+    throw new AuthApiError(AUTH_ERROR_CODES.AUTH_FAILED, backendMsg || undefined);
   }
 
   const data = await response.json();
@@ -157,7 +183,11 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.message || 'Registration failed');
+    const backendMsg =
+      (typeof errorData.detail === 'string' && errorData.detail) ||
+      (typeof errorData.message === 'string' && errorData.message) ||
+      undefined;
+    throw new AuthApiError(AUTH_ERROR_CODES.REGISTRATION_FAILED, backendMsg);
   }
 
   return response.json();
@@ -185,7 +215,7 @@ export const refreshToken = async (refresh: string): Promise<{ access: string }>
   });
 
   if (!response.ok) {
-    throw new Error('Session expired. Please login again.');
+    throw new AuthApiError(AUTH_ERROR_CODES.SESSION_EXPIRED);
   }
 
   return response.json();
@@ -222,7 +252,11 @@ export const requestPasswordReset = async (data: ForgotPasswordData): Promise<{ 
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.message || 'Failed to send reset email. Please try again.');
+    const backendMsg =
+      (typeof errorData.detail === 'string' && errorData.detail) ||
+      (typeof errorData.message === 'string' && errorData.message) ||
+      undefined;
+    throw new AuthApiError(AUTH_ERROR_CODES.RESET_EMAIL_FAILED, backendMsg);
   }
 
   const result = await response.json();
