@@ -100,6 +100,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
             sidebarLoader={sidebarLoader}
             menuSections={menuSections}
             appLabel={appLabel}
+            sidebarMode={mode}
           />
         )}
         <main

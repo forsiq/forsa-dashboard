@@ -623,4 +623,15 @@ export const ar: Record<string, string> = {
   "topbar.view_service_directory": "عرض دليل الخدمات",
   "topbar.view_notifications": "عرض الإشعارات",
   "topbar.view_all_signals": "عرض جميع الإشعارات",
+
+  // Publish Channels
+  "listing.channels.title": "قنوات النشر",
+  "listing.channels.auction": "المزاد",
+  "listing.channels.group_buy": "الصفقة الجماعية",
+  "listing.channels.not_published": "غير منشور",
+  "listing.channels.new_auction": "نشر مزاد جديد",
+  "listing.channels.new_deal": "نشر صفقة جديدة",
+  "listing.channels.active_count": "{count} نشط",
+  "listing.channels.scheduled_count": "{count} مجدول",
+  "listing.channels.ended_count": "{count} منتهي",
 };

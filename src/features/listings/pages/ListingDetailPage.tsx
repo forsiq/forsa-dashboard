@@ -17,6 +17,7 @@ import {
   Timer,
   CheckCircle,
   AlertCircle,
+  Plus,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -176,14 +177,6 @@ export const ListingDetailPage: React.FC = () => {
               <Edit className="w-4 h-4" />
               {t('listing.edit')}
           </AmberButton>
-          <AmberButton className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}>
-              <Gavel className="w-4 h-4" />
-              {t('listing.detail.deploy_auction')}
-          </AmberButton>
-          <AmberButton className="h-11 bg-info hover:bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}>
-              <Users className="w-4 h-4" />
-              {t('listing.detail.deploy_group_buy')}
-          </AmberButton>
           <AmberButton
             variant="secondary"
             className="h-11 text-danger border-danger/20 hover:bg-danger/10 rounded-xl px-4 gap-2 active:scale-95 transition-all"
@@ -283,40 +276,39 @@ export const ListingDetailPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Deployed Sales Card */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          {/* Publish Channels Grid */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success border border-success/20">
-                <Gavel className="w-5 h-5" />
+                <Rocket className="w-5 h-5" />
               </div>
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.deployed_sales')}</h3>
+              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.channels.title')}</h3>
             </div>
 
-            {auctions.length === 0 && deals.length === 0 ? (
-              <div className="text-center py-8 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-                  <Rocket className="w-8 h-8 text-zinc-muted/20" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Auction Channel Card */}
+              <Card className="!p-6 bg-obsidian-card border-border shadow-xl space-y-5">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4">
+                  <div className="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
+                    <Gavel className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-zinc-text uppercase tracking-wider">{t('listing.channels.auction')}</h4>
+                    <p className="text-[10px] text-zinc-muted font-bold tracking-tight">
+                      {sortedAuctions.length > 0
+                        ? [
+                            sortedAuctions.filter((a: any) => a.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'active').length)) : '',
+                            sortedAuctions.filter((a: any) => a.status === 'scheduled' || a.status === 'draft').length > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'scheduled' || a.status === 'draft').length)) : '',
+                            sortedAuctions.filter((a: any) => a.status === 'ended' || a.status === 'cancelled').length > 0 ? t('listing.channels.ended_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'ended' || a.status === 'cancelled').length)) : '',
+                          ].filter(Boolean).join(' · ')
+                        : t('listing.channels.not_published')
+                      }
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-zinc-muted font-bold">{t('listing.detail.no_sales')}</p>
-                <div className="flex gap-3 justify-center">
-                  <AmberButton className="h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}>
-                      <Gavel className="w-4 h-4" />
-                      {t('listing.detail.deploy_auction')}
-                  </AmberButton>
-                  <AmberButton className="h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}>
-                      <Users className="w-4 h-4" />
-                      {t('listing.detail.deploy_group_buy')}
-                  </AmberButton>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {/* Linked Auctions */}
-                {sortedAuctions.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
-                      <Gavel className="w-3 h-3 text-brand" /> {t('listing.detail.linked_auctions')}
-                    </h4>
+
+                {sortedAuctions.length > 0 ? (
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto">
                     {sortedAuctions.map((auction: any) => {
                       const isActive = auction.status === 'active';
                       const isScheduled = auction.status === 'scheduled' || auction.status === 'draft';
@@ -367,14 +359,48 @@ export const ListingDetailPage: React.FC = () => {
                       );
                     })}
                   </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
+                      <Gavel className="w-6 h-6 text-zinc-muted/20" />
+                    </div>
+                  </div>
                 )}
 
-                {/* Linked Deals */}
-                {sortedDeals.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
-                      <Users className="w-3 h-3 text-info" /> {t('listing.detail.linked_deals')}
-                    </h4>
+                {!sortedAuctions.some((a: any) => a.status === 'active') && (
+                  <AmberButton
+                    className="w-full h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all"
+                    onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('listing.channels.new_auction')}
+                  </AmberButton>
+                )}
+              </Card>
+
+              {/* Group Buy Channel Card */}
+              <Card className="!p-6 bg-obsidian-card border-border shadow-xl space-y-5">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4">
+                  <div className="w-9 h-9 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-zinc-text uppercase tracking-wider">{t('listing.channels.group_buy')}</h4>
+                    <p className="text-[10px] text-zinc-muted font-bold tracking-tight">
+                      {sortedDeals.length > 0
+                        ? [
+                            sortedDeals.filter((d: any) => d.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'active').length)) : '',
+                            sortedDeals.filter((d: any) => d.status === 'scheduled' || d.status === 'draft').length > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'scheduled' || d.status === 'draft').length)) : '',
+                            sortedDeals.filter((d: any) => d.status === 'ended' || d.status === 'cancelled').length > 0 ? t('listing.channels.ended_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'ended' || d.status === 'cancelled').length)) : '',
+                          ].filter(Boolean).join(' · ')
+                        : t('listing.channels.not_published')
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {sortedDeals.length > 0 ? (
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto">
                     {sortedDeals.map((deal: any) => {
                       const isActive = deal.status === 'active';
                       const isScheduled = deal.status === 'scheduled' || deal.status === 'draft';
@@ -425,10 +451,26 @@ export const ListingDetailPage: React.FC = () => {
                       );
                     })}
                   </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
+                      <Users className="w-6 h-6 text-zinc-muted/20" />
+                    </div>
+                  </div>
                 )}
-              </div>
-            )}
-          </Card>
+
+                {!sortedDeals.some((d: any) => d.status === 'active') && (
+                  <AmberButton
+                    className="w-full h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all"
+                    onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('listing.channels.new_deal')}
+                  </AmberButton>
+                )}
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
       <ConfirmModal />

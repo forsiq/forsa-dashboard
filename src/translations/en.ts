@@ -622,4 +622,15 @@ export const en: Record<string, string> = {
   "topbar.view_service_directory": "View Service Directory",
   "topbar.view_notifications": "View Notifications",
   "topbar.view_all_signals": "View All Signals",
+
+  // Publish Channels
+  "listing.channels.title": "Publish Channels",
+  "listing.channels.auction": "Auction",
+  "listing.channels.group_buy": "Group Buy",
+  "listing.channels.not_published": "Not Published",
+  "listing.channels.new_auction": "New Auction",
+  "listing.channels.new_deal": "New Group Buy",
+  "listing.channels.active_count": "{count} Active",
+  "listing.channels.scheduled_count": "{count} Scheduled",
+  "listing.channels.ended_count": "{count} Ended",
 };

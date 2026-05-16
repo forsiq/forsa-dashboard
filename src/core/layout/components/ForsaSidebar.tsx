@@ -2,7 +2,8 @@
 
 /**
  * App-specific sidebar (not the generic core-ui sidebar): Next.js routing, `getActiveSidebarItemPath`
- * for query-aware links, `useFeatureConfig` gating, unified-mode collapsible module headers, and portal exit.
+ * for query-aware links, `useFeatureConfig` gating, unified-mode section headers (collapsible sections only),
+ * and footer actions (logout in unified, exit-to-portal in modular).
  * Prefer extending this file over patching `node_modules/@yousef2001/core-ui` so upgrades stay predictable.
  */
 
@@ -16,6 +17,7 @@ import type { MenuSection } from '@config/navigation';
 import { resolveIcon } from '@config/navigation';
 import { getActiveSidebarItemPath, getNavPathBase } from '@core/utils/isNavItemActive';
 import { prefetchRouteData } from '@core/query/prefetch';
+import { useAuth } from '@features/auth/hooks/useAuth';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
@@ -34,75 +36,6 @@ const FEATURE_MAP: Record<string, string> = {
   '/my-bids': 'bidding',
   '/watchlist': 'auctions',
 };
-
-// ── Per-module collapse state (unified mode) ──────────────────────────
-
-const MODULE_COLLAPSE_PREFIX = 'forsa-module-collapsed-';
-const moduleCollapseListeners = new Set<() => void>();
-const MODULE_IDS = ['dashboard', 'marketplace', 'sales', 'reports'] as const;
-
-function readModuleCollapsedFromStorage(moduleId: string): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem(`${MODULE_COLLAPSE_PREFIX}${moduleId}`) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-function writeModuleCollapsed(moduleId: string, collapsed: boolean) {
-  try {
-    window.localStorage.setItem(`${MODULE_COLLAPSE_PREFIX}${moduleId}`, collapsed ? 'true' : 'false');
-  } catch {
-    /* ignore */
-  }
-  moduleCollapseListeners.forEach(fn => fn());
-}
-
-function subscribeModuleCollapse(onChange: () => void) {
-  moduleCollapseListeners.add(onChange);
-  return () => {
-    moduleCollapseListeners.delete(onChange);
-  };
-}
-
-/**
- * Uses useState + subscription to keep module collapse state reactive
- * without creating new object references on every call (which breaks useSyncExternalStore).
- */
-function useModuleCollapseState(): {
-  collapseMap: Record<string, boolean>;
-  toggleModule: (moduleId: string) => void;
-} {
-  const [collapseMap, setCollapseMap] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    for (const id of MODULE_IDS) {
-      map[id] = readModuleCollapsedFromStorage(id);
-    }
-    return map;
-  });
-
-  useEffect(() => {
-    const refresh = () => {
-      const map: Record<string, boolean> = {};
-      for (const id of MODULE_IDS) {
-        map[id] = readModuleCollapsedFromStorage(id);
-      }
-      setCollapseMap(map);
-    };
-
-    moduleCollapseListeners.add(refresh);
-    return () => {
-      moduleCollapseListeners.delete(refresh);
-    };
-  }, []);
-
-  const toggleModule = useCallback((moduleId: string) => {
-    writeModuleCollapsed(moduleId, !readModuleCollapsedFromStorage(moduleId));
-  }, []);
-
-  return { collapseMap, toggleModule };
-}
 
 // ── Per-section collapse state (unified mode) ─────────────────────────
 
@@ -158,22 +91,6 @@ function useSectionCollapseState(): {
   return { isSectionCollapsed, toggleSection };
 }
 
-// ── Accent border colors per module ───────────────────────────────────
-
-const MODULE_ACCENT: Record<string, string> = {
-  dashboard: 'border-s-purple-500',
-  marketplace: 'border-s-blue-500',
-  sales: 'border-s-amber-500',
-  reports: 'border-s-emerald-500',
-};
-
-const MODULE_ACCENT_RTL: Record<string, string> = {
-  dashboard: 'border-e-purple-500',
-  marketplace: 'border-e-blue-500',
-  sales: 'border-e-amber-500',
-  reports: 'border-e-emerald-500',
-};
-
 const MODULE_ICON_BG: Record<string, string> = {
   dashboard: 'bg-purple-500/15 text-purple-400',
   marketplace: 'bg-blue-500/15 text-blue-400',
@@ -193,6 +110,7 @@ interface ForsaSidebarProps {
   showExitButton?: boolean;
   portalPaths?: string[];
   sidebarLoader?: (path: string, view?: string) => Promise<MenuSection[]>;
+  sidebarMode?: 'modular' | 'unified';
 }
 
 // ── Module Header Component ───────────────────────────────────────────
@@ -200,17 +118,13 @@ interface ForsaSidebarProps {
 const ModuleHeader: React.FC<{
   section: MenuSection;
   isCollapsed: boolean;
-  dir: string;
   t: (key: string) => string;
-  isModuleCollapsed: boolean;
-  onToggle: () => void;
-}> = ({ section, isCollapsed, dir, t, isModuleCollapsed, onToggle }) => {
+}> = ({ section, isCollapsed, t }) => {
   const moduleId = section.moduleId || '';
 
   const moduleIcon = (section as any).moduleIcon as string | undefined;
   const ModuleIcon = moduleIcon ? resolveIcon(moduleIcon) : null;
   const labelText = t(section.title) || section.title;
-  const isRTL = dir === 'rtl';
 
   if (isCollapsed) {
     return ModuleIcon ? (
@@ -223,29 +137,24 @@ const ModuleHeader: React.FC<{
   }
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`
-        w-full flex items-center gap-3 px-5 py-2.5 mb-1 transition-all group
-        border-s-2 ${isRTL ? (MODULE_ACCENT_RTL[moduleId] || 'border-e-white/10') : (MODULE_ACCENT[moduleId] || 'border-s-white/10')}
-        hover:bg-white/5
-      `}
+    <div
+      className="flex items-center gap-3 px-4 my-4"
+      role="separator"
+      aria-label={labelText}
     >
-      {ModuleIcon && (
-        <div className={`p-1.5 rounded-md shrink-0 ${MODULE_ICON_BG[moduleId] || 'bg-white/5 text-zinc-muted'}`}>
-          <ModuleIcon className="w-3.5 h-3.5" />
-        </div>
-      )}
-      <span className="flex-1 text-xs font-black text-zinc-text uppercase tracking-widest text-start truncate">
-        {labelText}
-      </span>
-      <ChevronDown
-        className={`w-3.5 h-3.5 text-zinc-muted transition-transform duration-200 shrink-0 ${
-          isModuleCollapsed ? '-rotate-90' : ''
-        }`}
-      />
-    </button>
+      <div className="flex-1 h-px bg-white/10" aria-hidden />
+      <div className="flex items-center gap-2 shrink-0 px-2">
+        {ModuleIcon && (
+          <div className={`p-1 rounded-md shrink-0 ${MODULE_ICON_BG[moduleId] || 'bg-white/5 text-zinc-muted'}`}>
+            <ModuleIcon className="w-3.5 h-3.5" />
+          </div>
+        )}
+        <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.18em] whitespace-nowrap">
+          {labelText}
+        </span>
+      </div>
+      <div className="flex-1 h-px bg-white/10" aria-hidden />
+    </div>
   );
 };
 
@@ -263,9 +172,9 @@ const SectionHeader: React.FC<{
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center gap-2 px-5 py-1 mb-3 group hover:bg-white/5 transition-all rounded-sm"
+      className="w-full flex items-center gap-2 px-5 py-2 mb-2 group hover:bg-white/5 transition-all rounded-sm"
     >
-      <span className="flex-1 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] text-start truncate">
+      <span className="flex-1 text-[11px] font-black text-zinc-muted/70 uppercase tracking-[0.16em] text-start truncate">
         {labelText}
       </span>
       <ChevronDown
@@ -289,8 +198,11 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
   showExitButton = true,
   portalPaths = DEFAULT_PORTAL_PATHS,
   sidebarLoader,
+  sidebarMode = 'modular',
 }) => {
+  const isUnified = sidebarMode === 'unified';
   const { t, dir } = useLanguage();
+  const { logout } = useAuth();
   const { activeMode, sidebarView, switchMode } = useNavigation();
   const { isFeatureEnabled, enabledFeatures } = useFeatureConfig();
   const router = useRouter();
@@ -299,8 +211,6 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
   const isPortal = portalPaths.includes(router.pathname);
 
-  // Read all module / section collapse states
-  const { collapseMap, toggleModule } = useModuleCollapseState();
   const { isSectionCollapsed, toggleSection } = useSectionCollapseState();
 
   useEffect(() => {
@@ -476,22 +386,12 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                   key={`module-${mid}`}
                   section={section}
                   isCollapsed={isCollapsed}
-                  dir={dir}
                   t={t}
-                  isModuleCollapsed={!!collapseMap[mid]}
-                  onToggle={() => toggleModule(mid)}
                 />
               );
             }
 
             // ── Regular section ──
-            // In unified mode, check if parent module is collapsed
-            const moduleCollapsed = section.moduleId ? !!collapseMap[section.moduleId] : false;
-
-            if (moduleCollapsed && !isCollapsed) {
-              return null;
-            }
-
             const isSingleSectionInModule = section.moduleId
               ? (moduleSectionCounts[section.moduleId] ?? 0) <= 1
               : false;
@@ -503,7 +403,12 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
             return (
               <nav key={sectionKey} className="space-y-1 mb-8">
-                {showSectionHeader && (
+                {showSectionHeader && !isUnified && (
+                  <p className="px-5 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">
+                    {t(section.title) || section.title}
+                  </p>
+                )}
+                {showSectionHeader && isUnified && (
                   <SectionHeader
                     section={section}
                     isSectionCollapsed={sectionCollapsed}
@@ -511,7 +416,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                     t={t}
                   />
                 )}
-                {!sectionCollapsed &&
+                {(!isUnified || !sectionCollapsed) &&
                   section.items.map(item => {
                   const Icon = resolveIcon(item.icon);
                   const isActive = activePath !== null && item.path === activePath;
@@ -568,10 +473,35 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
         {showExitButton && (
           <div className="p-4 mt-auto">
-            <button
-              type="button"
-              onClick={handleExitToPortal}
-              className={`
+            {isUnified ? (
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className={`
+                  w-full flex items-center px-3 py-2.5 rounded-md transition-all group
+                  border border-transparent hover:border-brand/30 hover:bg-white/5
+                  ${isCollapsed ? 'justify-center' : ''}
+                `}
+                title={t('profile.logout')}
+              >
+                <div
+                  className={`p-1 bg-white/5 rounded-sm text-zinc-muted group-hover:text-brand transition-colors ${
+                    !isCollapsed ? (dir === 'rtl' ? 'ml-3' : 'mr-3') : ''
+                  }`}
+                >
+                  <LogOut className="w-4 h-4" />
+                </div>
+                {!isCollapsed && (
+                  <span className="text-xs font-black text-zinc-muted uppercase tracking-widest group-hover:text-zinc-text transition-colors">
+                    {t('profile.logout')}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleExitToPortal}
+                className={`
                 w-full flex items-center px-3 py-2.5 rounded-md transition-all group
                 border border-transparent hover:border-brand/30 hover:bg-white/5
                 ${isCollapsed ? 'justify-center' : ''}
@@ -596,6 +526,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                 </div>
               )}
             </button>
+            )}
           </div>
         )}
       </div>
