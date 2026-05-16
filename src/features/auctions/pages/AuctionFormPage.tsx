@@ -211,7 +211,7 @@ export const AuctionFormPage: React.FC = () => {
       });
       const urls = normalize(existingAuction.images) as string[];
       imageUpload.resetFromServer(urls);
-      setRetainedAttachmentIds(parseAttachmentIds(existingAuction.attachmentIds as any));
+      setRetainedAttachmentIds(parseAttachmentIds(existingAuction.attachmentIds));
     }
   }, [isEdit, isClone, existingAuction, imageUpload.resetFromServer]);
 

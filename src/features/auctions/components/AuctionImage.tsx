@@ -27,8 +27,8 @@ interface AuctionImageProps {
     image_url?: string | null;
     mainAttachmentId?: number | null;
     main_attachment_id?: number | null;
-    attachmentIds?: string | string[] | null;
-    attachment_ids?: string | string[] | null;
+    attachmentIds?: string | string[] | number[] | null;
+    attachment_ids?: string | string[] | number[] | null;
     images?: string[] | Record<string, string> | string | null;
   };
   alt?: string;

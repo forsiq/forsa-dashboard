@@ -112,7 +112,9 @@ export async function calculateFileHash(file: File): Promise<string> {
 /**
  * Parse attachment IDs from the string format returned by API
  */
-export function parseAttachmentIds(attachmentIds: string | string[] | null | undefined): number[] {
+export function parseAttachmentIds(
+  attachmentIds: string | string[] | number[] | null | undefined,
+): number[] {
   if (!attachmentIds) return [];
 
   if (Array.isArray(attachmentIds)) {
@@ -133,7 +135,7 @@ export function parseAttachmentIds(attachmentIds: string | string[] | null | und
 export function getAuctionImageUrl(auction: {
   imageUrl?: string | null;
   mainAttachmentId?: number | null;
-  attachmentIds?: string | string[] | null;
+  attachmentIds?: string | string[] | number[] | null;
   images?: string[] | Record<string, string> | string | null;
 }): string | null {
   if (auction.imageUrl && isValidImageUrl(auction.imageUrl)) {
@@ -163,7 +165,7 @@ export function getAuctionImageUrl(auction: {
 export function getAuctionImageUrls(auction: {
   imageUrl?: string | null;
   mainAttachmentId?: number | null;
-  attachmentIds?: string | string[] | null;
+  attachmentIds?: string | string[] | number[] | null;
   images?: string[] | Record<string, string> | string | null;
 }): string[] {
   const urls: string[] = [];

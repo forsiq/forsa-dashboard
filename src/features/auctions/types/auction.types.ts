@@ -31,6 +31,8 @@ export interface Auction {
   categoryId: number;
   categoryName?: string;
   images: string[];
+  mainAttachmentId?: number;
+  attachmentIds?: number[] | string | string[] | null;
   specs?: Spec[];
   sources?: Source[];
   createdBy?: number;
