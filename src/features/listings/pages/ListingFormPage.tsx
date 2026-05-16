@@ -24,6 +24,8 @@ import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
+import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
+import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import type { CreateListingInput } from '../../../types/services/listings.types';
 import type { FormFieldConfig } from '@core/services/types';
 
@@ -74,6 +76,8 @@ export const ListingFormPage: React.FC = () => {
       authenticity: h?.authenticity ?? '',
       sku: '',
       images: [],
+      specs: [],
+      sources: [],
     };
   });
 
@@ -266,6 +270,17 @@ export const ListingFormPage: React.FC = () => {
             </h1>
             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
               {isEdit ? t('listing.form.header.editing') : t('listing.form.create_listing')}
+              {' — '}
+              <button
+                type="button"
+                className="text-brand hover:underline"
+                onClick={() => {
+                  const base = isEdit ? `/listings/${id}/edit` : '/listings/new';
+                  router.push(base);
+                }}
+              >
+                {t('listing.create_mode.wizard') || 'Use wizard'}
+              </button>
             </p>
           </div>
         </div>
@@ -327,6 +342,18 @@ export const ListingFormPage: React.FC = () => {
           </p>
         </div>
       </FormSection>
+
+      {/* Specs & Sources */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <ListingSpecsEditor
+          specs={formData.specs || []}
+          onChange={(specs) => setFormData((p) => ({ ...p, specs }))}
+        />
+        <ListingSourcesEditor
+          sources={formData.sources || []}
+          onChange={(sources) => setFormData((p) => ({ ...p, sources }))}
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Product Info Section */}

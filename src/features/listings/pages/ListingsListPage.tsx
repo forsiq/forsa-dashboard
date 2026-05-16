@@ -257,6 +257,13 @@ export const ListingsListPage: React.FC = () => {
               <Plus className="w-5 h-5" />
               <span>{t('listing.add_product') || t('listing.create')}</span>
           </AmberButton>
+          <AmberButton
+            variant="outline"
+            className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover"
+            onClick={() => router.push('/listings/new?mode=form')}
+          >
+              <span>{t('listing.create_mode.form') || 'Quick Form'}</span>
+          </AmberButton>
         </div>
       </div>
 

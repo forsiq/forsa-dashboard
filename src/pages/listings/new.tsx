@@ -1,5 +1,5 @@
-import { ListingWizardPage } from '../../features/listings/pages/ListingWizardPage';
+import { ListingEntryPage } from '../../features/listings/pages/ListingEntryPage';
 
 export default function NewListingPage() {
-  return <ListingWizardPage mode="create" />;
+  return <ListingEntryPage mode="create" />;
 }

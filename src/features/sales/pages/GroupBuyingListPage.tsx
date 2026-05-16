@@ -14,9 +14,7 @@ import {
   Target,
   Zap,
   CheckCircle,
-  Play,
   XCircle,
-  CheckCheck,
   Heart,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -35,9 +33,7 @@ import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
   useDeleteGroupBuying,
-  useStartGroupBuying,
   useCancelGroupBuying,
-  useCompleteGroupBuying
 } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
@@ -76,9 +72,7 @@ export const GroupBuyingListPage: React.FC = () => {
   const { data: stats } = useGetGroupBuyingStats();
   const { data: categoriesData } = useCategories({ limit: 100 });
   const { mutate: deleteCampaign } = useDeleteGroupBuying();
-  const startDeal = useStartGroupBuying();
   const cancelDeal = useCancelGroupBuying();
-  const completeDeal = useCompleteGroupBuying();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const campaigns = campaignsData?.groupBuyings || [];
@@ -242,28 +236,6 @@ export const GroupBuyingListPage: React.FC = () => {
       label: t('common.edit') || 'Edit',
       icon: Edit,
       onClick: (campaign) => router.push(`/group-buying/${campaign.id}/edit`),
-    },
-    {
-      label: (campaign) => (campaign.status === 'draft' || campaign.status === 'scheduled') ? (t('groupBuying.lifecycle.start') || 'Start') : null,
-      icon: Play,
-      onClick: (campaign) => openConfirm({
-        title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
-        message: t('groupBuying.lifecycle.start_confirm') || 'Are you sure?',
-        onConfirm: () => startDeal.mutate(String(campaign.id)),
-        variant: 'success',
-      }),
-      variant: 'success',
-    },
-    {
-      label: (campaign) => (campaign.status === 'unlocked' || campaign.status === 'active') ? (t('groupBuying.lifecycle.complete') || 'Complete') : null,
-      icon: CheckCheck,
-      onClick: (campaign) => openConfirm({
-        title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
-        message: t('groupBuying.lifecycle.complete_confirm') || 'Are you sure?',
-        onConfirm: () => completeDeal.mutate(String(campaign.id)),
-        variant: 'success',
-      }),
-      variant: 'success',
     },
     {
       label: (campaign) => !['completed', 'cancelled'].includes(campaign.status) ? (t('groupBuying.lifecycle.cancel') || 'Cancel') : null,

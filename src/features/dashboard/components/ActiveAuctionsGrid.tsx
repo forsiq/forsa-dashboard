@@ -102,7 +102,6 @@ export const ActiveAuctionsGrid: React.FC = () => {
         )}
       </div>
 
-      <ConfirmModalComponent />
     </AmberCard>
   );
 };
@@ -172,9 +171,6 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
           </button>
         </div>
       </div>
-
-      {expanded && (
-      )}
     </div>
   );
 };

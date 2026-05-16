@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, ArrowUp, Square, AlertTriangle } from 'lucide-react';
+import { Clock, AlertTriangle } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { useCriticalAuctions, useExtendAuction, useEndAuction } from '../../auctions/api/auction-hooks';
-import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useCriticalAuctions } from '../../auctions/api/auction-hooks';
 
 function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
   const end = new Date(endTime).getTime();
@@ -24,9 +23,6 @@ function formatTimeRemaining(endTime: string, now: number, t: (key: string) => s
 export const CriticalNodes: React.FC = () => {
   const { t } = useLanguage();
   const { data: auctions, isLoading } = useCriticalAuctions();
-  const extendAuction = useExtendAuction();
-  const endAuction = useEndAuction();
-  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const criticalAuctions = (auctions || []).slice(0, 3);
 
@@ -98,29 +94,9 @@ export const CriticalNodes: React.FC = () => {
             totalBids={auction.totalBids}
             endTime={auction.endTime}
             now={now}
-            onExtend={() => {
-              openConfirm({
-                title: t('critical.extend_title'),
-                message: t('critical.extend_message', { title: auction.title }),
-                confirmText: t('critical.extend_button'),
-                variant: 'warning',
-                onConfirm: () => extendAuction.mutate({ id: auction.id, minutes: 15 }),
-              });
-            }}
-            onEnd={() => {
-              openConfirm({
-                title: t('critical.end_title'),
-                message: t('critical.end_message', { title: auction.title }),
-                confirmText: t('critical.end_now'),
-                variant: 'danger',
-                onConfirm: () => endAuction.mutate(auction.id),
-              });
-            }}
           />
         ))}
       </div>
-
-      <ConfirmModal />
     </AmberCard>
   );
 };
@@ -132,8 +108,6 @@ interface CriticalNodeCardProps {
   totalBids: number;
   endTime: string;
   now: number;
-  onExtend: () => void;
-  onEnd: () => void;
 }
 
 const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
@@ -142,8 +116,6 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
   totalBids,
   endTime,
   now,
-  onExtend,
-  onEnd,
 }) => {
   const { t } = useLanguage();
   const timeStr = formatTimeRemaining(endTime, now, t);
@@ -194,22 +166,6 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
             <Clock className="w-3 h-3" />
             {timeStr}
           </span>
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={onExtend}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20 hover:bg-warning/20 transition-colors"
-            >
-              <ArrowUp className="w-2.5 h-2.5" />
-              +15m
-            </button>
-            <button
-              onClick={onEnd}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
-            >
-              <Square className="w-2.5 h-2.5" />
-              {t('critical.end')}
-            </button>
-          </div>
         </div>
       </div>
     </div>

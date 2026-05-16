@@ -31,9 +31,7 @@ import {
   useGetGroupBuying,
   useGetGroupBuyingParticipants,
   useJoinGroupBuying,
-  useStartGroupBuying,
   useCancelGroupBuying,
-  useCompleteGroupBuying
 } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
@@ -58,9 +56,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const { data: campaign, isPending: campaignLoading } = useGetGroupBuying(campaignId, !!campaignId);
   const { data: participantsData } = useGetGroupBuyingParticipants(campaignId);
   const joinMutation = useJoinGroupBuying();
-  const startDeal = useStartGroupBuying();
   const cancelDeal = useCancelGroupBuying();
-  const completeDeal = useCompleteGroupBuying();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [joinQuantity, setJoinQuantity] = useState(1);
@@ -133,35 +129,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          {/* Lifecycle Buttons */}
-          {campaign?.status === 'draft' || campaign?.status === 'scheduled' ? (
-            <AmberButton
-              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
-              onClick={() => openConfirm({
-                title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
-                message: t('groupBuying.lifecycle.start_confirm') || 'Are you sure you want to start this campaign?',
-                onConfirm: () => startDeal.mutate(String(campaign.id)),
-                variant: 'success',
-              })}
-              disabled={startDeal.isPending}
-            >
-              {t('groupBuying.lifecycle.start') || 'Start'}
-            </AmberButton>
-          ) : null}
-          {(campaign?.status === 'unlocked' || campaign?.status === 'active') ? (
-            <AmberButton
-              className="h-10 bg-emerald-600 text-white font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-700 active:scale-95 transition-all border-none text-xs"
-              onClick={() => openConfirm({
-                title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
-                message: t('groupBuying.lifecycle.complete_confirm') || 'Are you sure you want to mark this campaign as completed?',
-                onConfirm: () => completeDeal.mutate(String(campaign.id)),
-                variant: 'success',
-              })}
-              disabled={completeDeal.isPending}
-            >
-              {t('groupBuying.lifecycle.complete') || 'Complete'}
-            </AmberButton>
-          ) : null}
+          {/* Cancel only */}
           {!['completed', 'cancelled'].includes(campaign?.status) ? (
             <AmberButton
               className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-danger hover:border-danger/30 active:scale-95 transition-all text-xs"
