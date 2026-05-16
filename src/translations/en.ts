@@ -363,6 +363,7 @@ export const en: Record<string, string> = {
   "listing.deploy.start_time": "Start Time",
   "listing.deploy.end_time": "End Time",
   "listing.deploy.original_price": "Original Price",
+  "listing.deploy.auction_original_price": "Original Price (optional)",
   "listing.deploy.deal_price": "Deal Price",
   "listing.deploy.min_participants": "Min Participants",
   "listing.deploy.max_participants": "Max Participants",
@@ -383,6 +384,8 @@ export const en: Record<string, string> = {
     "When bidding stops automatically. Must be after the start time.",
   "listing.deploy.hint.original_price":
     "Reference retail or list price (IQD) shown with the group deal so buyers see the discount.",
+  "listing.deploy.hint.auction_original_price":
+    "Optional reference or market price (IQD) shown beside the auction so buyers see value vs. the opening bid. Must be higher than the start price.",
   "listing.deploy.hint.deal_price":
     "The price participants pay (IQD) if the group deal succeeds. Should be lower than the original price.",
   "listing.deploy.hint.min_participants":
@@ -400,6 +403,7 @@ export const en: Record<string, string> = {
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",
   "validation.reserve_price_min": "Reserve price must be at least {min}.",
+  "validation.original_price_min": "Original price must be at least {min}.",
   "validation.bid_increment_min": "Bid increment must be at least {min}.",
   "validation.field_must_be_at_least": "{field} must be at least {min}.",
   "validation.api_unmapped_fallback": "Validation error: {message}",

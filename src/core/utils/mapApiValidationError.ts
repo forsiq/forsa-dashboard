@@ -79,6 +79,9 @@ function mapOneRawMessage(raw: string, t: TranslateFn, language: string): string
   const reserve = /^reservePrice must not be less than ([\d.,]+)\s*$/i.exec(m);
   if (reserve) return t('validation.reserve_price_min', { min: reserve[1] });
 
+  const original = /^originalPrice must not be less than ([\d.,]+)\s*$/i.exec(m);
+  if (original) return t('validation.original_price_min', { min: original[1] });
+
   const increment = /^bidIncrement must not be less than ([\d.,]+)\s*$/i.exec(m);
   if (increment) return t('validation.bid_increment_min', { min: increment[1] });
 

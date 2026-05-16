@@ -22,6 +22,7 @@ export interface Auction {
   startPrice: number;
   currentBid: number;
   reservePrice?: number;
+  originalPrice?: number;
   totalBids: number;
   startTime: string;
   endTime: string;

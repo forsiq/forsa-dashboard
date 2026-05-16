@@ -135,19 +135,17 @@ export const ListingDetailPage: React.FC = () => {
 
   if (!listing) {
     return (
-      <div className="max-w-6xl mx-auto p-6" dir={dir}>
-        <EmptyState
-          icon={Package}
-          title={t('listing.detail.not_found') || 'Not Found'}
-          actionLabel={t('listing.form.cancel') || 'Back'}
-          onAction={() => router.push('/listings')}
-        />
-      </div>
+      <EmptyState
+        icon={Package}
+        title={t('listing.detail.not_found') || 'Not Found'}
+        actionLabel={t('listing.form.cancel') || 'Back'}
+        onAction={() => router.push('/listings')}
+      />
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">

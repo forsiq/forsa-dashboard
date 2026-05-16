@@ -19,16 +19,22 @@ export const deployAuctionFormSchema = z
     bidIncrement: z.coerce.number().refine((n) => Number.isFinite(n) && n >= 1, {
       message: 'Bid increment must be at least 1',
     }),
-    reservePrice: z.union([z.string(), z.number()]).optional(),
+    originalPrice: z.union([z.string(), z.number()]).optional(),
     startTime: startDateTime,
     endTime: endDateTime,
   })
   .superRefine((data, ctx) => {
-    const resRaw = data.reservePrice;
-    if (resRaw !== '' && resRaw !== undefined && resRaw !== null) {
-      const resNum = typeof resRaw === 'number' ? resRaw : Number(String(resRaw).trim());
-      if (!Number.isFinite(resNum) || resNum < 1) {
-        ctx.addIssue({ code: 'custom', path: ['reservePrice'], message: 'Reserve must be at least 1 when set' });
+    const origRaw = data.originalPrice;
+    if (origRaw !== '' && origRaw !== undefined && origRaw !== null) {
+      const origNum = typeof origRaw === 'number' ? origRaw : Number(String(origRaw).trim());
+      if (!Number.isFinite(origNum) || origNum < 1) {
+        ctx.addIssue({ code: 'custom', path: ['originalPrice'], message: 'Original price must be at least 1 when set' });
+      } else if (origNum <= data.startPrice) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['originalPrice'],
+          message: 'Original price must be greater than start price',
+        });
       }
     }
     const t0 = new Date(data.startTime).getTime();

@@ -5,6 +5,12 @@
     ar: "تنقل أسرع وتحميل أكثر سلاسة"
   entries:
     - description:
+        en: "Deploy auction form now uses optional original price instead of reserve price when publishing a listing"
+        ar: "نموذج نشر المزاد يستخدم السعر الأصلي الاختياري بدلاً من سعر الاحتياط عند نشر القائمة"
+      type: changed
+      sidebarPath: /listings
+
+    - description:
         en: "Added route progress bar for instant visual feedback when navigating between pages"
         ar: "تمت إضافة شريط تقدم للتنقل يعطي رد فعل بصري فوري عند الانتقال بين الصفحات"
       type: improved

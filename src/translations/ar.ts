@@ -361,6 +361,7 @@ export const ar: Record<string, string> = {
   "listing.deploy.start_time": "وقت البدء",
   "listing.deploy.end_time": "وقت الانتهاء",
   "listing.deploy.original_price": "السعر الأصلي",
+  "listing.deploy.auction_original_price": "السعر الأصلي (اختياري)",
   "listing.deploy.deal_price": "سعر الصفقة",
   "listing.deploy.min_participants": "الحد الأدنى للمشاركين",
   "listing.deploy.max_participants": "الحد الأقصى للمشاركين",
@@ -381,6 +382,8 @@ export const ar: Record<string, string> = {
     "متى تُغلق المزايدة تلقائياً. يجب أن يكون بعد وقت البدء.",
   "listing.deploy.hint.original_price":
     "السعر المرجعي أو سعر السوق (د.ع) يُعرض مع الصفقة ليوضح حجم الخصم.",
+  "listing.deploy.hint.auction_original_price":
+    "اختياري: السعر المرجعي أو سعر السوق (د.ع) يُعرض بجانب المزاد ليوضح القيمة مقارنة بسعر البداية. يجب أن يكون أعلى من سعر البداية.",
   "listing.deploy.hint.deal_price":
     "السعر الذي يدفعه المشاركون (د.ع) عند نجاح الصفقة. عادة أقل من السعر الأصلي.",
   "listing.deploy.hint.min_participants":
@@ -397,6 +400,7 @@ export const ar: Record<string, string> = {
 
   "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
   "validation.reserve_price_min": "سعر الاحتياط يجب أن يكون {min} على الأقل.",
+  "validation.original_price_min": "السعر الأصلي يجب أن يكون {min} على الأقل.",
   "validation.bid_increment_min": "حد المزايدة يجب أن يكون {min} على الأقل.",
   "validation.field_must_be_at_least": "الحقل {field} يجب أن يكون {min} على الأقل.",
   "validation.api_unmapped_fallback": "خطأ تحقق: {message}",

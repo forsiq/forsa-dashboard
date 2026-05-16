@@ -57,6 +57,7 @@ export interface DeployAuctionInput {
   startPrice: number;
   buyNowPrice?: number;
   reservePrice?: number;
+  originalPrice?: number;
   bidIncrement?: number;
   startTime: string;
   endTime: string;
