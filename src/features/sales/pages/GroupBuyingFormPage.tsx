@@ -25,6 +25,8 @@ import { AmberDatePicker } from '@core/components/AmberDatePicker';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useFileUpload } from '@core/hooks/useFileUpload';
+import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
+import { parseAttachmentIds } from '@features/auctions/utils/auction-utils';
 import { FormSection } from '@core/components/FormSection';
 import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFormUX } from '@core/hooks/useFormUX';
@@ -96,8 +98,9 @@ export const GroupBuyingFormPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
+  const imageUpload = usePendingImageFiles();
+  const [retainedAttachmentIds, setRetainedAttachmentIds] = useState<number[]>([]);
+  const { uploadMultiple, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending || isUploading;
@@ -152,8 +155,13 @@ export const GroupBuyingFormPage: React.FC = () => {
         endTime: existingCampaign.endTime ? new Date(existingCampaign.endTime).toISOString().slice(0, 16) : '',
         autoCreateOrder: existingCampaign.autoCreateOrder ?? true,
       });
+      const urls = (existingCampaign as any).images || [];
+      imageUpload.resetFromServer(Array.isArray(urls) ? urls : []);
+      setRetainedAttachmentIds(
+        parseAttachmentIds((existingCampaign as any).attachmentIds),
+      );
     }
-  }, [isEdit, existingCampaign]);
+  }, [isEdit, existingCampaign, imageUpload.resetFromServer]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -198,12 +206,12 @@ export const GroupBuyingFormPage: React.FC = () => {
 
     try {
       setSubmitError(null);
-      let uploadedAttachmentId: number | null = null;
-      if (selectedImageFile) {
-        uploadedAttachmentId = await uploadFile(selectedImageFile);
-        if (!uploadedAttachmentId) {
-          return;
-        }
+      const newAttachmentIds =
+        imageUpload.pendingFiles.length > 0
+          ? await uploadMultiple(imageUpload.pendingFiles)
+          : [];
+      if (imageUpload.pendingFiles.length > 0 && newAttachmentIds.length === 0) {
+        return;
       }
       // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
       const { productId, ...formPayload } = formData;
@@ -217,9 +225,10 @@ export const GroupBuyingFormPage: React.FC = () => {
           startTime: new Date(formPayload.startTime).toISOString(),
           endTime: new Date(formPayload.endTime).toISOString(),
       } as any;
-      if (uploadedAttachmentId) {
-        input.mainAttachmentId = uploadedAttachmentId;
-        input.attachmentIds = [uploadedAttachmentId];
+      const allAttachmentIds = [...retainedAttachmentIds, ...newAttachmentIds];
+      if (allAttachmentIds.length > 0) {
+        input.mainAttachmentId = allAttachmentIds[0];
+        input.attachmentIds = allAttachmentIds;
       }
 
       if (isEdit) {
@@ -442,12 +451,20 @@ export const GroupBuyingFormPage: React.FC = () => {
                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.campaign_imagery')}</h3>
                 </div>
                 <AmberImageUpload
-                  value=""
+                  value={imageUpload.previewUrls}
                   onChange={(files) => {
-                    if (files?.[0]) {
-                      setSelectedImageFile(files[0]);
-                    }
+                    if (files?.length) imageUpload.appendFiles(files);
                   }}
+                  onRemove={(index) => {
+                    const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+                    if (index < existingCount) {
+                      setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
+                    }
+                    imageUpload.removeAt(index);
+                  }}
+                  onReorder={(newOrder) => imageUpload.reorder(newOrder)}
+                  multiple
+                  sortable
                   isUploading={isUploading}
                   uploadProgress={uploadProgress}
                   uploadError={uploadError}

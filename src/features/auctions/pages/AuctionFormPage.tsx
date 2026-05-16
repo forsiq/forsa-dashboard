@@ -31,6 +31,7 @@ import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
 import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFileUpload } from '@core/hooks/useFileUpload';
+import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useGetAuction, useCreateAuction, useUpdateAuction } from '../api';
@@ -41,6 +42,7 @@ import { useList as useInventoryList } from '../../../services/inventory/hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
 import type { AuctionCreateInput, AuctionUpdateInput, Spec, Source } from '../types/auction.types';
+import { parseAttachmentIds } from '../utils/auction-utils';
 
 const HISTORY_KEY = 'history_auction';
 
@@ -175,10 +177,10 @@ export const AuctionFormPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const imageUpload = usePendingImageFiles();
+  const [retainedAttachmentIds, setRetainedAttachmentIds] = useState<number[]>([]);
 
-  // File upload hook with presigned URL flow
-  const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useFileUpload();
+  const { uploadMultiple, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useFileUpload();
 
   // Sync with existing auction if editing or cloning
   useEffect(() => {
@@ -207,8 +209,11 @@ export const AuctionFormPage: React.FC = () => {
         specs: normalize(existingAuction.specs) as Spec[],
         sources: normalize(existingAuction.sources) as Source[],
       });
+      const urls = normalize(existingAuction.images) as string[];
+      imageUpload.resetFromServer(urls);
+      setRetainedAttachmentIds(parseAttachmentIds(existingAuction.attachmentIds as any));
     }
-  }, [isEdit, isClone, existingAuction]);
+  }, [isEdit, isClone, existingAuction, imageUpload.resetFromServer]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -269,13 +274,13 @@ export const AuctionFormPage: React.FC = () => {
 
     try {
       setSubmitError(null);
-      let uploadedAttachmentId: number | null = null;
-      if (selectedImageFile) {
-        uploadedAttachmentId = await uploadFile(selectedImageFile);
-        if (!uploadedAttachmentId) {
-          setSubmitError(uploadError || t('auction.validation.upload_failed') || 'Image upload failed.');
-          return;
-        }
+      const newAttachmentIds =
+        imageUpload.pendingFiles.length > 0
+          ? await uploadMultiple(imageUpload.pendingFiles)
+          : [];
+      if (imageUpload.pendingFiles.length > 0 && newAttachmentIds.length === 0) {
+        setSubmitError(uploadError || t('auction.validation.upload_failed') || 'Image upload failed.');
+        return;
       }
       // Remove productId from payload - it's only used for auto-fill, not accepted by backend DTO
       const { productId, durationDays: _durationDays, ...formPayload } = formData;
@@ -287,9 +292,10 @@ export const AuctionFormPage: React.FC = () => {
         sources: normalize(formPayload.sources) as Source[],
         endTime: finalEndTime ? new Date(finalEndTime).toISOString() : undefined,
       };
-      if (uploadedAttachmentId) {
-        payload.mainAttachmentId = uploadedAttachmentId;
-        payload.attachmentIds = [uploadedAttachmentId];
+      const allAttachmentIds = [...retainedAttachmentIds, ...newAttachmentIds];
+      if (allAttachmentIds.length > 0) {
+        payload.mainAttachmentId = allAttachmentIds[0];
+        payload.attachmentIds = allAttachmentIds;
       }
 
       if (isEdit) {
@@ -624,21 +630,18 @@ export const AuctionFormPage: React.FC = () => {
                         {t('auction.form.imagery_specs')}
                     </label>
                     <AmberImageUpload 
-                        value={formData.images || []}
+                        value={imageUpload.previewUrls}
                         onChange={(files) => {
-                            if (files?.[0]) {
-                                const url = URL.createObjectURL(files[0]);
-                                setSelectedImageFile(files[0]);
-                                handleChange('images', [...(formData.images || []), url]);
-                            }
+                          if (files?.length) imageUpload.appendFiles(files);
                         }}
                         onRemove={(index) => {
-                          const newImages = [...(formData.images || [])];
-                          newImages.splice(index, 1);
-                          handleChange('images', newImages);
-                          if (index === 0) setSelectedImageFile(null);
+                          const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+                          if (index < existingCount) {
+                            setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
+                          }
+                          imageUpload.removeAt(index);
                         }}
-                        onReorder={(newOrder) => handleChange('images', newOrder)}
+                        onReorder={(newOrder) => imageUpload.reorder(newOrder)}
                         multiple={true}
                         sortable={true}
                         disabled={isUploading}

@@ -20,6 +20,7 @@ import { FormSection } from '@core/components/FormSection';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
+import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
@@ -76,8 +77,9 @@ export const ListingFormPage: React.FC = () => {
     };
   });
 
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const { upload: uploadFile, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
+  const imageUpload = usePendingImageFiles();
+  const { uploadMultiple, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
+  const [retainedAttachmentIds, setRetainedAttachmentIds] = useState<number[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,8 +95,10 @@ export const ListingFormPage: React.FC = () => {
         sku: existingListing.sku || '',
         images: existingListing.images || [],
       });
+      imageUpload.resetFromServer(existingListing.images || []);
+      setRetainedAttachmentIds(existingListing.attachmentIds || []);
     }
-  }, [isEdit, existingListing]);
+  }, [isEdit, existingListing, imageUpload.resetFromServer]);
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending || isUploading;
 
@@ -200,20 +204,21 @@ export const ListingFormPage: React.FC = () => {
   const handleSubmit = async (data: Record<string, unknown>) => {
     try {
       setSubmitError(null);
-      let uploadedAttachmentId: number | null = null;
-      if (selectedImageFile) {
-        uploadedAttachmentId = await uploadFile(selectedImageFile);
-      }
+      const newAttachmentIds =
+        imageUpload.pendingFiles.length > 0
+          ? await uploadMultiple(imageUpload.pendingFiles)
+          : [];
 
       const payload: any = {
         ...formData,
         categoryId: formData.categoryId ? Number(formData.categoryId) : undefined,
       };
-      // Remove blob: preview URLs — real images are tracked via attachmentIds
       delete payload.images;
-      if (uploadedAttachmentId) {
-        payload.mainAttachmentId = uploadedAttachmentId;
-        payload.attachmentIds = [uploadedAttachmentId];
+
+      const allAttachmentIds = [...retainedAttachmentIds, ...newAttachmentIds];
+      if (allAttachmentIds.length > 0) {
+        payload.mainAttachmentId = allAttachmentIds[0];
+        payload.attachmentIds = allAttachmentIds;
       }
 
       if (isEdit) {
@@ -298,22 +303,18 @@ export const ListingFormPage: React.FC = () => {
       >
         <div className="space-y-4">
           <AmberImageUpload
-            value={formData.images || []}
+            value={imageUpload.previewUrls}
             onChange={(files) => {
-              if (files?.[0]) {
-                setSelectedImageFile(files[0]);
-                setFormData(prev => ({
-                  ...prev,
-                  images: [...(prev.images || []), URL.createObjectURL(files[0])],
-                }));
-              }
+              if (files?.length) imageUpload.appendFiles(files);
             }}
             onRemove={(index) => {
-              const newImages = [...(formData.images || [])];
-              newImages.splice(index, 1);
-              setFormData(prev => ({ ...prev, images: newImages }));
+              const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+              if (index < existingCount) {
+                setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
+              }
+              imageUpload.removeAt(index);
             }}
-            onReorder={(newOrder) => setFormData(prev => ({ ...prev, images: newOrder }))}
+            onReorder={(newOrder) => imageUpload.reorder(newOrder)}
             multiple={true}
             sortable={true}
             disabled={isUploading}

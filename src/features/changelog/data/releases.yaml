@@ -23,6 +23,12 @@
       sidebarPath: /listings
 
     - description:
+        en: "Fixed product and listing forms only saving the first image when multiple photos were selected"
+        ar: "تم إصلاح نماذج القوائم والمزادات التي كانت تحفظ الصورة الأولى فقط عند اختيار عدة صور"
+      type: fixed
+      sidebarPath: /listings
+
+    - description:
         en: "Added route progress bar for instant visual feedback when navigating between pages"
         ar: "تمت إضافة شريط تقدم للتنقل يعطي رد فعل بصري فوري عند الانتقال بين الصفحات"
       type: improved
