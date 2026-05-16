@@ -24,6 +24,7 @@ import { FormSection } from '@core/components/FormSection';
 import { IqdSymbol } from '@core/components/IqdSymbol';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
+import { useMapApiValidationFieldErrors } from '@core/hooks/useMapApiValidationFieldErrors';
 import {
   parseBidIncrement,
   parseOptionalListingPrice,
@@ -31,7 +32,10 @@ import {
 } from '@core/utils/listingDeployPrices';
 import { useGetListing, useDeployAsAuction, useDeployAsGroupBuy } from '../api/listing-hooks';
 import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
-import { deployAuctionFormSchema, deployGroupBuyFormSchema } from '../validation/deployListingSchemas';
+import {
+  createDeployAuctionClientSchema,
+  createDeployGroupBuyClientSchema,
+} from '../validation/deployListingSchemas';
 import { getListingPrimaryImageUrl } from '../utils/listing-media';
 import { FieldHelpHint } from '../components/FieldHelpHint';
 import { EmptyState } from '@core/components/EmptyState';
@@ -46,6 +50,7 @@ type DeployMode = 'now' | 'schedule' | 'draft';
 export const DeployListingPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const mapApiError = useMapApiValidationError();
+  const mapApiFieldErrors = useMapApiValidationFieldErrors();
   const router = useRouter();
   const { id } = router.query;
   const isRTL = dir === 'rtl';
@@ -90,6 +95,16 @@ export const DeployListingPage: React.FC = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const requireSchedule = deployMode === 'schedule';
+  const deployAuctionSchema = useMemo(
+    () => createDeployAuctionClientSchema(t, { requireSchedule }),
+    [t, requireSchedule],
+  );
+  const deployGroupBuySchema = useMemo(
+    () => createDeployGroupBuyClientSchema(t, { requireSchedule }),
+    [t, requireSchedule],
+  );
   const auctionEndTimeAutoRef = useRef(true);
   const groupBuyEndTimeAutoRef = useRef(true);
 
@@ -140,13 +155,9 @@ export const DeployListingPage: React.FC = () => {
     setFieldErrors({});
     try {
       if (deployType === 'auction') {
-        // Validate pricing fields (always required)
-        if (!auctionForm.startPrice || auctionForm.startPrice < 1) {
-          setFieldErrors({ startPrice: 'Start price must be at least 1' });
-          return;
-        }
-        if (!auctionForm.bidIncrement || auctionForm.bidIncrement < 1) {
-          setFieldErrors({ bidIncrement: 'Bid increment must be at least 1' });
+        const clientParsed = deployAuctionSchema.safeParse(auctionForm);
+        if (!clientParsed.success) {
+          setFieldErrors(zodIssuesToFieldMap(clientParsed.error));
           return;
         }
 
@@ -165,11 +176,6 @@ export const DeployListingPage: React.FC = () => {
           basePayload.startTime = startTime.toISOString();
           basePayload.endTime = endTime.toISOString();
         } else if (deployMode === 'schedule') {
-          const parsed = deployAuctionFormSchema.safeParse(auctionForm);
-          if (!parsed.success) {
-            setFieldErrors(zodIssuesToFieldMap(parsed.error));
-            return;
-          }
           basePayload.startTime = new Date(auctionForm.startTime).toISOString();
           basePayload.endTime = new Date(auctionForm.endTime).toISOString();
         }
@@ -180,13 +186,9 @@ export const DeployListingPage: React.FC = () => {
           data: basePayload,
         });
       } else if (deployType === 'group_buy') {
-        // Validate pricing fields
-        if (!groupBuyForm.originalPrice || groupBuyForm.originalPrice < 1) {
-          setFieldErrors({ originalPrice: 'Original price must be at least 1' });
-          return;
-        }
-        if (!groupBuyForm.dealPrice || groupBuyForm.dealPrice < 1) {
-          setFieldErrors({ dealPrice: 'Deal price must be at least 1' });
+        const clientParsed = deployGroupBuySchema.safeParse(groupBuyForm);
+        if (!clientParsed.success) {
+          setFieldErrors(zodIssuesToFieldMap(clientParsed.error));
           return;
         }
 
@@ -206,15 +208,9 @@ export const DeployListingPage: React.FC = () => {
           basePayload.startTime = startTime.toISOString();
           basePayload.endTime = endTime.toISOString();
         } else if (deployMode === 'schedule') {
-          const parsed = deployGroupBuyFormSchema.safeParse(groupBuyForm);
-          if (!parsed.success) {
-            setFieldErrors(zodIssuesToFieldMap(parsed.error));
-            return;
-          }
           basePayload.startTime = new Date(groupBuyForm.startTime).toISOString();
           basePayload.endTime = new Date(groupBuyForm.endTime).toISOString();
         }
-        // draft mode: no startTime/endTime
 
         await deployGroupBuyMutation.mutateAsync({
           id: Number(id),
@@ -228,7 +224,12 @@ export const DeployListingPage: React.FC = () => {
         router.push('/group-buying');
       }
     } catch (err: unknown) {
-      const mapped = mapApiError(err, { firstOnly: false });
+      const apiFields = mapApiFieldErrors(err);
+      const { _form, ...inlineFields } = apiFields;
+      if (Object.keys(inlineFields).length) {
+        setFieldErrors(inlineFields);
+      }
+      const mapped = _form || mapApiError(err, { firstOnly: true });
       const errMsg = typeof (err as { message?: string })?.message === 'string' ? (err as { message: string }).message.trim() : '';
       setSubmitError(mapped?.trim() || errMsg || t('listing.deploy.error_reason_unknown'));
     }

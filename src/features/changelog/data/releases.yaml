@@ -17,6 +17,12 @@
       sidebarPath: /listings
 
     - description:
+        en: "Deploy listing form validates prices and schedule on the client with Arabic and English field errors before calling the API"
+        ar: "نموذج نشر القائمة يتحقق من الأسعار والجدولة على المتصفح مع رسائل عربية وإنجليزية قبل إرسال الطلب"
+      type: improved
+      sidebarPath: /listings
+
+    - description:
         en: "Added route progress bar for instant visual feedback when navigating between pages"
         ar: "تمت إضافة شريط تقدم للتنقل يعطي رد فعل بصري فوري عند الانتقال بين الصفحات"
       type: improved

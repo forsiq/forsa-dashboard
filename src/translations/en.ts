@@ -403,6 +403,21 @@ export const en: Record<string, string> = {
   "listing.deploy.mode_draft_desc": "Save without publishing",
   "listing.deploy.duration_days": "Duration (Days)",
 
+  "listing.deploy.validation.start_price_min": "Start price must be at least 1",
+  "listing.deploy.validation.bid_increment_min": "Bid increment must be at least 1",
+  "listing.deploy.validation.original_price_min": "Original price must be at least 1 when provided",
+  "listing.deploy.validation.original_price_gt_start": "Original price must be greater than start price",
+  "listing.deploy.validation.deal_price_min": "Deal price must be at least 1",
+  "listing.deploy.validation.deal_price_lt_original": "Deal price must be less than original price",
+  "listing.deploy.validation.min_participants_min": "Minimum participants must be at least 2",
+  "listing.deploy.validation.max_participants_min": "Max participants must be at least 1",
+  "listing.deploy.validation.max_gte_min_participants": "Max participants must be greater than or equal to minimum",
+  "listing.deploy.validation.start_time_required": "Start time is required",
+  "listing.deploy.validation.end_time_required": "End time is required",
+  "listing.deploy.validation.start_time_invalid": "Invalid start time",
+  "listing.deploy.validation.end_time_invalid": "Invalid end time",
+  "listing.deploy.validation.end_after_start": "End time must be after start time",
+
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",
   "validation.reserve_price_min": "Reserve price must be at least {min}.",

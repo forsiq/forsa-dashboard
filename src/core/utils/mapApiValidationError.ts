@@ -66,6 +66,39 @@ export function extractApiErrorMessages(error: unknown): string[] {
 
 const MUST_NOT_BE_LESS = /^([a-zA-Z][a-zA-Z0-9_]*) must not be less than ([\d.,]+)\s*$/;
 
+/** Known form field names for inline error display. */
+const API_FIELD_NAMES = [
+  'startPrice',
+  'originalPrice',
+  'reservePrice',
+  'bidIncrement',
+  'buyNowPrice',
+  'dealPrice',
+  'minParticipants',
+  'maxParticipants',
+  'startTime',
+  'endTime',
+] as const;
+
+function fieldKeyFromRawMessage(raw: string): string | null {
+  const m = raw.trim();
+  if (!m) return null;
+  for (const field of API_FIELD_NAMES) {
+    if (new RegExp(`^${field}\\b`, 'i').test(m)) return field;
+  }
+  const generic = m.match(MUST_NOT_BE_LESS);
+  if (generic?.[1] && API_FIELD_NAMES.includes(generic[1] as (typeof API_FIELD_NAMES)[number])) {
+    return generic[1];
+  }
+  if (/^Reserve price must be >= start price$/i.test(m)) return 'reservePrice';
+  if (/^Buy now price must be > start price$/i.test(m)) return 'buyNowPrice';
+  if (/^Original price must be > start price$/i.test(m)) return 'originalPrice';
+  if (/^Deal price must be less than original price$/i.test(m)) return 'dealPrice';
+  if (/^startTime must be a valid ISO 8601 date string$/i.test(m)) return 'startTime';
+  if (/^endTime must be a valid ISO 8601 date string$/i.test(m)) return 'endTime';
+  return null;
+}
+
 function mapOneRawMessage(raw: string, t: TranslateFn, language: string): string {
   const m = raw.trim();
   if (!m) return '';
@@ -93,6 +126,18 @@ function mapOneRawMessage(raw: string, t: TranslateFn, language: string): string
   }
   if (/^Original price must be > start price$/i.test(m)) {
     return t('auction.validation.original_gt_start');
+  }
+  if (/^Deal price must be less than original price$/i.test(m)) {
+    return t('listing.deploy.validation.deal_price_lt_original');
+  }
+  if (/^Max participants must be greater than or equal to min$/i.test(m)) {
+    return t('listing.deploy.validation.max_gte_min_participants');
+  }
+  if (/^startTime must be a valid ISO 8601 date string$/i.test(m) || /^startTime must be a valid date$/i.test(m)) {
+    return t('listing.deploy.validation.start_time_invalid');
+  }
+  if (/^endTime must be a valid ISO 8601 date string$/i.test(m) || /^endTime must be a valid date$/i.test(m)) {
+    return t('listing.deploy.validation.end_time_invalid');
   }
 
   const generic = m.match(MUST_NOT_BE_LESS);
@@ -139,4 +184,29 @@ export function mapApiValidationToUserMessage(
   const mapped = lines.map((line) => mapOneRawMessage(line, t, language)).filter(Boolean);
   const body = options?.firstOnly ? mapped[0] : mapped.join(joinWith);
   return body || '';
+}
+
+/**
+ * Map API validation lines to per-field messages (first error per field wins).
+ * Use when the form can show inline errors instead of only a toast/banner.
+ */
+export function mapApiValidationToFieldMap(
+  error: unknown,
+  t: TranslateFn,
+  language: string,
+): Record<string, string> {
+  const lines = extractApiErrorMessages(error);
+  const out: Record<string, string> = {};
+  for (const line of lines) {
+    const field = fieldKeyFromRawMessage(line);
+    const message = mapOneRawMessage(line, t, language);
+    if (!message) continue;
+    if (field && !out[field]) out[field] = message;
+    else if (!out._form) out._form = message;
+  }
+  if (!Object.keys(out).length) {
+    const summary = mapApiValidationToUserMessage(error, t, language, { firstOnly: true });
+    if (summary) out._form = summary;
+  }
+  return out;
 }
