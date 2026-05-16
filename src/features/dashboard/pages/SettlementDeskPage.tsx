@@ -8,6 +8,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { cn } from '@core/lib/utils/cn';
+import { AuctionImage } from '../../auctions/components/AuctionImage';
 import { DollarSign, Clock, AlertTriangle, Bell, UserCheck, XCircle, Receipt } from 'lucide-react';
 import type { SettlementItem } from '../../auctions/api/auction-api';
 
@@ -87,21 +88,29 @@ export const SettlementDeskPage = () => {
       label: t('settlement.auction'),
       cardTitle: true,
       render: (item) => {
-        const imgSrc = Array.isArray(item.image) ? item.image[0] : item.image;
-        const isValidUrl = imgSrc && typeof imgSrc === 'string' && imgSrc.startsWith('http');
         return (
         <div className="flex items-center gap-3">
-          {isValidUrl ? (
-            <img
-              src={imgSrc}
+          <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+            <AuctionImage
+              auction={{
+                imageUrl: item.image,
+                mainAttachmentId: item.mainAttachmentId ?? null,
+                attachmentIds: item.attachmentIds ?? null,
+                images: item.images ?? null,
+              }}
               alt=""
-              className="w-10 h-10 rounded-lg object-cover border border-white/10"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[7px] text-zinc-muted font-bold uppercase tracking-wider leading-none">
-              No Img
-            </div>
-          )}
+              className="w-10 h-10"
+              fallbackClassName="w-full h-full"
+            >
+              {(url) => (
+                <img
+                  src={url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </AuctionImage>
+          </div>
           <div>
             <p className="text-sm font-bold text-zinc-text line-clamp-1 max-w-[200px]">
               {item.title}

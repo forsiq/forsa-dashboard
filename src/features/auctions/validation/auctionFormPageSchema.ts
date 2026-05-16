@@ -53,5 +53,20 @@ export function createAuctionFormPageSchema(t: TFn) {
           message: msg(t, 'auction.validation.end_after_start', 'End time must be after start time'),
         });
       }
+      if (
+        data.reservePrice != null &&
+        Number.isFinite(data.reservePrice) &&
+        data.reservePrice < data.startPrice
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['reservePrice'],
+          message: msg(
+            t,
+            'auction.validation.reserve_gte_start',
+            'Reserve price must be greater than or equal to start price',
+          ),
+        });
+      }
     });
 }

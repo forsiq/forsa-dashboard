@@ -10,6 +10,7 @@ import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { AuctionImage } from '../../auctions/components/AuctionImage';
 import {
   Activity,
   Zap,
@@ -108,22 +109,25 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
       <div className="flex gap-4">
         {/* Image */}
         <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)]">
-          {(() => {
-            const imgSrc = Array.isArray(auction.image) ? auction.image[0] : auction.image;
-            const isValidUrl = imgSrc && typeof imgSrc === 'string' && imgSrc.startsWith('http');
-            return isValidUrl ? (
+          <AuctionImage
+            auction={{
+              imageUrl: auction.image,
+              mainAttachmentId: auction.mainAttachmentId ?? null,
+              attachmentIds: auction.attachmentIds ?? null,
+              images: auction.images ?? null,
+            }}
+            alt={auction.title}
+            className="w-16 h-16"
+            fallbackClassName="w-full h-full"
+          >
+            {(url) => (
               <img
-                src={imgSrc}
+                src={url}
                 alt={auction.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-0.5">
-                <Eye className="w-4 h-4 text-zinc-muted/40" />
-                <span className="text-[7px] text-zinc-muted/40 font-bold uppercase tracking-wider leading-none">No Image</span>
-              </div>
-            );
-          })()}
+            )}
+          </AuctionImage>
         </div>
 
         {/* Info */}

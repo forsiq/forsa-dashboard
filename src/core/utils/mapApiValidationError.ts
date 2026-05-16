@@ -85,6 +85,16 @@ function mapOneRawMessage(raw: string, t: TranslateFn, language: string): string
   const increment = /^bidIncrement must not be less than ([\d.,]+)\s*$/i.exec(m);
   if (increment) return t('validation.bid_increment_min', { min: increment[1] });
 
+  if (/^Reserve price must be >= start price$/i.test(m)) {
+    return t('auction.validation.reserve_gte_start');
+  }
+  if (/^Buy now price must be > start price$/i.test(m)) {
+    return t('auction.validation.buy_now_gt_start');
+  }
+  if (/^Original price must be > start price$/i.test(m)) {
+    return t('auction.validation.original_gt_start');
+  }
+
   const generic = m.match(MUST_NOT_BE_LESS);
   if (generic) {
     return t('validation.field_must_be_at_least', { field: generic[1], min: generic[2] });

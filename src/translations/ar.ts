@@ -237,6 +237,9 @@ export const ar: Record<string, string> = {
   "auction.validation.start_time_invalid": "وقت بدء غير صالح",
   "auction.validation.end_time_invalid": "وقت انتهاء غير صالح",
   "auction.validation.end_after_start": "وقت الانتهاء يجب أن يكون بعد وقت البدء",
+  "auction.validation.reserve_gte_start": "سعر الاحتياط يجب أن يكون أكبر من أو يساوي سعر البداية",
+  "auction.validation.buy_now_gt_start": "سعر الشراء الفوري يجب أن يكون أكبر من سعر البداية",
+  "auction.validation.original_gt_start": "السعر الأصلي يجب أن يكون أكبر من سعر البداية",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "لوحة التحكم",

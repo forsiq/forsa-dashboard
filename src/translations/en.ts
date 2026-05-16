@@ -239,6 +239,9 @@ export const en: Record<string, string> = {
   "auction.validation.start_time_invalid": "Invalid start time",
   "auction.validation.end_time_invalid": "Invalid end time",
   "auction.validation.end_after_start": "End time must be after start time",
+  "auction.validation.reserve_gte_start": "Reserve price must be greater than or equal to start price",
+  "auction.validation.buy_now_gt_start": "Buy now price must be greater than start price",
+  "auction.validation.original_gt_start": "Original price must be greater than start price",
 
   // Sidebar menu labels (used by sidebar.ts)
   "sidebar.dashboard": "Dashboard",

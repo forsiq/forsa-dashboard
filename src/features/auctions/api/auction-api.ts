@@ -302,6 +302,10 @@ export interface SettlementItem {
   id: number;
   title: string;
   image: string | null;
+  imageUrl?: string | null;
+  mainAttachmentId?: number | null;
+  attachmentIds?: string | string[] | null;
+  images?: string[] | string | null;
   status: string;
   paymentStatus: string;
   finalPrice: number | null;
@@ -383,6 +387,10 @@ export interface ActivityAuctionItem {
   id: number;
   title: string;
   image: string | null;
+  imageUrl?: string | null;
+  mainAttachmentId?: number | null;
+  attachmentIds?: string | string[] | null;
+  images?: string[] | string | null;
   status: string;
   activityLevel: 'hot' | 'warm' | 'cold';
   bidCount: number;

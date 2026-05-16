@@ -5,6 +5,12 @@
     ar: "تنقل أسرع وتحميل أكثر سلاسة"
   entries:
     - description:
+        en: "Fixed create auction showing Internal Server Error when reserve price was below start price — now shows a clear validation message"
+        ar: "تم إصلاح خطأ الخادم الداخلي عند إنشاء مزاد إذا كان سعر الاحتياط أقل من سعر البداية — تظهر رسالة تحقق واضحة الآن"
+      type: fixed
+      sidebarPath: /auctions
+
+    - description:
         en: "Deploy auction form now uses optional original price instead of reserve price when publishing a listing"
         ar: "نموذج نشر المزاد يستخدم السعر الأصلي الاختياري بدلاً من سعر الاحتياط عند نشر القائمة"
       type: changed

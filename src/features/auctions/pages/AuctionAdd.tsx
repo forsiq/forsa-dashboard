@@ -89,6 +89,16 @@ export const AuctionAdd = () => {
     if (!formData.description?.trim()) newErrors.description = t('auction.validation.desc_required') || 'Description is required';
     if (!formData.startPrice || formData.startPrice <= 0)
       newErrors.startPrice = t('auction.validation.start_price_gt_0') || 'Starting price must be greater than 0';
+    if (
+      formData.reservePrice != null &&
+      formData.reservePrice > 0 &&
+      formData.startPrice != null &&
+      formData.reservePrice < formData.startPrice
+    ) {
+      newErrors.reservePrice =
+        t('auction.validation.reserve_gte_start') ||
+        'Reserve price must be greater than or equal to start price';
+    }
     if (!formData.startTime) newErrors.startTime = t('auction.validation.start_time_required') || 'Start time is required';
     if (!formData.endTime) newErrors.endTime = t('auction.validation.end_time_required') || 'End time is required';
     if (uploadedImages.length === 0) newErrors.images = t('auction.validation.image_required') || 'At least one image is required';
