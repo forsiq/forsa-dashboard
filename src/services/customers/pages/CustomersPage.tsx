@@ -37,7 +37,7 @@ export function CustomersPage() {
     setIsClient(true);
   }, []);
 
-  const { data, isLoading, error, refetch } = useGetCustomers({
+  const { data, isPending, isFetching, error, refetch } = useGetCustomers({
     search: debouncedSearch || undefined,
     type: typeFilter === 'all' ? undefined : typeFilter,
     page: 1,
@@ -326,7 +326,7 @@ export function CustomersPage() {
 
       {/* Table Section */}
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-        {isLoading ? (
+        {isPending ? (
           <AmberTableSkeleton rows={8} columns={6} hasActions />
         ) : error ? (
           <div className="p-12 text-center">

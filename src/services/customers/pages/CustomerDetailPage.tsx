@@ -28,11 +28,13 @@ import {
 } from 'lucide-react';
 import { useGetCustomer, useGetCustomerBids } from '../hooks';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { DetailPageSkeleton } from '@core/loading';
+import { useRouteParam } from '@core/hooks/useRouteParam';
 
 export function CustomerDetailPage() {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const { id } = router.query;
+  const customerId = useRouteParam('id', { parse: 'string' }) || '';
   const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
 
@@ -40,18 +42,11 @@ export function CustomerDetailPage() {
     setIsClient(true);
   }, []);
 
-  const customerId = (id as string) || '';
-  const { data: customer, isLoading, error } = useGetCustomer(customerId);
-  const { data: bidsData, isLoading: bidsLoading } = useGetCustomerBids(customerId);
+  const { data: customer, isPending, error } = useGetCustomer(customerId, !!customerId);
+  const { data: bidsData } = useGetCustomerBids(customerId);
 
-  if (!isClient) return null;
-
-  if (isLoading || !router.isReady) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-10 h-10 animate-spin text-[var(--color-brand)]" />
-      </div>
-    );
+  if (!isClient || !customerId || isPending || !router.isReady) {
+    return <DetailPageSkeleton />;
   }
 
   if (error || !customer) {
@@ -168,7 +163,7 @@ export function CustomerDetailPage() {
           </div>
         </div>
 
-        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push(`/customers/${id}/edit`)}>
+        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push(`/customers/${customerId}/edit`)}>
           <Edit3 className="w-4 h-4" />
           <span>{t('customer.modify_identity') || 'Modify Identity'}</span>
         </AmberButton>
@@ -217,7 +212,7 @@ export function CustomerDetailPage() {
               )}
             </div>
 
-            {bidsLoading ? (
+            {!bidsData ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-6 h-6 animate-spin text-[var(--color-brand)]" />
               </div>

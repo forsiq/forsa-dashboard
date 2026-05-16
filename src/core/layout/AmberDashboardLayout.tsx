@@ -12,6 +12,7 @@ import { AmberTopbar } from '@yousef2001/core-ui/layout/components/Topbar';
 import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
 import { ForsaSidebar } from './components/ForsaSidebar';
+import { useSidebarMode } from '@core/hooks/useSidebarMode';
 
 const SIDEBAR_COLLAPSED_KEY = 'forsa-sidebar-collapsed';
 const sidebarCollapseListeners = new Set<() => void>();
@@ -72,6 +73,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   }, []);
 
   const isPortalPage = portalPaths.includes(router.pathname);
+  const { mode } = useSidebarMode();
 
   return (
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
@@ -85,6 +87,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
         t={t}
         dir={dir}
         appLabel={appLabel}
+        showServices={mode !== 'unified'}
         sidebarInsetClassName={isPortalPage ? '' : isCollapsed ? 'lg:ps-20' : 'lg:ps-64'}
       />
       <div className="flex flex-1 relative min-h-0 overflow-x-hidden">

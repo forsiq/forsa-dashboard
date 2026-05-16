@@ -6,7 +6,7 @@
  * Prefer extending this file over patching `node_modules/@yousef2001/core-ui` so upgrades stay predictable.
  */
 
-import React, { Fragment, useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
@@ -23,7 +23,7 @@ const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 const MODULE_COLLAPSE_PREFIX = 'forsa-module-collapsed-';
 const moduleCollapseListeners = new Set<() => void>();
 
-function readModuleCollapsed(moduleId: string): boolean {
+function readModuleCollapsedFromStorage(moduleId: string): boolean {
   if (typeof window === 'undefined') return false;
   try {
     return window.localStorage.getItem(`${MODULE_COLLAPSE_PREFIX}${moduleId}`) === 'true';
@@ -32,7 +32,7 @@ function readModuleCollapsed(moduleId: string): boolean {
   }
 }
 
-function setModuleCollapsed(moduleId: string, collapsed: boolean) {
+function writeModuleCollapsed(moduleId: string, collapsed: boolean) {
   try {
     window.localStorage.setItem(`${MODULE_COLLAPSE_PREFIX}${moduleId}`, collapsed ? 'true' : 'false');
   } catch {
@@ -48,12 +48,44 @@ function subscribeModuleCollapse(onChange: () => void) {
   };
 }
 
-function useModuleCollapsed(moduleId: string): boolean {
-  return useSyncExternalStore(
-    subscribeModuleCollapse,
-    () => readModuleCollapsed(moduleId),
-    () => false,
-  );
+/**
+ * Uses useState + subscription to keep module collapse state reactive
+ * without creating new object references on every call (which breaks useSyncExternalStore).
+ */
+function useModuleCollapseState(): {
+  collapseMap: Record<string, boolean>;
+  toggleModule: (moduleId: string) => void;
+} {
+  const [collapseMap, setCollapseMap] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    const ids = ['dashboard', 'marketplace', 'sales', 'reports'];
+    for (const id of ids) {
+      map[id] = readModuleCollapsedFromStorage(id);
+    }
+    return map;
+  });
+
+  useEffect(() => {
+    const refresh = () => {
+      const ids = ['dashboard', 'marketplace', 'sales', 'reports'];
+      const map: Record<string, boolean> = {};
+      for (const id of ids) {
+        map[id] = readModuleCollapsedFromStorage(id);
+      }
+      setCollapseMap(map);
+    };
+
+    moduleCollapseListeners.add(refresh);
+    return () => {
+      moduleCollapseListeners.delete(refresh);
+    };
+  }, []);
+
+  const toggleModule = useCallback((moduleId: string) => {
+    writeModuleCollapsed(moduleId, !readModuleCollapsedFromStorage(moduleId));
+  }, []);
+
+  return { collapseMap, toggleModule };
 }
 
 // ── Accent border colors per module ───────────────────────────────────
@@ -100,16 +132,10 @@ const ModuleHeader: React.FC<{
   isCollapsed: boolean;
   dir: string;
   t: (key: string) => string;
-}> = ({ section, isCollapsed, dir, t }) => {
+  isModuleCollapsed: boolean;
+  onToggle: () => void;
+}> = ({ section, isCollapsed, dir, t, isModuleCollapsed, onToggle }) => {
   const moduleId = section.moduleId || '';
-  const collapsed = useModuleCollapsed(moduleId);
-
-  // Not directly used for rendering, but subscribing triggers re-render on change
-  void useModuleCollapsed(moduleId);
-
-  const toggle = useCallback(() => {
-    setModuleCollapsed(moduleId, !readModuleCollapsed(moduleId));
-  }, [moduleId]);
 
   const moduleIcon = (section as any).moduleIcon as string | undefined;
   const ModuleIcon = moduleIcon ? resolveIcon(moduleIcon) : null;
@@ -129,7 +155,7 @@ const ModuleHeader: React.FC<{
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={onToggle}
       className={`
         w-full flex items-center gap-3 px-5 py-2.5 mb-1 transition-all group
         border-s-2 ${isRTL ? (MODULE_ACCENT_RTL[moduleId] || 'border-e-white/10') : (MODULE_ACCENT[moduleId] || 'border-s-white/10')}
@@ -146,7 +172,7 @@ const ModuleHeader: React.FC<{
       </span>
       <ChevronDown
         className={`w-3.5 h-3.5 text-zinc-muted transition-transform duration-200 shrink-0 ${
-          collapsed ? '-rotate-90' : ''
+          isModuleCollapsed ? '-rotate-90' : ''
         }`}
       />
     </button>
@@ -174,6 +200,9 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const isPortal = portalPaths.includes(router.pathname);
+
+  // Read all module collapse states
+  const { collapseMap, toggleModule } = useModuleCollapseState();
 
   useEffect(() => {
     const loadSidebar = async () => {
@@ -349,20 +378,23 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
           {filteredSections.map((section, idx) => {
             // ── Module Header (unified mode) ──
             if (section.isModuleHeader) {
+              const mid = section.moduleId || '';
               return (
                 <ModuleHeader
-                  key={`module-${section.moduleId}`}
+                  key={`module-${mid}`}
                   section={section}
                   isCollapsed={isCollapsed}
                   dir={dir}
                   t={t}
+                  isModuleCollapsed={!!collapseMap[mid]}
+                  onToggle={() => toggleModule(mid)}
                 />
               );
             }
 
             // ── Regular section ──
             // In unified mode, check if parent module is collapsed
-            const moduleCollapsed = section.moduleId ? readModuleCollapsed(section.moduleId) : false;
+            const moduleCollapsed = section.moduleId ? !!collapseMap[section.moduleId] : false;
 
             if (moduleCollapsed && !isCollapsed) {
               return null;

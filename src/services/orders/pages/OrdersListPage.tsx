@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -50,14 +50,15 @@ export const OrdersListPage = () => {
   });
 
   // Fetch orders
-  const { data: ordersData, isLoading: isLoadingOrders, refetch } = useQuery({
+  const { data: ordersData, isPending: isLoadingOrders, refetch } = useQuery({
     queryKey: orderKeys.list({ ...filters, status: statusFilter, search: debouncedSearch }),
     queryFn: () => getOrders({ ...filters, status: statusFilter, search: debouncedSearch || undefined }),
     enabled: isClient,
+    placeholderData: keepPreviousData,
   });
 
   // Fetch stats
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isPending: statsLoading } = useQuery({
     queryKey: orderKeys.stats(),
     queryFn: getOrderStats,
     enabled: isClient,

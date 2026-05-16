@@ -1,3 +1,25 @@
+- version: "1.4.0"
+  date: "2026-05-16"
+  title:
+    en: "Faster Navigation & Smoother Loading"
+    ar: "تنقل أسرع وتحميل أكثر سلاسة"
+  entries:
+    - description:
+        en: "Added route progress bar for instant visual feedback when navigating between pages"
+        ar: "تمت إضافة شريط تقدم للتنقل يعطي رد فعل بصري فوري عند الانتقال بين الصفحات"
+      type: improved
+      sidebarPath: /auctions
+
+    - description:
+        en: "Eliminated blank flashes when filtering lists — previous data stays visible until new data arrives"
+        ar: "تم إزالة الوميض الفارغ عند تصفية القوائم — البيانات السابقة تبقى مرئية حتى وصول الجديدة"
+      type: improved
+
+    - description:
+        en: "Warmed cache on sidebar hover for faster first paint on common pages"
+        ar: "تم تسخين الذاكرة المؤقتة عند تحويم الشريط الجانبي لتحميل أسرع للصفحات الشائعة"
+      type: improved
+
 - version: "1.3.0"
   date: "2026-05-13"
   title:

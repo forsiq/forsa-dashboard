@@ -84,15 +84,15 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/edit`)}>
+          <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/edit`)}>
               <Edit className="w-4 h-4" />
               {t('listing.edit')}
           </AmberButton>
-          <AmberButton className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=auction`)}>
+          <AmberButton className="h-11 bg-brand hover:bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}>
               <Gavel className="w-4 h-4" />
               {t('listing.detail.deploy_auction')}
           </AmberButton>
-          <AmberButton className="h-11 bg-info hover:bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=group-buy`)}>
+          <AmberButton className="h-11 bg-info hover:bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}>
               <Users className="w-4 h-4" />
               {t('listing.detail.deploy_group_buy')}
           </AmberButton>
@@ -102,7 +102,7 @@ export const ListingDetailPage: React.FC = () => {
             onClick={() => openConfirm({
               title: t('listing.delete') || 'Delete Listing',
               message: t('listing.delete_confirm') || 'Are you sure?',
-              onConfirm: () => { deleteMutation.mutate(Number(id)); router.push('/listings'); },
+              onConfirm: () => { deleteMutation.mutate(Number(listingId)); router.push('/listings'); },
               variant: 'danger',
             })}
           >
@@ -202,11 +202,11 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
                 <p className="text-sm text-zinc-muted font-bold">{t('listing.detail.no_sales')}</p>
                 <div className="flex gap-3 justify-center">
-                  <AmberButton className="h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=auction`)}>
+                  <AmberButton className="h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}>
                       <Gavel className="w-4 h-4" />
                       {t('listing.detail.deploy_auction')}
                   </AmberButton>
-                  <AmberButton className="h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${id}/deploy?type=group-buy`)}>
+                  <AmberButton className="h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}>
                       <Users className="w-4 h-4" />
                       {t('listing.detail.deploy_group_buy')}
                   </AmberButton>

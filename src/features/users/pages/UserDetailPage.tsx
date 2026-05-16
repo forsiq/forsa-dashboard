@@ -88,7 +88,7 @@ export function UserDetailPage() {
         actions={
           <AmberButton
             variant="primary"
-            onClick={() => router.push(`/users/${id}/edit`)}
+            onClick={() => router.push(`/users/${userId}/edit`)}
             className="gap-2"
           >
             <Edit className="h-4 w-4" />

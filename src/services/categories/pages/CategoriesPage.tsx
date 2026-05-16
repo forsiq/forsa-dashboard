@@ -37,7 +37,7 @@ export function CategoriesPage() {
   }, []);
 
   // Fetch all categories (backend does not support search/isActive filtering yet)
-  const { data, isLoading, error, refetch } = useGetCategories({
+  const { data, isPending, error, refetch } = useGetCategories({
     page: 1,
     limit: 50,
   });
@@ -64,7 +64,7 @@ export function CategoriesPage() {
   }, [data?.categories, statusFilter, debouncedSearch, language]);
 
   // Fetch stats
-  const { data: stats, isLoading: statsLoading } = useGetCategoryStats();
+  const { data: stats, isPending: statsLoading } = useGetCategoryStats();
 
   // Delete mutation
   const deleteMutation = useDeleteCategoryMutation({
@@ -309,7 +309,7 @@ export function CategoriesPage() {
 
       {/* Categories Table Container */}
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-        {isLoading ? (
+        {isPending ? (
           <AmberTableSkeleton rows={8} columns={6} hasActions />
         ) : error ? (
           <div className="p-12 text-center">

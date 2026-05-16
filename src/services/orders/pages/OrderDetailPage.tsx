@@ -9,10 +9,12 @@ import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { DetailPageSkeleton } from '@core/loading';
+import { useRouteParam } from '@core/hooks/useRouteParam';
 
 export const OrderDetailPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const orderId = useRouteParam('id', { parse: 'string' });
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -23,10 +25,10 @@ export const OrderDetailPage = () => {
     setIsClient(true);
   }, []);
 
-  const { data: order, isLoading } = useQuery({
-    queryKey: orderKeys.detail(id as string),
-    queryFn: () => getOrder(id as string),
-    enabled: !!id,
+  const { data: order, isPending } = useQuery({
+    queryKey: orderKeys.detail(orderId || ''),
+    queryFn: () => getOrder(orderId || ''),
+    enabled: !!orderId,
   });
 
   const deleteMutation = useMutation({
@@ -45,10 +47,8 @@ export const OrderDetailPage = () => {
     },
   });
 
-  if (!isClient) return null;
-
-  if (isLoading) {
-    return <div className="text-white">{t('common.loading')}</div>;
+  if (!isClient || !orderId || isPending) {
+    return <DetailPageSkeleton />;
   }
 
   if (!order) {

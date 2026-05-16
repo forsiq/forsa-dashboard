@@ -306,7 +306,7 @@ export const AuctionDetails: React.FC = () => {
               </div>
             </div>
 
-            {bidsLoading ? (
+            {!bidsResponse ? (
               <div className="py-12 text-center">
                 <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-[10px] text-zinc-muted font-semibold tracking-widest mt-3">{t('auction.detail.loading')}</p>
