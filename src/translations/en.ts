@@ -84,6 +84,15 @@ export const en: Record<string, string> = {
   "common.condition_open_box": "Open box",
   "common.condition_refurbished": "Refurbished",
   "common.condition_used": "Used",
+
+  // Status badges (auction.status aliases → lifecycle labels)
+  "auction.status.active": "Active",
+  "auction.status.paused": "Paused",
+  "auction.status.ended": "Ended",
+  "auction.status.sold": "Sold",
+  "auction.status.cancelled": "Cancelled",
+  "auction.status.draft": "Draft",
+  "auction.status.scheduled": "Scheduled",
   "common.error_occurred": "Something went wrong",
   "common.manufacturer": "Manufacturer",
   "common.origin": "Country of origin",
@@ -602,4 +611,15 @@ export const en: Record<string, string> = {
   "sidebar.module.marketplace": "Marketplace",
   "sidebar.module.sales": "Sales",
   "sidebar.module.reports": "Reports",
+
+  // Topbar profile menu (AmberTopbar settings dropdown)
+  "topbar.interface_theme": "Interface Theme",
+  "topbar.language": "Language",
+  "topbar.billing": "Billing",
+  "topbar.support": "Support",
+  "topbar.switch_service": "Switch Service",
+  "topbar.no_services": "No Services Available",
+  "topbar.view_service_directory": "View Service Directory",
+  "topbar.view_notifications": "View Notifications",
+  "topbar.view_all_signals": "View All Signals",
 };

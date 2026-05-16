@@ -24,7 +24,7 @@ export const categoryBaseApi = createApiClient<Category, CreateCategoryInput, Up
   apiBaseUrl: API_BASE_URL,
 });
 
-export async function getCategories(filters: CategoryFilters = {} as any): Promise<CategoriesResponse> {
+export async function getCategories(filters: CategoryFilters = {} as any, signal?: AbortSignal): Promise<CategoriesResponse> {
   const response = await categoryBaseApi.list(filters) as any;
   const categories = response.data || [];
   const total = response.total || categories.length;

@@ -36,18 +36,16 @@ import { getAuctionImageUrls } from '../utils/auction-utils';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { useCountdown } from '@core/hooks/useCountdown';
 
-/**
- * AuctionDetails - Unified Detail Layout
- */
 export const AuctionDetails: React.FC = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
 
-  const auctionId = useRouteParam('id', { parse: 'number' });
-  const { data: auction, isPending: auctionLoading } = useGetAuction(auctionId!, !!auctionId);
-  const { data: bidsResponse } = useGetAuctionBids(auctionId!);
+  const [auctionId, paramReady] = useRouteParam('id', { parse: 'number', safe: true });
+  const { data: auction, isPending: auctionLoading } = useGetAuction(auctionId ?? 0, paramReady && !!auctionId);
+  const { data: bidsResponse } = useGetAuctionBids(auctionId ?? 0);
   const bids = bidsResponse?.data || [];
   const placeBid = usePlaceBid();
   const startAuction = useStartAuction();
@@ -58,12 +56,6 @@ export const AuctionDetails: React.FC = () => {
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [bidAmount, setBidAmount] = useState<string>('');
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handlePlaceBid = async () => {
     const amount = parseFloat(bidAmount);
@@ -78,20 +70,9 @@ export const AuctionDetails: React.FC = () => {
     }
   };
 
-  const getCountdown = (endTimeStr: string) => {
-    if (!endTimeStr) return 'TBD';
-    const end = new Date(endTimeStr);
-    const diff = end.getTime() - currentTime.getTime();
-    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-    if (days > 0) return `${days}d ${hours}h ${mins}m`;
-    return `${hours}:${mins}:${secs < 10 ? '0' + secs : secs}`;
-  };
+  const countdown = useCountdown(auction?.endTime);
 
-  if (!auctionId || auctionLoading || !router.isReady) {
+  if (!paramReady || !auctionId || auctionLoading) {
     return <DetailPageSkeleton />;
   }
 
@@ -114,7 +95,7 @@ export const AuctionDetails: React.FC = () => {
   const startPrice = Number(auction.startPrice) || 0;
   const bidIncrement = Number(auction.bidIncrement) || 0;
   const nextMinBid = (currentBid || startPrice) + bidIncrement;
-  const isEndingSoon = new Date(auction.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
+  const isEndingSoon = new Date(auction.endTime).getTime() - Date.now() < 1000 * 60 * 30;
 
   // Detail rows data
   const detailRows = [
@@ -440,7 +421,7 @@ export const AuctionDetails: React.FC = () => {
                   "text-xl sm:text-2xl font-bold tabular-nums leading-none tracking-tight",
                   isEndingSoon ? "text-danger animate-pulse" : "text-warning"
                 )}>
-                  {getCountdown(auction.endTime)}
+                  {countdown === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdown}
                 </p>
               </div>
             </div>

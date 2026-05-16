@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
   ChevronLeft,
@@ -34,6 +34,11 @@ import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
 import { deployAuctionFormSchema, deployGroupBuyFormSchema } from '../validation/deployListingSchemas';
 import { getListingPrimaryImageUrl } from '../utils/listing-media';
 import { FieldHelpHint } from '../components/FieldHelpHint';
+import { EmptyState } from '@core/components/EmptyState';
+import {
+  computeDefaultScheduleEndTime,
+  shouldAutoSetScheduleEnd,
+} from '@core/utils/scheduleDatetime';
 
 type DeployType = 'auction' | 'group_buy' | null;
 type DeployMode = 'now' | 'schedule' | 'draft';
@@ -85,6 +90,25 @@ export const DeployListingPage: React.FC = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const auctionEndTimeAutoRef = useRef(true);
+  const groupBuyEndTimeAutoRef = useRef(true);
+
+  const applyScheduleStartTime = <T extends { startTime: string; endTime: string }>(
+    startTime: string,
+    prev: T,
+    endAutoRef: React.MutableRefObject<boolean>,
+  ): T => {
+    if (!startTime) {
+      endAutoRef.current = true;
+      return { ...prev, startTime };
+    }
+    const next = { ...prev, startTime };
+    if (shouldAutoSetScheduleEnd(startTime, prev.endTime, endAutoRef.current)) {
+      next.endTime = computeDefaultScheduleEndTime(startTime);
+      endAutoRef.current = true;
+    }
+    return next;
+  };
 
   // useFormUX: unsaved-changes warning + draft auto-save
   const currentValues = deployType === 'auction' ? auctionForm : groupBuyForm;
@@ -222,11 +246,11 @@ export const DeployListingPage: React.FC = () => {
 
   if (!listing) {
     return (
-      <div className="max-w-4xl mx-auto p-6 text-center py-20" dir={dir}>
-        <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-          <Package className="w-10 h-10 text-zinc-muted/30" />
-        </div>
-        <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest mt-6">{t('listing.detail.not_found')}</h3>
+      <div className="max-w-4xl mx-auto p-6" dir={dir}>
+        <EmptyState
+          icon={Package}
+          title={t('listing.detail.not_found') || 'Not Found'}
+        />
       </div>
     );
   }
@@ -421,7 +445,11 @@ export const DeployListingPage: React.FC = () => {
                     value={auctionForm.startTime}
                     onChange={(val) => {
                       clearFieldError('startTime');
-                      setAuctionForm(p => ({ ...p, startTime: val }));
+                      setAuctionForm(p => {
+                        const next = applyScheduleStartTime(val, p, auctionEndTimeAutoRef);
+                        if (next.endTime !== p.endTime) clearFieldError('endTime');
+                        return next;
+                      });
                     }}
                     icon={<Calendar className="w-4 h-4" />}
                     error={fieldErrors.startTime}
@@ -432,6 +460,7 @@ export const DeployListingPage: React.FC = () => {
                     value={auctionForm.endTime}
                     onChange={(val) => {
                       clearFieldError('endTime');
+                      auctionEndTimeAutoRef.current = false;
                       setAuctionForm(p => ({ ...p, endTime: val }));
                     }}
                     icon={<Calendar className="w-4 h-4" />}
@@ -598,7 +627,11 @@ export const DeployListingPage: React.FC = () => {
                     value={groupBuyForm.startTime}
                     onChange={(val) => {
                       clearFieldError('startTime');
-                      setGroupBuyForm(p => ({ ...p, startTime: val }));
+                      setGroupBuyForm(p => {
+                        const next = applyScheduleStartTime(val, p, groupBuyEndTimeAutoRef);
+                        if (next.endTime !== p.endTime) clearFieldError('endTime');
+                        return next;
+                      });
                     }}
                     icon={<Calendar className="w-4 h-4" />}
                     error={fieldErrors.startTime}
@@ -609,6 +642,7 @@ export const DeployListingPage: React.FC = () => {
                     value={groupBuyForm.endTime}
                     onChange={(val) => {
                       clearFieldError('endTime');
+                      groupBuyEndTimeAutoRef.current = false;
                       setGroupBuyForm(p => ({ ...p, endTime: val }));
                     }}
                     icon={<Calendar className="w-4 h-4" />}

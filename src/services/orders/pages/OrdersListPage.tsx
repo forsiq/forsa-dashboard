@@ -19,15 +19,12 @@ import {
 import { Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 export const OrdersListPage = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const isClient = useIsClient();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'delivered' | 'cancelled'>('all');
@@ -146,13 +143,6 @@ export const OrdersListPage = () => {
   };
 
   if (!isClient) return null;
-
-  const statsColorMap: Record<string, 'brand' | 'success' | 'warning' | 'info'> = {
-    'text-brand': 'brand',
-    'text-success': 'success',
-    'text-warning': 'warning',
-    'text-info': 'info',
-  };
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>

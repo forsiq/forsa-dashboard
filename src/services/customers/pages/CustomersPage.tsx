@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Plus, Search, Mail, Phone, Building2, User, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -18,6 +18,7 @@ import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetCustomers, useGetCustomerStats, useDeleteCustomer, useUpdateCustomerStatus } from '../hooks';
 import type { Customer } from '../types';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 /**
  * CustomersPage - Customers list page
@@ -28,14 +29,10 @@ export function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'individual' | 'business'>('all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useIsClient();
 
   const isRTL = dir === 'rtl';
   const { openConfirm, ConfirmModal } = useConfirmModal();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const { data, isPending, isFetching, error, refetch } = useGetCustomers({
     search: debouncedSearch || undefined,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers, Power, PowerOff } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -17,8 +17,7 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUpdateCategoryMutation } from '../hooks';
 import type { Category } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
-
-// Stats are now handled by StatsGrid component
+import { useIsClient } from '@core/hooks/useIsClient';
 
 /**
  * CategoriesPage - Main categories list page
@@ -29,12 +28,8 @@ export function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Fetch all categories (backend does not support search/isActive filtering yet)
   const { data, isPending, error, refetch } = useGetCategories({

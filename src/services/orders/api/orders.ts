@@ -43,7 +43,7 @@ const mapToOrder = (raw: any): Order => ({
   updatedAt: raw?.updatedAt || raw?.createdAt || raw?.date || new Date().toISOString(),
 });
 
-export async function getOrders(filters: OrderFilters = {} as any): Promise<OrdersResponse> {
+export async function getOrders(filters: OrderFilters = {} as any, signal?: AbortSignal): Promise<OrdersResponse> {
   const response = await orderBaseApi.list(filters) as any;
   const orders = (response.data || []).map(mapToOrder);
   

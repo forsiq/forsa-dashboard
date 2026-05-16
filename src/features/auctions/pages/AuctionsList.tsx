@@ -23,6 +23,8 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { getCountdown } from '@core/utils/countdown';
+import { EmptyState } from '@core/components/EmptyState';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
@@ -98,18 +100,12 @@ export const AuctionsList: React.FC = () => {
     const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
-    const [currentTime, setCurrentTime] = useState(new Date());
     const [isClient, setIsClient] = useState(false);
     const [rescheduleAuction, setRescheduleAuction] = useState<Auction | null>(null);
     const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
-
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
     }, []);
 
     const { data: auctionsData, isPending, isFetching } = useGetAuctions({
@@ -288,21 +284,6 @@ export const AuctionsList: React.FC = () => {
         setPage(1);
     };
 
-    const getCountdown = (endTimeStr: string) => {
-        if (!endTimeStr) return 'TBD';
-        const end = new Date(endTimeStr);
-        const diff = end.getTime() - currentTime.getTime();
-        
-        if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-        
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-        if (days > 0) return `${days}d ${hours}h`;
-        return `${hours}h ${mins}m`;
-    };
-
     // Table columns
     const columns: Column<Auction>[] = [
       {
@@ -339,12 +320,16 @@ export const AuctionsList: React.FC = () => {
       {
         key: 'endTime',
         label: t('auction.table.protocol_duration') || 'Duration',
-        render: (auction) => (
+        render: (auction) => {
+          const raw = getCountdown(auction.endTime);
+          const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
+          return (
           <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
             <Clock className="w-3 h-3" />
-            {getCountdown(auction.endTime)}
+            {label}
           </div>
-        ),
+          );
+        },
         align: 'center',
       },
       {
@@ -592,18 +577,13 @@ export const AuctionsList: React.FC = () => {
                 {isPending ? (
                     <ListPageSkeleton count={6} columns={3} showStats />
                 ) : auctions.length === 0 ? (
-                    <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
-                        <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-                            <Gavel className="w-10 h-10 text-zinc-muted/30" />
-                        </div>
-                        <div className="max-w-md mx-auto space-y-2">
-                            <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('auction.inventory.depleted')}</h3>
-                            <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('auction.inventory.no_identifiers')}</p>
-                        </div>
-                        <AmberButton onClick={() => router.push('/auctions/add')} className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all">
-                            {t('auction.action.deploy_listing')}
-                        </AmberButton>
-                    </Card>
+                    <EmptyState
+                      icon={Gavel}
+                      title={t('auction.inventory.depleted') || 'No Auctions'}
+                      description={t('auction.inventory.no_identifiers')}
+                      actionLabel={t('auction.action.deploy_listing') || 'Create Auction'}
+                      onAction={() => router.push('/auctions/add')}
+                    />
                 ) : (
                     <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
                         {isFetching && <FetchingOverlay />}

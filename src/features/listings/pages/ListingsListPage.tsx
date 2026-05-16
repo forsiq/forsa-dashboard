@@ -32,6 +32,7 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import { QuickAddListingModal } from '../components/QuickAddListingModal';
 import { QuickDeployModal } from '../components/QuickDeployModal';
+import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
 import { getListingPrimaryImageUrl } from '../utils/listing-media';
 
@@ -363,18 +364,13 @@ export const ListingsListPage: React.FC = () => {
         {isPending ? (
           <ListPageSkeleton count={6} columns={3} />
         ) : listings.length === 0 ? (
-          <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
-            <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-              <Package className="w-10 h-10 text-zinc-muted/30" />
-            </div>
-            <div className="max-w-md mx-auto space-y-2">
-              <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('listing.empty.title')}</h3>
-              <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('listing.empty.description')}</p>
-            </div>
-            <AmberButton className="h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => setIsQuickAddOpen(true)}>
-                {t('listing.add_product') || t('listing.empty.create')}
-            </AmberButton>
-          </Card>
+          <EmptyState
+            icon={Package}
+            title={t('listing.empty.title') || 'No Listings'}
+            description={t('listing.empty.description')}
+            actionLabel={t('listing.add_product') || t('listing.empty.create') || 'Add Product'}
+            onAction={() => setIsQuickAddOpen(true)}
+          />
         ) : (
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
             <DataTable

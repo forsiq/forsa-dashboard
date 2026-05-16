@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
@@ -30,22 +30,19 @@ import { useGetCustomer, useGetCustomerBids } from '../hooks';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 export function CustomerDetailPage() {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const customerId = useRouteParam('id', { parse: 'string' }) || '';
+  const [customerId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const isRTL = dir === 'rtl';
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { data: customer, isPending, error } = useGetCustomer(customerId || '', paramReady && !!customerId);
+  const { data: bidsData } = useGetCustomerBids(customerId || '');
 
-  const { data: customer, isPending, error } = useGetCustomer(customerId, !!customerId);
-  const { data: bidsData } = useGetCustomerBids(customerId);
-
-  if (!isClient || !customerId || isPending || !router.isReady) {
+  if (!isClient || !paramReady || !customerId || isPending) {
     return <DetailPageSkeleton />;
   }
 

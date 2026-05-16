@@ -11,6 +11,7 @@ import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle
 import { useGetMyBids } from '../api';
 import { BidActionSheet } from '../components/BidActionSheet';
 import { computeBidDisplayStatus, type BidDisplayStatus } from '../types/auction.types';
+import { EmptyState } from '@core/components/EmptyState';
 
 interface BidRow {
   id: number;
@@ -237,19 +238,11 @@ export const MyBidsPage: React.FC = () => {
           ))}
         </div>
       ) : filteredBids.length === 0 ? (
-        <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
-          <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-            <Gavel className="w-10 h-10 text-zinc-muted/30" />
-          </div>
-          <div className="max-w-md mx-auto space-y-2">
-            <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">
-              {t('auction.no_bids') || 'No Bids Yet'}
-            </h3>
-            <p className="text-sm text-zinc-muted font-bold tracking-tight">
-              {t('auction.no_bids_desc') || "You haven't placed any bids yet. Start bidding on auctions!"}
-            </p>
-          </div>
-        </Card>
+        <EmptyState
+          icon={Gavel}
+          title={t('auction.no_bids') || 'No Bids Yet'}
+          description={t('auction.no_bids_desc') || "You haven't placed any bids yet. Start bidding on auctions!"}
+        />
       ) : (
         <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
           <DataTable

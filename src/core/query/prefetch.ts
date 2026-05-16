@@ -35,25 +35,25 @@ const prefetchMap: Record<string, () => void> = {
   '/orders': () =>
     queryClient.prefetchQuery({
       queryKey: orderKeys.list(DEFAULT_LIST_FILTERS),
-      queryFn: () => getOrders(DEFAULT_LIST_FILTERS),
+      queryFn: ({ signal }) => getOrders(DEFAULT_LIST_FILTERS, signal),
       staleTime: STALE,
     }),
   '/customers': () =>
     queryClient.prefetchQuery({
       queryKey: customerKeys.list(DEFAULT_LIST_FILTERS),
-      queryFn: () => getCustomers(DEFAULT_LIST_FILTERS),
+      queryFn: ({ signal }) => getCustomers(DEFAULT_LIST_FILTERS, signal),
       staleTime: STALE,
     }),
   '/categories': () =>
     queryClient.prefetchQuery({
       queryKey: categoryKeys.list({ page: 1, limit: 100 }),
-      queryFn: () => getCategories({ page: 1, limit: 100 }),
+      queryFn: ({ signal }) => getCategories({ page: 1, limit: 100 }, signal),
       staleTime: STALE,
     }),
   '/inventory': () =>
     queryClient.prefetchQuery({
       queryKey: inventoryKeys.list(DEFAULT_LIST_FILTERS),
-      queryFn: () => getProducts(DEFAULT_LIST_FILTERS),
+      queryFn: ({ signal }) => getProducts(DEFAULT_LIST_FILTERS, signal),
       staleTime: STALE,
     }),
 };

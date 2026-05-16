@@ -39,10 +39,13 @@ const nextConfig = {
       '@core': [localCorePath, corePkgPath],
     };
 
-    // YAML → JS module (yaml-loader emits `export default …`; do NOT use `type: 'json'` — that parses output as JSON and breaks).
+    // YAML → JS module (yaml-loader emits `export default …`).
+    // `type: 'javascript/auto'` tells webpack to treat yaml-loader's output as JS
+    // instead of trying to run it through the JSON parser, which breaks on `export default`.
     config.module.rules.push({
       test: /\.ya?ml$/,
       include: path.resolve(__dirname, 'src'),
+      type: 'javascript/auto',
       use: 'yaml-loader',
     });
 

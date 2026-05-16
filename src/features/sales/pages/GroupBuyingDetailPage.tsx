@@ -41,6 +41,7 @@ import { AmberImageGallery } from '@core/components/AmberImageGallery';
 import { getAuctionImageUrls } from '../../auctions/utils/auction-utils';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { useCountdown } from '@core/hooks/useCountdown';
 
 export const GroupBuyingDetailPage: React.FC = () => {
   const router = useRouter();
@@ -62,13 +63,9 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const completeDeal = useCompleteGroupBuying();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [joinQuantity, setJoinQuantity] = useState(1);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const countdown = useCountdown(campaign?.endTime);
 
   const handleJoin = async () => {
     try {
@@ -76,19 +73,6 @@ export const GroupBuyingDetailPage: React.FC = () => {
     } catch (err) {
       console.error('Join failed:', err);
     }
-  };
-
-  const getCountdown = (endTimeStr: string) => {
-    if (!endTimeStr) return 'TBD';
-    const end = new Date(endTimeStr);
-    const diff = end.getTime() - currentTime.getTime();
-    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-    if (days > 0) return `${days}d ${hours}h ${mins}m`;
-    return `${hours}:${mins}:${secs < 10 ? '0' + secs : secs}`;
   };
 
   if (!isClient || !campaignId || campaignLoading || !router.isReady) {
@@ -113,7 +97,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const participants = participantsData?.participants || [];
   const progress = campaign.maxParticipants > 0 ? (campaign.currentParticipants / campaign.maxParticipants) * 100 : 0;
   const isUnlocked = campaign.currentParticipants >= campaign.minParticipants;
-  const isEndingSoon = new Date(campaign.endTime).getTime() - currentTime.getTime() < 1000 * 60 * 30;
+  const isEndingSoon = new Date(campaign.endTime).getTime() - Date.now() < 1000 * 60 * 30;
 
   const detailRows = [
     { icon: Calendar, label: t('groupBuying.node_initialization') || 'Start', value: new Date(campaign.startTime).toLocaleString() },
@@ -411,7 +395,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 "text-lg font-bold tabular-nums leading-none tracking-tight",
                 isEndingSoon ? "text-danger animate-pulse" : "text-warning"
               )}>
-                {getCountdown(campaign.endTime)}
+                {countdown === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdown}
               </span>
             </div>
 

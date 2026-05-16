@@ -1,9 +1,4 @@
-/**
- * User Detail Page
- *
- * Displays detailed information about a single user
- */
-
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useGetUser } from '../api';
 import { formatPhone } from '@core/lib/utils/formatPhone';
@@ -14,20 +9,16 @@ import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { Edit, Shield, Mail, Phone, Calendar, UserCheck, UserX } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 export function UserDetailPage() {
   const router = useRouter();
-  const userId = useRouteParam('id', { parse: 'string' });
+  const [userId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const { t, dir } = useLanguage();
   const toast = useToast();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const isClient = useIsClient();
 
   // Query
   const { data: user, isPending, error } = useGetUser(userId || '', !!userId);
@@ -41,7 +32,7 @@ export function UserDetailPage() {
 
   if (!isClient) return <DetailPageSkeleton />;
 
-  if (!isPending && !user && router.isReady) {
+  if (!isPending && !user && paramReady) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <UserX className="h-16 w-16 text-zinc-600 mb-4" />
@@ -97,7 +88,7 @@ export function UserDetailPage() {
         }
       />
 
-      {isPending || !userId || !router.isReady ? (
+      {isPending || !userId || !paramReady ? (
         <div className="space-y-4">
           <AmberCard className="h-64 animate-pulse bg-white/5" />
           <AmberCard className="h-48 animate-pulse bg-white/5" />

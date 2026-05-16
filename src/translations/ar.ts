@@ -82,6 +82,15 @@ export const ar: Record<string, string> = {
   "common.condition_open_box": "مفتوح العلبة",
   "common.condition_refurbished": "مجدّد",
   "common.condition_used": "مستعمل",
+
+  "auction.status.active": "نشط",
+  "auction.status.paused": "متوقف مؤقتاً",
+  "auction.status.ended": "منتهي",
+  "auction.status.sold": "مباع",
+  "auction.status.cancelled": "ملغي",
+  "auction.status.draft": "مسودة",
+  "auction.status.scheduled": "مجدول",
+
   "common.error_occurred": "حدث خطأ",
   "common.manufacturer": "الشركة المصنّعة",
   "common.origin": "بلد المنشأ",
@@ -603,4 +612,15 @@ export const ar: Record<string, string> = {
   "sidebar.module.marketplace": "السوق",
   "sidebar.module.sales": "المبيعات",
   "sidebar.module.reports": "التقارير",
+
+  // Topbar profile menu (AmberTopbar settings dropdown)
+  "topbar.interface_theme": "مظهر الواجهة",
+  "topbar.language": "اللغة",
+  "topbar.billing": "الفوترة",
+  "topbar.support": "الدعم",
+  "topbar.switch_service": "تبديل الخدمة",
+  "topbar.no_services": "لا توجد خدمات متاحة",
+  "topbar.view_service_directory": "عرض دليل الخدمات",
+  "topbar.view_notifications": "عرض الإشعارات",
+  "topbar.view_all_signals": "عرض جميع الإشعارات",
 };

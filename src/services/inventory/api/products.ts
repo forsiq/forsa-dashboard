@@ -20,7 +20,7 @@ export const inventoryBaseApi = createApiClient<Product, CreateProductInput, Upd
   apiBaseUrl: API_BASE_URL,
 });
 
-export async function getProducts(filters: ProductFilters = {} as any): Promise<ProductsResponse> {
+export async function getProducts(filters: ProductFilters = {} as any, signal?: AbortSignal): Promise<ProductsResponse> {
   const response = await inventoryBaseApi.list(filters) as any;
   const products = response.data || [];
   

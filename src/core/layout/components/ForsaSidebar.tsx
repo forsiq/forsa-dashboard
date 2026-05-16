@@ -104,6 +104,60 @@ function useModuleCollapseState(): {
   return { collapseMap, toggleModule };
 }
 
+// ── Per-section collapse state (unified mode) ─────────────────────────
+
+const SECTION_COLLAPSE_PREFIX = 'forsa-section-collapsed-';
+const sectionCollapseListeners = new Set<() => void>();
+
+/** Stable key for localStorage: module + translation key (title). */
+function getSectionCollapseKey(section: MenuSection): string {
+  return `${section.moduleId || 'standalone'}-${section.title}`;
+}
+
+function readSectionCollapsedFromStorage(sectionKey: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(`${SECTION_COLLAPSE_PREFIX}${sectionKey}`) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function writeSectionCollapsed(sectionKey: string, collapsed: boolean) {
+  try {
+    window.localStorage.setItem(`${SECTION_COLLAPSE_PREFIX}${sectionKey}`, collapsed ? 'true' : 'false');
+  } catch {
+    /* ignore */
+  }
+  sectionCollapseListeners.forEach(fn => fn());
+}
+
+function useSectionCollapseState(): {
+  isSectionCollapsed: (sectionKey: string) => boolean;
+  toggleSection: (sectionKey: string) => void;
+} {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setTick(n => n + 1);
+    sectionCollapseListeners.add(refresh);
+    return () => {
+      sectionCollapseListeners.delete(refresh);
+    };
+  }, []);
+
+  const isSectionCollapsed = useCallback(
+    (sectionKey: string) => readSectionCollapsedFromStorage(sectionKey),
+    [],
+  );
+
+  const toggleSection = useCallback((sectionKey: string) => {
+    writeSectionCollapsed(sectionKey, !readSectionCollapsedFromStorage(sectionKey));
+  }, []);
+
+  return { isSectionCollapsed, toggleSection };
+}
+
 // ── Accent border colors per module ───────────────────────────────────
 
 const MODULE_ACCENT: Record<string, string> = {
@@ -195,6 +249,34 @@ const ModuleHeader: React.FC<{
   );
 };
 
+// ── Section Header Component (collapsible group label) ────────────────
+
+const SectionHeader: React.FC<{
+  section: MenuSection;
+  isSectionCollapsed: boolean;
+  onToggle: () => void;
+  t: (key: string) => string;
+}> = ({ section, isSectionCollapsed, onToggle, t }) => {
+  const labelText = t(section.title) || section.title;
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center gap-2 px-5 py-1 mb-3 group hover:bg-white/5 transition-all rounded-sm"
+    >
+      <span className="flex-1 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] text-start truncate">
+        {labelText}
+      </span>
+      <ChevronDown
+        className={`w-3 h-3 text-zinc-muted/60 transition-transform duration-200 shrink-0 ${
+          isSectionCollapsed ? '-rotate-90' : ''
+        }`}
+      />
+    </button>
+  );
+};
+
 // ── Main Sidebar Component ────────────────────────────────────────────
 
 export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
@@ -217,8 +299,9 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
   const isPortal = portalPaths.includes(router.pathname);
 
-  // Read all module collapse states
+  // Read all module / section collapse states
   const { collapseMap, toggleModule } = useModuleCollapseState();
+  const { isSectionCollapsed, toggleSection } = useSectionCollapseState();
 
   useEffect(() => {
     const loadSidebar = async () => {
@@ -413,14 +496,23 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
               ? (moduleSectionCounts[section.moduleId] ?? 0) <= 1
               : false;
 
+            const sectionKey = getSectionCollapseKey(section);
+            const sectionCollapsed = isSectionCollapsed(sectionKey);
+            const showSectionHeader =
+              !isCollapsed && section.items.length > 0 && !isSingleSectionInModule;
+
             return (
-              <nav key={idx} className="space-y-1 mb-8">
-                {!isCollapsed && section.items.length > 0 && !isSingleSectionInModule && (
-                  <p className="px-5 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">
-                    {t(section.title) || section.title}
-                  </p>
+              <nav key={sectionKey} className="space-y-1 mb-8">
+                {showSectionHeader && (
+                  <SectionHeader
+                    section={section}
+                    isSectionCollapsed={sectionCollapsed}
+                    onToggle={() => toggleSection(sectionKey)}
+                    t={t}
+                  />
                 )}
-                {section.items.map(item => {
+                {!sectionCollapsed &&
+                  section.items.map(item => {
                   const Icon = resolveIcon(item.icon);
                   const isActive = activePath !== null && item.path === activePath;
                   const labelText = t(item.label) || item.label;
@@ -467,7 +559,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                       )}
                     </Link>
                   );
-                })}
+                  })}
               </nav>
             );
           });

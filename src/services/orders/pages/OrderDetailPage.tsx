@@ -7,23 +7,20 @@ import { AmberButton, AmberCard } from '@core/components';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 export const OrderDetailPage = () => {
   const router = useRouter();
-  const orderId = useRouteParam('id', { parse: 'string' });
+  const [orderId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useIsClient();
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const { data: order, isPending } = useQuery({
     queryKey: orderKeys.detail(orderId || ''),
@@ -47,7 +44,7 @@ export const OrderDetailPage = () => {
     },
   });
 
-  if (!isClient || !orderId || isPending) {
+  if (!isClient || !paramReady || !orderId || isPending) {
     return <DetailPageSkeleton />;
   }
 

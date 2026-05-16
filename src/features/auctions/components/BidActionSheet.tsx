@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Gavel, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { useRouter } from 'next/router';
@@ -6,6 +6,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { useCountdown } from '@core/hooks/useCountdown';
 import type { BidDisplayStatus } from '../types/auction.types';
 
 interface BidActionSheetBid {
@@ -26,18 +27,6 @@ interface BidActionSheetProps {
   bid: BidActionSheetBid | null;
 }
 
-function getCountdown(endTimeStr: string, t: (key: string) => string | undefined): string {
-  const end = new Date(endTimeStr);
-  const diff = end.getTime() - Date.now();
-  if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${mins}m`;
-  return `${mins}m`;
-}
-
 const STATUS_CONFIG: Record<BidDisplayStatus, { variant: 'success' | 'warning' | 'error' | 'info'; labelKey: string; fallback: string }> = {
   winning: { variant: 'success', labelKey: 'auction.bid_status.winning', fallback: 'Winning' },
   outbid: { variant: 'warning', labelKey: 'auction.bid_status.outbid', fallback: 'Outbid' },
@@ -50,13 +39,7 @@ const STATUS_CONFIG: Record<BidDisplayStatus, { variant: 'success' | 'warning' |
 export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose, bid }) => {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const [currentTime, setCurrentTime] = useState(Date.now());
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [isOpen]);
+  const countdownLabel = useCountdown(bid?.endTime);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -193,7 +176,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                         {t('auction.sheet.time_left') || 'Time Left'}
                       </p>
                       <p className="text-sm font-black text-warning tabular-nums">
-                        {getCountdown(bid.endTime, t)}
+                        {countdownLabel === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdownLabel}
                       </p>
                     </div>
                   </div>

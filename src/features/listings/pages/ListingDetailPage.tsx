@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -29,15 +29,16 @@ import { getListingImageGalleryUrls } from '../utils/listing-media';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { getCountdown } from '@core/utils/countdown';
+import { EmptyState } from '@core/components/EmptyState';
+import { useIsClient } from '@core/hooks/useIsClient';
 
 export const ListingDetailPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const listingId = useRouteParam('id', { parse: 'number' });
   const isRTL = dir === 'rtl';
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => { setIsClient(true); }, []);
+  const isClient = useIsClient();
 
   const { data: listing, isPending } = useGetListing(listingId!, !!listingId);
   const { data: auctionsData } = useGetListingAuctions(listingId!, !!listingId);
@@ -133,14 +134,13 @@ export const ListingDetailPage: React.FC = () => {
 
   if (!listing) {
     return (
-      <div className="max-w-6xl mx-auto p-6 text-center py-20" dir={dir}>
-        <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-          <Package className="w-10 h-10 text-zinc-muted/30" />
-        </div>
-        <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest mt-6">{t('listing.detail.not_found')}</h3>
-        <AmberButton className="mt-6 h-11 px-8 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all" onClick={() => router.push('/listings')}>
-            {t('listing.form.cancel')}
-        </AmberButton>
+      <div className="max-w-6xl mx-auto p-6" dir={dir}>
+        <EmptyState
+          icon={Package}
+          title={t('listing.detail.not_found') || 'Not Found'}
+          actionLabel={t('listing.form.cancel') || 'Back'}
+          onAction={() => router.push('/listings')}
+        />
       </div>
     );
   }
@@ -235,7 +235,7 @@ export const ListingDetailPage: React.FC = () => {
               {nextScheduleInfo ? (
                 <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                   {nextScheduleInfo.type === 'ending'
-                    ? `${t('listing.detail.next_ending')}: ${getCountdown(nextScheduleInfo.time)}`
+                    ? `${t('listing.detail.next_ending')}: ${(() => { const r = getCountdown(nextScheduleInfo.time); return r === 'ENDED' ? (t('TIME.ENDED') || 'Ended') : r; })()}`
                     : `${t('listing.detail.next_starting')}: ${getStartsIn(nextScheduleInfo.time)}`
                   }
                 </p>
@@ -336,7 +336,7 @@ export const ListingDetailPage: React.FC = () => {
                                 {isActive && auction.endTime && (
                                   <span className="text-[10px] text-danger font-black flex items-center gap-1">
                                     <Timer className="w-2.5 h-2.5" />
-                                    {getCountdown(auction.endTime)}
+                                    {(() => { const r = getCountdown(auction.endTime); return r === 'ENDED' ? (t('TIME.ENDED') || 'Ended') : r; })()}
                                   </span>
                                 )}
                                 {isScheduled && auction.startTime && getStartsIn(auction.startTime) && (
@@ -394,7 +394,7 @@ export const ListingDetailPage: React.FC = () => {
                                 {isActive && deal.endTime && (
                                   <span className="text-[10px] text-danger font-black flex items-center gap-1">
                                     <Timer className="w-2.5 h-2.5" />
-                                    {getCountdown(deal.endTime)}
+                                    {(() => { const r = getCountdown(deal.endTime); return r === 'ENDED' ? (t('TIME.ENDED') || 'Ended') : r; })()}
                                   </span>
                                 )}
                                 {isScheduled && deal.startTime && getStartsIn(deal.startTime) && (

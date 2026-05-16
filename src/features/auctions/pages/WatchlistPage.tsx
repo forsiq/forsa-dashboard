@@ -16,36 +16,20 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useWatchedAuctions } from '../api';
+import { getCountdown } from '@core/utils/countdown';
+import { EmptyState } from '@core/components/EmptyState';
 import type { Auction } from '../types/auction.types';
 
 export const WatchlistPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const { data: auctions, isLoading } = useWatchedAuctions();
-
-  const getCountdown = (endTimeStr: string) => {
-    if (!endTimeStr) return 'TBD';
-    const end = new Date(endTimeStr);
-    const diff = end.getTime() - currentTime.getTime();
-    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    if (days > 0) return `${days}d ${hours}h`;
-    return `${hours}h ${mins}m`;
-  };
 
   const columns: Column<Auction>[] = [
     {
@@ -92,12 +76,16 @@ export const WatchlistPage: React.FC = () => {
     {
       key: 'endTime',
       label: t('auction.table.protocol_duration') || 'Time Left',
-      render: (auction) => (
+      render: (auction) => {
+        const raw = getCountdown(auction.endTime);
+        const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
+        return (
         <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
           <Clock className="w-3 h-3" />
-          {getCountdown(auction.endTime)}
+          {label}
         </div>
-      ),
+        );
+      },
       align: 'center',
     },
     {
@@ -140,19 +128,11 @@ export const WatchlistPage: React.FC = () => {
           ))}
         </div>
       ) : !auctions || auctions.length === 0 ? (
-        <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
-          <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-            <Heart className="w-10 h-10 text-zinc-muted/30" />
-          </div>
-          <div className="max-w-md mx-auto space-y-2">
-            <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">
-              {t('auction.no_watched') || 'No Watched Auctions'}
-            </h3>
-            <p className="text-sm text-zinc-muted font-bold tracking-tight">
-              {t('auction.no_watched_desc') || "You haven't added any auctions to your watchlist yet."}
-            </p>
-          </div>
-        </Card>
+        <EmptyState
+          icon={Heart}
+          title={t('auction.no_watched') || 'No Watched Auctions'}
+          description={t('auction.no_watched_desc') || "You haven't added any auctions to your watchlist yet."}
+        />
       ) : (
         <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
           <DataTable

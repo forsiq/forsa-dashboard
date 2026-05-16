@@ -44,6 +44,8 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
+import { getCountdown } from '@core/utils/countdown';
+import { EmptyState } from '@core/components/EmptyState';
 import type { GroupBuying } from '../types';
 
 /**
@@ -57,8 +59,6 @@ export const GroupBuyingListPage: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
   }, []);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -66,7 +66,6 @@ export const GroupBuyingListPage: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<any>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
-  const [currentTime, setCurrentTime] = useState(new Date());
 
   const { data: campaignsData, isPending: listLoading, isFetching } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -99,22 +98,6 @@ export const GroupBuyingListPage: React.FC = () => {
   const getStatusLabel = (status: string): string => {
     const key = `groupBuying.status.${status.toLowerCase()}`;
     return t(key) || status;
-  };
-
-  /** Countdown for endTime */
-  const getCountdown = (endTimeStr: string) => {
-    if (!endTimeStr) return 'TBD';
-    const end = new Date(endTimeStr);
-    const diff = end.getTime() - currentTime.getTime();
-
-    if (diff <= 0) return t('TIME.ENDED') || 'ENDED';
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days}d ${hours}h`;
-    return `${hours}h ${mins}m`;
   };
 
   // Table columns
@@ -210,17 +193,21 @@ export const GroupBuyingListPage: React.FC = () => {
     {
       key: 'endTime',
       label: t('groupBuying.end_time') || 'Ends In',
-      render: (campaign) => (
+      render: (campaign) => {
+        const raw = getCountdown(campaign.endTime);
+        const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
+        return (
         <div className="flex flex-col items-center gap-1">
           <div className="inline-flex items-center gap-1.5 text-[10px] font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
             <Clock className="w-3 h-3" />
-            {getCountdown(campaign.endTime)}
+            {label}
           </div>
           <span className="text-[9px] text-zinc-muted">
             {new Date(campaign.endTime).toLocaleDateString()}
           </span>
         </div>
-      ),
+        );
+      },
       sortable: true,
       align: 'center',
     },
@@ -400,18 +387,13 @@ export const GroupBuyingListPage: React.FC = () => {
             ))}
           </div>
         ) : campaigns.length === 0 ? (
-          <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40 border-dashed border-border/40">
-            <div className="w-24 h-24 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
-              <Target className="w-10 h-10 text-zinc-muted/30" />
-            </div>
-            <div className="max-w-md mx-auto space-y-2">
-              <h3 className="text-xl font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.operational_gap') || 'No Campaigns'}</h3>
-              <p className="text-sm text-zinc-muted font-bold tracking-tight">{t('groupBuying.no_active_protocols') || 'No campaigns found.'}</p>
-            </div>
-            <AmberButton onClick={() => router.push('/group-buying/new')} className="h-12 px-10 rounded-xl bg-brand text-black font-black uppercase active:scale-95 transition-all">
-              {t('groupBuying.initialize_first_call') || 'Create Campaign'}
-            </AmberButton>
-          </Card>
+          <EmptyState
+            icon={Target}
+            title={t('groupBuying.operational_gap') || 'No Campaigns'}
+            description={t('groupBuying.no_active_protocols') || 'No campaigns found.'}
+            actionLabel={t('groupBuying.initialize_first_call') || 'Create Campaign'}
+            onAction={() => router.push('/group-buying/new')}
+          />
         ) : (
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
             <DataTable

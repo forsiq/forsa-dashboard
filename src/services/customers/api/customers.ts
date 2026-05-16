@@ -81,7 +81,7 @@ export const customerBaseApi = createApiClient<Customer, CreateCustomerInput, Up
   apiBaseUrl: API_BASE_URL,
 });
 
-export async function getCustomers(filters: CustomerFilters = {} as any): Promise<CustomersResponse> {
+export async function getCustomers(filters: CustomerFilters = {} as any, signal?: AbortSignal): Promise<CustomersResponse> {
   const response = await customerBaseApi.list(filters) as any;
   const rawList = Array.isArray(response.data) ? response.data : [];
   const customers = rawList.map((row: Record<string, unknown>) => normalizeCustomerRow(row));

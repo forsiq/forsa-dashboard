@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Clock, X } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -63,6 +63,22 @@ function getDaysInMonth(year: number, month: number) {
 
 function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay();
+}
+
+/** Estimated popover height before first layout measure (calendar + time + footer). */
+const POPOVER_HEIGHT_ESTIMATE = 335;
+const POPOVER_FLIP_MARGIN = 8;
+
+function shouldOpenPopoverAbove(
+  triggerRect: DOMRect,
+  popoverHeight: number
+): boolean {
+  const spaceBelow = window.innerHeight - triggerRect.bottom;
+  const spaceAbove = triggerRect.top;
+  return (
+    spaceBelow < popoverHeight + POPOVER_FLIP_MARGIN &&
+    spaceAbove > spaceBelow
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -249,7 +265,10 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
   ) => {
     const { dir, isRTL, language, t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
+    const [openAbove, setOpenAbove] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Parse selected date from value
@@ -266,6 +285,36 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
         setViewMonth(parsed.month);
       }
     }, [parsed]);
+
+    const updatePopoverPlacement = useCallback(() => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const triggerRect = trigger.getBoundingClientRect();
+      const popoverHeight =
+        popoverRef.current?.offsetHeight ?? POPOVER_HEIGHT_ESTIMATE;
+      setOpenAbove(shouldOpenPopoverAbove(triggerRect, popoverHeight));
+    }, []);
+
+    // Refine vertical placement after popover mounts (actual height)
+    useLayoutEffect(() => {
+      if (!isOpen) return;
+      updatePopoverPlacement();
+    }, [isOpen, showTime, parsed, updatePopoverPlacement]);
+
+    const handleToggleOpen = useCallback(() => {
+      if (disabled) return;
+      setIsOpen((wasOpen) => {
+        if (wasOpen) return false;
+        const trigger = triggerRef.current;
+        if (trigger) {
+          const triggerRect = trigger.getBoundingClientRect();
+          setOpenAbove(
+            shouldOpenPopoverAbove(triggerRect, POPOVER_HEIGHT_ESTIMATE)
+          );
+        }
+        return true;
+      });
+    }, [disabled]);
 
     // Close on outside click
     useEffect(() => {
@@ -378,12 +427,12 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
           </label>
         )}
 
-        <div className="relative group">
+        <div ref={triggerRef} className="relative group">
           {/* Trigger: open picker (clear is a separate sibling button — avoids invalid nested buttons) */}
           <button
             type="button"
             disabled={disabled}
-            onClick={() => !disabled && setIsOpen((v) => !v)}
+            onClick={handleToggleOpen}
             className={cn(
               'w-full h-14 rounded-xl border text-base font-medium text-left outline-none transition-all shadow-sm tabular-nums',
               'bg-white dark:bg-obsidian-card',
@@ -444,10 +493,14 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
           {/* Dropdown */}
           {isOpen && (
             <div
+              ref={popoverRef}
               className={cn(
-                'absolute z-50 mt-2 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/30',
+                'absolute z-50 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/30',
                 'bg-white dark:bg-obsidian-card p-4',
-                'animate-in fade-in slide-in-from-top-2 duration-200',
+                'animate-in fade-in duration-200',
+                openAbove
+                  ? 'bottom-full mb-2 slide-in-from-bottom-2'
+                  : 'top-full mt-2 slide-in-from-top-2',
                 isRTL ? 'right-0' : 'left-0',
                 'w-[320px]'
               )}
