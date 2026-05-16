@@ -3,7 +3,7 @@
  * Comprehensive implementation for Forsa Auctions
  */
 
-import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
 import { useErrorHandler } from '@core/hooks';
@@ -83,6 +83,7 @@ export function useGetAuctions(filters: AuctionFilters = {}): UseQueryResult<Auc
     queryKey: auctionKeys.list(filters),
     queryFn: ({ signal }) => auctionApi.list(filters, signal),
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
   useErrorHandler(query.error, 'Failed to load auctions');

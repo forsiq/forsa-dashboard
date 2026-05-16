@@ -1,5 +1,5 @@
 /** Customers Hooks - Using CrudServiceFactory + custom hooks */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import * as api from '../api/customers';
 import type { Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilters, CustomersResponse } from '../types';
 
@@ -9,6 +9,7 @@ export const useGetCustomers = (filters: CustomerFilters = {} as any) => {
   return useQuery<CustomersResponse>({
     queryKey: api.customerKeys.list(filters),
     queryFn: () => api.getCustomers(filters),
+    placeholderData: keepPreviousData,
   });
 };
 

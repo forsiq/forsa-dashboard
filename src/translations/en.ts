@@ -520,6 +520,68 @@ export const en: Record<string, string> = {
   "category.deactivate": "Deactivate",
   "category.activate": "Activate",
 
+  // Order statuses
+  "orders.status.pending": "Pending",
+  "orders.status.processing": "Processing",
+  "orders.status.shipped": "Shipped",
+  "orders.status.delivered": "Delivered",
+  "orders.status.cancelled": "Cancelled",
+  "orders.status.refunded": "Refunded",
+
+  // Order payment statuses
+  "orders.payment_status.pending": "Pending",
+  "orders.payment_status.paid": "Paid",
+  "orders.payment_status.failed": "Failed",
+  "orders.payment_status.refunded": "Refunded",
+
+  // Order page
+  "orders.title": "Orders",
+  "orders.subtitle": "Manage and track all customer orders",
+  "orders.search": "Search orders...",
+  "orders.orderStatus": "Order Status",
+  "orders.payment": "Payment",
+  "orders.customer": "Customer",
+  "orders.orderItems": "Order Items",
+  "orders.updateStatus": "Update Status",
+  "orders.shippingAddress": "Shipping Address",
+  "orders.notes": "Notes",
+  "orders.subtotal": "Subtotal",
+  "orders.tax": "Tax",
+  "orders.shipping": "Shipping",
+  "orders.discount": "Discount",
+  "orders.total": "Total",
+  "orders.notFound": "Order not found",
+  "orders.deleteOrder": "Delete Order",
+  "orders.deleteConfirm": "Are you sure you want to delete order {orderNumber}?",
+
+  // Order stats
+  "orders.stat.total": "Total Orders",
+  "orders.stat.revenue": "Revenue",
+  "orders.stat.pending": "Pending",
+  "orders.stat.active": "Today",
+
+  // Order table
+  "orders.table.id": "Order #",
+  "orders.table.customer": "Customer",
+  "orders.table.total": "Total",
+  "orders.table.status": "Status",
+  "orders.table.date": "Date",
+  "orders.table.payment": "Payment",
+
   // Auction category slugs (DataTable / charts when API returns English `name` only)
   "auction.category.computers": "Computers",
+
+  // Sidebar mode (Navigation settings)
+  "settings.navigation": "Navigation",
+  "settings.sidebar_mode": "Sidebar Mode",
+  "settings.sidebar_modular": "Module View",
+  "settings.sidebar_modular_desc": "Switch between modules using the topbar. One module visible at a time.",
+  "settings.sidebar_unified": "Unified View",
+  "settings.sidebar_unified_desc": "All modules in one sidebar with collapsible sections. No need to switch from topbar.",
+
+  // Sidebar unified module headers
+  "sidebar.module.dashboard": "Dashboard",
+  "sidebar.module.marketplace": "Marketplace",
+  "sidebar.module.sales": "Sales",
+  "sidebar.module.reports": "Reports",
 };

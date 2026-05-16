@@ -2,7 +2,7 @@
  * Group Buying REST API React Query Hooks
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { groupBuyingApi } from './group-buying-api';
 import type { 
   GroupBuying, 
@@ -26,6 +26,7 @@ export const useGetGroupBuyings = (filters: GroupBuyingFilters = {}) => {
   return useQuery({
     queryKey: groupBuyingKeys.list(filters),
     queryFn: ({ signal }) => groupBuyingApi.list(filters, signal),
+    placeholderData: keepPreviousData,
   });
 };
 

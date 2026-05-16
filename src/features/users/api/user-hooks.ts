@@ -2,7 +2,7 @@
  * User REST API React Query Hooks
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { userApi } from './user-api';
 import type { User, UserCreateInput, UserUpdateInput, UserFilters, UsersResponse, UserStats } from '../types';
 
@@ -19,6 +19,7 @@ export const useGetUsers = (filters: UserFilters = {}) => {
   return useQuery<UsersResponse>({
     queryKey: userKeys.list(filters),
     queryFn: ({ signal }) => userApi.list(filters, signal),
+    placeholderData: keepPreviousData,
   });
 };
 

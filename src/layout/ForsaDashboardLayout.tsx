@@ -9,8 +9,10 @@ import {
   applySidebarBadges,
   type SidebarModuleView,
 } from '@config/sidebar/applySidebarBadges';
+import { getUnifiedSidebarSections } from '@config/sidebar/unified';
 import { resolveIcon } from '@config/navigation';
 import { useSidebarBadges } from '@core/hooks/useSidebarBadges';
+import { useSidebarMode } from '@core/hooks/useSidebarMode';
 import { useChangelog } from '@features/changelog/hooks/useChangelog';
 import { useNavigation } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
@@ -52,25 +54,35 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
   const { data: badges } = useSidebarBadges();
   const { sidebarView } = useNavigation();
   const { isNewFeature } = useChangelog();
+  const { mode } = useSidebarMode();
 
   const menuSections = useMemo<MenuSection[]>(() => {
     if (!router.isReady) {
+      if (mode === 'unified') {
+        return resolveSections(getUnifiedSidebarSections(badges, isNewFeature));
+      }
       return moduleSidebars[sidebarView as SidebarModuleView] || moduleSidebars.dashboard;
     }
     const p = router.pathname;
 
     if (p === '/portal' || p === '/') return [];
 
+    if (mode === 'unified') {
+      return resolveSections(getUnifiedSidebarSections(badges, isNewFeature));
+    }
+
     const urlView = getViewForPath(p);
     const activeView = urlView || (sidebarView as SidebarModuleView);
     const baseSections = moduleSidebars[activeView] || moduleSidebars.dashboard;
 
     return applySidebarBadges(activeView, baseSections, badges, isNewFeature);
-  }, [router.isReady, router.pathname, badges, sidebarView, isNewFeature]);
+  }, [router.isReady, router.pathname, badges, sidebarView, isNewFeature, mode]);
 
   return (
     <AmberDashboardLayout menuSections={menuSections} appLabel="Forsa">
-      {children}
+      <div className="relative min-h-[50vh]">
+        {children}
+      </div>
     </AmberDashboardLayout>
   );
 }

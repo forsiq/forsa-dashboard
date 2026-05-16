@@ -1,5 +1,5 @@
 /** Categories Hooks - Using CrudServiceFactory + custom list hook */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse } from '../types';
@@ -16,6 +16,7 @@ export const useList = (filters: CategoryFilters = {} as any) => {
   return useQuery<CategoriesResponse>({
     queryKey: api.categoryKeys.list(filters),
     queryFn: () => api.getCategories(filters),
+    placeholderData: keepPreviousData,
   });
 };
 

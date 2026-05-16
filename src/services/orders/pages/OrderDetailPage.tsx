@@ -100,7 +100,7 @@ export const OrderDetailPage = () => {
             <div>
               <div className="text-zinc-400 text-sm">{t('orders.orderStatus')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
-                {order.status}
+                {t(`orders.status.${order.status}`) || order.status}
               </span>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const OrderDetailPage = () => {
             <div>
               <div className="text-zinc-400 text-sm">{t('orders.payment')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[order.paymentStatus]}`}>
-                {order.paymentStatus}
+                {t(`orders.payment_status.${order.paymentStatus}`) || order.paymentStatus}
               </span>
             </div>
           </div>
@@ -224,7 +224,7 @@ export const OrderDetailPage = () => {
                   onClick={() => statusMutation.mutate({ id: order.id, status })}
                   disabled={statusMutation.isPending}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {t(`orders.status.${status}`) || status.charAt(0).toUpperCase() + status.slice(1)}
                 </AmberButton>
               ))}
             </div>

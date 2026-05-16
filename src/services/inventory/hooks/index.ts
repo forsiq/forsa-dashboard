@@ -1,5 +1,5 @@
 /** Inventory Hooks - Using CrudServiceFactory + custom hooks */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import * as api from '../api/products';
 import type { ProductFilters, ProductsResponse } from '../types';
 
@@ -9,6 +9,7 @@ export const useList = (filters: ProductFilters = {} as any) => {
   return useQuery<ProductsResponse>({
     queryKey: api.inventoryKeys.list(filters),
     queryFn: () => api.getProducts(filters),
+    placeholderData: keepPreviousData,
   });
 };
 

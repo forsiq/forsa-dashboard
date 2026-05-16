@@ -1,5 +1,5 @@
 /** Orders Hooks - Using CrudServiceFactory + custom hooks */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import * as api from '../api/orders';
 import type { OrderFilters, OrdersResponse } from '../types';
 
@@ -9,6 +9,7 @@ export const useList = (filters: OrderFilters = {} as any) => {
   return useQuery<OrdersResponse>({
     queryKey: api.orderKeys.list(filters),
     queryFn: () => api.getOrders(filters),
+    placeholderData: keepPreviousData,
   });
 };
 

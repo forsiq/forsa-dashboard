@@ -15,10 +15,12 @@ import { AmberButton } from '@core/components/AmberButton';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { Edit, Shield, Mail, Phone, Calendar, UserCheck, UserX } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { DetailPageSkeleton } from '@core/loading';
+import { useRouteParam } from '@core/hooks/useRouteParam';
 
 export function UserDetailPage() {
   const router = useRouter();
-  const { id } = router.query;
+  const userId = useRouteParam('id', { parse: 'string' });
   const { t, dir } = useLanguage();
   const toast = useToast();
   const [isClient, setIsClient] = useState(false);
@@ -28,7 +30,7 @@ export function UserDetailPage() {
   }, []);
 
   // Query
-  const { data: user, isLoading, error } = useGetUser((id as string) || '');
+  const { data: user, isPending, error } = useGetUser(userId || '', !!userId);
 
   // Error handling
   useEffect(() => {
@@ -37,10 +39,9 @@ export function UserDetailPage() {
     }
   }, [error, toast, t]);
 
-  if (!isClient) return null;
+  if (!isClient) return <DetailPageSkeleton />;
 
-  // Handle not found
-  if (!isLoading && !user && router.isReady) {
+  if (!isPending && !user && router.isReady) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <UserX className="h-16 w-16 text-zinc-600 mb-4" />
@@ -96,7 +97,7 @@ export function UserDetailPage() {
         }
       />
 
-      {isLoading || !router.isReady ? (
+      {isPending || !userId || !router.isReady ? (
         <div className="space-y-4">
           <AmberCard className="h-64 animate-pulse bg-white/5" />
           <AmberCard className="h-48 animate-pulse bg-white/5" />

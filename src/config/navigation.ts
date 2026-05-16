@@ -18,6 +18,12 @@ export interface MenuItem {
 export interface MenuSection {
   title: string;
   items: MenuItem[];
+  /** Module identifier for unified sidebar mode (e.g. 'dashboard', 'marketplace') */
+  moduleId?: string;
+  /** Tailwind gradient class for the module accent border */
+  moduleColor?: string;
+  /** When true, this section acts as a collapsible module header in unified mode */
+  isModuleHeader?: boolean;
 }
 
 /**

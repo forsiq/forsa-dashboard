@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
 import { useToast } from '@core/contexts/ToastContext';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useErrorHandler } from '@core/hooks';
@@ -29,6 +29,7 @@ export function useGetListings(filters: ListingFilters = {}): UseQueryResult<Lis
     queryKey: listingKeys.list(filters),
     queryFn: ({ signal }) => listingApi.list(filters, signal),
     staleTime: 2 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
   useErrorHandler(query.error, 'Failed to load listings');

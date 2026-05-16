@@ -46,7 +46,7 @@ export const services: Service[] = [
     description: 'service.marketplace.description',
     icon: 'ShoppingBag',
     type: 'internal',
-    route: '/auctions',
+    route: '/listings',
     enabled: true,
     color: 'from-blue-500 to-blue-600',
   },

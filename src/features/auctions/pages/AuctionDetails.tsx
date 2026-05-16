@@ -34,19 +34,20 @@ import { AuctionImage } from '../components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
 import { getAuctionImageUrls } from '../utils/auction-utils';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
+import { DetailPageSkeleton } from '@core/loading';
+import { useRouteParam } from '@core/hooks/useRouteParam';
 
 /**
  * AuctionDetails - Unified Detail Layout
  */
 export const AuctionDetails: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query;
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
 
-  const auctionId = Number(id);
-  const { data: auction, isLoading: auctionLoading } = useGetAuction(auctionId);
-  const { data: bidsResponse, isLoading: bidsLoading } = useGetAuctionBids(auctionId);
+  const auctionId = useRouteParam('id', { parse: 'number' });
+  const { data: auction, isPending: auctionLoading } = useGetAuction(auctionId!, !!auctionId);
+  const { data: bidsResponse } = useGetAuctionBids(auctionId!);
   const bids = bidsResponse?.data || [];
   const placeBid = usePlaceBid();
   const startAuction = useStartAuction();
@@ -90,21 +91,8 @@ export const AuctionDetails: React.FC = () => {
     return `${hours}:${mins}:${secs < 10 ? '0' + secs : secs}`;
   };
 
-  if (auctionLoading || !router.isReady) {
-    return (
-      <div className="max-w-[1600px] mx-auto p-6 space-y-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-white/5 rounded w-1/3" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-[500px] bg-white/[0.02] rounded-xl border border-white/[0.05]" />
-            <div className="space-y-4">
-              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
-              <div className="h-40 bg-white/[0.02] rounded-xl border border-white/[0.05]" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (!auctionId || auctionLoading || !router.isReady) {
+    return <DetailPageSkeleton />;
   }
 
   if (!auction) {

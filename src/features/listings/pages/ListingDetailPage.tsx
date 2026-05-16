@@ -22,19 +22,21 @@ import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteList
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { getListingImageGalleryUrls } from '../utils/listing-media';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
+import { DetailPageSkeleton } from '@core/loading';
+import { useRouteParam } from '@core/hooks/useRouteParam';
 
 export const ListingDetailPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const { id } = router.query;
+  const listingId = useRouteParam('id', { parse: 'number' });
   const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => { setIsClient(true); }, []);
 
-  const { data: listing, isLoading } = useGetListing(Number(id), !!id);
-  const { data: auctionsData } = useGetListingAuctions(Number(id), !!id);
-  const { data: dealsData } = useGetListingDeals(Number(id), !!id);
+  const { data: listing, isPending } = useGetListing(listingId!, !!listingId);
+  const { data: auctionsData } = useGetListingAuctions(listingId!, !!listingId);
+  const { data: dealsData } = useGetListingDeals(listingId!, !!listingId);
   const deleteMutation = useDeleteListing();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
@@ -46,7 +48,7 @@ export const ListingDetailPage: React.FC = () => {
     return getListingImageGalleryUrls(listing);
   }, [listing]);
 
-  if (!isClient || isLoading) return null;
+  if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
 
   if (!listing) {
     return (

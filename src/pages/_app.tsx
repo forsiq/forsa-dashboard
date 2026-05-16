@@ -1,6 +1,8 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { AppProps } from 'next/app';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@core/query/queryClient';
+import { RouteProgressProvider, RouteProgressBar } from '@core/navigation';
 import { FeatureProvider } from '@core/contexts/FeatureContext';
 import { LanguageProvider } from '@core/contexts/LanguageContext';
 import { ThemeProvider } from '@core/contexts/ThemeContext';
@@ -16,40 +18,27 @@ import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';
 import '@styles/globals.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
-    mutations: {
-      retry: 1,
-    }
-  },
-});
-
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  
-  // Public routes that don't need AuthGuard or Layout
+
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CoreUIProvider config={{
-        apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-        authRefreshPath: '/api/v1/auth/auth/token/refresh/',
-      }}>
-      <FeatureProvider configPath="/zvs.config.json">
-        <ToastProvider>
-          <LanguageProvider extraTranslations={appTranslations}>
-            <ThemeProvider>
-              <NavigationProvider>
-                <ProjectProvider>
-                  {/* Outside Suspense so lazy pages suspending never unmount session UI/listeners */}
-                  <Toast />
-                  <SessionExpiredDialog />
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-zinc-muted font-bold font-mono animate-pulse">...</div>}>
+      <RouteProgressProvider>
+        <CoreUIProvider config={{
+          apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+          authRefreshPath: '/api/v1/auth/auth/token/refresh/',
+        }}>
+        <FeatureProvider configPath="/zvs.config.json">
+          <ToastProvider>
+            <LanguageProvider extraTranslations={appTranslations}>
+              <ThemeProvider>
+                <NavigationProvider>
+                  <ProjectProvider>
+                    <Toast />
+                    <SessionExpiredDialog />
+                    <RouteProgressBar />
                     {isPublicRoute ? (
                       <Component {...pageProps} />
                     ) : (
@@ -59,14 +48,14 @@ function MyApp({ Component, pageProps }: AppProps) {
                         </ForsaDashboardLayout>
                       </AuthGuard>
                     )}
-                  </Suspense>
-                </ProjectProvider>
-              </NavigationProvider>
-            </ThemeProvider>
-          </LanguageProvider>
-        </ToastProvider>
-      </FeatureProvider>
-      </CoreUIProvider>
+                  </ProjectProvider>
+                </NavigationProvider>
+              </ThemeProvider>
+            </LanguageProvider>
+          </ToastProvider>
+        </FeatureProvider>
+        </CoreUIProvider>
+      </RouteProgressProvider>
     </QueryClientProvider>
   );
 }

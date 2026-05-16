@@ -521,6 +521,68 @@ export const ar: Record<string, string> = {
   "category.deactivate": "تعطيل",
   "category.activate": "تفعيل",
 
+  // Order statuses
+  "orders.status.pending": "معلق",
+  "orders.status.processing": "قيد المعالجة",
+  "orders.status.shipped": "تم الشحن",
+  "orders.status.delivered": "تم التسليم",
+  "orders.status.cancelled": "ملغي",
+  "orders.status.refunded": "مسترد",
+
+  // Order payment statuses
+  "orders.payment_status.pending": "معلق",
+  "orders.payment_status.paid": "مدفوع",
+  "orders.payment_status.failed": "فشل",
+  "orders.payment_status.refunded": "مسترد",
+
+  // Order page
+  "orders.title": "الطلبات",
+  "orders.subtitle": "إدارة وتتبع جميع طلبات العملاء",
+  "orders.search": "البحث في الطلبات...",
+  "orders.orderStatus": "حالة الطلب",
+  "orders.payment": "الدفع",
+  "orders.customer": "العميل",
+  "orders.orderItems": "عناصر الطلب",
+  "orders.updateStatus": "تحديث الحالة",
+  "orders.shippingAddress": "عنوان الشحن",
+  "orders.notes": "ملاحظات",
+  "orders.subtotal": "المجموع الفرعي",
+  "orders.tax": "الضريبة",
+  "orders.shipping": "الشحن",
+  "orders.discount": "الخصم",
+  "orders.total": "الإجمالي",
+  "orders.notFound": "الطلب غير موجود",
+  "orders.deleteOrder": "حذف الطلب",
+  "orders.deleteConfirm": "هل أنت متأكد من حذف الطلب {orderNumber}؟",
+
+  // Order stats
+  "orders.stat.total": "إجمالي الطلبات",
+  "orders.stat.revenue": "الإيرادات",
+  "orders.stat.pending": "معلق",
+  "orders.stat.active": "اليوم",
+
+  // Order table
+  "orders.table.id": "رقم الطلب",
+  "orders.table.customer": "العميل",
+  "orders.table.total": "الإجمالي",
+  "orders.table.status": "الحالة",
+  "orders.table.date": "التاريخ",
+  "orders.table.payment": "الدفع",
+
   // Auction category slugs — app override (see getLocalizedName fallback)
   "auction.category.computers": "أجهزة كمبيوتر",
+
+  // Sidebar mode (Navigation settings)
+  "settings.navigation": "التنقل",
+  "settings.sidebar_mode": "وضع القائمة الجانبية",
+  "settings.sidebar_modular": "عرض الوحدات",
+  "settings.sidebar_modular_desc": "التبديل بين الوحدات من الشريط العلوي. وحدة واحدة ظاهرة في كل مرة.",
+  "settings.sidebar_unified": "عرض موحد",
+  "settings.sidebar_unified_desc": "جميع الوحدات في قائمة جانبية واحدة مع أقسام قابلة للطي. لا حاجة للتبديل من الشريط العلوي.",
+
+  // Sidebar unified module headers
+  "sidebar.module.dashboard": "لوحة التحكم",
+  "sidebar.module.marketplace": "السوق",
+  "sidebar.module.sales": "المبيعات",
+  "sidebar.module.reports": "التقارير",
 };

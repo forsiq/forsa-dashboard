@@ -19,6 +19,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberSlideOver } from '@core/components';
@@ -64,7 +65,7 @@ export const ListingsListPage: React.FC = () => {
     setIsQuickDeployOpen(true);
   };
 
-  const { data: listingsData, isLoading } = useGetListings({
+  const { data: listingsData, isPending, isFetching } = useGetListings({
     search: debouncedSearch || undefined,
     condition: conditionFilter !== 'all' ? conditionFilter : undefined,
     brand: brandFilter !== 'all' ? brandFilter : undefined,
@@ -359,8 +360,8 @@ export const ListingsListPage: React.FC = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <CardGridSkeleton count={6} columns={3} />
+        {isPending ? (
+          <ListPageSkeleton count={6} columns={3} />
         ) : listings.length === 0 ? (
           <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
             <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">

@@ -50,8 +50,8 @@ export function UsersListPage() {
   }), [debouncedSearch]);
 
   // Queries
-  const { data: usersData, isLoading: isLoadingUsers, error: usersError } = useGetUsers(apiFilters);
-  const { data: stats, isLoading: isLoadingStats } = useGetUserStats();
+  const { data: usersData, isPending: isLoadingUsers, isFetching, error: usersError } = useGetUsers(apiFilters);
+  const { data: stats, isPending: isLoadingStats } = useGetUserStats();
 
   // Mutations
   const deleteMutation = useDeleteUser();

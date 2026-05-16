@@ -25,6 +25,7 @@ import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberSlideOver } from '@core/components';
@@ -111,7 +112,7 @@ export const AuctionsList: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const { data: auctionsData, isLoading: listLoading } = useGetAuctions({
+    const { data: auctionsData, isPending, isFetching } = useGetAuctions({
         status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
         search: debouncedSearch || undefined,
@@ -588,8 +589,8 @@ export const AuctionsList: React.FC = () => {
                     </div>
                 </div>
 
-                {listLoading ? (
-                    <CardGridSkeleton count={6} columns={3} />
+                {isPending ? (
+                    <ListPageSkeleton count={6} columns={3} showStats />
                 ) : auctions.length === 0 ? (
                     <Card className="!p-24 text-center space-y-6 bg-obsidian-card/40">
                         <div className="w-20 h-20 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto border border-white/[0.05]">
@@ -605,6 +606,7 @@ export const AuctionsList: React.FC = () => {
                     </Card>
                 ) : (
                     <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+                        {isFetching && <FetchingOverlay />}
                         {bulkBusy && (
                             <div
                                 className="absolute inset-0 z-[90] flex flex-col items-center justify-center gap-3 bg-black/50 backdrop-blur-[2px]"

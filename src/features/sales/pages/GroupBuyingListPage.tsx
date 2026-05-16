@@ -68,7 +68,7 @@ export const GroupBuyingListPage: React.FC = () => {
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const { data: campaignsData, isLoading: listLoading } = useGetGroupBuyings({
+  const { data: campaignsData, isPending: listLoading, isFetching } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
     categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
     search: debouncedSearch || undefined,
