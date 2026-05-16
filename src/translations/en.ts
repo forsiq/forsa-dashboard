@@ -206,11 +206,11 @@ export const en: Record<string, string> = {
 
   // Topbar module names
   "service.dashboard.name": "Dashboard",
-  "service.marketplace.name": "Marketplace",
+  "service.marketplace.name": "Offer Management",
   "service.sales.name": "Sales",
   "service.reports.name": "Reports",
   "service.dashboard.description": "Overview and KPIs",
-  "service.marketplace.description": "Auctions, listings, and catalog",
+  "service.marketplace.description": "Products, auctions, and sales channels",
   "service.sales.description": "Orders and customers",
   "service.reports.description": "Analytics and exports",
 
@@ -247,7 +247,7 @@ export const en: Record<string, string> = {
   "sidebar.operations": "Operations",
   "sidebar.administration": "Administration",
   "sidebar.sales_channels": "Sales channels",
-  "sidebar.products": "Catalog",
+  "sidebar.products": "Products",
   "sidebar.engagement": "Engagement",
   "sidebar.inventory_heading": "Warehouse",
   "sidebar.watchlist": "Watchlist",
@@ -608,9 +608,10 @@ export const en: Record<string, string> = {
 
   // Sidebar unified module headers
   "sidebar.module.dashboard": "Dashboard",
-  "sidebar.module.marketplace": "Marketplace",
+  "sidebar.module.marketplace": "Offer Management",
   "sidebar.module.sales": "Sales",
   "sidebar.module.reports": "Reports",
+  "sidebar.badge.new": "NEW",
 
   // Topbar profile menu (AmberTopbar settings dropdown)
   "topbar.interface_theme": "Interface Theme",

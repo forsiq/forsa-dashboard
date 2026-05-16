@@ -204,11 +204,11 @@ export const ar: Record<string, string> = {
 
   // Topbar module names
   "service.dashboard.name": "لوحة التحكم",
-  "service.marketplace.name": "السوق",
+  "service.marketplace.name": "إدارة العروض",
   "service.sales.name": "المبيعات",
   "service.reports.name": "التقارير",
   "service.dashboard.description": "نظرة عامة ومؤشرات الأداء",
-  "service.marketplace.description": "المزادات والقوائم والكتالوج",
+  "service.marketplace.description": "المنتجات، المزادات، وقنوات البيع",
   "service.sales.description": "الطلبات والعملاء",
   "service.reports.description": "التحليلات والتصدير",
 
@@ -245,7 +245,7 @@ export const ar: Record<string, string> = {
   "sidebar.operations": "العمليات",
   "sidebar.administration": "الإدارة",
   "sidebar.sales_channels": "قنوات البيع",
-  "sidebar.products": "الكتالوج",
+  "sidebar.products": "المنتجات",
   "sidebar.engagement": "التفاعل",
   "sidebar.inventory_heading": "المستودع",
   "sidebar.watchlist": "قائمة المراقبة",
@@ -609,9 +609,10 @@ export const ar: Record<string, string> = {
 
   // Sidebar unified module headers
   "sidebar.module.dashboard": "لوحة التحكم",
-  "sidebar.module.marketplace": "السوق",
+  "sidebar.module.marketplace": "إدارة العروض",
   "sidebar.module.sales": "المبيعات",
   "sidebar.module.reports": "التقارير",
+  "sidebar.badge.new": "جديد",
 
   // Topbar profile menu (AmberTopbar settings dropdown)
   "topbar.interface_theme": "مظهر الواجهة",

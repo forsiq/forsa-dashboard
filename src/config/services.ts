@@ -42,7 +42,7 @@ export const services: Service[] = [
   },
   {
     id: 'marketplace',
-    name: 'Marketplace',
+    name: 'Offer Management',
     description: 'service.marketplace.description',
     icon: 'ShoppingBag',
     type: 'internal',

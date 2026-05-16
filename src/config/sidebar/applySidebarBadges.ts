@@ -10,6 +10,9 @@ import { getNavPathBase } from '@core/utils/isNavItemActive';
 
 export type SidebarModuleView = 'dashboard' | 'marketplace' | 'sales' | 'reports';
 
+/** Sentinel value for changelog "new feature" badges — translate at render time via `sidebar.badge.new`. */
+export const CHANGELOG_NEW_BADGE = '__changelog_new__';
+
 const BADGE_BY_BASE_PATH: Partial<
   Record<SidebarModuleView, Partial<Record<string, keyof SidebarBadgeCounts>>>
 > = {
@@ -52,7 +55,8 @@ export function applySidebarBadges(
         ? countToBadge(pathMap![base] ? badges[pathMap![base]] : undefined)
         : undefined;
 
-      const changelogBadge = hasChangelog && isNewFeature!(item.path) ? 'NEW' as const : undefined;
+      const changelogBadge =
+        hasChangelog && isNewFeature!(item.path) ? CHANGELOG_NEW_BADGE : undefined;
 
       // Numeric count badge takes priority over "NEW" string badge
       const badge = countBadge ?? changelogBadge;

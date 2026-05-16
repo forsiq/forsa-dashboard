@@ -17,6 +17,7 @@ import type { MenuSection } from '@config/navigation';
 import { resolveIcon } from '@config/navigation';
 import { getActiveSidebarItemPath, getNavPathBase } from '@core/utils/isNavItemActive';
 import { prefetchRouteData } from '@core/query/prefetch';
+import { CHANGELOG_NEW_BADGE } from '@config/sidebar/applySidebarBadges';
 import { useAuth } from '@features/auth/hooks/useAuth';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
@@ -454,9 +455,13 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                             if (b === undefined || b === null || b === '') return null;
                             if (typeof b === 'number' && b <= 0) return null;
                             if (typeof b === 'string' && (b === '0' || b === '00')) return null;
+                            const badgeLabel =
+                              b === CHANGELOG_NEW_BADGE || b === 'NEW'
+                                ? t('sidebar.badge.new')
+                                : b;
                             return (
                               <span className="ms-2 min-w-[1.25rem] rounded-full bg-brand/20 px-1.5 py-0.5 text-center text-[10px] font-black text-brand">
-                                {b}
+                                {badgeLabel}
                               </span>
                             );
                           })()}
