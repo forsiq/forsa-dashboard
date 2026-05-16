@@ -67,11 +67,11 @@ export const ListingDetailPage: React.FC = () => {
     not_published: t('listing.detail.publish_status.not_published') || 'Not Published',
   };
 
-  const publishStatusVariant: Record<string, 'success' | 'warning' | 'info' | 'muted'> = {
+  const publishStatusVariant: Record<string, 'success' | 'warning' | 'info' | 'inactive'> = {
     published: 'success',
     scheduled: 'warning',
     ended: 'info',
-    not_published: 'muted',
+    not_published: 'inactive',
   };
 
   // Helper: format countdown

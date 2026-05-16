@@ -14,10 +14,10 @@ import {
   PanelLeft,
   Layers,
 } from 'lucide-react';
-import { AmberCard } from '@yousef2001/core-ui/components/AmberCard';
-import { AmberButton } from '@yousef2001/core-ui/components/AmberButton';
+import { AmberCard } from '@core/components/AmberCard';
+import { AmberButton } from '@core/components/AmberButton';
 import { useLanguage } from '@yousef2001/core-ui/contexts';
-import { cn } from '@yousef2001/core-ui/lib/utils/cn';
+import { cn } from '@core/lib/utils/cn';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 
 type Tab = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };

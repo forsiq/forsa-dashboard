@@ -15,8 +15,25 @@ import { useFeatureConfig, useLanguage, useNavigation } from '@yousef2001/core-u
 import type { MenuSection } from '@config/navigation';
 import { resolveIcon } from '@config/navigation';
 import { getActiveSidebarItemPath, getNavPathBase } from '@core/utils/isNavItemActive';
+import { prefetchRouteData } from '@core/query/prefetch';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
+
+const FEATURE_MAP: Record<string, string> = {
+  '/auctions': 'auctions',
+  '/bidding': 'bidding',
+  '/group-buying': 'sales',
+  '/sales': 'sales',
+  '/orders': 'orders',
+  '/categories': 'categories',
+  '/customers': 'customers',
+  '/inventory': 'inventory',
+  '/users': 'users',
+  '/reports': 'reports',
+  '/settings': 'settings',
+  '/my-bids': 'bidding',
+  '/watchlist': 'auctions',
+};
 
 // ── Per-module collapse state (unified mode) ──────────────────────────
 
@@ -240,22 +257,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
   const getFeatureForPath = (path: string): string | null => {
     const base = getNavPathBase(path);
-    const featureMap: Record<string, string> = {
-      '/auctions': 'auctions',
-      '/bidding': 'bidding',
-      '/group-buying': 'sales',
-      '/sales': 'sales',
-      '/orders': 'orders',
-      '/categories': 'categories',
-      '/customers': 'customers',
-      '/inventory': 'inventory',
-      '/users': 'users',
-      '/reports': 'reports',
-      '/settings': 'settings',
-      '/my-bids': 'bidding',
-      '/watchlist': 'auctions',
-    };
-    for (const [prefix, feature] of Object.entries(featureMap)) {
+    for (const [prefix, feature] of Object.entries(FEATURE_MAP)) {
       if (base === prefix || base.startsWith(`${prefix}/`)) return feature;
     }
     return null;
@@ -426,6 +428,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                     <Link
                       key={item.path}
                       href={item.path}
+                      onMouseEnter={() => prefetchRouteData(item.path)}
                       onClick={() => {
                         if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
                       }}
