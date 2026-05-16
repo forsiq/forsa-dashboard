@@ -288,6 +288,17 @@ export const ar: Record<string, string> = {
   "listing.detail.no_description": "بدون وصف",
   "listing.detail.brand_model": "العلامة التجارية والموديل",
   "listing.detail.not_found": "المنتج غير موجود",
+  "listing.detail.publish_status.published": "منشور",
+  "listing.detail.publish_status.scheduled": "مجدول",
+  "listing.detail.publish_status.ended": "منتهي",
+  "listing.detail.publish_status.not_published": "غير منشور",
+  "listing.detail.starts_at": "يبدأ",
+  "listing.detail.ends_at": "ينتهي",
+  "listing.detail.time_remaining": "الوقت المتبقي",
+  "listing.detail.starts_in": "يبدأ بعد",
+  "listing.detail.no_active_sales": "لا توجد مبيعات فعالة",
+  "listing.detail.next_ending": "ينتهي قريباً",
+  "listing.detail.next_starting": "يبدأ قريباً",
 
   // Listing form
   "listing.form.header.create": "إضافة منتج",
@@ -354,6 +365,13 @@ export const ar: Record<string, string> = {
     "أقل عدد أشخاص يجب أن ينضموا لاكتمال الصفقة. إذا لم يُحقق قبل النهاية قد تفشل الصفقة.",
   "listing.deploy.hint.max_participants":
     "أقصى عدد مسموح في الصفقة لتجنب تجاوز الكمية التي يمكنك تلبيتها.",
+  "listing.deploy.mode_now": "نشر فوري",
+  "listing.deploy.mode_now_desc": "سيتم نشر المزاد مباشرة",
+  "listing.deploy.mode_schedule": "جدولة",
+  "listing.deploy.mode_schedule_desc": "اختر وقت البدء والانتهاء",
+  "listing.deploy.mode_draft": "حفظ كمسودة",
+  "listing.deploy.mode_draft_desc": "حفظ بدون نشر",
+  "listing.deploy.duration_days": "المدة (أيام)",
 
   "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
   "validation.reserve_price_min": "سعر الاحتياط يجب أن يكون {min} على الأقل.",

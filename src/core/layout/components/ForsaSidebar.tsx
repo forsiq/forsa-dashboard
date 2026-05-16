@@ -400,9 +400,23 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
               return null;
             }
 
+            // In unified mode, check if this is the only section under its module
+            // (if so, the module header already serves as the title)
+            const prevHeader = filteredSections
+              .slice(0, idx)
+              .reverse()
+              .find(s => s.isModuleHeader);
+            const nextHeaderIdx = filteredSections
+              .slice(idx + 1)
+              .findIndex(s => s.isModuleHeader);
+            const sectionsInModule = nextHeaderIdx === -1
+              ? filteredSections.length - idx
+              : nextHeaderIdx + 1;
+            const isSingleSectionInModule = prevHeader?.moduleId === section.moduleId && sectionsInModule <= 1;
+
             return (
               <nav key={idx} className="space-y-1 mb-8">
-                {!isCollapsed && section.items.length > 0 && (
+                {!isCollapsed && section.items.length > 0 && !isSingleSectionInModule && (
                   <p className="px-5 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">
                     {t(section.title) || section.title}
                   </p>

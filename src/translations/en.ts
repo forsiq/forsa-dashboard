@@ -290,6 +290,17 @@ export const en: Record<string, string> = {
   "listing.detail.no_description": "No description",
   "listing.detail.brand_model": "Brand & Model",
   "listing.detail.not_found": "Listing not found",
+  "listing.detail.publish_status.published": "Published",
+  "listing.detail.publish_status.scheduled": "Scheduled",
+  "listing.detail.publish_status.ended": "Ended",
+  "listing.detail.publish_status.not_published": "Not Published",
+  "listing.detail.starts_at": "Starts",
+  "listing.detail.ends_at": "Ends",
+  "listing.detail.time_remaining": "Time Left",
+  "listing.detail.starts_in": "Starts in",
+  "listing.detail.no_active_sales": "No active sales",
+  "listing.detail.next_ending": "Next ending",
+  "listing.detail.next_starting": "Next starting",
 
   // Listing form
   "listing.form.header.create": "New Listing",
@@ -356,6 +367,13 @@ export const en: Record<string, string> = {
     "Minimum number of people who must join for the deal to complete. If fewer join before the end time, the deal may fail.",
   "listing.deploy.hint.max_participants":
     "Maximum number of people allowed in this deal. Prevents the group from growing past what you can fulfill.",
+  "listing.deploy.mode_now": "Publish Now",
+  "listing.deploy.mode_now_desc": "The auction will start immediately",
+  "listing.deploy.mode_schedule": "Schedule",
+  "listing.deploy.mode_schedule_desc": "Choose start and end times",
+  "listing.deploy.mode_draft": "Save as Draft",
+  "listing.deploy.mode_draft_desc": "Save without publishing",
+  "listing.deploy.duration_days": "Duration (Days)",
 
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",

@@ -12,6 +12,11 @@ import {
   Info,
   ExternalLink,
   Rocket,
+  Clock,
+  Calendar,
+  Timer,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -43,6 +48,82 @@ export const ListingDetailPage: React.FC = () => {
   const auctions = auctionsData || [];
   const deals = dealsData || [];
 
+  // Compute overall publish status from linked auctions/deals
+  const publishStatus = useMemo(() => {
+    const allItems = [
+      ...auctions.map((a: any) => a.status),
+      ...deals.map((d: any) => d.status),
+    ];
+    if (allItems.length === 0) return 'not_published';
+    if (allItems.includes('active')) return 'published';
+    if (allItems.some((s: string) => s === 'scheduled' || s === 'draft' || s === 'paused')) return 'scheduled';
+    return 'ended';
+  }, [auctions, deals]);
+
+  const publishStatusLabel: Record<string, string> = {
+    published: t('listing.detail.publish_status.published') || 'Published',
+    scheduled: t('listing.detail.publish_status.scheduled') || 'Scheduled',
+    ended: t('listing.detail.publish_status.ended') || 'Ended',
+    not_published: t('listing.detail.publish_status.not_published') || 'Not Published',
+  };
+
+  const publishStatusVariant: Record<string, 'success' | 'warning' | 'info' | 'muted'> = {
+    published: 'success',
+    scheduled: 'warning',
+    ended: 'info',
+    not_published: 'muted',
+  };
+
+  // Helper: format countdown
+  const getCountdown = (endTimeStr: string) => {
+    if (!endTimeStr) return '';
+    const end = new Date(endTimeStr);
+    const diff = end.getTime() - Date.now();
+    if (diff <= 0) return t('TIME.ENDED') || 'Ended';
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
+  };
+
+  // Helper: format starts in
+  const getStartsIn = (startTimeStr: string) => {
+    if (!startTimeStr) return '';
+    const start = new Date(startTimeStr);
+    const diff = start.getTime() - Date.now();
+    if (diff <= 0) return '';
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
+  };
+
+  // Sort linked items: active > scheduled/draft/paused > ended/cancelled
+  const statusOrder: Record<string, number> = { active: 0, paused: 1, scheduled: 2, draft: 3, ended: 4, cancelled: 5 };
+  const sortedAuctions = useMemo(() =>
+    [...auctions].sort((a: any, b: any) => (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)),
+    [auctions]
+  );
+  const sortedDeals = useMemo(() =>
+    [...deals].sort((a: any, b: any) => (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)),
+    [deals]
+  );
+
+  // Compute next schedule info for Quick Deploy Card context
+  const nextScheduleInfo = useMemo(() => {
+    const activeAuction = auctions.find((a: any) => a.status === 'active');
+    const scheduledAuction = auctions.find((a: any) => a.status === 'scheduled' || a.status === 'draft');
+    const activeDeal = deals.find((d: any) => d.status === 'active');
+    if (activeAuction) return { type: 'ending' as const, time: activeAuction.endTime };
+    if (activeDeal) return { type: 'ending' as const, time: activeDeal.endTime };
+    if (scheduledAuction) return { type: 'starting' as const, time: scheduledAuction.startTime };
+    return null;
+  }, [auctions, deals]);
+
   const listingGalleryUrls = useMemo(() => {
     if (!listing) return [];
     return getListingImageGalleryUrls(listing);
@@ -73,9 +154,16 @@ export const ListingDetailPage: React.FC = () => {
               <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
           </AmberButton>
           <div>
-            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
-              {listing.title}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
+                {listing.title}
+              </h1>
+              <StatusBadge
+                status={publishStatusLabel[publishStatus]}
+                variant={publishStatusVariant[publishStatus]}
+                size="sm"
+              />
+            </div>
             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
               {listing.brand ? `${listing.brand}${listing.model ? ` ${listing.model}` : ''}` : ''}
               {listing.condition ? ` - ${listing.condition}` : ''}
@@ -144,9 +232,18 @@ export const ListingDetailPage: React.FC = () => {
             </div>
             <div className="space-y-1">
               <p className="text-xs font-black text-brand uppercase">{t('listing.deploy.title')}</p>
-              <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
-                {t('listing.deploy.choose')}
-              </p>
+              {nextScheduleInfo ? (
+                <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
+                  {nextScheduleInfo.type === 'ending'
+                    ? `${t('listing.detail.next_ending')}: ${getCountdown(nextScheduleInfo.time)}`
+                    : `${t('listing.detail.next_starting')}: ${getStartsIn(nextScheduleInfo.time)}`
+                  }
+                </p>
+              ) : (
+                <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
+                  {t('listing.deploy.choose')}
+                </p>
+              )}
             </div>
           </div>
         </div>
