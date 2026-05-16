@@ -106,6 +106,7 @@ export const en: Record<string, string> = {
   "auction.status.cancelled": "Cancelled",
   "auction.status.draft": "Draft",
   "auction.status.scheduled": "Scheduled",
+  "status.نشط": "Active",
   "common.error_occurred": "Something went wrong",
   "common.manufacturer": "Manufacturer",
   "common.origin": "Country of origin",
@@ -371,6 +372,8 @@ export const en: Record<string, string> = {
   "listing.wizard.channel_required": "Select auction or group buy",
   "listing.wizard.review_publish_note": "Publishing starts shortly and runs for 7 days.",
   "listing.wizard.review_publish_active": "Publish activates the sale immediately. Duration is managed by the server.",
+  "listing.create_mode.wizard": "Use wizard",
+  "listing.create_mode.form": "Quick Form",
 
   // Listing deploy
   "listing.deploy.title": "Deploy Listing",
@@ -441,6 +444,7 @@ export const en: Record<string, string> = {
 
   // API / form validation (NestJS class-validator → user copy)
   "validation.start_price_min": "Starting price must be at least {min}.",
+  "validation.buy_now_price_min": "Buy now price must be at least {min}.",
   "validation.reserve_price_min": "Reserve price must be at least {min}.",
   "validation.original_price_min": "Original price must be at least {min}.",
   "validation.bid_increment_min": "Bid increment must be at least {min}.",

@@ -49,6 +49,8 @@ export const ListingsListPage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [conditionFilter, setConditionFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [justCreatedListing, setJustCreatedListing] = useState<ProductListing | null>(null);
@@ -61,6 +63,12 @@ export const ListingsListPage: React.FC = () => {
     setJustCreatedListing(listing);
   };
 
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
+  };
+
   const handleDeployFromBanner = (type: 'auction' | 'group-buy') => {
     setQuickDeployType(type);
     setIsQuickDeployOpen(true);
@@ -70,8 +78,8 @@ export const ListingsListPage: React.FC = () => {
     search: debouncedSearch || undefined,
     condition: conditionFilter !== 'all' ? conditionFilter : undefined,
     brand: brandFilter !== 'all' ? brandFilter : undefined,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    sortBy: sortBy as any,
+    sortOrder,
     page,
     limit,
   });
@@ -379,6 +387,9 @@ export const ListingsListPage: React.FC = () => {
               totalItems={pagination?.total || 0}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
             />
           </div>
         )}

@@ -103,6 +103,7 @@ export const ar: Record<string, string> = {
   "auction.status.cancelled": "ملغي",
   "auction.status.draft": "مسودة",
   "auction.status.scheduled": "مجدول",
+  "status.نشط": "نشط",
 
   "common.error_occurred": "حدث خطأ",
   "common.manufacturer": "الشركة المصنّعة",
@@ -369,6 +370,8 @@ export const ar: Record<string, string> = {
   "listing.wizard.channel_required": "اختر مزاداً أو صفقة جماعية",
   "listing.wizard.review_publish_note": "النشر يبدأ قريباً لمدة 7 أيام.",
   "listing.wizard.review_publish_active": "النشر يفعّل البيع فوراً. مدة العرض تُدار من الخادم.",
+  "listing.create_mode.wizard": "استخدم المعالج",
+  "listing.create_mode.form": "نموذج سريع",
 
   // Listing deploy
   "listing.deploy.title": "نشر المنتج",
@@ -438,6 +441,7 @@ export const ar: Record<string, string> = {
   "listing.deploy.validation.end_after_start": "وقت الانتهاء يجب أن يكون بعد وقت البدء",
 
   "validation.start_price_min": "سعر البداية يجب أن يكون {min} على الأقل.",
+  "validation.buy_now_price_min": "سعر الشراء الفوري يجب أن يكون {min} على الأقل.",
   "validation.reserve_price_min": "سعر الاحتياط يجب أن يكون {min} على الأقل.",
   "validation.original_price_min": "السعر الأصلي يجب أن يكون {min} على الأقل.",
   "validation.bid_increment_min": "حد المزايدة يجب أن يكون {min} على الأقل.",

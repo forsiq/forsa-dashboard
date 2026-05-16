@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { StatsCard } from '@core/core/dashboard/StatsCard';
 import { ActivityFeed } from '@core/core/dashboard/ActivityFeed';
@@ -7,7 +7,8 @@ import { DashboardCharts } from '../components/DashboardCharts';
 import { TopAuctions } from '../components/TopAuctions';
 import { CriticalNodes } from '../components/CriticalNodes';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Plus, Gavel, Users, BarChart2, ShoppingBag, Tag, Package } from 'lucide-react';
+import type { QuickAction } from '@core/core/dashboard/types';
 
 
 export const DashboardHomePage = () => {
@@ -18,10 +19,63 @@ export const DashboardHomePage = () => {
     topProducts, 
     categoryData, 
     salesChart, 
+    quickCounts,
     isLoading,
     isError,
     refetch
   } = useDashboardData();
+
+  // Build quick actions with live counts
+  const quickActionItems: QuickAction[] = useMemo(() => [
+    {
+      id: 'new-auction',
+      label: t('auction.create_auction') || 'New Auction',
+      icon: <Plus className="w-4 h-4" />,
+      path: '/auctions/add',
+      color: 'brand' as const,
+    },
+    {
+      id: 'auctions',
+      label: t('sidebar.auctions') || 'Auctions',
+      icon: <Gavel className="w-4 h-4" />,
+      path: '/auctions',
+      color: 'warning' as const,
+      count: quickCounts?.totalAuctions,
+      isActive: (quickCounts?.activeAuctions ?? 0) > 0,
+    },
+    {
+      id: 'new-deal',
+      label: t('dash.total_items') || 'New Deal',
+      icon: <ShoppingBag className="w-4 h-4" />,
+      path: '/group-buying/new',
+      color: 'success' as const,
+    },
+    {
+      id: 'group-deals',
+      label: t('sidebar.groupBuying') || 'Group Deals',
+      icon: <Users className="w-4 h-4" />,
+      path: '/group-buying',
+      color: 'info' as const,
+      count: quickCounts?.activeDeals,
+      isActive: (quickCounts?.activeDeals ?? 0) > 0,
+    },
+    {
+      id: 'orders',
+      label: t('sidebar.orders_section') || 'Orders',
+      icon: <Package className="w-4 h-4" />,
+      path: '/orders',
+      color: 'warning' as const,
+      count: quickCounts?.pendingOrders,
+      isActive: (quickCounts?.pendingOrders ?? 0) > 0,
+    },
+    {
+      id: 'categories',
+      label: t('sidebar.categories') || 'Categories',
+      icon: <Tag className="w-4 h-4" />,
+      path: '/categories',
+      color: 'brand' as const,
+    },
+  ], [t, quickCounts]);
 
   if (isLoading) {
     return (
@@ -36,7 +90,7 @@ export const DashboardHomePage = () => {
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-center">
         <AlertTriangle className="w-12 h-12 text-warning" />
         <p className="text-zinc-text font-bold text-lg">{t('common.error') || 'Something went wrong'}</p>
-        <p className="text-zinc-secondary text-sm">{t('common.errorTryAgain') || 'Failed to load dashboard data'}</p>
+        <p className="text-zinc-secondary text-sm">{t('common.error_occurred') || 'Failed to load dashboard data'}</p>
         <button
           onClick={() => refetch()}
           className="flex items-center gap-2 px-4 py-2 bg-brand text-black rounded-lg font-bold hover:opacity-90 transition-opacity"
@@ -80,7 +134,7 @@ export const DashboardHomePage = () => {
           <ActivityFeed activities={activities} />
         </div>
         <div>
-          <QuickActions actions={[]} />
+          <QuickActions actions={quickActionItems} />
         </div>
       </div>
     </div>

@@ -45,7 +45,7 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
-import type { AuctionStatus, Auction } from '../types/auction.types';
+import type { AuctionStatus, Auction, AuctionFilters } from '../types/auction.types';
 
 type TabValue = 'all' | AuctionStatus;
 
@@ -82,6 +82,8 @@ export const AuctionsList: React.FC = () => {
     const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
+    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -92,8 +94,8 @@ export const AuctionsList: React.FC = () => {
         status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
         search: debouncedSearch || undefined,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
+        sortBy: sortBy as AuctionFilters['sortBy'],
+        sortOrder,
         page,
         limit
     });
@@ -166,6 +168,12 @@ export const AuctionsList: React.FC = () => {
 
     const handleTabChange = (tabKey: TabValue) => {
         setActiveTab(tabKey);
+        setPage(1);
+    };
+
+    const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+        setSortBy(key);
+        setSortOrder(direction);
         setPage(1);
     };
 
@@ -448,6 +456,9 @@ export const AuctionsList: React.FC = () => {
                             totalItems={auctionsData?.total || 0}
                             onPageChange={(newPage) => setPage(newPage)}
                             showViewToggle
+                            onSortChange={handleSortChange}
+                            sortBy={sortBy}
+                            sortOrder={sortOrder}
                         />
                     </div>
                 )}

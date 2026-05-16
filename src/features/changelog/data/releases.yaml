@@ -1,3 +1,27 @@
+- version: "1.5.0"
+  date: "2026-05-16"
+  title:
+    en: "Wizard + Form dual mode and simplified lifecycle"
+    ar: "مساران للمنتج وتبسيط إدارة المزاد"
+  entries:
+    - description:
+        en: "Two product creation modes: 5-step wizard (default) and quick form — switch via URL or CTA"
+        ar: "مساران لإنشاء المنتج: معالج 5 خطوات (افتراضي) ونموذج سريع — التبديل عبر الرابط أو الزر"
+      type: added
+      sidebarPath: /listings
+
+    - description:
+        en: "Product images now resolve from attachment IDs when no direct URL is available"
+        ar: "صور المنتجات تظهر الآن من معرّفات المرفقات عند عدم توفر رابط مباشر"
+      type: fixed
+      sidebarPath: /listings
+
+    - description:
+        en: "Auction and group buy lifecycle simplified to cancel-only in the UI — end, pause, extend, and reschedule hidden for later dashboard control"
+        ar: "إدارة دورة حياة المزاد والصفقة مبسّطة إلى إلغاء فقط — إنهاء، إيقاف، تمديد، وجدولة مخفية للتحكم لاحقاً من لوحة الإعدادات"
+      type: changed
+      sidebarPath: /auctions
+
 - version: "1.4.2"
   date: "2026-05-16"
   title:

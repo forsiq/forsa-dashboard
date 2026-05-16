@@ -106,7 +106,7 @@ export interface AuctionFilters {
   status?: AuctionStatus;
   categoryId?: number;
   search?: string;
-  sortBy?: 'endTime' | 'startTime' | 'currentBid' | 'totalBids' | 'createdAt';
+  sortBy?: 'endTime' | 'startTime' | 'currentBid' | 'totalBids' | 'createdAt' | 'title' | 'startPrice';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;

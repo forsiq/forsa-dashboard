@@ -262,6 +262,36 @@ export const useSalesChartData = () => {
 };
 
 // ============================================================================
+// Quick Counts Hook (for Quick Actions badges)
+// ============================================================================
+
+export const useDashboardQuickCounts = () => {
+  return useQuery({
+    queryKey: [...dashboardKeys.all, 'quickCounts'] as const,
+    queryFn: async () => {
+      const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
+        auctionBaseApi.getStats().catch(() => ({ data: {} })),
+        groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
+        orderBaseApi.getStats().catch(() => ({ data: {} })),
+      ]);
+
+      const auctionStats = (auctionStatsRes as any).data || {};
+      const groupStats = (groupBuyingStatsRes as any).data || {};
+      const orderStats = (ordersRes as any).data || {};
+
+      return {
+        activeAuctions: auctionStats.activeAuctions || 0,
+        totalAuctions: auctionStats.totalAuctions || 0,
+        activeDeals: groupStats.activeCampaigns || 0,
+        pendingOrders: orderStats.pending || 0,
+        totalParticipants: groupStats.total_participants || 0,
+      };
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+};
+
+// ============================================================================
 // Combined Hook (for backward compatibility)
 // ============================================================================
 
@@ -272,6 +302,7 @@ export const useDashboardData = () => {
   const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
   const { data: categoryData, isLoading: categoriesLoading } = useCategoryDistribution();
   const { data: salesChart, isLoading: salesLoading } = useSalesChartData();
+  const { data: quickCounts } = useDashboardQuickCounts();
 
   const dashboardStats: StatCard[] = [
     {
@@ -321,7 +352,7 @@ export const useDashboardData = () => {
       type: statusTypeMap[order.status] || 'info',
       title: order.productName,
       description: `${order.customerName} - ${formatCurrency(order.amount)}`,
-      timestamp: new Date(order.date).toLocaleDateString(),
+      timestamp: order.date,
     };
   });
 
@@ -331,6 +362,7 @@ export const useDashboardData = () => {
     topProducts,
     categoryData,
     salesChart,
+    quickCounts,
     isLoading: statsLoading || activitiesLoading || topProductsLoading || categoriesLoading || salesLoading,
     isError: statsError || activitiesError,
     refetch: () => {
