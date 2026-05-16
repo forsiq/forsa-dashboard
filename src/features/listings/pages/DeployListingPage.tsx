@@ -10,6 +10,9 @@ import {
   Package,
   TrendingUp,
   Calendar,
+  Clock,
+  Zap,
+  FileText,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -33,6 +36,7 @@ import { getListingPrimaryImageUrl } from '../utils/listing-media';
 import { FieldHelpHint } from '../components/FieldHelpHint';
 
 type DeployType = 'auction' | 'group_buy' | null;
+type DeployMode = 'now' | 'schedule' | 'draft';
 
 export const DeployListingPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -46,6 +50,8 @@ export const DeployListingPage: React.FC = () => {
   const queryType = router.query.type as string;
   const initialType: DeployType = queryType === 'group-buy' ? 'group_buy' : queryType === 'auction' ? 'auction' : null;
   const [deployType, setDeployType] = useState<DeployType>(initialType);
+  const [deployMode, setDeployMode] = useState<DeployMode>('schedule');
+  const [durationDays, setDurationDays] = useState(7);
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -110,39 +116,85 @@ export const DeployListingPage: React.FC = () => {
     setFieldErrors({});
     try {
       if (deployType === 'auction') {
-        const parsed = deployAuctionFormSchema.safeParse(auctionForm);
-        if (!parsed.success) {
-          setFieldErrors(zodIssuesToFieldMap(parsed.error));
+        // Validate pricing fields (always required)
+        if (!auctionForm.startPrice || auctionForm.startPrice < 1) {
+          setFieldErrors({ startPrice: 'Start price must be at least 1' });
           return;
         }
+        if (!auctionForm.bidIncrement || auctionForm.bidIncrement < 1) {
+          setFieldErrors({ bidIncrement: 'Bid increment must be at least 1' });
+          return;
+        }
+
         const reservePrice = parseOptionalListingPrice(auctionForm.reservePrice);
+        const basePayload: Record<string, any> = {
+          startPrice: parseRequiredListingPrice(auctionForm.startPrice),
+          ...(reservePrice !== undefined ? { reservePrice } : {}),
+          bidIncrement: parseBidIncrement(auctionForm.bidIncrement, 5000),
+        };
+
+        if (deployMode === 'now') {
+          const startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 1);
+          const endTime = new Date(startTime);
+          endTime.setDate(endTime.getDate() + durationDays);
+          basePayload.startTime = startTime.toISOString();
+          basePayload.endTime = endTime.toISOString();
+        } else if (deployMode === 'schedule') {
+          const parsed = deployAuctionFormSchema.safeParse(auctionForm);
+          if (!parsed.success) {
+            setFieldErrors(zodIssuesToFieldMap(parsed.error));
+            return;
+          }
+          basePayload.startTime = new Date(auctionForm.startTime).toISOString();
+          basePayload.endTime = new Date(auctionForm.endTime).toISOString();
+        }
+        // draft mode: no startTime/endTime
+
         await deployAuctionMutation.mutateAsync({
           id: Number(id),
-          data: {
-            startPrice: parseRequiredListingPrice(auctionForm.startPrice),
-            ...(reservePrice !== undefined ? { reservePrice } : {}),
-            bidIncrement: parseBidIncrement(auctionForm.bidIncrement, 5000),
-            startTime: new Date(auctionForm.startTime).toISOString(),
-            endTime: new Date(auctionForm.endTime).toISOString(),
-          },
+          data: basePayload,
         });
       } else if (deployType === 'group_buy') {
-        const parsed = deployGroupBuyFormSchema.safeParse(groupBuyForm);
-        if (!parsed.success) {
-          setFieldErrors(zodIssuesToFieldMap(parsed.error));
+        // Validate pricing fields
+        if (!groupBuyForm.originalPrice || groupBuyForm.originalPrice < 1) {
+          setFieldErrors({ originalPrice: 'Original price must be at least 1' });
           return;
         }
+        if (!groupBuyForm.dealPrice || groupBuyForm.dealPrice < 1) {
+          setFieldErrors({ dealPrice: 'Deal price must be at least 1' });
+          return;
+        }
+
+        const basePayload: Record<string, any> = {
+          originalPrice: Number(groupBuyForm.originalPrice),
+          dealPrice: Number(groupBuyForm.dealPrice),
+          minParticipants: Number(groupBuyForm.minParticipants),
+          maxParticipants: Number(groupBuyForm.maxParticipants),
+          autoCreateOrder: groupBuyForm.autoCreateOrder,
+        };
+
+        if (deployMode === 'now') {
+          const startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 1);
+          const endTime = new Date(startTime);
+          endTime.setDate(endTime.getDate() + durationDays);
+          basePayload.startTime = startTime.toISOString();
+          basePayload.endTime = endTime.toISOString();
+        } else if (deployMode === 'schedule') {
+          const parsed = deployGroupBuyFormSchema.safeParse(groupBuyForm);
+          if (!parsed.success) {
+            setFieldErrors(zodIssuesToFieldMap(parsed.error));
+            return;
+          }
+          basePayload.startTime = new Date(groupBuyForm.startTime).toISOString();
+          basePayload.endTime = new Date(groupBuyForm.endTime).toISOString();
+        }
+        // draft mode: no startTime/endTime
+
         await deployGroupBuyMutation.mutateAsync({
           id: Number(id),
-          data: {
-            originalPrice: Number(groupBuyForm.originalPrice),
-            dealPrice: Number(groupBuyForm.dealPrice),
-            minParticipants: Number(groupBuyForm.minParticipants),
-            maxParticipants: Number(groupBuyForm.maxParticipants),
-            startTime: new Date(groupBuyForm.startTime).toISOString(),
-            endTime: new Date(groupBuyForm.endTime).toISOString(),
-            autoCreateOrder: groupBuyForm.autoCreateOrder,
-          },
+          data: basePayload,
         });
       }
       markClean();
@@ -308,30 +360,126 @@ export const DeployListingPage: React.FC = () => {
                 error={fieldErrors.bidIncrement}
                 rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberDatePicker
-                  label={t('listing.deploy.start_time')}
-                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
-                  value={auctionForm.startTime}
-                  onChange={(val) => {
-                    clearFieldError('startTime');
-                    setAuctionForm(p => ({ ...p, startTime: val }));
-                  }}
-                  icon={<Calendar className="w-4 h-4" />}
-                  error={fieldErrors.startTime}
-                />
-                <AmberDatePicker
-                  label={t('listing.deploy.end_time')}
-                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
-                  value={auctionForm.endTime}
-                  onChange={(val) => {
-                    clearFieldError('endTime');
-                    setAuctionForm(p => ({ ...p, endTime: val }));
-                  }}
-                  icon={<Calendar className="w-4 h-4" />}
-                  error={fieldErrors.endTime}
-                />
+
+              {/* Deploy Mode Selector */}
+              <div className="space-y-3 pt-2">
+                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  {t('listing.deploy.choose')}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('now'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'now'
+                        ? "bg-brand/10 border-brand/30 text-brand"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <Zap className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_now')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_now_desc')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('schedule'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'schedule'
+                        ? "bg-warning/10 border-warning/30 text-warning"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <Calendar className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_schedule')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_schedule_desc')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('draft'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'draft'
+                        ? "bg-info/10 border-info/30 text-info"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_draft')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_draft_desc')}</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Schedule: Date Pickers */}
+              {deployMode === 'schedule' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AmberDatePicker
+                    label={t('listing.deploy.start_time')}
+                    labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
+                    value={auctionForm.startTime}
+                    onChange={(val) => {
+                      clearFieldError('startTime');
+                      setAuctionForm(p => ({ ...p, startTime: val }));
+                    }}
+                    icon={<Calendar className="w-4 h-4" />}
+                    error={fieldErrors.startTime}
+                  />
+                  <AmberDatePicker
+                    label={t('listing.deploy.end_time')}
+                    labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
+                    value={auctionForm.endTime}
+                    onChange={(val) => {
+                      clearFieldError('endTime');
+                      setAuctionForm(p => ({ ...p, endTime: val }));
+                    }}
+                    icon={<Calendar className="w-4 h-4" />}
+                    error={fieldErrors.endTime}
+                  />
+                </div>
+              )}
+
+              {/* Publish Now: Duration Picker */}
+              {deployMode === 'now' && (
+                <div className="space-y-4">
+                  <AmberInput
+                    label={t('listing.deploy.duration_days') || 'Duration (Days)'}
+                    type="number"
+                    value={durationDays}
+                    onChange={(e) => setDurationDays(Math.max(1, Math.min(90, Number(e.target.value) || 1)))}
+                    icon={<Clock className="w-4 h-4" />}
+                    min={1}
+                    max={90}
+                  />
+                  <div className="p-4 rounded-xl bg-brand/[0.03] border border-brand/10">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                      <Zap className="w-3 h-3 text-brand" />
+                      <span className="text-brand">{t('listing.deploy.mode_now')}</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-muted font-bold mt-1">
+                      {(() => {
+                        const start = new Date();
+                        start.setMinutes(start.getMinutes() + 1);
+                        const end = new Date(start);
+                        end.setDate(end.getDate() + durationDays);
+                        return `${start.toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} → ${end.toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Draft: Info Banner */}
+              {deployMode === 'draft' && (
+                <div className="p-4 rounded-xl bg-info/[0.03] border border-info/10 flex items-start gap-3">
+                  <FileText className="w-4 h-4 text-info shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-black text-info uppercase">{t('listing.deploy.mode_draft')}</p>
+                    <p className="text-[11px] text-zinc-muted font-bold mt-1">{t('listing.deploy.mode_draft_desc')}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -389,30 +537,126 @@ export const DeployListingPage: React.FC = () => {
                   rightElement={<FieldHelpHint text={t('listing.deploy.hint.max_participants')} />}
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AmberDatePicker
-                  label={t('listing.deploy.start_time')}
-                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
-                  value={groupBuyForm.startTime}
-                  onChange={(val) => {
-                    clearFieldError('startTime');
-                    setGroupBuyForm(p => ({ ...p, startTime: val }));
-                  }}
-                  icon={<Calendar className="w-4 h-4" />}
-                  error={fieldErrors.startTime}
-                />
-                <AmberDatePicker
-                  label={t('listing.deploy.end_time')}
-                  labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
-                  value={groupBuyForm.endTime}
-                  onChange={(val) => {
-                    clearFieldError('endTime');
-                    setGroupBuyForm(p => ({ ...p, endTime: val }));
-                  }}
-                  icon={<Calendar className="w-4 h-4" />}
-                  error={fieldErrors.endTime}
-                />
+
+              {/* Deploy Mode Selector */}
+              <div className="space-y-3 pt-2">
+                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  {t('listing.deploy.choose')}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('now'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'now'
+                        ? "bg-brand/10 border-brand/30 text-brand"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <Zap className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_now')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_now_desc')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('schedule'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'schedule'
+                        ? "bg-warning/10 border-warning/30 text-warning"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <Calendar className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_schedule')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_schedule_desc')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDeployMode('draft'); setFieldErrors({}); }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      deployMode === 'draft'
+                        ? "bg-info/10 border-info/30 text-info"
+                        : "bg-obsidian-panel border-white/5 text-zinc-muted hover:border-white/10"
+                    )}
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('listing.deploy.mode_draft')}</span>
+                    <span className="text-[9px] font-bold opacity-70">{t('listing.deploy.mode_draft_desc')}</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Schedule: Date Pickers */}
+              {deployMode === 'schedule' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AmberDatePicker
+                    label={t('listing.deploy.start_time')}
+                    labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.start_time')} />}
+                    value={groupBuyForm.startTime}
+                    onChange={(val) => {
+                      clearFieldError('startTime');
+                      setGroupBuyForm(p => ({ ...p, startTime: val }));
+                    }}
+                    icon={<Calendar className="w-4 h-4" />}
+                    error={fieldErrors.startTime}
+                  />
+                  <AmberDatePicker
+                    label={t('listing.deploy.end_time')}
+                    labelEndSlot={<FieldHelpHint text={t('listing.deploy.hint.end_time')} />}
+                    value={groupBuyForm.endTime}
+                    onChange={(val) => {
+                      clearFieldError('endTime');
+                      setGroupBuyForm(p => ({ ...p, endTime: val }));
+                    }}
+                    icon={<Calendar className="w-4 h-4" />}
+                    error={fieldErrors.endTime}
+                  />
+                </div>
+              )}
+
+              {/* Publish Now: Duration Picker */}
+              {deployMode === 'now' && (
+                <div className="space-y-4">
+                  <AmberInput
+                    label={t('listing.deploy.duration_days') || 'Duration (Days)'}
+                    type="number"
+                    value={durationDays}
+                    onChange={(e) => setDurationDays(Math.max(1, Math.min(90, Number(e.target.value) || 1)))}
+                    icon={<Clock className="w-4 h-4" />}
+                    min={1}
+                    max={90}
+                  />
+                  <div className="p-4 rounded-xl bg-brand/[0.03] border border-brand/10">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                      <Zap className="w-3 h-3 text-brand" />
+                      <span className="text-brand">{t('listing.deploy.mode_now')}</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-muted font-bold mt-1">
+                      {(() => {
+                        const start = new Date();
+                        start.setMinutes(start.getMinutes() + 1);
+                        const end = new Date(start);
+                        end.setDate(end.getDate() + durationDays);
+                        return `${start.toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} → ${end.toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Draft: Info Banner */}
+              {deployMode === 'draft' && (
+                <div className="p-4 rounded-xl bg-info/[0.03] border border-info/10 flex items-start gap-3">
+                  <FileText className="w-4 h-4 text-info shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-black text-info uppercase">{t('listing.deploy.mode_draft')}</p>
+                    <p className="text-[11px] text-zinc-muted font-bold mt-1">{t('listing.deploy.mode_draft_desc')}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

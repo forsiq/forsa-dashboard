@@ -168,7 +168,7 @@ export function useDeployAsAuction() {
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DeployAuctionInput }) =>
+    mutationFn: ({ id, data }: { id: number; data: Record<string, any> }) =>
       listingApi.deployAsAuction(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.auctions(variables.id) });
@@ -193,7 +193,7 @@ export function useDeployAsGroupBuy() {
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DeployGroupBuyInput }) =>
+    mutationFn: ({ id, data }: { id: number; data: Record<string, any> }) =>
       listingApi.deployAsGroupBuy(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.deals(variables.id) });

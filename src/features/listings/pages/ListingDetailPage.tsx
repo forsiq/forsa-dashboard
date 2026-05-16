@@ -312,22 +312,48 @@ export const ListingDetailPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {/* Linked Auctions */}
-                {auctions.length > 0 && (
+                {sortedAuctions.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
                       <Gavel className="w-3 h-3 text-brand" /> {t('listing.detail.linked_auctions')}
                     </h4>
-                    {auctions.map((auction: any) => {
+                    {sortedAuctions.map((auction: any) => {
+                      const isActive = auction.status === 'active';
+                      const isScheduled = auction.status === 'scheduled' || auction.status === 'draft';
                       const row = (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer border border-white/5 hover:border-brand/20 transition-all cursor-pointer group">
-                          <Gavel className="w-4 h-4 text-brand" />
-                          <span className="text-sm text-zinc-text font-bold">{auction.title}</span>
+                          <Gavel className="w-4 h-4 text-brand shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm text-zinc-text font-bold truncate block">{auction.title}</span>
+                            {(auction.startTime || auction.endTime) && (
+                              <div className="flex items-center gap-3 mt-1">
+                                {auction.startTime && (
+                                  <span className="text-[10px] text-zinc-muted font-bold flex items-center gap-1">
+                                    <Calendar className="w-2.5 h-2.5" />
+                                    {new Date(auction.startTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                                {isActive && auction.endTime && (
+                                  <span className="text-[10px] text-danger font-black flex items-center gap-1">
+                                    <Timer className="w-2.5 h-2.5" />
+                                    {getCountdown(auction.endTime)}
+                                  </span>
+                                )}
+                                {isScheduled && auction.startTime && getStartsIn(auction.startTime) && (
+                                  <span className="text-[10px] text-warning font-black flex items-center gap-1">
+                                    <Clock className="w-2.5 h-2.5" />
+                                    {t('listing.detail.starts_in')}: {getStartsIn(auction.startTime)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           <StatusBadge
                             status={auction.status}
-                            variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
+                            variant={auction.status === 'active' ? 'success' : auction.status === 'ended' || auction.status === 'cancelled' ? 'failed' : 'warning'}
                             size="sm"
                           />
-                          <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-brand transition-colors ml-auto" />
+                          <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-brand transition-colors shrink-0" />
                         </div>
                       );
                       return isSafePathResourceId(auction.id) ? (
@@ -344,22 +370,48 @@ export const ListingDetailPage: React.FC = () => {
                 )}
 
                 {/* Linked Deals */}
-                {deals.length > 0 && (
+                {sortedDeals.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest flex items-center gap-2">
                       <Users className="w-3 h-3 text-info" /> {t('listing.detail.linked_deals')}
                     </h4>
-                    {deals.map((deal: any) => {
+                    {sortedDeals.map((deal: any) => {
+                      const isActive = deal.status === 'active';
+                      const isScheduled = deal.status === 'scheduled' || deal.status === 'draft';
                       const row = (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer border border-white/5 hover:border-info/20 transition-all cursor-pointer group">
-                          <Users className="w-4 h-4 text-info" />
-                          <span className="text-sm text-zinc-text font-bold">{deal.title}</span>
+                          <Users className="w-4 h-4 text-info shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm text-zinc-text font-bold truncate block">{deal.title}</span>
+                            {(deal.startTime || deal.endTime) && (
+                              <div className="flex items-center gap-3 mt-1">
+                                {deal.startTime && (
+                                  <span className="text-[10px] text-zinc-muted font-bold flex items-center gap-1">
+                                    <Calendar className="w-2.5 h-2.5" />
+                                    {new Date(deal.startTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                                {isActive && deal.endTime && (
+                                  <span className="text-[10px] text-danger font-black flex items-center gap-1">
+                                    <Timer className="w-2.5 h-2.5" />
+                                    {getCountdown(deal.endTime)}
+                                  </span>
+                                )}
+                                {isScheduled && deal.startTime && getStartsIn(deal.startTime) && (
+                                  <span className="text-[10px] text-warning font-black flex items-center gap-1">
+                                    <Clock className="w-2.5 h-2.5" />
+                                    {t('listing.detail.starts_in')}: {getStartsIn(deal.startTime)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           <StatusBadge
                             status={deal.status}
                             variant={deal.status === 'active' ? 'success' : 'warning'}
                             size="sm"
                           />
-                          <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-info transition-colors ml-auto" />
+                          <ExternalLink className="w-3 h-3 text-zinc-muted group-hover:text-info transition-colors shrink-0" />
                         </div>
                       );
                       return isSafePathResourceId(deal.id) ? (

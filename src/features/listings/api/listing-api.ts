@@ -63,13 +63,13 @@ export const listingApi = {
     await listingBaseApi.delete(String(id));
   },
 
-  deployAsAuction: async (id: number, data: DeployAuctionInput): Promise<any> => {
+  deployAsAuction: async (id: number, data: Record<string, any>): Promise<any> => {
     const client = listingBaseApi.getInstance();
     const response = await client.post(`/listings/${id}/deploy/auction`, data);
     return response.data.data;
   },
 
-  deployAsGroupBuy: async (id: number, data: DeployGroupBuyInput): Promise<any> => {
+  deployAsGroupBuy: async (id: number, data: Record<string, any>): Promise<any> => {
     const client = listingBaseApi.getInstance();
     const response = await client.post(`/listings/${id}/deploy/group-buy`, data);
     return response.data.data;
