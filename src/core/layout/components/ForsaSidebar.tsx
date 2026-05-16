@@ -317,6 +317,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
         }
         ${dir === 'rtl' ? 'right-0' : 'left-0'}
         lg:translate-x-0 shadow-xl lg:shadow-none
+        ${isOpen ? 'pointer-events-auto' : 'pointer-events-none lg:pointer-events-auto'}
       `}
     >
       <div className="flex flex-col h-full">

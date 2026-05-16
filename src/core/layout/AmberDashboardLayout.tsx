@@ -6,7 +6,7 @@
  * Path alias `@core/layout/*` points here intentionally — keep in sync with core-ui when upgrading the package.
  */
 
-import React, { useCallback, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/router';
 import { AmberTopbar } from '@yousef2001/core-ui/layout/components/Topbar';
 import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
@@ -75,6 +75,31 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   const isPortalPage = portalPaths.includes(router.pathname);
   const { mode } = useSidebarMode();
 
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+
+  // Prevent a stuck mobile overlay after navigation or desktop resize.
+  useEffect(() => {
+    closeSidebar();
+  }, [router.pathname, closeSidebar]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => {
+      if (window.innerWidth >= 1024) closeSidebar();
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [closeSidebar]);
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeSidebar();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isSidebarOpen, closeSidebar]);
+
   return (
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
       <AmberTopbar
@@ -91,12 +116,20 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
         sidebarInsetClassName={isPortalPage ? '' : isCollapsed ? 'lg:ps-20' : 'lg:ps-64'}
       />
       <div className="flex flex-1 relative min-h-0 overflow-x-hidden">
+        {!isPortalPage && isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-[105] bg-black/30 lg:hidden"
+            role="presentation"
+            aria-hidden="true"
+            onClick={closeSidebar}
+          />
+        )}
         {!isPortalPage && (
           <ForsaSidebar
             isOpen={isSidebarOpen}
             isCollapsed={isCollapsed}
             onToggleCollapse={handleToggleCollapse}
-            onClose={() => setIsSidebarOpen(false)}
+            onClose={closeSidebar}
             sidebarLoader={sidebarLoader}
             menuSections={menuSections}
             appLabel={appLabel}
@@ -111,13 +144,6 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
           <div className="max-w-[1600px] mx-auto p-6 md:p-8">{children}</div>
         </main>
       </div>
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-[100] lg:hidden"
-          role="presentation"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 };
