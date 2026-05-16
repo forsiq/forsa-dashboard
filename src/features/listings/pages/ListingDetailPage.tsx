@@ -274,6 +274,45 @@ export const ListingDetailPage: React.FC = () => {
             </div>
           </Card>
 
+          {listing.specs && listing.specs.length > 0 && (
+            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-4">
+              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
+                {t('auction.detail.specifications')}
+              </h3>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {listing.specs.map((spec, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <dt className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{spec.label}</dt>
+                    <dd className="text-sm font-bold text-zinc-text">{spec.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          )}
+
+          {listing.sources && listing.sources.length > 0 && (
+            <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-4">
+              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
+                {t('auction.detail.sources')}
+              </h3>
+              <ul className="space-y-2">
+                {listing.sources.map((source, idx) => (
+                  <li key={idx}>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-brand hover:underline flex items-center gap-2"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      {source.label || source.url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
           {/* Publish Channels Grid */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -368,7 +407,7 @@ export const ListingDetailPage: React.FC = () => {
                 {!sortedAuctions.some((a: any) => a.status === 'active') && (
                   <AmberButton
                     className="w-full h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all"
-                    onClick={() => router.push(`/listings/${listingId}/deploy?type=auction`)}
+                    onClick={() => router.push(`/listings/${listingId}/publish?type=auction`)}
                   >
                     <Plus className="w-4 h-4" />
                     {t('listing.channels.new_auction')}
@@ -460,7 +499,7 @@ export const ListingDetailPage: React.FC = () => {
                 {!sortedDeals.some((d: any) => d.status === 'active') && (
                   <AmberButton
                     className="w-full h-10 bg-info text-white font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all"
-                    onClick={() => router.push(`/listings/${listingId}/deploy?type=group-buy`)}
+                    onClick={() => router.push(`/listings/${listingId}/publish?type=group-buy`)}
                   >
                     <Plus className="w-4 h-4" />
                     {t('listing.channels.new_deal')}

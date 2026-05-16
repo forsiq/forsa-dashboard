@@ -1,12 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Gavel, Users, Loader2 } from 'lucide-react';
+import { Gavel, Users } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { AmberButton } from '@core/components/AmberButton';
-import { FormBuilder } from '@core/components/Form/FormBuilder';
-import { useCreateAuction } from '../../auctions/api';
-import type { FormFieldConfig } from '@core/services/types';
 import type { ProductListing } from '../../../types/services/listings.types';
 
 type DeployType = 'auction' | 'group-buy';
@@ -18,89 +15,31 @@ interface QuickDeployModalProps {
   initialType?: DeployType;
 }
 
-export function QuickDeployModal({ isOpen, onClose, listing, initialType = 'auction' }: QuickDeployModalProps) {
+export function QuickDeployModal({
+  isOpen,
+  onClose,
+  listing,
+  initialType = 'auction',
+}: QuickDeployModalProps) {
   const { t } = useLanguage();
   const router = useRouter();
-  const createAuctionMutation = useCreateAuction();
   const [deployType, setDeployType] = useState<DeployType>(initialType);
 
-  const auctionFields: FormFieldConfig[] = useMemo(() => [
-    {
-      name: 'startPrice',
-      label: t('auction.form.fields.start_price') || 'Start Price',
-      type: 'number',
-      required: true,
-      validation: { min: 1, custom: (v) => Number(v) > 0 ? undefined : 'Price must be greater than 0' },
-    },
-    {
-      name: 'durationDays',
-      label: t('auction.form.cycle_duration') || 'Duration (Days)',
-      type: 'number',
-      required: true,
-      defaultValue: 7,
-      validation: { min: 1, max: 90 },
-    },
-  ], [t]);
-
-  const groupBuyFields: FormFieldConfig[] = useMemo(() => [
-    {
-      name: 'dealPrice',
-      label: t('group_buying.deal_price') || 'Deal Price',
-      type: 'number',
-      required: true,
-      validation: { min: 1 },
-    },
-    {
-      name: 'minParticipants',
-      label: t('group_buying.min_participants') || 'Min Participants',
-      type: 'number',
-      required: true,
-      defaultValue: 5,
-      validation: { min: 2, max: 1000 },
-    },
-  ], [t]);
-
-  const fields = deployType === 'auction' ? auctionFields : groupBuyFields;
-
-  const handleSubmit = async (data: Record<string, unknown>) => {
+  const openWizard = () => {
     if (!listing) return;
-
-    try {
-      if (deployType === 'auction') {
-        const startTime = new Date();
-        startTime.setHours(startTime.getHours() + 1, 0, 0, 0);
-        const endTime = new Date(startTime);
-        endTime.setDate(endTime.getDate() + (Number(data.durationDays) || 7));
-
-        await createAuctionMutation.mutateAsync({
-          title: listing.title,
-          description: listing.description,
-          startPrice: Number(data.startPrice),
-          categoryId: listing.categoryId,
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          images: listing.images || [],
-        } as any);
-      }
-      // Group buying would use a separate mutation when available
-
-      onClose();
-      router.push(deployType === 'auction' ? '/auctions' : '/group-buying');
-    } catch {
-      // Error handled by mutation
-    }
+    onClose();
+    router.push(`/listings/${listing.id}/publish?type=${deployType}`);
   };
-
-  const isSubmitting = createAuctionMutation.isPending;
 
   return (
     <AmberSlideOver
       isOpen={isOpen}
       onClose={onClose}
       title={t('listing.quick_deploy.title') || 'Quick Deploy'}
-      description={listing
-        ? `${t('listing.quick_deploy.deploying') || 'Deploying'}: ${listing.title}`
-        : (t('listing.quick_deploy.select_listing') || 'Select a listing first')
+      description={
+        listing
+          ? `${t('listing.quick_deploy.deploying') || 'Deploying'}: ${listing.title}`
+          : t('listing.quick_deploy.select_listing') || 'Select a listing first'
       }
       footer={
         <div className="flex gap-3">
@@ -113,23 +52,15 @@ export function QuickDeployModal({ isOpen, onClose, listing, initialType = 'auct
           </AmberButton>
           <AmberButton
             className="flex-1 h-11 bg-brand text-black font-black rounded-xl gap-2"
-            onClick={() => {
-              const form = document.querySelector('form');
-              if (form) form.requestSubmit();
-            }}
-            disabled={isSubmitting || !listing}
+            onClick={openWizard}
+            disabled={!listing}
           >
-            {isSubmitting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : deployType === 'auction' ? (
+            {deployType === 'auction' ? (
               <Gavel className="w-4 h-4" />
             ) : (
               <Users className="w-4 h-4" />
             )}
-            {deployType === 'auction'
-              ? (t('listing.quick_deploy.deploy_auction') || 'Deploy Auction')
-              : (t('listing.quick_deploy.deploy_deal') || 'Deploy Deal')
-            }
+            {t('listing.wizard.next') || 'Continue'}
           </AmberButton>
         </div>
       }
@@ -140,7 +71,6 @@ export function QuickDeployModal({ isOpen, onClose, listing, initialType = 'auct
         </p>
       ) : (
         <div className="space-y-6">
-          {/* Deploy Type Toggle */}
           <div className="flex gap-2 p-1 bg-obsidian-panel rounded-xl border border-border">
             <button
               type="button"
@@ -167,20 +97,9 @@ export function QuickDeployModal({ isOpen, onClose, listing, initialType = 'auct
               {t('group_buying.title') || 'Group Buy'}
             </button>
           </div>
-
-          {/* Dynamic Form */}
-          <FormBuilder
-            key={deployType} // Re-mount on type change to reset
-            fields={fields}
-            initialValues={
-              deployType === 'auction'
-                ? { startPrice: '', durationDays: '7' }
-                : { dealPrice: '', minParticipants: '5' }
-            }
-            onSubmit={handleSubmit}
-            isLoading={isSubmitting}
-            showActions={false}
-          />
+          <p className="text-[11px] text-zinc-muted font-bold">
+            {t('listing.wizard.review_publish_note')}
+          </p>
         </div>
       )}
     </AmberSlideOver>

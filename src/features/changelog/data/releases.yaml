@@ -1,3 +1,39 @@
+- version: "1.4.2"
+  date: "2026-05-16"
+  title:
+    en: "Auto-activate on publish"
+    ar: "تفعيل تلقائي عند النشر"
+  entries:
+    - description:
+        en: "Publishing a listing as auction or group buy now activates immediately — no manual start from the product page"
+        ar: "نشر المنتج كمزاد أو صفقة جماعية يفعّلها فوراً دون الحاجة لتفعيل يدوي من صفحة المنتج"
+      type: fixed
+      sidebarPath: /listings
+
+- version: "1.4.1"
+  date: "2026-05-16"
+  title:
+    en: "Product-first publish wizard"
+    ar: "معالج نشر يبدأ من المنتج"
+  entries:
+    - description:
+        en: "New 8-step product wizard: basic info, description, specs, references, photos, then auction or group buy pricing and publish"
+        ar: "معالج منتج من 8 خطوات: أساسي، وصف، مواصفات، مراجع، صور، ثم تسعير ونشر كمزاد أو صفقة جماعية"
+      type: added
+      sidebarPath: /listings
+
+    - description:
+        en: "Removed schedule, publish-now, and draft toggles from listing deploy — publish uses a 7-day window automatically"
+        ar: "إزالة خيارات الجدولة والنشر الفوري والمسودة من نشر القائمة — النشر يستخدم نافذة 7 أيام تلقائياً"
+      type: changed
+      sidebarPath: /listings
+
+    - description:
+        en: "Create auction and group buy now start from Products; standalone add pages redirect to the wizard"
+        ar: "إنشاء المزاد والصفقة يبدأ من المنتجات؛ صفحات الإضافة المنفصلة توجّه إلى المعالج"
+      type: changed
+      sidebarPath: /listings
+
 - version: "1.4.0"
   date: "2026-05-16"
   title:

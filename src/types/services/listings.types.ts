@@ -1,3 +1,14 @@
+export interface ListingSpec {
+  label: string;
+  value: string;
+}
+
+export interface ListingSource {
+  label: string;
+  url: string;
+  type: string;
+}
+
 export interface ProductListing {
   id: number;
   title: string;
@@ -16,6 +27,8 @@ export interface ProductListing {
   manufacturer?: string;
   origin?: string;
   sku?: string;
+  specs?: ListingSpec[];
+  sources?: ListingSource[];
   mainAttachmentId?: number;
   attachmentIds: number[];
   videoAttachmentId?: number;
@@ -90,6 +103,8 @@ export interface CreateListingInput {
   manufacturer?: string;
   origin?: string;
   sku?: string;
+  specs?: ListingSpec[];
+  sources?: ListingSource[];
   mainAttachmentId?: number;
   attachmentIds?: number[];
   videoAttachmentId?: number;

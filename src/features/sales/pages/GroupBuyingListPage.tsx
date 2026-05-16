@@ -322,7 +322,7 @@ export const GroupBuyingListPage: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
             {t('common.filters') || 'Filters'}
           </AmberButton>
-          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/listings/new')}>
               <Plus className="w-5 h-5" />
               <span>{t('groupBuying.create') || 'Create Campaign'}</span>
           </AmberButton>
@@ -392,7 +392,7 @@ export const GroupBuyingListPage: React.FC = () => {
             title={t('groupBuying.operational_gap') || 'No Campaigns'}
             description={t('groupBuying.no_active_protocols') || 'No campaigns found.'}
             actionLabel={t('groupBuying.initialize_first_call') || 'Create Campaign'}
-            onAction={() => router.push('/group-buying/new')}
+            onAction={() => router.push('/listings/new')}
           />
         ) : (
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">

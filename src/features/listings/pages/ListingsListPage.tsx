@@ -204,13 +204,13 @@ export const ListingsListPage: React.FC = () => {
     {
       label: t('listing.detail.deploy_auction') || 'Deploy as Auction',
       icon: Gavel,
-      onClick: (listing) => router.push(`/listings/${listing.id}/deploy?type=auction`),
+      onClick: (listing) => router.push(`/listings/${listing.id}/publish?type=auction`),
       variant: 'success',
     },
     {
       label: t('listing.detail.deploy_group_buy') || 'Deploy as Group Buy',
       icon: Users,
-      onClick: (listing) => router.push(`/listings/${listing.id}/deploy?type=group-buy`),
+      onClick: (listing) => router.push(`/listings/${listing.id}/publish?type=group-buy`),
     },
     {
       label: t('common.delete') || 'Delete',

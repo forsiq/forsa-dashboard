@@ -483,7 +483,7 @@ export const AuctionsList: React.FC = () => {
                     </AmberButton>
                     <AmberButton
                         className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
-                        onClick={() => router.push('/auctions/add')}
+                        onClick={() => router.push('/listings/new')}
                     >
                             <Plus className="w-5 h-5" />
                             <span>{t('auction.create_auction')}</span>
@@ -582,7 +582,7 @@ export const AuctionsList: React.FC = () => {
                       title={t('auction.inventory.depleted') || 'No Auctions'}
                       description={t('auction.inventory.no_identifiers')}
                       actionLabel={t('auction.action.deploy_listing') || 'Create Auction'}
-                      onAction={() => router.push('/auctions/add')}
+                      onAction={() => router.push('/listings/new')}
                     />
                 ) : (
                     <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">

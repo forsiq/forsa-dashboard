@@ -349,6 +349,23 @@ export const ar: Record<string, string> = {
   "listing.form.title_required": "العنوان مطلوب",
   "listing.form.create_listing": "إنشاء منتج قابل لإعادة الاستخدام",
 
+  // Listing wizard
+  "listing.wizard.title_create": "منتج جديد",
+  "listing.wizard.title_edit": "تعديل المنتج",
+  "listing.wizard.title_publish": "نشر المنتج",
+  "listing.wizard.step.basic": "أساسي",
+  "listing.wizard.step.description": "الوصف",
+  "listing.wizard.step.specs": "المواصفات",
+  "listing.wizard.step.sources": "المراجع",
+  "listing.wizard.step.media": "الصور",
+  "listing.wizard.step.channel": "القناة",
+  "listing.wizard.step.pricing": "التسعير",
+  "listing.wizard.step.review": "مراجعة",
+  "listing.wizard.next": "التالي",
+  "listing.wizard.back": "رجوع",
+  "listing.wizard.channel_required": "اختر مزاداً أو صفقة جماعية",
+  "listing.wizard.review_publish_note": "النشر يبدأ قريباً لمدة 7 أيام.",
+
   // Listing deploy
   "listing.deploy.title": "نشر المنتج",
   "listing.deploy.choose": "اختر كيف تريد نشر هذا المنتج",

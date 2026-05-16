@@ -351,6 +351,23 @@ export const en: Record<string, string> = {
   "listing.form.title_required": "Title is required",
   "listing.form.create_listing": "Create a reusable product listing",
 
+  // Listing wizard
+  "listing.wizard.title_create": "New Product",
+  "listing.wizard.title_edit": "Edit Product",
+  "listing.wizard.title_publish": "Publish Product",
+  "listing.wizard.step.basic": "Basic",
+  "listing.wizard.step.description": "Description",
+  "listing.wizard.step.specs": "Specs",
+  "listing.wizard.step.sources": "References",
+  "listing.wizard.step.media": "Photos",
+  "listing.wizard.step.channel": "Channel",
+  "listing.wizard.step.pricing": "Pricing",
+  "listing.wizard.step.review": "Review",
+  "listing.wizard.next": "Next",
+  "listing.wizard.back": "Back",
+  "listing.wizard.channel_required": "Select auction or group buy",
+  "listing.wizard.review_publish_note": "Publishing starts shortly and runs for 7 days.",
+
   // Listing deploy
   "listing.deploy.title": "Deploy Listing",
   "listing.deploy.choose": "Choose how to deploy this product",
