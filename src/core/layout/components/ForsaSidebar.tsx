@@ -22,6 +22,7 @@ const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
 const MODULE_COLLAPSE_PREFIX = 'forsa-module-collapsed-';
 const moduleCollapseListeners = new Set<() => void>();
+const MODULE_IDS = ['dashboard', 'marketplace', 'sales', 'reports'] as const;
 
 function readModuleCollapsedFromStorage(moduleId: string): boolean {
   if (typeof window === 'undefined') return false;
@@ -58,8 +59,7 @@ function useModuleCollapseState(): {
 } {
   const [collapseMap, setCollapseMap] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
-    const ids = ['dashboard', 'marketplace', 'sales', 'reports'];
-    for (const id of ids) {
+    for (const id of MODULE_IDS) {
       map[id] = readModuleCollapsedFromStorage(id);
     }
     return map;
@@ -67,9 +67,8 @@ function useModuleCollapseState(): {
 
   useEffect(() => {
     const refresh = () => {
-      const ids = ['dashboard', 'marketplace', 'sales', 'reports'];
       const map: Record<string, boolean> = {};
-      for (const id of ids) {
+      for (const id of MODULE_IDS) {
         map[id] = readModuleCollapsedFromStorage(id);
       }
       setCollapseMap(map);
@@ -375,7 +374,15 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
         </div>
 
         <div className="flex-1 py-6 overflow-y-auto px-0 scrollbar-hide">
-          {filteredSections.map((section, idx) => {
+          {/* Precompute section counts per module to avoid O(n^2) per-section lookups */}
+          {(() => {
+            const moduleSectionCounts: Record<string, number> = {};
+            for (const s of filteredSections) {
+              if (!s.isModuleHeader && s.moduleId) {
+                moduleSectionCounts[s.moduleId] = (moduleSectionCounts[s.moduleId] || 0) + 1;
+              }
+            }
+            return filteredSections.map((section, idx) => {
             // ── Module Header (unified mode) ──
             if (section.isModuleHeader) {
               const mid = section.moduleId || '';
@@ -400,19 +407,9 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
               return null;
             }
 
-            // In unified mode, check if this is the only section under its module
-            // (if so, the module header already serves as the title)
-            const prevHeader = filteredSections
-              .slice(0, idx)
-              .reverse()
-              .find(s => s.isModuleHeader);
-            const nextHeaderIdx = filteredSections
-              .slice(idx + 1)
-              .findIndex(s => s.isModuleHeader);
-            const sectionsInModule = nextHeaderIdx === -1
-              ? filteredSections.length - idx
-              : nextHeaderIdx + 1;
-            const isSingleSectionInModule = prevHeader?.moduleId === section.moduleId && sectionsInModule <= 1;
+            const isSingleSectionInModule = section.moduleId
+              ? (moduleSectionCounts[section.moduleId] ?? 0) <= 1
+              : false;
 
             return (
               <nav key={idx} className="space-y-1 mb-8">
@@ -470,7 +467,8 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                 })}
               </nav>
             );
-          })}
+          });
+          })()}
         </div>
 
         {showExitButton && (

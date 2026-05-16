@@ -10,50 +10,51 @@ import { customerKeys, getCustomers } from '@services/customers/api/customers';
 import { categoryKeys, getCategories } from '@services/categories/api/categories';
 import { inventoryKeys, getProducts } from '@services/inventory/api/products';
 
-const DEFAULT_STALE = 5 * 60 * 1000;
+const STALE = 5 * 60 * 1000;
+const DEFAULT_LIST_FILTERS = { page: 1, limit: 20 } as const;
 
 const prefetchMap: Record<string, () => void> = {
   '/auctions': () =>
     queryClient.prefetchQuery({
-      queryKey: auctionKeys.list({ sortBy: 'createdAt', sortOrder: 'desc', page: 1, limit: 20 }),
-      queryFn: ({ signal }) => auctionApi.list({ sortBy: 'createdAt', sortOrder: 'desc', page: 1, limit: 20 }, signal),
-      staleTime: DEFAULT_STALE,
+      queryKey: auctionKeys.list({ ...DEFAULT_LIST_FILTERS, sortBy: 'createdAt', sortOrder: 'desc' }),
+      queryFn: ({ signal }) => auctionApi.list({ ...DEFAULT_LIST_FILTERS, sortBy: 'createdAt', sortOrder: 'desc' }, signal),
+      staleTime: STALE,
     }),
   '/listings': () =>
     queryClient.prefetchQuery({
-      queryKey: listingKeys.list({ page: 1, limit: 20 }),
-      queryFn: ({ signal }) => listingApi.list({ page: 1, limit: 20 }, signal),
-      staleTime: DEFAULT_STALE,
+      queryKey: listingKeys.list(DEFAULT_LIST_FILTERS),
+      queryFn: ({ signal }) => listingApi.list(DEFAULT_LIST_FILTERS, signal),
+      staleTime: STALE,
     }),
   '/group-buying': () =>
     queryClient.prefetchQuery({
-      queryKey: groupBuyingKeys.list({ page: 1, limit: 20 }),
-      queryFn: ({ signal }) => groupBuyingApi.list({ page: 1, limit: 20 }, signal),
-      staleTime: DEFAULT_STALE,
+      queryKey: groupBuyingKeys.list(DEFAULT_LIST_FILTERS),
+      queryFn: ({ signal }) => groupBuyingApi.list(DEFAULT_LIST_FILTERS, signal),
+      staleTime: STALE,
     }),
   '/orders': () =>
     queryClient.prefetchQuery({
-      queryKey: orderKeys.list({ page: 1, limit: 20 }),
-      queryFn: () => getOrders({ page: 1, limit: 20 }),
-      staleTime: DEFAULT_STALE,
+      queryKey: orderKeys.list(DEFAULT_LIST_FILTERS),
+      queryFn: () => getOrders(DEFAULT_LIST_FILTERS),
+      staleTime: STALE,
     }),
   '/customers': () =>
     queryClient.prefetchQuery({
-      queryKey: customerKeys.list({ page: 1, limit: 20 }),
-      queryFn: () => getCustomers({ page: 1, limit: 20 }),
-      staleTime: DEFAULT_STALE,
+      queryKey: customerKeys.list(DEFAULT_LIST_FILTERS),
+      queryFn: () => getCustomers(DEFAULT_LIST_FILTERS),
+      staleTime: STALE,
     }),
   '/categories': () =>
     queryClient.prefetchQuery({
       queryKey: categoryKeys.list({ page: 1, limit: 100 }),
       queryFn: () => getCategories({ page: 1, limit: 100 }),
-      staleTime: DEFAULT_STALE,
+      staleTime: STALE,
     }),
   '/inventory': () =>
     queryClient.prefetchQuery({
-      queryKey: inventoryKeys.list({ page: 1, limit: 20 }),
-      queryFn: () => getProducts({ page: 1, limit: 20 }),
-      staleTime: DEFAULT_STALE,
+      queryKey: inventoryKeys.list(DEFAULT_LIST_FILTERS),
+      queryFn: () => getProducts(DEFAULT_LIST_FILTERS),
+      staleTime: STALE,
     }),
 };
 
