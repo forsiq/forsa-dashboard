@@ -1,22 +1,68 @@
 'use client';
 
 import React from 'react';
-import { ChangelogSection as CoreChangelogSection } from '@core/features/changelog/components/ChangelogSection';
-import releasesData from '@features/changelog/data/releases.yaml';
-import type { ChangelogRelease } from '@features/changelog/types';
-
-const FORSA_STORAGE_KEY = 'forsa_changelog_last_seen';
-
+import { motion } from 'framer-motion';
+import { Sparkles, CheckCheck } from 'lucide-react';
+import { useLanguage } from '@core/contexts/LanguageContext';
+import { useChangelog } from '../hooks/useChangelog';
+import { ChangelogCard } from './ChangelogCard';
 interface ForsaChangelogSectionProps {
   className?: string;
 }
 
 export const ChangelogSection: React.FC<ForsaChangelogSectionProps> = ({ className }) => {
+  const { t } = useLanguage();
+  const changelog = useChangelog();
+
+  if (changelog.releases.length === 0) return null;
+
   return (
-    <CoreChangelogSection
-      releases={releasesData as ChangelogRelease[]}
-      storageKey={FORSA_STORAGE_KEY}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
       className={className}
-    />
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-brand/10 rounded-sm border border-brand/20">
+            <Sparkles className="w-5 h-5 text-brand" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-white tracking-tighter uppercase">
+              {t('changelog.title')}
+            </h2>
+            <p className="text-[11px] text-zinc-muted font-medium tracking-tight">
+              {t('changelog.subtitle')}
+            </p>
+          </div>
+          {changelog.unseenCount > 0 && (
+            <span className="px-2 py-0.5 text-[10px] font-black bg-brand/15 text-brand border border-brand/20 rounded-full">
+              {changelog.unseenCount}
+            </span>
+          )}
+        </div>
+        {changelog.unseenCount > 0 && (
+          <button
+            type="button"
+            onClick={changelog.markAllAsSeen}
+            className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-black text-zinc-muted hover:text-brand bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-brand/20 rounded-sm transition-all uppercase tracking-widest"
+          >
+            <CheckCheck className="w-3.5 h-3.5" />
+            {t('changelog.mark_all_read')}
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {changelog.releases.map((release, idx) => (
+          <ChangelogCard
+            key={release.version}
+            release={release}
+            isLatest={idx === 0}
+          />
+        ))}
+      </div>
+    </motion.div>
   );
 };
