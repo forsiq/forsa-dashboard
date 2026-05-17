@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useCriticalAuctions } from '../../auctions/api/auction-hooks';
+import { useSharedNow } from '@core/contexts/TimerContext';
 
 function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
   const end = new Date(endTime).getTime();
@@ -26,12 +27,7 @@ export const CriticalNodes: React.FC = () => {
 
   const criticalAuctions = (auctions || []).slice(0, 3);
 
-  // Single timer for all cards
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useSharedNow();
 
   if (isLoading) {
     return (

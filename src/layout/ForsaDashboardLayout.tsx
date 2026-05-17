@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import { useRouter } from 'next/router';
 import { AmberDashboardLayout } from '@core/layout/AmberDashboardLayout';
+import { DetailPageSkeleton } from '@core/loading';
 import { sidebarSections as dashboardSections } from '@config/sidebar/dashboard';
 import { sidebarSections as marketplaceSections } from '@config/sidebar/marketplace';
 import { sidebarSections as salesSections } from '@config/sidebar/sales';
@@ -81,7 +82,9 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
   return (
     <AmberDashboardLayout menuSections={menuSections} appLabel="Forsa">
       <div className="relative min-h-[50vh]">
-        {children}
+        <Suspense fallback={<DetailPageSkeleton />}>
+          {children}
+        </Suspense>
       </div>
     </AmberDashboardLayout>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Clock,
   Gavel,
@@ -10,6 +10,7 @@ import { cn } from '@core/lib/utils/cn';
 import { useGetAuctions } from '../../auctions/api/auction-hooks';
 import type { Auction } from '../../auctions/types/auction.types';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useSharedNow } from '@core/contexts/TimerContext';
 
 function formatTimeRemaining(endTime: string, now: number, t: (key: string) => string): string {
   const end = new Date(endTime).getTime();
@@ -37,12 +38,7 @@ export const ActiveAuctionsGrid: React.FC = () => {
 
   const auctions = auctionsData?.data || [];
 
-  // Single timer for all cards
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useSharedNow();
 
   const getUrgencyClass = useCallback((endTime: string) => {
     const diff = new Date(endTime).getTime() - Date.now();

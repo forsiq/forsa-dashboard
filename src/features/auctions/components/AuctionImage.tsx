@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Gavel } from 'lucide-react';
 import {
@@ -7,19 +7,7 @@ import {
   parseAttachmentIds,
   isValidImageUrl,
 } from '../utils/auction-utils';
-import { createClient } from '@core/services/ApiClientFactory';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
-
-function getApiOrigin(): string {
-  try {
-    return new URL(API_BASE_URL).origin;
-  } catch {
-    return '';
-  }
-}
-
-const PROJECT_API_URL = `${getApiOrigin()}/api/v1`;
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 
 interface AuctionImageProps {
   auction: {
@@ -37,81 +25,6 @@ interface AuctionImageProps {
   children?: (url: string) => React.ReactNode;
 }
 
-const attachmentUrlCache = new Map<number, string | null>();
-const CLOUDFRONT_FILES_DOMAIN = 'file.zonevast.com';
-
-function normalizeResolvedFileUrl(fileUrl: string): string {
-  try {
-    const parsed = new URL(fileUrl);
-
-    // Keep correct CloudFront/custom domain URLs unchanged
-    if (parsed.hostname === CLOUDFRONT_FILES_DOMAIN) {
-      return fileUrl;
-    }
-
-    // Convert known S3 URL styles to CloudFront custom domain
-    const host = parsed.hostname;
-    const isS3Host = host.includes('amazonaws.com') || host.includes('.s3.');
-    if (!isS3Host) {
-      return fileUrl;
-    }
-
-    let key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
-
-    // path-style: /bucket/key
-    const pathSegments = key.split('/');
-    if (pathSegments.length > 1) {
-      const first = pathSegments[0];
-      if (
-        first === 'file-zonevast-eu' ||
-        first === 'file.zonevast.com' ||
-        first === 'file1.zonevast.com'
-      ) {
-        key = pathSegments.slice(1).join('/');
-      }
-    }
-
-    if (!key) {
-      return fileUrl;
-    }
-
-    return `https://${CLOUDFRONT_FILES_DOMAIN}/${key}`;
-  } catch {
-    return fileUrl;
-  }
-}
-
-/**
- * Fetch attachment metadata and extract file_url.
- */
-async function resolveAttachmentFileUrl(attachmentId: number): Promise<string | null> {
-  if (attachmentUrlCache.has(attachmentId)) {
-    return attachmentUrlCache.get(attachmentId) ?? null;
-  }
-
-  // Use the central ApiClient which handles auth and 401s correctly
-  const apiClient = createClient(PROJECT_API_URL);
-  
-  try {
-    const response = await apiClient.get(`/project/attachment/${attachmentId}/`);
-    const payload = response.data;
-    const fileUrl = payload?.file_url || payload?.data?.file_url || null;
-    
-    if (fileUrl) {
-      const normalizedUrl = normalizeResolvedFileUrl(fileUrl);
-      attachmentUrlCache.set(attachmentId, normalizedUrl);
-      return normalizedUrl;
-    }
-  } catch (error: any) {
-    // If it's a 401, the global interceptor will handle the logout redirect.
-    // We just return null here to show the fallback icon.
-    console.warn(`[AuctionImage] Failed to resolve attachment ${attachmentId}:`, error.message);
-  }
-
-  attachmentUrlCache.set(attachmentId, null);
-  return null;
-}
-
 export const AuctionImage: React.FC<AuctionImageProps> = ({
   auction,
   alt = 'Auction image',
@@ -119,8 +32,6 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
   fallbackClassName = 'w-full h-full object-cover',
   children
 }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   const normalizedAuction = useMemo(() => {
@@ -145,77 +56,41 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
     auction.images,
   ]);
 
-  const attachmentKey = useMemo(() => {
+  const firstAttachmentId = useMemo(() => {
     const ids = parseAttachmentIds(normalizedAuction.attachmentIds);
-    const firstAttachment = normalizedAuction.mainAttachmentId || ids[0] || null;
-    return firstAttachment ? String(firstAttachment) : 'none';
+    return normalizedAuction.mainAttachmentId || ids[0] || null;
   }, [normalizedAuction.mainAttachmentId, normalizedAuction.attachmentIds]);
 
-  const directImageKey = useMemo(() => {
-    return getAuctionImageUrl(normalizedAuction) || 'none';
+  const directUrl = useMemo(() => {
+    return getAuctionImageUrl(normalizedAuction) || null;
   }, [normalizedAuction]);
 
-  useEffect(() => {
-    const loadImage = async () => {
-      setIsLoading(true);
-      setHasError(false);
+  const hasDirectUrl = useMemo(() => {
+    return Boolean(normalizedAuction.imageUrl) ||
+      normalizeImageUrlList(normalizedAuction.images).length > 0;
+  }, [normalizedAuction.imageUrl, normalizedAuction.images]);
 
-      // Check if we have a direct URL (imageUrl or images array)
-      const directUrl = getAuctionImageUrl(normalizedAuction);
-      const hasDirectUrl =
-        Boolean(normalizedAuction.imageUrl) ||
-        normalizeImageUrlList(normalizedAuction.images).length > 0;
+  const { data: attachmentUrlMap } = useAttachmentUrls(
+    !hasDirectUrl && firstAttachmentId ? [firstAttachmentId] : []
+  );
 
-      if (hasDirectUrl && directUrl) {
-        if (!isValidImageUrl(directUrl)) {
-          setHasError(true);
-          setIsLoading(false);
-          return;
-        }
-        setImageUrl(directUrl);
-        setIsLoading(false);
-        return;
-      }
+  const imageUrl = useMemo(() => {
+    if (hasError) return null;
 
-      // Otherwise, fetch from attachment with authentication
-      let attachmentId = normalizedAuction.mainAttachmentId;
-      if (!attachmentId) {
-        const ids = parseAttachmentIds(normalizedAuction.attachmentIds);
-        attachmentId = ids[0] || null;
-      }
+    if (directUrl && isValidImageUrl(directUrl)) return directUrl;
 
-      if (attachmentId) {
-        const resolvedUrl = await resolveAttachmentFileUrl(attachmentId);
-        if (resolvedUrl && isValidImageUrl(resolvedUrl)) {
-          setImageUrl(resolvedUrl);
-        } else {
-          setHasError(true);
-        }
-      } else {
-        setHasError(true);
-      }
+    if (firstAttachmentId && attachmentUrlMap) {
+      const resolved = attachmentUrlMap.get(firstAttachmentId);
+      if (resolved && isValidImageUrl(resolved)) return resolved;
+    }
 
-      setIsLoading(false);
-    };
+    return null;
+  }, [hasError, directUrl, firstAttachmentId, attachmentUrlMap, hasDirectUrl]);
 
-    loadImage();
-  }, [normalizedAuction, directImageKey, attachmentKey]);
-
-  // Render custom children with URL if provided
   if (children && imageUrl) {
     return <>{children(imageUrl)}</>;
   }
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className={`flex items-center justify-center bg-obsidian-panel/30 ${className}`}>
-        <div className="w-8 h-8 border-2 border-zinc-muted/30 border-t-brand rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Show error/fallback state
   if (hasError || !imageUrl) {
     return (
       <div className={`flex items-center justify-center bg-obsidian-panel/50 ${className}`}>
@@ -224,7 +99,6 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
     );
   }
 
-  // Show image
   return (
     <div className={`relative ${fallbackClassName}`}>
       <Image
@@ -235,9 +109,6 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
         sizes="(max-width: 768px) 100vw, 400px"
         onError={() => {
           setHasError(true);
-        }}
-        onLoad={() => {
-          setIsLoading(false);
         }}
       />
     </div>

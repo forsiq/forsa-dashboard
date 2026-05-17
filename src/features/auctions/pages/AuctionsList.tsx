@@ -84,11 +84,6 @@ export const AuctionsList: React.FC = () => {
     const [limit] = useState(12);
     const [sortBy, setSortBy] = useState<string>('createdAt');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
 
     const { data: auctionsData, isPending, isFetching } = useGetAuctions({
         status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
@@ -291,7 +286,7 @@ export const AuctionsList: React.FC = () => {
       },
     ];
 
-    if (!isClient) return null;
+    if (typeof window === 'undefined') return null;
 
     return (
         <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>

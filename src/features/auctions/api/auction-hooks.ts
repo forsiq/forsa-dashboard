@@ -32,19 +32,43 @@ function hasAuthToken(): boolean {
   try { return !!localStorage.getItem('access_token'); } catch { return false; }
 }
 
+// Shared module-level state to avoid duplicate listeners
+let _authState = false;
+let _listenerCount = 0;
+let _sharedCheck: (() => void) | null = null;
+
+function getSharedAuthState(): boolean {
+  if (typeof window !== 'undefined' && _listenerCount === 0) {
+    _authState = hasAuthToken();
+  }
+  return _authState;
+}
+
 /**
  * Reactive hook that tracks auth token availability.
- * Re-evaluates when cookie/localStorage changes.
+ * Uses shared module-level listeners to avoid duplicates.
  */
 function useIsAuthenticated(): boolean {
-  const [authenticated, setAuthenticated] = useState(() => hasAuthToken());
+  const [authenticated, setAuthenticated] = useState(() => getSharedAuthState());
 
   useEffect(() => {
-    const check = () => setAuthenticated(hasAuthToken());
+    _listenerCount++;
+    if (!_sharedCheck) {
+      _sharedCheck = () => {
+        _authState = hasAuthToken();
+      };
+    }
+
+    const check = () => {
+      _sharedCheck!();
+      setAuthenticated(_authState);
+    };
+
     check();
     window.addEventListener('storage', check);
     window.addEventListener('focus', check);
     return () => {
+      _listenerCount--;
       window.removeEventListener('storage', check);
       window.removeEventListener('focus', check);
     };

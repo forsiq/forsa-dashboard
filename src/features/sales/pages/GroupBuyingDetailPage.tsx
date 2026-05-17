@@ -18,7 +18,10 @@ import {
   Target,
   Package,
   Lock,
-  Unlock
+  Unlock,
+  Play,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -32,6 +35,8 @@ import {
   useGetGroupBuyingParticipants,
   useJoinGroupBuying,
   useCancelGroupBuying,
+  useStartGroupBuying,
+  useCompleteGroupBuying,
 } from '../api';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
@@ -57,6 +62,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const { data: participantsData } = useGetGroupBuyingParticipants(campaignId);
   const joinMutation = useJoinGroupBuying();
   const cancelDeal = useCancelGroupBuying();
+  const startDeal = useStartGroupBuying();
+  const completeDeal = useCompleteGroupBuying();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [joinQuantity, setJoinQuantity] = useState(1);
@@ -129,10 +136,44 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          {/* Cancel only */}
-          {!['completed', 'cancelled'].includes(campaign?.status) ? (
+          {/* Start Campaign - draft/scheduled */}
+          {['draft', 'scheduled'].includes(campaign?.status) && (
             <AmberButton
-              className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-danger hover:border-danger/30 active:scale-95 transition-all text-xs"
+              className="h-10 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-emerald-500/20 hover:border-emerald-500/30 active:scale-95 transition-all text-xs gap-2"
+              onClick={() => openConfirm({
+                title: t('groupBuying.lifecycle.start_title') || 'Start Campaign',
+                message: t('groupBuying.lifecycle.start_confirm') || 'Are you sure you want to start this campaign? It will become visible to users.',
+                onConfirm: () => startDeal.mutate(String(campaign.id)),
+                variant: 'warning',
+              })}
+              disabled={startDeal.isPending}
+            >
+              <Play className="w-3.5 h-3.5" />
+              {t('groupBuying.lifecycle.start') || 'Start'}
+            </AmberButton>
+          )}
+
+          {/* Complete Campaign - active/unlocked when min threshold reached */}
+          {['active', 'unlocked'].includes(campaign?.status) && campaign.currentParticipants >= campaign.minParticipants && (
+            <AmberButton
+              className="h-10 bg-brand/10 border border-brand/20 text-brand font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/20 hover:border-brand/30 active:scale-95 transition-all text-xs gap-2"
+              onClick={() => openConfirm({
+                title: t('groupBuying.lifecycle.complete_title') || 'Complete Campaign',
+                message: t('groupBuying.lifecycle.complete_confirm') || 'Are you sure you want to mark this campaign as completed? Orders will be created for all participants.',
+                onConfirm: () => completeDeal.mutate(String(campaign.id)),
+                variant: 'warning',
+              })}
+              disabled={completeDeal.isPending}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t('groupBuying.lifecycle.complete') || 'Complete'}
+            </AmberButton>
+          )}
+
+          {/* Cancel - any active status */}
+          {!['completed', 'cancelled', 'expired'].includes(campaign?.status) && (
+            <AmberButton
+              className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-danger hover:border-danger/30 active:scale-95 transition-all text-xs gap-2"
               onClick={() => openConfirm({
                 title: t('groupBuying.lifecycle.cancel_title') || 'Cancel Campaign',
                 message: t('groupBuying.lifecycle.cancel_confirm') || 'Are you sure you want to cancel this campaign? This action cannot be undone.',
@@ -141,9 +182,10 @@ export const GroupBuyingDetailPage: React.FC = () => {
               })}
               disabled={cancelDeal.isPending}
             >
+              <XCircle className="w-3.5 h-3.5" />
               {t('groupBuying.lifecycle.cancel') || 'Cancel'}
             </AmberButton>
-          ) : null}
+          )}
 
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />

@@ -265,6 +265,20 @@ export const GroupBuyingFormPage: React.FC = () => {
       ? Math.round((1 - formData.dealPrice / formData.originalPrice) * 100) 
       : 0;
 
+  const durationMs = formData.startTime && formData.endTime
+      ? new Date(formData.endTime).getTime() - new Date(formData.startTime).getTime()
+      : 0;
+  const durationDays = Math.round(durationMs / (1000 * 60 * 60 * 24));
+  const durationHours = Math.round(durationMs / (1000 * 60 * 60));
+  const durationLabel = durationMs > 0
+      ? durationDays >= 1
+          ? t('groupBuying.form.duration_days', { count: durationDays }) || `${durationDays} days`
+          : `${durationHours}h`
+      : t('groupBuying.form.set_dates') || 'Set dates';
+  const durationProgress = durationMs > 0
+      ? Math.min(100, Math.max(5, (durationMs / (1000 * 60 * 60 * 24 * 30)) * 100))
+      : 0;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700" dir={dir}>
       {/* Submission Error Banner */}
@@ -533,14 +547,14 @@ export const GroupBuyingFormPage: React.FC = () => {
                         error={errors.endTime}
                     />
                 </div>
-                {/* Dynamic Duration Logic Mask */}
+                {/* Dynamic Duration Logic */}
                 <div className="p-6 rounded-2xl bg-obsidian-panel/60 border border-white/5 space-y-4 shadow-inner">
                      <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
-                         <span className="text-zinc-muted">{t('groupBuying.form.cycle_duration')}</span>
-                         <span className="text-brand tabular-nums shadow-sm">{t('groupBuying.form.calculating')}</span>
+                         <span className="text-zinc-muted">{t('groupBuying.form.cycle_duration') || 'Duration'}</span>
+                         <span className="text-brand tabular-nums shadow-sm">{durationLabel}</span>
                      </div>
                      <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden shadow-inner">
-                         <div className="h-full bg-brand w-[45%] shadow-[0_0_10px_rgba(245,196,81,0.5)]" />
+                         <div className="h-full bg-brand rounded-full transition-all duration-500" style={{ width: `${durationProgress}%` }} />
                      </div>
                 </div>
             </Card>

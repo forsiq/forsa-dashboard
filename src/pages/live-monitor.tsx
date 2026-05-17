@@ -1,4 +1,13 @@
-import { LiveMonitorPage } from '@features/dashboard/pages/LiveMonitorPage';
+import dynamic from 'next/dynamic';
+import { ListPageSkeleton } from '@core/loading';
+
+const LiveMonitorPage = dynamic(
+  () => import('@features/dashboard/pages/LiveMonitorPage').then(mod => ({ default: mod.LiveMonitorPage })),
+  {
+    ssr: false,
+    loading: () => <ListPageSkeleton count={6} columns={3} />,
+  },
+);
 
 export default function LiveMonitor() {
   return <LiveMonitorPage />;

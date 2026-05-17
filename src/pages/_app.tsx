@@ -10,9 +10,11 @@ import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
 import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
+import { TimerProvider } from '@core/contexts/TimerContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { AuthGuard } from '@core/core/components/AuthGuard';
+import { PageTransition } from '@core/components/PageTransition';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';
@@ -36,18 +38,24 @@ function MyApp({ Component, pageProps }: AppProps) {
               <ThemeProvider>
                 <NavigationProvider>
                   <ProjectProvider>
+                    <TimerProvider>
                     <Toast />
                     <SessionExpiredDialog />
                     <RouteProgressBar />
                     {isPublicRoute ? (
-                      <Component {...pageProps} />
+                      <PageTransition>
+                        <Component {...pageProps} />
+                      </PageTransition>
                     ) : (
                       <AuthGuard>
                         <ForsaDashboardLayout>
-                          <Component {...pageProps} />
+                          <PageTransition>
+                            <Component {...pageProps} />
+                          </PageTransition>
                         </ForsaDashboardLayout>
                       </AuthGuard>
                     )}
+                    </TimerProvider>
                   </ProjectProvider>
                 </NavigationProvider>
               </ThemeProvider>

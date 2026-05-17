@@ -54,6 +54,19 @@ export interface CategoryDistribution {
   fill: string;
 }
 
+export interface QuickCounts {
+  activeAuctions: number;
+  totalAuctions: number;
+  activeDeals: number;
+  pendingOrders: number;
+  totalParticipants: number;
+}
+
+interface AllStatsData {
+  stats: DashboardStats;
+  quickCounts: QuickCounts;
+}
+
 // ============================================================================
 // Query Keys
 // ============================================================================
@@ -68,13 +81,13 @@ export const dashboardKeys = {
 };
 
 // ============================================================================
-// Dashboard Stats Hook
+// Merged Stats + Quick Counts Hook
 // ============================================================================
 
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
-    queryFn: async (): Promise<DashboardStats> => {
+    queryFn: async (): Promise<AllStatsData> => {
       const [auctionStatsRes, groupBuyingStatsRes, ordersRes, categoriesRes] = await Promise.all([
         auctionBaseApi.getStats().catch(() => ({ data: {} })),
         groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
@@ -87,14 +100,23 @@ export const useDashboardStats = () => {
       const orderStats = (ordersRes as any).data || {};
 
       return {
-        totalRevenue: orderStats.total_revenue || auctionStats.totalRevenue || 0,
-        revenueChange: 0,
-        totalOrders: orderStats.total || 0,
-        ordersChange: 0,
-        totalProducts: (auctionStats.totalAuctions || 0) + (groupStats.active_campaigns || 0),
-        productsChange: 0,
-        totalCustomers: (groupStats.total_participants || 0) + (auctionStats.totalAuctions || 0),
-        customersChange: 0,
+        stats: {
+          totalRevenue: orderStats.total_revenue || auctionStats.totalRevenue || 0,
+          revenueChange: 0,
+          totalOrders: orderStats.total || 0,
+          ordersChange: 0,
+          totalProducts: (auctionStats.totalAuctions || 0) + (groupStats.active_campaigns || 0),
+          productsChange: 0,
+          totalCustomers: (groupStats.total_participants || 0) + (auctionStats.totalAuctions || 0),
+          customersChange: 0,
+        },
+        quickCounts: {
+          activeAuctions: auctionStats.activeAuctions || 0,
+          totalAuctions: auctionStats.totalAuctions || 0,
+          activeDeals: groupStats.activeCampaigns || 0,
+          pendingOrders: orderStats.pending || 0,
+          totalParticipants: groupStats.total_participants || 0,
+        },
       };
     },
     staleTime: 1000 * 60 * 5,
@@ -227,11 +249,9 @@ export const useSalesChartData = () => {
   return useQuery({
     queryKey: dashboardKeys.salesChart(),
     queryFn: async (): Promise<ChartDataPoint[]> => {
-      // Fetch recent orders to build chart data
       const ordersRes = await orderBaseApi.list({ limit: 30 }).catch(() => ({ data: [] }));
       const orders = (ordersRes as any).data || [];
 
-      // Group orders by date
       const byDate = new Map<string, { revenue: number; count: number }>();
 
       const today = new Date();
@@ -262,33 +282,15 @@ export const useSalesChartData = () => {
 };
 
 // ============================================================================
-// Quick Counts Hook (for Quick Actions badges)
+// Quick Counts Hook (now derives from merged stats query)
 // ============================================================================
 
 export const useDashboardQuickCounts = () => {
-  return useQuery({
-    queryKey: [...dashboardKeys.all, 'quickCounts'] as const,
-    queryFn: async () => {
-      const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.getStats().catch(() => ({ data: {} })),
-        groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
-        orderBaseApi.getStats().catch(() => ({ data: {} })),
-      ]);
-
-      const auctionStats = (auctionStatsRes as any).data || {};
-      const groupStats = (groupBuyingStatsRes as any).data || {};
-      const orderStats = (ordersRes as any).data || {};
-
-      return {
-        activeAuctions: auctionStats.activeAuctions || 0,
-        totalAuctions: auctionStats.totalAuctions || 0,
-        activeDeals: groupStats.activeCampaigns || 0,
-        pendingOrders: orderStats.pending || 0,
-        totalParticipants: groupStats.total_participants || 0,
-      };
-    },
-    staleTime: 1000 * 60 * 2,
-  });
+  const { data } = useDashboardStats();
+  return {
+    data: data?.quickCounts,
+    isLoading: !data,
+  };
 };
 
 // ============================================================================
@@ -297,12 +299,14 @@ export const useDashboardQuickCounts = () => {
 
 export const useDashboardData = () => {
   const { t } = useLanguage();
-  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
+  const { data: allStatsData, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
   const { data: recentActivities, isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useRecentOrders();
   const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
   const { data: categoryData, isLoading: categoriesLoading } = useCategoryDistribution();
   const { data: salesChart, isLoading: salesLoading } = useSalesChartData();
-  const { data: quickCounts } = useDashboardQuickCounts();
+
+  const stats = allStatsData?.stats;
+  const quickCounts = allStatsData?.quickCounts;
 
   const dashboardStats: StatCard[] = [
     {

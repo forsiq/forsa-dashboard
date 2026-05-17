@@ -17,7 +17,7 @@ export const sidebarSections: MenuSection[] = [
     title: 'sidebar.sales_channels',
     items: [
       { path: '/auctions', label: 'sidebar.auctions', icon: 'Gavel' },
-      { path: '/group-buying', label: 'sidebar.groupBuying', icon: 'Users2' },
+      { path: '/group-buying', label: 'sidebar.deals', icon: 'Users2' },
     ],
   },
   {
