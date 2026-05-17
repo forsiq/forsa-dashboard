@@ -197,7 +197,8 @@ export const AuctionsList: React.FC = () => {
         cardBadge: true,
         render: (auction) => (
           <StatusBadge
-            status={t(`auction.status.${auction.status}`) || auction.status}
+            status={auction.status}
+            labelKey={`auction.status.${auction.status}`}
             variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
             size="sm"
           />

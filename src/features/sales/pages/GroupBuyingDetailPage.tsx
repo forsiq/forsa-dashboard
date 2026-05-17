@@ -124,7 +124,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <StatusBadge
-                status={t(`groupBuying.status.${campaign.status.toLowerCase()}`) || campaign.status}
+                status={campaign.status}
+                labelKey={`groupBuying.status.${campaign.status.toLowerCase()}`}
                 variant={campaign.status === 'active' ? 'success' : campaign.status === 'completed' ? 'warning' : 'info'}
                 size="sm"
               />

@@ -28,17 +28,6 @@ function paymentStatusVariant(status: string): 'warning' | 'pending' | 'success'
   }
 }
 
-function paymentStatusLabel(status: string, t: (key: string) => string): string {
-  const map: Record<string, string> = {
-    unpaid: t('settlement.unpaid'),
-    pending: t('settlement.pending'),
-    paid: t('settlement.paid'),
-    failed: t('settlement.failed'),
-    refunded: t('settlement.refunded'),
-  };
-  return map[status] || status;
-}
-
 function timeSince(dateStr: string, t: (key: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const hours = Math.floor(diff / 3600000);
@@ -145,7 +134,8 @@ export const SettlementDeskPage = () => {
       cardBadge: true,
       render: (item) => (
         <StatusBadge
-          status={paymentStatusLabel(item.paymentStatus, t)}
+          status={item.paymentStatus}
+          labelKey={`settlement.${item.paymentStatus}`}
           variant={paymentStatusVariant(item.paymentStatus)}
           showDot
           size="sm"

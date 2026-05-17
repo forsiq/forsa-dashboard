@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight, Clock, X } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { useFixedPopoverPlacement } from '@yousef2001/core-ui/hooks';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -66,46 +68,8 @@ function getFirstDayOfWeek(year: number, month: number) {
 }
 
 /** Estimated popover height before first layout measure (calendar + time + footer). */
-const POPOVER_HEIGHT_ESTIMATE = 335;
+const POPOVER_HEIGHT_ESTIMATE = 420;
 const POPOVER_WIDTH = 320;
-const POPOVER_FLIP_MARGIN = 8;
-
-type PopoverPlacement = 'below' | 'above';
-
-function computePopoverPlacement(
-  triggerRect: DOMRect,
-  popoverHeight: number
-): PopoverPlacement {
-  const spaceBelow = window.innerHeight - triggerRect.bottom;
-  const spaceAbove = triggerRect.top;
-  if (
-    spaceBelow < popoverHeight + POPOVER_FLIP_MARGIN &&
-    spaceAbove > spaceBelow
-  ) {
-    return 'above';
-  }
-  return 'below';
-}
-
-/** Clamp popover into the viewport horizontally and return the CSS left offset. */
-function computeHorizontalOffset(
-  triggerRect: DOMRect,
-  popoverWidth: number,
-  isRTL: boolean
-): number {
-  if (isRTL) {
-    const rightEdge = triggerRect.right;
-    if (rightEdge < popoverWidth) {
-      return -(popoverWidth - rightEdge - 8);
-    }
-    return 0;
-  }
-  const overflowRight = triggerRect.left + popoverWidth - window.innerWidth;
-  if (overflowRight > 0) {
-    return -overflowRight - 8;
-  }
-  return 0;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Calendar Grid                                                      */
@@ -291,12 +255,18 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
   ) => {
     const { dir, isRTL, language, t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
-    const [placement, setPlacement] = useState<PopoverPlacement>('below');
-    const [horizontalOffset, setHorizontalOffset] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+
+    const { position: popoverPosition, mounted: popoverMounted } = useFixedPopoverPlacement({
+      isOpen,
+      triggerRef,
+      popoverRef,
+      isRTL,
+      estimatedWidth: POPOVER_WIDTH,
+      estimatedHeight: POPOVER_HEIGHT_ESTIMATE,
+    });
 
     // Parse selected date from value
     const parsed = useMemo(() => toDateParts(value), [value]);
@@ -313,54 +283,18 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
       }
     }, [parsed]);
 
-    const updatePopoverPlacement = useCallback(() => {
-      const trigger = triggerRef.current;
-      if (!trigger) return;
-      const triggerRect = trigger.getBoundingClientRect();
-      const popoverHeight =
-        popoverRef.current?.offsetHeight ?? POPOVER_HEIGHT_ESTIMATE;
-      setPlacement(computePopoverPlacement(triggerRect, popoverHeight));
-      setHorizontalOffset(computeHorizontalOffset(triggerRect, POPOVER_WIDTH, isRTL));
-    }, [isRTL]);
-
-    // Refine placement after popover mounts (actual height)
-    useLayoutEffect(() => {
-      if (!isOpen) return;
-      updatePopoverPlacement();
-    }, [isOpen, showTime, parsed, updatePopoverPlacement]);
-
-    // Re-check placement on scroll / resize while open
-    useEffect(() => {
-      if (!isOpen) return;
-      const handler = () => updatePopoverPlacement();
-      window.addEventListener('scroll', handler, true);
-      window.addEventListener('resize', handler);
-      return () => {
-        window.removeEventListener('scroll', handler, true);
-        window.removeEventListener('resize', handler);
-      };
-    }, [isOpen, updatePopoverPlacement]);
-
     const handleToggleOpen = useCallback(() => {
       if (disabled) return;
-      setIsOpen((wasOpen) => {
-        if (wasOpen) return false;
-        const trigger = triggerRef.current;
-        if (trigger) {
-          const triggerRect = trigger.getBoundingClientRect();
-          setPlacement(computePopoverPlacement(triggerRect, POPOVER_HEIGHT_ESTIMATE));
-          setHorizontalOffset(computeHorizontalOffset(triggerRect, POPOVER_WIDTH, isRTL));
-        }
-        return true;
-      });
-    }, [disabled, isRTL]);
+      setIsOpen((wasOpen) => !wasOpen);
+    }, [disabled]);
 
-    // Close on outside click
+    // Close on outside click (trigger + portaled popover)
     useEffect(() => {
       const handleClick = (e: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-          setIsOpen(false);
-        }
+        const target = e.target as Node;
+        if (containerRef.current?.contains(target)) return;
+        if (popoverRef.current?.contains(target)) return;
+        setIsOpen(false);
       };
       if (isOpen) {
         document.addEventListener('mousedown', handleClick);
@@ -528,75 +462,74 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
             readOnly
             {...rest}
           />
+        </div>
 
-          {/* Dropdown */}
-          {isOpen && (
-            <div
-              ref={popoverRef}
-              style={{
-                ...(horizontalOffset !== 0 ? { [isRTL ? 'marginRight' : 'marginLeft']: `${horizontalOffset}px` } : {}),
-              }}
-              className={cn(
-                'absolute z-50 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/30',
-                'bg-white dark:bg-obsidian-card p-4',
-                'animate-in fade-in duration-200',
-                placement === 'above'
-                  ? 'bottom-full mb-2 slide-in-from-bottom-2'
-                  : 'top-full mt-2 slide-in-from-top-2',
-                isRTL ? 'right-0' : 'left-0',
-                'w-[320px]'
-              )}
-            >
-              <CalendarGrid
-                viewYear={viewYear}
-                viewMonth={viewMonth}
-                selectedYear={parsed?.year}
-                selectedMonth={parsed?.month}
-                selectedDay={parsed?.day}
-                minDate={minDate}
-                maxDate={maxDate}
+        {isOpen && popoverMounted && typeof document !== 'undefined' && createPortal(
+          <div
+            ref={popoverRef}
+            role="dialog"
+            style={{
+              position: 'fixed',
+              top: popoverPosition?.top ?? 0,
+              left: popoverPosition?.left ?? 0,
+              width: POPOVER_WIDTH,
+              zIndex: 110,
+            }}
+            className={cn(
+              'rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/30',
+              'bg-white dark:bg-obsidian-card p-4',
+            )}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <CalendarGrid
+              viewYear={viewYear}
+              viewMonth={viewMonth}
+              selectedYear={parsed?.year}
+              selectedMonth={parsed?.month}
+              selectedDay={parsed?.day}
+              minDate={minDate}
+              maxDate={maxDate}
+              isRTL={isRTL}
+              language={language}
+              onSelect={handleSelectDate}
+              onPrevMonth={handlePrevMonth}
+              onNextMonth={handleNextMonth}
+            />
+            {showTime && parsed && (
+              <TimePicker
+                hour={parsed.hour}
+                minute={parsed.minute}
+                onChange={handleSelectTime}
                 isRTL={isRTL}
                 language={language}
-                onSelect={handleSelectDate}
-                onPrevMonth={handlePrevMonth}
-                onNextMonth={handleNextMonth}
               />
-              {showTime && parsed && (
-                <TimePicker
-                  hour={parsed.hour}
-                  minute={parsed.minute}
-                  onChange={handleSelectTime}
-                  isRTL={isRTL}
-                  language={language}
-                />
-              )}
+            )}
 
-              {/* Quick action: Now */}
-              <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-center justify-between">
-                <button
-                  type="button"
-                  className="text-[10px] font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
-                  onClick={() => {
-                    const now = new Date();
-                    onChange(toDateString(
-                      now.getFullYear(), now.getMonth(), now.getDate(),
-                      now.getHours(), now.getMinutes()
-                    ));
-                  }}
-                >
-                  {language === 'ar' ? 'الآن' : 'Now'}
-                </button>
-                <button
-                  type="button"
-                  className="text-[10px] font-black text-zinc-muted uppercase tracking-widest hover:text-zinc-text transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {language === 'ar' ? 'إغلاق' : 'Close'}
-                </button>
-              </div>
+            <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-center justify-between">
+              <button
+                type="button"
+                className="text-[10px] font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
+                onClick={() => {
+                  const now = new Date();
+                  onChange(toDateString(
+                    now.getFullYear(), now.getMonth(), now.getDate(),
+                    now.getHours(), now.getMinutes()
+                  ));
+                }}
+              >
+                {language === 'ar' ? 'الآن' : 'Now'}
+              </button>
+              <button
+                type="button"
+                className="text-[10px] font-black text-zinc-muted uppercase tracking-widest hover:text-zinc-text transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                {language === 'ar' ? 'إغلاق' : 'Close'}
+              </button>
             </div>
-          )}
-        </div>
+          </div>,
+          document.body,
+        )}
 
         {error && !label && (
           <p className="text-xs text-danger font-medium">{error}</p>

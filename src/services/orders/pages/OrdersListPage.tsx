@@ -98,12 +98,10 @@ export const OrdersListPage = () => {
       key: 'status',
       label: t('orders.table.status') || 'Status',
       cardBadge: true,
-      render: (order: any) => {
-        const statusKey = `orders.status.${order.status}`;
-        const statusLabel = t(statusKey) || order.status;
-        return (
+      render: (order: any) => (
           <StatusBadge
-            status={statusLabel}
+            status={order.status}
+            labelKey={`orders.status.${order.status}`}
             variant={
               order.status === 'delivered' ? 'success' :
               order.status === 'shipped' ? 'info' :
@@ -114,8 +112,7 @@ export const OrdersListPage = () => {
             showDot
             className="font-black"
           />
-        );
-      },
+      ),
       sortable: true,
       align: 'center',
     },

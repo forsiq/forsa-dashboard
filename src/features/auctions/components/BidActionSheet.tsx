@@ -127,7 +127,8 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                     {t('auction.sheet.your_status') || 'Your Status'}
                   </p>
                   <StatusBadge
-                    status={t(statusConfig.labelKey) || statusConfig.fallback}
+                    status={bid.displayStatus}
+                    labelKey={statusConfig.labelKey}
                     variant={statusConfig.variant}
                     size="md"
                   />

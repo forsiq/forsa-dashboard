@@ -147,7 +147,8 @@ export function CustomersPage() {
       cardBadge: true,
       render: (customer: any) => (
         <StatusBadge
-          status={t(`status.${customer.status}`) || (customer.status || 'unknown').toUpperCase()}
+          status={customer.status || 'unknown'}
+          labelKey={`status.${customer.status || 'unknown'}`}
           variant={customer.status === 'active' ? 'success' : 'inactive'}
         />
       ),

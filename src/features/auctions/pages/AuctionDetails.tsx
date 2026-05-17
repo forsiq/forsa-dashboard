@@ -126,7 +126,8 @@ export const AuctionDetails: React.FC = () => {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <StatusBadge
-                status={t(`auction.status.${auction.status.toLowerCase()}`) || auction.status}
+                status={auction.status}
+                labelKey={`auction.status.${auction.status.toLowerCase()}`}
                 variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
                 size="sm"
               />

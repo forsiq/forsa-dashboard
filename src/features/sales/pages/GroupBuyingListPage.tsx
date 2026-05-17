@@ -88,12 +88,6 @@ export const GroupBuyingListPage: React.FC = () => {
     }
   };
 
-  /** Map status to translation key */
-  const getStatusLabel = (status: string): string => {
-    const key = `groupBuying.status.${status.toLowerCase()}`;
-    return t(key) || status;
-  };
-
   // Table columns
   const columns: Column<GroupBuying>[] = [
     {
@@ -131,7 +125,8 @@ export const GroupBuyingListPage: React.FC = () => {
       cardBadge: true,
       render: (campaign) => (
         <StatusBadge
-          status={getStatusLabel(campaign.status)}
+          status={campaign.status}
+          labelKey={`groupBuying.status.${campaign.status.toLowerCase()}`}
           variant={getStatusVariant(campaign.status)}
           size="sm"
         />
