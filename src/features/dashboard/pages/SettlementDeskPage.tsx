@@ -2,8 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useSettlements, useUpdatePaymentStatus, useNudgeWinner, useOfferToUnderbidder } from '../../auctions/api/auction-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { PageHeader } from '@core/components/Layout/PageHeader';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
@@ -209,27 +208,18 @@ export const SettlementDeskPage = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-0" dir={dir}>
-      <ConfirmModalComponent />
-
-      {/* Page Header */}
-      <PageHeader
-        title={t('settlement.title')}
-        description={t('settlement.subtitle')}
-      />
-
-      {/* Stats Grid */}
-      <StatsGrid
-        stats={[
-          { label: t('settlement.unpaid'), value: stats.unpaid.toString(), icon: Clock, color: 'warning' },
-          { label: t('settlement.total_revenue'), value: `${stats.totalRevenue.toLocaleString()} IQD`, icon: DollarSign, color: 'success' },
-          { label: t('settlement.pending'), value: stats.pending.toString(), icon: Receipt, color: 'info' },
-          { label: t('settlement.overdue'), value: stats.overdue.toString(), icon: AlertTriangle, color: 'danger' },
-        ]}
-        columns={4}
-      />
-
-      {/* Status Tabs */}
+    <AdminListPageShell
+      title={t('settlement.title')}
+      description={t('settlement.subtitle')}
+      icon={Receipt}
+      stats={[
+        { label: t('settlement.unpaid'), value: stats.unpaid.toString(), icon: Clock, color: 'warning' },
+        { label: t('settlement.total_revenue'), value: `${stats.totalRevenue.toLocaleString()} IQD`, icon: DollarSign, color: 'success' },
+        { label: t('settlement.pending'), value: stats.pending.toString(), icon: Receipt, color: 'info' },
+        { label: t('settlement.overdue'), value: stats.overdue.toString(), icon: AlertTriangle, color: 'danger' },
+      ]}
+      statsColumns={4}
+      tabs={
       <div className="flex flex-wrap items-center gap-2">
         {[
           { key: '', label: t('settlement.all') },
@@ -253,6 +243,9 @@ export const SettlementDeskPage = () => {
           </button>
         ))}
       </div>
+      }
+    >
+      <ConfirmModalComponent />
 
       {/* Table */}
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
@@ -273,6 +266,6 @@ export const SettlementDeskPage = () => {
           />
         )}
       </div>
-    </div>
+    </AdminListPageShell>
   );
 };

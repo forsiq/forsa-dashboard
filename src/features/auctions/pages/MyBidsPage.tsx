@@ -12,6 +12,7 @@ import { useGetMyBids } from '../api';
 import { BidActionSheet } from '../components/BidActionSheet';
 import { computeBidDisplayStatus, type BidDisplayStatus } from '../types/auction.types';
 import { EmptyState } from '@core/components/EmptyState';
+import { AdminListPageShell } from '@core/components/Layout';
 
 interface BidRow {
   id: number;
@@ -183,24 +184,13 @@ export const MyBidsPage: React.FC = () => {
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
-          <TrendingUp className="w-6 h-6" />
-        </div>
-        <div>
-          <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
-            {t('auction.my_bids') || 'My Bids'}
-          </h1>
-          <p className="text-base text-zinc-muted font-bold tracking-tight uppercase mt-1">
-            {t('auction.bidding_history') || 'Track your bidding activity'}
-          </p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      {!isLoading && bids.length > 0 && (
+    <AdminListPageShell
+      title={t('auction.my_bids') || 'My Bids'}
+      description={t('auction.bidding_history') || 'Track your bidding activity'}
+      icon={TrendingUp}
+      tabs={
+      !isLoading && bids.length > 0 ? (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {TAB_CONFIG.map((tab) => {
             const Icon = tab.icon;
@@ -229,8 +219,8 @@ export const MyBidsPage: React.FC = () => {
             );
           })}
         </div>
-      )}
-
+      ) : null
+      }
       {/* Table */}
       {isLoading ? (
         <div className="space-y-4">
@@ -273,7 +263,7 @@ export const MyBidsPage: React.FC = () => {
           auctionStatus: selectedBid.auctionStatus,
         } : null}
       />
-    </div>
+    </AdminListPageShell>
   );
 };
 

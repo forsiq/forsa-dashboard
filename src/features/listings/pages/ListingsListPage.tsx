@@ -3,14 +3,11 @@ import { useRouter } from 'next/router';
 import {
   Package,
   Plus,
-  Search,
-  SlidersHorizontal,
   Eye,
   Edit,
   Trash2,
   Gavel,
   Users,
-  Layers,
   Zap,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -24,7 +21,11 @@ import { AmberSlideOver } from '@core/components';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
@@ -33,9 +34,8 @@ import type { ProductListing } from '../../../types/services/listings.types';
 import { ListingImage } from '../components/ListingImage';
 
 export const ListingsListPage: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t } = useLanguage();
   const router = useRouter();
-  const isRTL = dir === 'rtl';
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +93,13 @@ export const ListingsListPage: React.FC = () => {
     const set = new Set(listings.map(l => l.condition).filter(Boolean) as string[]);
     return Array.from(set).sort();
   }, [listings]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (conditionFilter !== 'all') count += 1;
+    if (brandFilter !== 'all') count += 1;
+    return count;
+  }, [conditionFilter, brandFilter]);
 
   // Table columns
   const columns: Column<ProductListing>[] = [
@@ -205,102 +212,65 @@ export const ListingsListPage: React.FC = () => {
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Page Title */}
-      <div className={cn(
-        "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
-              <Package className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
-                {t('listing.title')}
-              </h1>
-              <p className="text-base text-zinc-secondary font-bold tracking-tight uppercase mt-1">
-                {t('listing.description')}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <AmberButton
-            variant="secondary"
-            className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover"
-            onClick={() => setIsFilterOpen(true)}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            {t('listing.filter')}
-          </AmberButton>
-          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/listings/new')}>
-              <Plus className="w-5 h-5" />
-              <span>{t('listing.add_product') || t('listing.create')}</span>
-          </AmberButton>
-          <AmberButton
-            variant="outline"
-            className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover"
-            onClick={() => router.push('/listings/new?mode=form')}
-          >
-              <span>{t('listing.create_mode.form') || 'Quick Form'}</span>
-          </AmberButton>
-        </div>
-      </div>
-
-
-      {/* Stats Grid */}
-      <StatsGrid
-        stats={[
-          {
-            label: t('listing.stats.total') || 'Total Listings',
-            value: stats.total,
-            icon: Package,
-            color: 'brand',
-            description: t('listing.title') || 'Product Listings',
-          },
-          {
-            label: t('listing.stats.with_auction') || 'With Auctions',
-            value: stats.withAuction,
-            icon: Gavel,
-            color: 'success',
-            description: t('listing.detail.deploy_auction') || 'Deployed',
-          },
-          {
-            label: t('listing.stats.with_deal') || 'With Deals',
-            value: stats.withDeal,
-            icon: Users,
-            color: 'info',
-            description: t('listing.detail.deploy_group_buy') || 'Group Deals',
-          },
-          {
-            label: t('listing.stats.orphan') || 'Not Deployed',
-            value: stats.orphan,
-            icon: Zap,
-            color: 'warning',
-            description: t('listing.stats.orphan') || 'Draft',
-          },
-        ]}
-      />
-
-      {/* Search + Table */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] flex items-center gap-2">
-            <Layers className="w-4 h-4" /> {t('listing.title')}
-          </h2>
-          <div className="relative group min-w-[320px]">
-            <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
-            <AmberInput
-              placeholder={t('listing.search') || 'Search listings...'}
-              className="h-11 bg-obsidian-card border-border text-xs font-bold ps-11 pe-4"
+    <AdminListPageShell
+      title={t('listing.title')}
+      description={t('listing.description')}
+      icon={Package}
+      headerActions={
+        <AmberButton
+          className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+          onClick={() => router.push('/listings/new')}
+        >
+          <Plus className="w-5 h-5" />
+          <span>{t('listing.add_product') || t('listing.create')}</span>
+        </AmberButton>
+      }
+      stats={[
+        {
+          label: t('listing.stats.total') || 'Total Listings',
+          value: stats.total,
+          icon: Package,
+          color: 'brand',
+          description: t('listing.title') || 'Product Listings',
+        },
+        {
+          label: t('listing.stats.with_auction') || 'With Auctions',
+          value: stats.withAuction,
+          icon: Gavel,
+          color: 'success',
+          description: t('listing.detail.deploy_auction') || 'Deployed',
+        },
+        {
+          label: t('listing.stats.with_deal') || 'With Deals',
+          value: stats.withDeal,
+          icon: Users,
+          color: 'info',
+          description: t('listing.detail.deploy_group_buy') || 'Group Deals',
+        },
+        {
+          label: t('listing.stats.orphan') || 'Not Deployed',
+          value: stats.orphan,
+          icon: Zap,
+          color: 'warning',
+          description: t('listing.stats.orphan') || 'Draft',
+        },
+      ]}
+      toolbar={
+        <ListPageToolbar
+          search={
+            <ListPageToolbarSearch
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+              onChange={(v) => { setSearchQuery(v); setPage(1); }}
+              placeholder={t('listing.search') || 'Search listings...'}
             />
-          </div>
-        </div>
-
+          }
+          onFilterClick={() => setIsFilterOpen(true)}
+          filterLabel={t('listing.filter')}
+          activeFilterCount={activeFilterCount}
+        />
+      }
+    >
+      <div className="space-y-6">
         {isPending ? (
           <ListPageSkeleton count={6} columns={3} />
         ) : listings.length === 0 ? (
@@ -333,7 +303,6 @@ export const ListingsListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Filter SlideOver */}
       <AmberSlideOver
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
@@ -341,18 +310,6 @@ export const ListingsListPage: React.FC = () => {
         description={t('listing.description') || 'Refine your product listings'}
       >
         <div className="space-y-8 py-4">
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.search')}</label>
-            <AmberInput
-              placeholder={t('listing.search')}
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-              className="h-12"
-            />
-          </div>
-
-          <div className="h-px bg-white/5" />
-
           {conditions.length > 0 && (
             <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.condition')}</label>
@@ -440,7 +397,7 @@ export const ListingsListPage: React.FC = () => {
         </div>
       </AmberSlideOver>
       <ConfirmModal />
-    </div>
+    </AdminListPageShell>
   );
 };
 

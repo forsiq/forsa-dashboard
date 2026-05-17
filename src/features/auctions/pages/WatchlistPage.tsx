@@ -18,6 +18,7 @@ import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle
 import { useWatchedAuctions } from '../api';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
+import { AdminListPageShell } from '@core/components/Layout';
 import type { Auction } from '../types/auction.types';
 
 export const WatchlistPage: React.FC = () => {
@@ -105,23 +106,13 @@ export const WatchlistPage: React.FC = () => {
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-sm bg-danger/10 flex items-center justify-center text-danger border border-danger/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-          <Heart className="w-6 h-6 fill-danger" />
-        </div>
-        <div>
-          <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
-            {t('auction.watchlist') || 'Watchlist'}
-          </h1>
-          <p className="text-base text-zinc-muted font-bold tracking-tight uppercase mt-1">
-            {t('auction.watched_auctions') || 'Auctions you are watching'}
-          </p>
-        </div>
-      </div>
-
-      {/* Table */}
+    <AdminListPageShell
+      title={t('auction.watchlist') || 'Watchlist'}
+      description={t('auction.watched_auctions') || 'Auctions you are watching'}
+      icon={Heart}
+      iconClassName="fill-danger"
+      iconTileClassName="bg-danger/10 text-danger border-danger/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+    >
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -146,7 +137,7 @@ export const WatchlistPage: React.FC = () => {
           />
         </div>
       )}
-    </div>
+    </AdminListPageShell>
   );
 };
 

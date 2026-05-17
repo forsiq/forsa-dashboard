@@ -5,8 +5,7 @@ import {
   useModerationTimeline,
 } from '../../auctions/api/auction-hooks';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { PageHeader } from '@core/components/Layout/PageHeader';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
@@ -230,46 +229,40 @@ export const ModerationHubPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-0" dir={dir}>
-      {/* Page Header */}
-      <PageHeader
-        title={t('moderation.activity.title')}
-        description={t('moderation.activity.subtitle')}
-      />
-
-      {/* Overview Stats */}
-      <StatsGrid
-        stats={[
-          {
-            label: t('moderation.activity.stat.active'),
-            value: (stats?.activeAuctions ?? 0).toString(),
-            icon: Zap,
-            color: 'success',
-          },
-          {
-            label: t('moderation.activity.stat.ended'),
-            value: (stats?.endedAuctions ?? 0).toString(),
-            icon: Timer,
-            color: 'muted',
-          },
-          {
-            label: t('moderation.activity.stat.most_active'),
-            value: stats?.mostActiveAuction?.title || t('moderation.activity.no_most_active'),
-            valueClassName: 'text-zinc-text text-lg font-black leading-snug line-clamp-2 break-words',
-            icon: Flame,
-            color: 'warning',
-            href: stats?.mostActiveAuction?.id ? `/auctions/${stats.mostActiveAuction.id}` : undefined,
-          },
-          {
-            label: t('moderation.activity.stat.bids_today'),
-            value: (stats?.totalBidsToday ?? 0).toString(),
-            icon: Activity,
-            color: 'brand',
-          },
-        ]}
-        columns={4}
-      />
-
+    <AdminListPageShell
+      title={t('moderation.activity.title')}
+      description={t('moderation.activity.subtitle')}
+      icon={Activity}
+      stats={[
+        {
+          label: t('moderation.activity.stat.active'),
+          value: (stats?.activeAuctions ?? 0).toString(),
+          icon: Zap,
+          color: 'success',
+        },
+        {
+          label: t('moderation.activity.stat.ended'),
+          value: (stats?.endedAuctions ?? 0).toString(),
+          icon: Timer,
+          color: 'muted',
+        },
+        {
+          label: t('moderation.activity.stat.most_active'),
+          value: stats?.mostActiveAuction?.title || t('moderation.activity.no_most_active'),
+          valueClassName: 'text-zinc-text text-lg font-black leading-snug line-clamp-2 break-words',
+          icon: Flame,
+          color: 'warning',
+          href: stats?.mostActiveAuction?.id ? `/auctions/${stats.mostActiveAuction.id}` : undefined,
+        },
+        {
+          label: t('moderation.activity.stat.bids_today'),
+          value: (stats?.totalBidsToday ?? 0).toString(),
+          icon: Activity,
+          color: 'brand',
+        },
+      ]}
+      statsColumns={4}
+    >
       {/* Main Layout: Activity + Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left: Filters + Auction Cards */}
@@ -411,6 +404,6 @@ export const ModerationHubPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AdminListPageShell>
   );
 };

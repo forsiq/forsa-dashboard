@@ -4,15 +4,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Gavel,
   Plus,
-  Search,
-  SlidersHorizontal,
   TrendingUp,
   Clock,
   DollarSign,
   Eye,
   Edit,
   Trash2,
-  Layers,
   XCircle,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -31,7 +28,11 @@ import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { useToast } from '@core/contexts/ToastContext';
 import { DataTable, Column, Action, BulkAction } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
 import {
   useGetAuctions,
   useGetAuctionStats,
@@ -71,9 +72,8 @@ const TABS: TabConfig[] = [
  * AuctionsList - Auction Management with DataTable and Status Tabs
  */
 export const AuctionsList: React.FC = () => {
-    const { t, language, dir } = useLanguage();
+    const { t, language } = useLanguage();
     const router = useRouter();
-    const isRTL = dir === 'rtl';
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');

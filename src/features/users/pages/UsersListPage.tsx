@@ -12,13 +12,16 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
-import { PageHeader } from '@core/components/Layout/PageHeader';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { useDebounce } from '@core/hooks/useDebounce';
-import { Search, Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
 import type { UserFilters } from '../types';
 
 export function UsersListPage() {
@@ -93,6 +96,9 @@ export function UsersListPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, roleFilter, statusFilter]);
+
+  const activeFilterCount =
+    (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
 
   // Handle user actions
   const handleView = (id: string) => {
@@ -230,98 +236,40 @@ export function UsersListPage() {
   if (!isClient) return null;
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-0">
-      {/* Page Header */}
-      <PageHeader
-        title={t('user.title')}
-        description={t('user.subtitle')}
-        actions={
-          <AmberButton
-            variant="primary"
-            onClick={() => router.push('/users/new')}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            {t('user.add')}
-          </AmberButton>
-        }
-      />
-
-      {/* Stats Cards */}
-      {isLoadingStats ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-24 animate-pulse bg-white/5 rounded-xl" />
-          ))}
-        </div>
-      ) : (
-        <StatsGrid
-          stats={[
-            {
-              label: t('user.stats.total'),
-              value: stats?.total || 0,
-              icon: User,
-              color: 'info',
-            },
-            {
-              label: t('user.stats.active'),
-              value: stats?.active || 0,
-              icon: UserCheck,
-              color: 'success',
-            },
-            {
-              label: t('user.stats.inactive'),
-              value: stats?.inactive || 0,
-              icon: UserX,
-              color: 'danger',
-            },
-            {
-              label: t('user.stats.admins'),
-              value: stats?.admins || 0,
-              icon: Shield,
-              color: 'primary',
-            },
-          ]}
-        />
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        {/* Search — debounced */}
-        <div className="relative flex-1 max-w-sm w-full">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted" />
-          <AmberInput
-            placeholder={t('user.search_placeholder')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-4 pe-10"
-          />
-        </div>
-
-        {/* Role Filter — client-side */}
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
-        >
-          <option value="all">{t('user.filter.all_roles') || 'All Roles'}</option>
-          <option value="manager">{t('user.role.manager') || 'Manager'}</option>
-          <option value="admin">{t('user.role.admin') || 'Admin'}</option>
-          <option value="user">{t('user.role.user') || 'User'}</option>
-        </select>
-
-        {/* Status Filter — client-side */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2.5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 text-zinc-text text-sm font-bold shadow-sm"
-        >
-          <option value="all">{t('user.filter.all_status') || 'All Status'}</option>
-          <option value="active">{t('user.status.active') || 'Active'}</option>
-          <option value="inactive">{t('user.status.inactive') || 'Inactive'}</option>
-        </select>
-      </div>
-
+    <AdminListPageShell
+      title={t('user.title')}
+      description={t('user.subtitle')}
+      icon={User}
+      statsLoading={isLoadingStats}
+      stats={[
+        { label: t('user.stats.total'), value: stats?.total || 0, icon: User, color: 'info' },
+        { label: t('user.stats.active'), value: stats?.active || 0, icon: UserCheck, color: 'success' },
+        { label: t('user.stats.inactive'), value: stats?.inactive || 0, icon: UserX, color: 'danger' },
+        { label: t('user.stats.admins'), value: stats?.admins || 0, icon: Shield, color: 'primary' },
+      ]}
+      headerActions={
+        <AmberButton variant="primary" onClick={() => router.push('/users/new')} className="gap-2 h-11 bg-brand text-black font-black rounded-xl px-6">
+          <Plus className="h-4 w-4" />
+          {t('user.add')}
+        </AmberButton>
+      }
+      toolbar={
+        <ListPageToolbar>
+          <ListPageToolbarSearch value={searchInput} onChange={setSearchInput} placeholder={t('user.search_placeholder')} className="flex-1 min-w-[200px]" />
+          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-4 py-2.5 h-11 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl text-zinc-text text-sm font-bold shadow-sm">
+            <option value="all">{t('user.filter.all_roles') || 'All Roles'}</option>
+            <option value="manager">{t('user.role.manager') || 'Manager'}</option>
+            <option value="admin">{t('user.role.admin') || 'Admin'}</option>
+            <option value="user">{t('user.role.user') || 'User'}</option>
+          </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-2.5 h-11 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl text-zinc-text text-sm font-bold shadow-sm">
+            <option value="all">{t('user.filter.all_status') || 'All Status'}</option>
+            <option value="active">{t('user.status.active') || 'Active'}</option>
+            <option value="inactive">{t('user.status.inactive') || 'Inactive'}</option>
+          </select>
+        </ListPageToolbar>
+      }
+    >
       {/* Users DataTable */}
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {isLoadingUsers ? (
@@ -360,7 +308,7 @@ export function UsersListPage() {
           />
         )}
       </div>
-    </div>
+    </AdminListPageShell>
   );
 }
 
