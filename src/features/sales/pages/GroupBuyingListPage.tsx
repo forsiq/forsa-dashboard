@@ -412,7 +412,9 @@ export const GroupBuyingListPage: React.FC = () => {
                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
                     )}
                   >
-                    {getStatusLabel(status)}
+                    {status === 'all'
+                      ? (t('common.all') || 'All')
+                      : (t(`groupBuying.status.${status}`) || status)}
                   </button>
                 ))}
               </div>
