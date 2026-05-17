@@ -85,6 +85,8 @@ export const AuctionsList: React.FC = () => {
     const [sortBy, setSortBy] = useState<string>('createdAt');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+    const activeFilterCount = categoryIdFilter === 'all' ? 0 : 1;
+
     const { data: auctionsData, isPending, isFetching } = useGetAuctions({
         status: activeTab === 'all' ? undefined : activeTab as AuctionStatus,
         categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
@@ -290,47 +292,26 @@ export const AuctionsList: React.FC = () => {
     if (typeof window === 'undefined') return null;
 
     return (
-        <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-            {/* Page Title */}
-            <div className={cn(
-                "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-                isRTL ? "text-right" : "text-left"
-            )}>
-                <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
-                            <Gavel className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
-                                {t('auction.listings.title')}
-                            </h1>
-                            <p className="text-base text-zinc-secondary font-bold tracking-tight uppercase mt-1">
-                                {t('auction.listings.subtitle')}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                    <AmberButton
-                        variant="secondary"
-                        className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover"
-                        onClick={() => setIsFilterOpen(true)}
-                    >
-                        <SlidersHorizontal className="w-4 h-4" />
-                        {t('common.filters')}
-                    </AmberButton>
-                    <AmberButton
-                        className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
-                        onClick={() => router.push('/listings/new')}
-                    >
-                            <Plus className="w-5 h-5" />
-                            <span>{t('auction.create_auction')}</span>
-                    </AmberButton>
-                </div>
-            </div>
-
-            {/* Status Tabs */}
+        <AdminListPageShell
+            title={t('auction.listings.title')}
+            description={t('auction.listings.subtitle')}
+            icon={Gavel}
+            headerActions={
+                <AmberButton
+                    className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+                    onClick={() => router.push('/listings/new')}
+                >
+                    <Plus className="w-5 h-5" />
+                    <span>{t('auction.create_auction')}</span>
+                </AmberButton>
+            }
+            stats={[
+                { label: t('auction.metrics.active_engines'), value: stats?.activeAuctions || 0, icon: Gavel, color: 'brand', description: t('auction.metrics.live_liquidations') },
+                { label: t('auction.metrics.bid_velocity'), value: stats?.totalBids || 0, icon: TrendingUp, color: 'success', description: t('auction.metrics.interaction_throughput') },
+                { label: t('auction.metrics.projected_revenue'), value: formatCurrency(stats?.totalRevenue), icon: DollarSign, color: 'info', description: t('auction.equitable_distribution') },
+                { label: t('auction.critical_termination'), value: stats?.scheduledAuctions || 0, icon: Clock, color: 'warning', description: t('auction.concluding_soon') },
+            ]}
+            tabs={
             <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
                 {TABS.map((tab) => {
                     const isActive = activeTab === tab.key;
@@ -341,78 +322,31 @@ export const AuctionsList: React.FC = () => {
                             onClick={() => handleTabChange(tab.key)}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
-                                isActive
-                                    ? "bg-[var(--color-brand)] text-black shadow-sm"
-                                    : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
+                                isActive ? "bg-[var(--color-brand)] text-black shadow-sm" : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
                             )}
                         >
                             {t(tab.labelKey)}
                             {count > 0 && (
                                 <span className={cn(
                                     "inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[9px] font-black tabular-nums",
-                                    isActive
-                                        ? "bg-black/20 text-inherit"
-                                        : "bg-white/5 text-zinc-muted"
-                                )}>
-                                    {count}
-                                </span>
+                                    isActive ? "bg-black/20 text-inherit" : "bg-white/5 text-zinc-muted"
+                                )}>{count}</span>
                             )}
                         </button>
                     );
                 })}
             </div>
-
-            {/* Stats Grid */}
-            <StatsGrid
-                stats={[
-                    {
-                        label: t('auction.metrics.active_engines'),
-                        value: stats?.activeAuctions || 0,
-                        icon: Gavel,
-                        color: 'brand',
-                        description: t('auction.metrics.live_liquidations'),
-                    },
-                    {
-                        label: t('auction.metrics.bid_velocity'),
-                        value: stats?.totalBids || 0,
-                        icon: TrendingUp,
-                        color: 'success',
-                        description: t('auction.metrics.interaction_throughput'),
-                    },
-                    {
-                        label: t('auction.metrics.projected_revenue'),
-                        value: formatCurrency(stats?.totalRevenue),
-                        icon: DollarSign,
-                        color: 'info',
-                        description: t('auction.equitable_distribution'),
-                    },
-                    {
-                        label: t('auction.critical_termination'),
-                        value: stats?.scheduledAuctions || 0,
-                        icon: Clock,
-                        color: 'warning',
-                        description: t('auction.concluding_soon'),
-                    },
-                ]}
-            />
-
-            {/* Search + Table */}
+            }
+            toolbar={
+                <ListPageToolbar
+                    search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('auction.listings.search')} />}
+                    onFilterClick={() => setIsFilterOpen(true)}
+                    filterLabel={t('common.filters')}
+                    activeFilterCount={activeFilterCount}
+                />
+            }
+        >
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] flex items-center gap-2">
-                        <Layers className="w-4 h-4" /> {t('auction.operational_listings_matrix')}
-                    </h2>
-                    <div className="relative group min-w-[320px]">
-                        <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
-                        <AmberInput
-                            placeholder={t('auction.listings.search')}
-                            className="h-11 bg-obsidian-card border-border text-xs font-bold ps-11 pe-4"
-                            value={searchQuery}
-                            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                        />
-                    </div>
-                </div>
-
                 {isPending ? (
                     <ListPageSkeleton count={6} columns={3} showStats />
                 ) : auctions.length === 0 ? (
@@ -469,18 +403,6 @@ export const AuctionsList: React.FC = () => {
             >
                 <div className="space-y-8 py-4">
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.config.protocol_identifier_search')}</label>
-                        <AmberInput
-                            placeholder={t('auction.listings.search')}
-                            value={searchQuery}
-                            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="h-12"
-                        />
-                    </div>
-
-                    <div className="h-px bg-white/5" />
-
-                    <div className="space-y-3">
                         <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
                         <div className="flex flex-wrap gap-2">
                             <button
@@ -532,7 +454,7 @@ export const AuctionsList: React.FC = () => {
                 </div>
             </AmberSlideOver>
             <ConfirmModal />
-        </div>
+        </AdminListPageShell>
     );
 };
 

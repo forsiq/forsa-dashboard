@@ -1,3 +1,14 @@
+- version: "1.5.1"
+  date: "2026-05-17"
+  title:
+    en: "Unified list page layout"
+    ar: "توحيد تخطيط صفحات القوائم"
+  entries:
+    - description:
+        en: "Main list pages share a consistent header, stats row, search toolbar, and filter slide-over (listings, auctions, group buying, users, settlements, moderation, watchlist, my bids)."
+        ar: "صفحات القوائم الرئيسية تستخدم الآن نفس نمط الهيدر وصف الإحصائيات وشريط البحث والفلتر (المنتجات، المزادات، الشراء الجماعي، المستخدمين، التسويات، الإشراف، المفضلة، عروضي)."
+      type: improved
+
 - version: "1.5.0"
   date: "2026-05-16"
   title:

@@ -191,7 +191,6 @@ export const MyBidsPage: React.FC = () => {
       tabs={
       !isLoading && bids.length > 0 ? (
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {TAB_CONFIG.map((tab) => {
             const Icon = tab.icon;
             const count = tabCounts[tab.key];
@@ -221,7 +220,8 @@ export const MyBidsPage: React.FC = () => {
         </div>
       ) : null
       }
-      {/* Table */}
+    >
+      <div className="space-y-6">
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -246,8 +246,8 @@ export const MyBidsPage: React.FC = () => {
           />
         </div>
       )}
+      </div>
 
-      {/* Bottom Sheet */}
       <BidActionSheet
         isOpen={sheetOpen}
         onClose={() => setSheetOpen(false)}

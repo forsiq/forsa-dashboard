@@ -3,14 +3,11 @@ import { useRouter } from 'next/router';
 import {
   Users,
   Plus,
-  Search,
-  SlidersHorizontal,
   TrendingUp,
   Clock,
   Eye,
   Edit,
   Trash2,
-  Layers,
   Target,
   Zap,
   CheckCircle,
@@ -28,7 +25,11 @@ import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
 import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
@@ -48,9 +49,8 @@ import type { GroupBuying } from '../types';
  * GroupBuyingListPage - Campaign Management with DataTable
  */
 export const GroupBuyingListPage: React.FC = () => {
-  const { t, language, dir } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
-  const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -62,6 +62,8 @@ export const GroupBuyingListPage: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<any>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
+
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (categoryIdFilter !== 'all' ? 1 : 0);
 
   const { data: campaignsData, isPending: listLoading, isFetching } = useGetGroupBuyings({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -259,94 +261,32 @@ export const GroupBuyingListPage: React.FC = () => {
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
-      <div className={cn(
-        "flex flex-col lg:flex-row lg:items-start justify-between gap-6",
-        isRTL ? "text-right" : "text-left"
-      )}>
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-sm bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-[0_0_15px_rgba(245,196,81,0.1)]">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
-                {t('groupBuying.title') || 'CAMPAIGNS'}
-              </h1>
-              <p className="text-base text-zinc-muted font-bold tracking-tight uppercase mt-1">
-                {t('groupBuying.subtitle') || 'Group buying campaigns management'}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <AmberButton
-            variant="secondary"
-            className="gap-2 h-11 border-border font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover hover:border-brand/30"
-            onClick={() => setIsFilterOpen(true)}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            {t('common.filters') || 'Filters'}
-          </AmberButton>
-          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
-              <Plus className="w-5 h-5" />
-              <span>{t('groupBuying.create') || 'Create Campaign'}</span>
-          </AmberButton>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <StatsGrid
-        stats={[
-          {
-            label: t('groupBuying.active_engines'),
-            value: stats?.activeCampaigns || 0,
-            icon: Zap,
-            color: 'brand',
-            description: t('groupBuying.live_distribution') || 'LIVE',
-          },
-          {
-            label: t('groupBuying.total_conversion'),
-                value: formatCurrency(stats?.totalRevenue),
-            icon: TrendingUp,
-            color: 'success',
-            description: t('groupBuying.aggregate_yield') || 'REVENUE',
-          },
-          {
-            label: t('groupBuying.network_reach'),
-            value: stats?.totalParticipants || 0,
-            icon: Users,
-            color: 'info',
-            description: t('groupBuying.node_participation') || 'PARTICIPANTS',
-          },
-          {
-            label: t('groupBuying.success_delta'),
-            value: stats?.completedCampaigns || 0,
-            icon: CheckCircle,
-            color: 'primary',
-            description: t('groupBuying.concluded_nodes') || 'COMPLETED',
-          },
-        ]}
-      />
-
-      {/* Main Table */}
+    <AdminListPageShell
+      title={t('groupBuying.title') || 'CAMPAIGNS'}
+      description={t('groupBuying.subtitle') || 'Group buying campaigns management'}
+      icon={Users}
+      headerActions={
+        <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
+          <Plus className="w-5 h-5" />
+          <span>{t('groupBuying.create') || 'Create Campaign'}</span>
+        </AmberButton>
+      }
+      stats={[
+        { label: t('groupBuying.active_engines'), value: stats?.activeCampaigns || 0, icon: Zap, color: 'brand', description: t('groupBuying.live_distribution') || 'LIVE' },
+        { label: t('groupBuying.total_conversion'), value: formatCurrency(stats?.totalRevenue), icon: TrendingUp, color: 'success', description: t('groupBuying.aggregate_yield') || 'REVENUE' },
+        { label: t('groupBuying.network_reach'), value: stats?.totalParticipants || 0, icon: Users, color: 'info', description: t('groupBuying.node_participation') || 'PARTICIPANTS' },
+        { label: t('groupBuying.success_delta'), value: stats?.completedCampaigns || 0, icon: CheckCircle, color: 'primary', description: t('groupBuying.concluded_nodes') || 'COMPLETED' },
+      ]}
+      toolbar={
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchQuery} onChange={setSearchQuery} placeholder={t('groupBuying.scan_nomenclature') || 'Search campaigns...'} />}
+          onFilterClick={() => setIsFilterOpen(true)}
+          filterLabel={t('common.filters') || 'Filters'}
+          activeFilterCount={activeFilterCount}
+        />
+      }
+    >
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em] flex items-center gap-2">
-            <Layers className="w-4 h-4" /> {t('groupBuying.orchestration_matrix') || 'Campaigns'}
-          </h2>
-          <div className="relative group min-w-[320px]">
-            <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted/50 group-focus-within:text-brand transition-colors" />
-            <AmberInput
-              placeholder={t('groupBuying.scan_nomenclature') || "Search campaigns..."}
-              className="h-11 bg-obsidian-card border-border ps-11 pe-4 text-xs font-bold shadow-inner"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
         {listLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map(i => (
@@ -474,7 +414,7 @@ export const GroupBuyingListPage: React.FC = () => {
         </div>
       </AmberSlideOver>
       <ConfirmModal />
-    </div>
+    </AdminListPageShell>
   );
 };
 
