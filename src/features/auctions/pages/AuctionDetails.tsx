@@ -32,7 +32,8 @@ import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction } from 
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
-import { getAuctionImageUrls } from '../utils/auction-utils';
+import { getAuctionImageUrls, getAuctionAttachmentIds } from '../utils/auction-utils';
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
@@ -52,6 +53,21 @@ export const AuctionDetails: React.FC = () => {
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [bidAmount, setBidAmount] = useState<string>('');
+
+  // Resolve attachment IDs to CloudFront URLs
+  const directImageUrls = auction ? getAuctionImageUrls(auction) : [];
+  const attachmentIds = auction ? getAuctionAttachmentIds(auction) : [];
+  const { data: attachmentUrlMap } = useAttachmentUrls(
+    directImageUrls.length === 0 ? attachmentIds : []
+  );
+
+  const allImages = (() => {
+    if (directImageUrls.length > 0) return directImageUrls;
+    if (!attachmentUrlMap || attachmentIds.length === 0) return [];
+    return attachmentIds
+      .map(id => attachmentUrlMap.get(id))
+      .filter((url): url is string => url != null);
+  })();
 
   const handlePlaceBid = async () => {
     const amount = parseFloat(bidAmount);
@@ -186,7 +202,7 @@ export const AuctionDetails: React.FC = () => {
 
           {/* Image Gallery */}
           <AmberImageGallery
-            images={getAuctionImageUrls(auction)}
+            images={allImages}
             alt={auction.title}
             height="h-[300px] lg:h-[460px]"
             overlay={

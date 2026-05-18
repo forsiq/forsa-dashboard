@@ -81,18 +81,102 @@ export const dashboardKeys = {
 };
 
 // ============================================================================
-// Merged Stats + Quick Counts Hook
+// Shared Query Keys for deduplicated fetches
 // ============================================================================
+
+/**
+ * Shared keys for raw endpoint data that multiple dashboard hooks need.
+ * Using consistent keys ensures React Query caches and reuses results
+ * instead of firing duplicate HTTP requests.
+ */
+const sharedDashboardKeys = {
+  categories: () => ['dashboard', 'shared', 'categories'] as const,
+  auctionsList: (params: Record<string, unknown>) => ['dashboard', 'shared', 'auctions', params] as const,
+  ordersList: (params: Record<string, unknown>) => ['dashboard', 'shared', 'orders', params] as const,
+  groupBuyingsList: (params: Record<string, unknown>) => ['dashboard', 'shared', 'groupBuyings', params] as const,
+};
+
+// ============================================================================
+// Shared Fetchers (reused by multiple hooks via consistent query keys)
+// ============================================================================
+
+async function fetchCategories() {
+  const res = await categoryBaseApi.list().catch(() => ({ data: [] }));
+  return (res as any).data || [];
+}
+
+async function fetchAuctionsList(params: Record<string, unknown>) {
+  const res = await auctionBaseApi.list(params).catch(() => ({ data: [] }));
+  return (res as any).data || [];
+}
+
+async function fetchOrdersList(params: Record<string, unknown>) {
+  const res = await orderBaseApi.list(params).catch(() => ({ data: [] }));
+  return (res as any).data || [];
+}
+
+async function fetchGroupBuyingsList(params: Record<string, unknown>) {
+  const res = await groupBuyingBaseApi.list(params).catch(() => ({ data: [] }));
+  return (res as any).data || [];
+}
+
+// ============================================================================
+// Shared Data Hooks (deduplicated via React Query cache)
+// ============================================================================
+
+/**
+ * Shared categories hook — used by useTopProducts and useCategoryDistribution.
+ * Only one HTTP request is made regardless of how many consumers call this.
+ */
+function useSharedCategories() {
+  return useQuery({
+    queryKey: sharedDashboardKeys.categories(),
+    queryFn: fetchCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
+ * Shared auctions list hook — used by useRecentOrders and useTopProducts.
+ */
+function useSharedAuctionsList(params: Record<string, unknown>) {
+  return useQuery({
+    queryKey: sharedDashboardKeys.auctionsList(params),
+    queryFn: () => fetchAuctionsList(params),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+/**
+ * Shared orders list hook — used by useRecentOrders and useSalesChartData.
+ */
+function useSharedOrdersList(params: Record<string, unknown>) {
+  return useQuery({
+    queryKey: sharedDashboardKeys.ordersList(params),
+    queryFn: () => fetchOrdersList(params),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+/**
+ * Shared group-buyings list hook — used by useRecentOrders.
+ */
+function useSharedGroupBuyingsList(params: Record<string, unknown>) {
+  return useQuery({
+    queryKey: sharedDashboardKeys.groupBuyingsList(params),
+    queryFn: () => fetchGroupBuyingsList(params),
+    staleTime: 1000 * 60 * 2,
+  });
+}
 
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<AllStatsData> => {
-      const [auctionStatsRes, groupBuyingStatsRes, ordersRes, categoriesRes] = await Promise.all([
+      const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
         auctionBaseApi.getStats().catch(() => ({ data: {} })),
         groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
         orderBaseApi.getStats().catch(() => ({ data: {} })),
-        categoryBaseApi.getStats().catch(() => ({ data: {} })),
       ]);
 
       const auctionStats = (auctionStatsRes as any).data || {};
@@ -128,19 +212,13 @@ export const useDashboardStats = () => {
 // ============================================================================
 
 export const useRecentOrders = () => {
+  const { data: auctions = [] } = useSharedAuctionsList({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' });
+  const { data: groupBuyings = [] } = useSharedGroupBuyingsList({ limit: 5 });
+  const { data: orders = [] } = useSharedOrdersList({ limit: 5 });
+
   return useQuery({
     queryKey: dashboardKeys.recentOrders(),
     queryFn: async (): Promise<RecentOrder[]> => {
-      const [auctionsRes, groupBuyingsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.list({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' }).catch(() => ({ data: [] })),
-        groupBuyingBaseApi.list({ limit: 5 }).catch(() => ({ data: [] })),
-        orderBaseApi.list({ limit: 5 }).catch(() => ({ data: [] })),
-      ]);
-
-      const auctions = (auctionsRes as any).data || [];
-      const groupBuyings = (groupBuyingsRes as any).data || [];
-      const orders = (ordersRes as any).data || [];
-
       const items: RecentOrder[] = [
         ...auctions.map((a: any) => ({
           id: `AUC-${a.id}`,
@@ -179,16 +257,12 @@ export const useRecentOrders = () => {
 // ============================================================================
 
 export const useTopProducts = () => {
+  const { data: auctions = [] } = useSharedAuctionsList({ limit: 10, status: 'active', sortBy: 'totalBids', sortOrder: 'desc' });
+  const { data: categories = [] } = useSharedCategories();
+
   return useQuery({
     queryKey: dashboardKeys.topProducts(),
     queryFn: async (): Promise<TopProduct[]> => {
-      const [auctionsRes, categoriesRes] = await Promise.all([
-        auctionBaseApi.list({ limit: 10, status: 'active', sortBy: 'totalBids', sortOrder: 'desc' }).catch(() => ({ data: [] })),
-        categoryBaseApi.list().catch(() => ({ data: [] })),
-      ]);
-
-      const auctions = (auctionsRes as any).data || [];
-      const categories = (categoriesRes as any).data || [];
       const lang = getLanguage();
 
       const categoryMap = new Map(
@@ -216,11 +290,11 @@ export const useTopProducts = () => {
 // ============================================================================
 
 export const useCategoryDistribution = () => {
+  const { data: categories = [] } = useSharedCategories();
+
   return useQuery({
     queryKey: dashboardKeys.categoryDistribution(),
     queryFn: async (): Promise<CategoryDistribution[]> => {
-      const categoriesRes = await categoryBaseApi.list().catch(() => ({ data: [] }));
-      const categories = (categoriesRes as any).data || [];
       const lang = getLanguage();
 
       const colors = [
@@ -246,12 +320,11 @@ export const useCategoryDistribution = () => {
 // ============================================================================
 
 export const useSalesChartData = () => {
+  const { data: orders = [] } = useSharedOrdersList({ limit: 30 });
+
   return useQuery({
     queryKey: dashboardKeys.salesChart(),
     queryFn: async (): Promise<ChartDataPoint[]> => {
-      const ordersRes = await orderBaseApi.list({ limit: 30 }).catch(() => ({ data: [] }));
-      const orders = (ordersRes as any).data || [];
-
       const byDate = new Map<string, { revenue: number; count: number }>();
 
       const today = new Date();

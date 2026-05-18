@@ -41,7 +41,8 @@ import {
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
-import { getAuctionImageUrls } from '../../auctions/utils/auction-utils';
+import { getAuctionImageUrls, getAuctionAttachmentIds } from '../../auctions/utils/auction-utils';
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useCountdown } from '@core/hooks/useCountdown';
@@ -67,6 +68,27 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const [joinQuantity, setJoinQuantity] = useState(1);
+
+  // Resolve attachment IDs to CloudFront URLs
+  const galleryItem = campaign ? {
+    imageUrl: (campaign.item as any)?.imageUrl || (campaign as any).imageUrl,
+    images: (campaign.item as any)?.images || (campaign as any).images,
+    mainAttachmentId: (campaign.item as any)?.mainAttachmentId || (campaign as any).mainAttachmentId,
+    attachmentIds: (campaign.item as any)?.attachmentIds || (campaign as any).attachmentIds,
+  } : null;
+  const directImageUrls = galleryItem ? getAuctionImageUrls(galleryItem) : [];
+  const attachmentIds = galleryItem ? getAuctionAttachmentIds(galleryItem) : [];
+  const { data: attachmentUrlMap } = useAttachmentUrls(
+    directImageUrls.length === 0 ? attachmentIds : []
+  );
+
+  const campaignImages = (() => {
+    if (directImageUrls.length > 0) return directImageUrls;
+    if (!attachmentUrlMap || attachmentIds.length === 0) return [];
+    return attachmentIds
+      .map(id => attachmentUrlMap.get(id))
+      .filter((url): url is string => url != null);
+  })();
 
   const countdown = useCountdown(campaign?.endTime);
 
@@ -203,12 +225,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
           {/* Image Gallery */}
           <AmberImageGallery
-            images={getAuctionImageUrls({
-              imageUrl: (campaign.item as any)?.imageUrl || (campaign as any).imageUrl,
-              images: (campaign.item as any)?.images || (campaign as any).images,
-              mainAttachmentId: (campaign.item as any)?.mainAttachmentId || (campaign as any).mainAttachmentId,
-              attachmentIds: (campaign.item as any)?.attachmentIds || (campaign as any).attachmentIds,
-            })}
+            images={campaignImages}
             alt={campaign.title}
             height="h-[300px] lg:h-[460px]"
             overlay={

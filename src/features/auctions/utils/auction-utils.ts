@@ -130,7 +130,10 @@ export function parseAttachmentIds(
 }
 
 /**
- * Get image URL for an auction
+ * Get image URL for an auction.
+ * Returns direct imageUrl if available (already a CloudFront URL).
+ * Returns null when only attachment IDs exist — callers should use useAttachmentUrls
+ * to resolve IDs to CloudFront URLs via the batch endpoint.
  */
 export function getAuctionImageUrl(auction: {
   imageUrl?: string | null;
@@ -148,19 +151,15 @@ export function getAuctionImageUrl(auction: {
     if (valid.length > 0) return valid[0];
   }
 
-  const mainId = auction.mainAttachmentId;
-  const ids = parseAttachmentIds(auction.attachmentIds);
-  const attachmentId = mainId || (ids.length > 0 ? ids[0] : null);
-
-  if (!attachmentId) {
-    return null;
-  }
-
-  return `${API_ORIGIN}/api/v1/project/attachment/${attachmentId}/download/`;
+  // Attachment IDs need async resolution via useAttachmentUrls — return null.
+  return null;
 }
 
 /**
- * Get all image URLs for an auction
+ * Get all image URLs for an auction.
+ * Returns direct imageUrls (already CloudFront URLs) if available.
+ * Returns empty array when only attachment IDs exist — callers should use useAttachmentUrls
+ * to resolve IDs to CloudFront URLs via the batch endpoint.
  */
 export function getAuctionImageUrls(auction: {
   imageUrl?: string | null;
@@ -179,16 +178,36 @@ export function getAuctionImageUrls(auction: {
     urls.push(...filterImageUrls(imageCandidates));
   }
 
-  const ids = parseAttachmentIds(auction.attachmentIds);
-  ids.forEach(id => {
-    urls.push(`${API_ORIGIN}/api/v1/project/attachment/${id}/download/`);
-  });
+  // Attachment IDs are resolved asynchronously by useAttachmentUrls — don't
+  // build /download/ proxy URLs here.
 
   return [...new Set(urls)];
 }
 
 /**
- * Fetch attachment URL for use in <img> tags
+ * Extract attachment IDs from an auction for use with useAttachmentUrls.
+ * Returns the IDs that need async resolution to CloudFront URLs.
+ */
+export function getAuctionAttachmentIds(auction: {
+  mainAttachmentId?: number | null;
+  attachmentIds?: string | string[] | number[] | null;
+}): number[] {
+  const ids = parseAttachmentIds(auction.attachmentIds);
+  const mainId = auction.mainAttachmentId;
+
+  if (mainId) {
+    // Put main first, then the rest (deduplicated)
+    const rest = ids.filter(id => id !== mainId);
+    return [mainId, ...rest];
+  }
+
+  return ids;
+}
+
+/**
+ * Fetch attachment URL for use in <img> tags.
+ * DEPRECATED: Use useAttachmentUrls hook instead for batch resolution
+ * via CloudFront. This function returns a /download/ proxy URL as fallback.
  */
 export async function fetchAttachmentUrl(attachmentId: number): Promise<string | null> {
   return `${API_ORIGIN}/api/v1/project/attachment/${attachmentId}/download/`;
