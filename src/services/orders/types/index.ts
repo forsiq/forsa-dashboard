@@ -1,5 +1,14 @@
 // Order types
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+/** Matches auction-service order.entity OrderStatus + legacy UI aliases. */
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'paid'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type OrderPriority = 'low' | 'medium' | 'high' | 'urgent';
 

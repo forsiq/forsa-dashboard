@@ -206,6 +206,7 @@ export const en: Record<string, string> = {
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "All",
   "common.all": "All",
+  "common.uncategorized": "Uncategorized",
   "common.apply": "Apply",
   "common.image_upload_hint": "PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.",
   "common.authenticity_copy": "Replica / copy",
@@ -730,6 +731,8 @@ export const en: Record<string, string> = {
 
   // Order statuses
   "orders.status.pending": "Pending",
+  "orders.status.confirmed": "Confirmed",
+  "orders.status.paid": "Paid",
   "orders.status.processing": "Processing",
   "orders.status.shipped": "Shipped",
   "orders.status.delivered": "Delivered",
@@ -775,6 +778,11 @@ export const en: Record<string, string> = {
   "orders.table.status": "Status",
   "orders.table.date": "Date",
   "orders.table.payment": "Payment",
+  "orders.customer.unassigned": "Unassigned customer",
+  "orders.view_details": "View details",
+  "orders.status_updated": "Order status updated",
+  "orders.status_update_failed": "Failed to update order status",
+  "orders.status_change_confirm": "Change order status to",
 
   // Auction category slugs (DataTable / charts when API returns English `name` only)
   "auction.category.computers": "Computers",

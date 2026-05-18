@@ -232,7 +232,7 @@ export const useCategoryDistribution = () => {
       ];
 
       return categories.slice(0, 5).map((c: any, index: number) => ({
-        category: getLocalizedName(c, lang) || 'Unknown',
+        category: getLocalizedName(c, lang) || '',
         orders: c.productCount || 0,
         fill: colors[index % colors.length],
       }));

@@ -204,6 +204,7 @@ export const ar: Record<string, string> = {
   // Common overrides (simpler than core-ui defaults)
   "common.all_protocols": "الكل",
   "common.all": "الكل",
+  "common.uncategorized": "بدون تصنيف",
   "common.apply": "تطبيق",
   "common.image_upload_hint": "PNG أو JPG حتى 10 ميجابايت. اسحب لإعادة الترتيب — الصورة الأولى هي صورة الغلاف.",
   "common.authenticity_copy": "نسخة / مقلّد",
@@ -731,6 +732,8 @@ export const ar: Record<string, string> = {
 
   // Order statuses
   "orders.status.pending": "معلق",
+  "orders.status.confirmed": "مؤكد",
+  "orders.status.paid": "مدفوع",
   "orders.status.processing": "قيد المعالجة",
   "orders.status.shipped": "تم الشحن",
   "orders.status.delivered": "تم التسليم",
@@ -776,6 +779,11 @@ export const ar: Record<string, string> = {
   "orders.table.status": "الحالة",
   "orders.table.date": "التاريخ",
   "orders.table.payment": "الدفع",
+  "orders.customer.unassigned": "عميل غير محدد",
+  "orders.view_details": "عرض التفاصيل",
+  "orders.status_updated": "تم تحديث حالة الطلب",
+  "orders.status_update_failed": "فشل تحديث حالة الطلب",
+  "orders.status_change_confirm": "هل تريد تغيير حالة الطلب إلى",
 
   // Auction category slugs — app override (see getLocalizedName fallback)
   "auction.category.computers": "أجهزة كمبيوتر",

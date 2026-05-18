@@ -6,8 +6,10 @@ import type {
   UpdateOrderInput, 
   OrderFilters, 
   OrderStats,
-  OrdersResponse 
+  OrdersResponse,
+  OrderStatus,
 } from '../types';
+import { pickOrderWinnerName } from '../utils/order-display';
 
 /**
  * Base Order API implementation
@@ -20,28 +22,34 @@ export const orderBaseApi = createApiClient<Order, CreateOrderInput, UpdateOrder
   apiBaseUrl: API_BASE_URL,
 });
 
-const mapToOrder = (raw: any): Order => ({
-  id: String(raw?.id ?? ''),
-  orderNumber: `ORD-${raw?.id ?? ''}`,
-  customerId: raw?.winnerId || raw?.customerName || '',
-  customerName: raw?.winnerName || raw?.customerName || 'Unknown',
-  customerEmail: raw?.winnerPhone || '',
+const mapToOrder = (raw: any): Order => {
+  const row = (raw ?? {}) as Record<string, unknown>;
+  const winnerName = pickOrderWinnerName(row);
+  const apiStatus = String(row.status ?? 'pending') as OrderStatus;
+
+  return {
+  id: String(row.id ?? ''),
+  orderNumber: `ORD-${row.id ?? ''}`,
+  customerId: String(row.winnerId ?? row.winner_id ?? winnerName ?? ''),
+  customerName: winnerName,
+  customerEmail: String(row.winnerPhone ?? row.winner_phone ?? ''),
   items: [],
-  subtotal: Number(raw?.finalPrice || raw?.total || raw?.amount || 0),
+  subtotal: Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0),
   tax: 0,
   shipping: 0,
   discount: 0,
-  total: Number(raw?.finalPrice || raw?.total || raw?.amount || 0),
+  total: Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0),
   currency: 'IQD',
-  status: raw?.status || 'pending',
-  paymentStatus: raw?.isPaid ? 'paid' : 'pending',
+  status: apiStatus,
+  paymentStatus: row.isPaid || row.is_paid ? 'paid' : 'pending',
   priority: 'medium' as const,
-  notes: raw?.notes || '',
+  notes: String(row.notes ?? ''),
   shippingAddress: {} as any,
   billingAddress: {} as any,
-  createdAt: raw?.createdAt || raw?.date || new Date().toISOString(),
-  updatedAt: raw?.updatedAt || raw?.createdAt || raw?.date || new Date().toISOString(),
-});
+  createdAt: String(row.createdAt ?? row.created_at ?? row.date ?? new Date().toISOString()),
+  updatedAt: String(row.updatedAt ?? row.updated_at ?? row.createdAt ?? row.created_at ?? row.date ?? new Date().toISOString()),
+};
+};
 
 export async function getOrders(filters: OrderFilters = {} as any, signal?: AbortSignal): Promise<OrdersResponse> {
   const response = await orderBaseApi.list(filters) as any;
@@ -67,7 +75,8 @@ export async function getOrderStats(): Promise<OrderStats> {
   return {
     total: stats.total || 0,
     pending: stats.pending || 0,
-    processing: stats.confirmed || stats.processing || 0,
+    processing:
+      (stats.confirmed || 0) + (stats.paid || 0) + (stats.processing || 0),
     shipped: stats.shipped || 0,
     delivered: stats.delivered || 0,
     cancelled: stats.cancelled || 0,

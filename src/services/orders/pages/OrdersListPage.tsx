@@ -8,6 +8,11 @@ import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { getOrders, getOrderStats, updateOrderStatus, orderKeys } from '../api/orders';
 import type { Order, OrderFilters, OrderStatus, OrderStats } from '../types';
 import {
+  formatOrderCustomerName,
+  orderMatchesStatusFilter,
+  orderStatusLabelKey,
+} from '../utils/order-display';
+import {
   AmberButton,
   AmberCard as Card,
   AmberTableSkeleton,
@@ -51,7 +56,26 @@ export const OrdersListPage = () => {
   // Fetch orders
   const { data: ordersData, isPending: isLoadingOrders, refetch } = useQuery({
     queryKey: orderKeys.list({ ...filters, status: statusFilter, search: debouncedSearch }),
-    queryFn: () => getOrders({ ...filters, status: statusFilter, search: debouncedSearch || undefined }),
+    queryFn: async () => {
+      const apiStatus =
+        statusFilter === 'all' || statusFilter === 'processing'
+          ? undefined
+          : statusFilter;
+      const response = await getOrders({
+        ...filters,
+        status: apiStatus as OrderFilters['status'],
+        search: debouncedSearch || undefined,
+      });
+      if (statusFilter === 'processing') {
+        return {
+          ...response,
+          data: response.data.filter((order) =>
+            orderMatchesStatusFilter(order.status, 'processing'),
+          ),
+        };
+      }
+      return response;
+    },
     enabled: isClient,
     placeholderData: keepPreviousData,
   });
@@ -79,7 +103,9 @@ export const OrdersListPage = () => {
       cardSubtitle: true,
       render: (order: any) => (
         <div className="space-y-0.5">
-          <div className="text-sm font-bold text-zinc-text">{order.customerName || '-'}</div>
+          <div className="text-sm font-bold text-zinc-text">
+            {formatOrderCustomerName(order.customerName, t)}
+          </div>
           {order.customerEmail && <div className="text-xs font-medium text-zinc-muted">{order.customerEmail}</div>}
         </div>
       ),
@@ -103,11 +129,11 @@ export const OrdersListPage = () => {
       render: (order: any) => (
           <StatusBadge
             status={order.status}
-            labelKey={`orders.status.${order.status}`}
+            labelKey={orderStatusLabelKey(order.status)}
             variant={
               order.status === 'delivered' ? 'success' :
               order.status === 'shipped' ? 'info' :
-              order.status === 'processing' ? 'warning' :
+              order.status === 'confirmed' || order.status === 'paid' || order.status === 'processing' ? 'warning' :
               order.status === 'cancelled' ? 'failed' :
               'pending'
             }
@@ -156,21 +182,25 @@ export const OrdersListPage = () => {
   const handleStatusChange = useCallback((order: Order, newStatus: OrderStatus) => {
     openConfirm({
       title: t('orders.updateStatus') || 'تحديث حالة الطلب',
-      message: `${t('orders.status_change_confirm') || 'هل تريد تغيير حالة الطلب إلى'} "${t(`orders.status.${newStatus}`) || newStatus}"?\n\n${order.orderNumber}`,
+      message: `${t('orders.status_change_confirm')} "${t(orderStatusLabelKey(newStatus)) || newStatus}"?\n\n${order.orderNumber}`,
       variant: newStatus === 'cancelled' ? 'destructive' : 'warning',
-      confirmText: t(`orders.status.${newStatus}`) || newStatus,
+      confirmText: t(orderStatusLabelKey(newStatus)) || newStatus,
       onConfirm: () => {
         statusMutation.mutate({ id: order.id, status: newStatus });
       },
     });
   }, [openConfirm, statusMutation, t]);
 
-  const statusTransitions: Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant?: 'default' | 'danger' | 'success' }[]> = useMemo(() => ({
+  const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant?: 'default' | 'danger' | 'success' }[]>> = useMemo(() => ({
     pending: [
-      { status: 'processing', icon: Clock },
+      { status: 'confirmed', icon: Clock },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
-    processing: [
+    confirmed: [
+      { status: 'paid', icon: CheckCircle },
+      { status: 'cancelled', icon: XCircle, variant: 'danger' },
+    ],
+    paid: [
       { status: 'shipped', icon: Truck },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
@@ -181,6 +211,7 @@ export const OrdersListPage = () => {
     delivered: [],
     cancelled: [],
     refunded: [],
+    processing: [],
   }), []);
 
   const rowActions: Action<Order>[] = useMemo(() => [
@@ -189,11 +220,11 @@ export const OrdersListPage = () => {
       icon: Eye,
       onClick: (order) => router.push(`/orders/${order.id}`),
     },
-    ...(['pending', 'processing', 'shipped'] as OrderStatus[]).flatMap((fromStatus) =>
-      statusTransitions[fromStatus].map((transition) => ({
+    ...(['pending', 'confirmed', 'paid', 'shipped'] as OrderStatus[]).flatMap((fromStatus) =>
+      (statusTransitions[fromStatus] ?? []).map((transition) => ({
         label: (order: Order) =>
           order.status === fromStatus
-            ? (t(`orders.status.${transition.status}`) || transition.status)
+            ? (t(orderStatusLabelKey(transition.status)) || transition.status)
             : null,
         icon: transition.icon,
         variant: transition.variant as 'default' | 'danger' | 'success',

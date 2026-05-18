@@ -12,6 +12,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useIsClient } from '@core/hooks/useIsClient';
+import { formatOrderCustomerName, orderStatusLabelKey } from '../utils/order-display';
 
 export const OrderDetailPage = () => {
   const router = useRouter();
@@ -52,8 +53,10 @@ export const OrderDetailPage = () => {
     return <div className="text-zinc-text">{t('orders.notFound')}</div>;
   }
 
-  const statusColors: Record<Order['status'], string> = {
+  const statusColors: Partial<Record<Order['status'], string>> = {
     pending: 'bg-yellow-500/20 text-yellow-400',
+    confirmed: 'bg-blue-500/20 text-blue-400',
+    paid: 'bg-cyan-500/20 text-cyan-400',
     processing: 'bg-blue-500/20 text-blue-400',
     shipped: 'bg-purple-500/20 text-purple-400',
     delivered: 'bg-green-500/20 text-green-400',
@@ -96,8 +99,8 @@ export const OrderDetailPage = () => {
             <Package className="text-zinc-muted" size={20} />
             <div>
               <div className="text-zinc-muted text-sm">{t('orders.orderStatus')}</div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
-                {t(`orders.status.${order.status}`) || order.status}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status] ?? 'bg-zinc-500/20 text-zinc-400'}`}>
+                {t(orderStatusLabelKey(order.status)) || order.status}
               </span>
             </div>
           </div>
@@ -118,7 +121,9 @@ export const OrderDetailPage = () => {
             <User className="text-zinc-muted" size={20} />
             <div>
               <div className="text-zinc-muted text-sm">{t('orders.customer')}</div>
-              <div className="text-zinc-text font-medium">{order.customerName}</div>
+              <div className="text-zinc-text font-medium">
+                {formatOrderCustomerName(order.customerName, t)}
+              </div>
             </div>
           </div>
         </AmberCard>
@@ -212,7 +217,7 @@ export const OrderDetailPage = () => {
           <AmberCard className="p-6">
             <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.updateStatus')}</h2>
             <div className="space-y-2">
-              {(['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as Order['status'][]).map((status) => (
+              {(['pending', 'confirmed', 'paid', 'shipped', 'delivered', 'cancelled'] as Order['status'][]).map((status) => (
                 <AmberButton
                   key={status}
                   variant={order.status === status ? 'primary' : 'secondary'}
@@ -221,7 +226,7 @@ export const OrderDetailPage = () => {
                   onClick={() => statusMutation.mutate({ id: order.id, status })}
                   disabled={statusMutation.isPending}
                 >
-                  {t(`orders.status.${status}`) || status.charAt(0).toUpperCase() + status.slice(1)}
+                  {t(orderStatusLabelKey(status)) || status}
                 </AmberButton>
               ))}
             </div>

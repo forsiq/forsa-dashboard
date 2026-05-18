@@ -39,7 +39,9 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                  </div>
                  <div className="min-w-0">
                    <p className="text-sm font-bold text-zinc-text tracking-tight truncate max-w-[200px]">{item.name}</p>
-                   <p className="text-[11px] font-semibold text-zinc-muted mt-0.5">{item.category}</p>
+                   <p className="text-[11px] font-semibold text-zinc-muted mt-0.5">
+                     {item.category || t('common.uncategorized')}
+                   </p>
                  </div>
                </div>
                
