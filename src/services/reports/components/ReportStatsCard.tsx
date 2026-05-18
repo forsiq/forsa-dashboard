@@ -34,7 +34,7 @@ export const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
     <AmberCard className={cn("group hover:border-brand/20 transition-all !p-6", className)}>
       <div className={cn("flex items-center justify-between gap-4", isRTL && "flex-row-reverse")}>
         <div className={cn("flex flex-col flex-1", isRTL ? "items-end" : "items-start")}>
-          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1">
+          <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-1">
             {label}
           </span>
           <StatValue value={value} className="!text-2xl" />
@@ -46,7 +46,7 @@ export const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
                 <TrendingDown className="w-3 h-3 text-danger" />
               )}
               <span className={cn(
-                "text-[10px] font-bold", 
+                "text-[11px] font-bold", 
                 isPositive ? "text-success" : "text-danger"
               )}>
                 {change}

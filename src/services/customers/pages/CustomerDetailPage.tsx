@@ -178,7 +178,7 @@ export function CustomerDetailPage() {
                 <card.icon className={cn('w-4 h-4', card.color)} />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em] block truncate">
+                <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.15em] block truncate">
                   {card.label}
                 </span>
                 <p className={cn('text-lg font-black tabular-nums leading-tight', card.color)}>
@@ -225,16 +225,16 @@ export function CustomerDetailPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-[var(--color-border)]">
-                      <th className="text-start px-6 py-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em]">
+                      <th className="text-start px-6 py-3 text-[11px] font-black text-zinc-muted uppercase tracking-[0.15em]">
                         {t('customer.bid_auction') || 'المزاد'}
                       </th>
-                      <th className="text-start px-6 py-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em]">
+                      <th className="text-start px-6 py-3 text-[11px] font-black text-zinc-muted uppercase tracking-[0.15em]">
                         {t('customer.bid_amount') || 'المبلغ'}
                       </th>
-                      <th className="text-start px-6 py-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em]">
+                      <th className="text-start px-6 py-3 text-[11px] font-black text-zinc-muted uppercase tracking-[0.15em]">
                         {t('customer.bid_status') || 'الحالة'}
                       </th>
-                      <th className="text-start px-6 py-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.15em]">
+                      <th className="text-start px-6 py-3 text-[11px] font-black text-zinc-muted uppercase tracking-[0.15em]">
                         {t('customer.bid_date') || 'التاريخ'}
                       </th>
                     </tr>
@@ -314,7 +314,7 @@ export function CustomerDetailPage() {
                     <Phone className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'رقم الهاتف'}</span>
+                    <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.phone') || 'رقم الهاتف'}</span>
                     <p dir="ltr" className="text-sm font-bold text-zinc-text text-end">{formatPhone(customer.phone)}</p>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ export function CustomerDetailPage() {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.registered') || 'Node Initialization'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.registered') || 'Node Initialization'}</span>
                   <p className="text-sm font-bold text-zinc-text">
                     {(customer.createdAt || customer.joinDate) ? new Date(customer.createdAt || customer.joinDate).toLocaleDateString() : 'N/A'}
                   </p>
@@ -341,7 +341,7 @@ export function CustomerDetailPage() {
                   <Globe className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.timezone') || 'Temporal Zone'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.timezone') || 'Temporal Zone'}</span>
                   <p className="text-sm font-bold text-zinc-text">GMT +3 (Iraq)</p>
                 </div>
               </div>
@@ -353,7 +353,7 @@ export function CustomerDetailPage() {
                   <Trophy className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.activity_win_rate') || 'نسبة الفوز'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em]">{t('customer.activity_win_rate') || 'نسبة الفوز'}</span>
                   <p className="text-sm font-bold text-zinc-text">{summary?.winRate ?? 0}%</p>
                 </div>
               </div>
@@ -369,15 +369,15 @@ export function CustomerDetailPage() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.street') || 'الشارع'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.street') || 'الشارع'}</span>
                   <p className="text-sm font-bold text-zinc-text line-clamp-1">{customer.address?.street || '-'}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.city') || 'المدينة'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.city') || 'المدينة'}</span>
                   <p className="text-sm font-bold text-zinc-text">{customer.address?.city || '-'}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.country') || 'الدولة'}</span>
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('customer.country') || 'الدولة'}</span>
                   <p className="text-sm font-bold text-zinc-text">{customer.address?.country || '-'}</p>
                 </div>
               </div>
@@ -397,19 +397,19 @@ export function CustomerDetailPage() {
 
             <div className="space-y-6">
               <div className="flex justify-between items-end">
-                <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.bids_count') || 'عدد المزايدات'}</span>
+                <span className="text-[13px] font-bold text-zinc-muted uppercase">{t('customer.bids_count') || 'عدد المزايدات'}</span>
                 <StatValue value={summary?.totalBids ?? customer.totalOrders ?? 0} className="!text-2xl" />
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.activity_auctions') || 'المزادات'}</span>
+                <span className="text-[13px] font-bold text-zinc-muted uppercase">{t('customer.activity_auctions') || 'المزادات'}</span>
                 <StatValue value={summary?.totalAuctions ?? 0} className="!text-2xl !text-purple-400" />
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.activity_winning_bids') || 'مزايدات فائزة'}</span>
+                <span className="text-[13px] font-bold text-zinc-muted uppercase">{t('customer.activity_winning_bids') || 'مزايدات فائزة'}</span>
                 <StatValue value={summary?.winningBids ?? 0} className="!text-2xl !text-emerald-400" />
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-xs font-bold text-zinc-muted uppercase">{t('customer.total_spent') || 'إجمالي الإنفاق'}</span>
+                <span className="text-[13px] font-bold text-zinc-muted uppercase">{t('customer.total_spent') || 'إجمالي الإنفاق'}</span>
                 <StatValue value={formatCurrency(summary?.totalSpent ?? customer.totalSpent ?? 0)} className="!text-2xl !text-[var(--color-brand)]" />
               </div>
             </div>

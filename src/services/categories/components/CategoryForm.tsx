@@ -167,7 +167,7 @@ export function CategoryForm({
             <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
               {t('category.basic_info') || 'Basic Information'}
             </h3>
-            <p className="text-xs text-zinc-muted mt-1">
+            <p className="text-[13px] text-zinc-muted mt-1">
               {t('category.basic_info_desc') || 'Basic category information'}
             </p>
           </div>

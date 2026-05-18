@@ -551,7 +551,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               onChange={handleCatalogChange}
             />
             <div className="mt-6 space-y-2">
-              <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                 {t('listing.form.description')}
               </label>
               <textarea
@@ -600,7 +600,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             uploadProgress={uploadProgress}
             uploadError={uploadError}
           />
-          <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest text-center mt-4">
+          <p className="text-[11px] text-zinc-muted font-bold uppercase tracking-widest text-center mt-4">
             {t('common.image_upload_hint')}
           </p>
         </FormSection>
@@ -762,11 +762,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               <ListingImage listing={listingCoverUrl} className="w-20 h-20 rounded-lg object-cover border border-white/10" fallbackClassName="w-8 h-8 text-zinc-muted/40" />
             )}
             <div>
-              <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.title')}</p>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.title')}</p>
               <p className="font-bold text-zinc-text">{catalog.title}</p>
             </div>
             <div>
-              <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.wizard.step.channel')}</p>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.wizard.step.channel')}</p>
               <p className="font-bold text-zinc-text">
                 {deployChannel === 'auction' ? t('listing.deploy.as_auction') : t('listing.deploy.as_group_buy')}
               </p>
@@ -774,12 +774,12 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             {deployChannel === 'auction' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] text-zinc-muted uppercase">{t('listing.deploy.start_price')}</p>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_price')}</p>
                   <p className="font-black">{auctionPricing.startPrice}</p>
                 </div>
                 {auctionPricing.originalPrice && (
                   <div>
-                    <p className="text-[10px] text-zinc-muted uppercase">{t('listing.deploy.auction_original_price')}</p>
+                    <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.auction_original_price')}</p>
                     <p className="font-black">{auctionPricing.originalPrice}</p>
                   </div>
                 )}
@@ -788,11 +788,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             {deployChannel === 'group_buy' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] text-zinc-muted uppercase">{t('listing.deploy.deal_price')}</p>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.deal_price')}</p>
                   <p className="font-black">{groupBuyPricing.dealPrice}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-zinc-muted uppercase">{t('listing.deploy.min_participants')}</p>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.min_participants')}</p>
                   <p className="font-black">{groupBuyPricing.minParticipants} – {groupBuyPricing.maxParticipants}</p>
                 </div>
               </div>

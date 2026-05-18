@@ -52,7 +52,7 @@ export function AmazonProductCard({ product, onClick }: AmazonProductCardProps) 
           <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-blue-600/90 backdrop-blur-sm">
             <div className="flex items-center gap-1">
               <Check className="w-3 h-3 text-white" />
-              <span className="text-[9px] font-black text-white uppercase tracking-wider">Prime</span>
+              <span className="text-[11px] font-black text-white uppercase tracking-wider">Prime</span>
             </div>
           </div>
         )}
@@ -60,7 +60,7 @@ export function AmazonProductCard({ product, onClick }: AmazonProductCardProps) 
 
       {/* Info */}
       <div className="p-4 space-y-2">
-        <h3 className="text-xs font-black text-zinc-text uppercase tracking-tight leading-snug line-clamp-2 min-h-[2.5em]">
+        <h3 className="text-sm font-black text-zinc-text uppercase tracking-tight leading-snug line-clamp-2 min-h-[2.5em]">
           {product.title}
         </h3>
 
@@ -75,14 +75,14 @@ export function AmazonProductCard({ product, onClick }: AmazonProductCardProps) 
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             <span className="text-xs font-bold text-zinc-text">{product.rating}</span>
             {product.ratings_total && (
-              <span className="text-[10px] text-zinc-muted font-bold">
+              <span className="text-[11px] text-zinc-muted font-bold">
                 ({product.ratings_total.toLocaleString()})
               </span>
             )}
           </div>
         )}
 
-        <p className="text-[9px] font-mono text-zinc-muted/50 tracking-wider">
+        <p className="text-[11px] font-mono text-zinc-muted/50 tracking-wider">
           ASIN: {product.asin}
         </p>
       </div>

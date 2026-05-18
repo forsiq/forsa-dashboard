@@ -31,7 +31,7 @@ export const AmberDateTimeInput = React.forwardRef<HTMLInputElement, AmberDateTi
         {label && (
           <label
             className={cn(
-              'text-xs font-bold uppercase tracking-[0.15em] px-1 flex justify-between transition-colors',
+              'text-[13px] font-bold uppercase tracking-[0.15em] px-1 flex justify-between transition-colors',
               error ? 'text-danger' : 'text-zinc-muted/90 dark:text-zinc-muted/80'
             )}
           >
@@ -39,7 +39,7 @@ export const AmberDateTimeInput = React.forwardRef<HTMLInputElement, AmberDateTi
               {label}
               {required ? <span className="text-brand ml-0.5">*</span> : null}
             </span>
-            {error ? <span className="normal-case opacity-90 text-[10px]">{error}</span> : null}
+            {error ? <span className="normal-case opacity-90 text-[11px]">{error}</span> : null}
           </label>
         )}
         <div className="relative group">
@@ -81,7 +81,7 @@ export const AmberDateTimeInput = React.forwardRef<HTMLInputElement, AmberDateTi
           />
         </div>
         {error && !label ? (
-          <p className="text-xs text-danger font-medium">{error}</p>
+          <p className="text-[13px] text-danger font-medium">{error}</p>
         ) : null}
       </div>
     );

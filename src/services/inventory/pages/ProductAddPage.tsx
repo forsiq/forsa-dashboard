@@ -224,7 +224,7 @@ export const ProductAddPage = () => {
               />
 
               <div className="space-y-1.5">
-                <label className={cn("text-[10px] font-black uppercase tracking-widest px-1 flex justify-between", errors.category ? "text-danger" : "text-zinc-muted")}>
+                <label className={cn("text-[11px] font-black uppercase tracking-widest px-1 flex justify-between", errors.category ? "text-danger" : "text-zinc-muted")}>
                   <span>{t('inventory.table.category') || 'الفئة'} <span className="text-[var(--color-danger)]">*</span></span>
                   {errors.category && <span className="italic normal-case opacity-90">{errors.category}</span>}
                 </label>
@@ -255,7 +255,7 @@ export const ProductAddPage = () => {
               />
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
+                <label className="text-[11px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
                   {t('prod.add.condition') || 'حالة المنتج'}
                 </label>
                 <AmberDropdown 
@@ -326,7 +326,7 @@ export const ProductAddPage = () => {
               />
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
+                <label className="text-[11px] font-black uppercase tracking-widest px-1 text-zinc-muted block">
                   {t('prod.add.duration') || 'مدة العرض (أيام)'}
                 </label>
                 <AmberDropdown 
@@ -373,7 +373,7 @@ export const ProductAddPage = () => {
                    <h4 className="text-sm font-black text-[var(--color-brand)] uppercase tracking-widest">
                      {t('prod.add.note_title') || 'ملاحظة مهمة'}
                    </h4>
-                   <p className="text-xs font-medium text-zinc-muted leading-relaxed">
+                   <p className="text-[13px] font-medium text-zinc-muted leading-relaxed">
                       {t('prod.add.note_desc') || 'تأكد من دقة جميع الأرقام التسلسلية والتقييمات. بعض الحقول تتطلب موافقة إدارية للتعديل.'}
                    </p>
                 </div>

@@ -41,11 +41,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       {/* Sales Trend Chart */}
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
+           <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.sales_trend')}
            </h3>
            {hasSalesData && (
-             <span className="text-[10px] font-semibold text-zinc-muted">
+             <span className="text-[11px] font-semibold text-zinc-muted">
                {salesData.length > 0 && `${salesData.filter((d: any) => d.orders > 0).length} ${t('dash.active_days')}`}
              </span>
            )}
@@ -65,7 +65,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
+                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }}
                   tickFormatter={(val) => {
                     const parts = val.split('-');
                     return `${parts[1]}/${parts[2]}`;
@@ -74,7 +74,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
+                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }}
                   tickFormatter={(val) => formatCurrency(val)}
                 />
                 <Tooltip 
@@ -106,7 +106,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-2">
                 <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_sales_data')}</p>
-                <p className="text-[10px] text-zinc-muted/50">{t('dash.sales_data_hint')}</p>
+                <p className="text-[11px] text-zinc-muted/50">{t('dash.sales_data_hint')}</p>
               </div>
             </div>
           )}
@@ -116,7 +116,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       {/* Category Distribution Chart */}
       <AmberCard className="!p-6 h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-           <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
+           <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.category_distribution')}
            </h3>
         </div>
@@ -157,8 +157,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                 {categoryData.map((entry: any, index: number) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
-                    <span className="text-xs font-semibold text-zinc-text truncate flex-1">{entry.category}</span>
-                    <span className="text-[10px] font-bold text-zinc-muted tabular-nums">{entry.orders}</span>
+                    <span className="text-[13px] font-semibold text-zinc-text truncate flex-1">{entry.category}</span>
+                    <span className="text-[11px] font-bold text-zinc-muted tabular-nums">{entry.orders}</span>
                   </div>
                 ))}
               </div>
@@ -167,7 +167,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center space-y-2">
                 <p className="text-sm font-semibold text-zinc-muted">{t('dash.no_category_data')}</p>
-                <p className="text-[10px] text-zinc-muted/50">{t('dash.category_data_hint')}</p>
+                <p className="text-[11px] text-zinc-muted/50">{t('dash.category_data_hint')}</p>
               </div>
             </div>
           )}

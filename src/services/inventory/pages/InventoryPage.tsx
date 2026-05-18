@@ -340,7 +340,7 @@ export const InventoryPage = () => {
                 lowStockAlerts.map((alert, i) => (
                   <div key={i} className="group p-4 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
                     <div className="flex items-center justify-between mb-2">
-                       <p className="text-xs font-bold text-zinc-text uppercase tracking-tight truncate pe-4">
+                       <p className="text-[13px] font-bold text-zinc-text uppercase tracking-tight truncate pe-4">
                         {alert.name}
                       </p>
                       <StatusBadge status="LOW" variant="warning" size="sm" />
@@ -361,7 +361,7 @@ export const InventoryPage = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 opacity-30 text-center">
                   <Package className="w-10 h-10 mb-2 stroke-1" />
-                  <p className="text-xs font-black uppercase tracking-widest">{t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}</p>
+                  <p className="text-sm font-black uppercase tracking-widest">{t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}</p>
                 </div>
               )}
             </div>
@@ -419,7 +419,7 @@ export const InventoryPage = () => {
               <div className="p-1.5 bg-brand/10 rounded-sm">
                 <Search className="w-3.5 h-3.5 text-brand" />
               </div>
-              <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
+              <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
                 {t('inventory.search_label')}
               </label>
             </div>
@@ -443,7 +443,7 @@ export const InventoryPage = () => {
                 <div className="p-1.5 bg-info/10 rounded-sm">
                   <Package className="w-3.5 h-3.5 text-info" />
                 </div>
-                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
+                <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
                   {t('common.status')}
                 </label>
               </div>
@@ -465,7 +465,7 @@ export const InventoryPage = () => {
                 <div className="p-1.5 bg-success/10 rounded-sm">
                   <Filter className="w-3.5 h-3.5 text-success" />
                 </div>
-                <label className="text-[10px] font-black text-zinc-text uppercase tracking-widest">
+                <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
                   {t('inventory.table.category')}
                 </label>
               </div>

@@ -112,7 +112,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                   <h3 className="text-base font-black text-zinc-text uppercase tracking-tight truncate">
                     {bid.auctionTitle}
                   </h3>
-                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
+                  <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
                     #{bid.auctionId}
                   </p>
                 </div>
@@ -123,7 +123,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
               {/* Status + Price row */}
               <div className={cn('flex items-center justify-between gap-4', dir === 'rtl' && 'flex-row-reverse')}>
                 <div className={cn('space-y-1', dir === 'rtl' ? 'text-right' : 'text-left')}>
-                  <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('auction.sheet.your_status') || 'Your Status'}
                   </p>
                   <StatusBadge
@@ -135,7 +135,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                 </div>
 
                 <div className={cn('space-y-1 text-right', dir === 'rtl' ? 'text-left' : 'text-right')}>
-                  <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('auction.sheet.your_bid') || 'Your Bid'}
                   </p>
                   <p className="text-xl font-black text-brand tabular-nums tracking-tight">
@@ -154,7 +154,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                   )}>
                     <TrendingUp className="w-4 h-4 text-success shrink-0" />
                     <div className={cn('min-w-0', dir === 'rtl' ? 'text-right' : 'text-left')}>
-                      <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">
+                      <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                         {t('auction.sheet.current_bid') || 'Current Bid'}
                       </p>
                       <p className="text-sm font-black text-zinc-text tabular-nums">
@@ -173,7 +173,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                   )}>
                     <Clock className="w-4 h-4 text-warning shrink-0" />
                     <div className={cn('min-w-0', dir === 'rtl' ? 'text-right' : 'text-left')}>
-                      <p className="text-[9px] font-black text-zinc-muted uppercase tracking-widest">
+                      <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                         {t('auction.sheet.time_left') || 'Time Left'}
                       </p>
                       <p className="text-sm font-black text-warning tabular-nums">

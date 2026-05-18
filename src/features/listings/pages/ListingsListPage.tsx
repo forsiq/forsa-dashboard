@@ -114,7 +114,7 @@ export const ListingsListPage: React.FC = () => {
           </div>
           <div className="min-w-0">
             <DataTableEntityTitle text={listing.title} />
-            <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
+            <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {listing.sku || listing.brand || '—'}
             </p>
           </div>
@@ -126,7 +126,7 @@ export const ListingsListPage: React.FC = () => {
       key: 'brand',
       label: t('listing.table.brand') || 'Brand',
       render: (listing) => (
-        <span className="text-xs font-bold text-zinc-text">
+        <span className="text-[13px] font-bold text-zinc-text">
           {listing.brand ? `${listing.brand}${listing.model ? ` ${listing.model}` : ''}` : '—'}
         </span>
       ),
@@ -312,12 +312,12 @@ export const ListingsListPage: React.FC = () => {
         <div className="space-y-8 py-4">
           {conditions.length > 0 && (
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.condition')}</label>
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.condition')}</label>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => { setConditionFilter('all'); setPage(1); }}
                   className={cn(
-                    "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                    "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                     conditionFilter === 'all'
                       ? "bg-brand text-black border-brand"
                       : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -330,7 +330,7 @@ export const ListingsListPage: React.FC = () => {
                     key={cond}
                     onClick={() => { setConditionFilter(cond); setPage(1); }}
                     className={cn(
-                      "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                      "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                       conditionFilter === cond
                         ? "bg-brand text-black border-brand"
                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -345,12 +345,12 @@ export const ListingsListPage: React.FC = () => {
 
           {brands.length > 0 && (
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.brand')}</label>
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.brand')}</label>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => { setBrandFilter('all'); setPage(1); }}
                   className={cn(
-                    "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                    "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                     brandFilter === 'all'
                       ? "bg-brand text-black border-brand"
                       : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -363,7 +363,7 @@ export const ListingsListPage: React.FC = () => {
                     key={brand}
                     onClick={() => { setBrandFilter(brand); setPage(1); }}
                     className={cn(
-                      "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                      "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                       brandFilter === brand
                         ? "bg-brand text-black border-brand"
                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"

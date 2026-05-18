@@ -34,7 +34,7 @@ export const CriticalNodes: React.FC = () => {
       <AmberCard className="border-warning/10 shadow-lg">
         <div className="flex items-center gap-2 mb-4 border-s-2 border-warning ps-3">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('critical.title')}
           </h3>
         </div>
@@ -50,7 +50,7 @@ export const CriticalNodes: React.FC = () => {
       <AmberCard className="border-success/10 shadow-lg">
         <div className="flex items-center gap-2 mb-4 border-s-2 border-success ps-3">
           <Clock className="w-3.5 h-3.5 text-success" />
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('critical.title')}
           </h3>
         </div>
@@ -58,7 +58,7 @@ export const CriticalNodes: React.FC = () => {
           <p className="text-sm text-zinc-muted/50 font-bold">
             {t('critical.empty')}
           </p>
-          <p className="text-[10px] text-zinc-muted/30 uppercase tracking-widest mt-1">
+          <p className="text-[11px] text-zinc-muted/30 uppercase tracking-widest mt-1">
             {t('critical.all_safe')}
           </p>
         </div>
@@ -71,11 +71,11 @@ export const CriticalNodes: React.FC = () => {
       <div className="flex items-center justify-between mb-4 border-s-2 border-warning ps-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('critical.title')}
           </h3>
         </div>
-        <span className="text-[10px] text-warning font-mono uppercase tracking-widest">
+        <span className="text-[11px] text-warning font-mono uppercase tracking-widest">
           {criticalAuctions.length} {t('critical.ending_soon')}
         </span>
       </div>
@@ -138,7 +138,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
                 isUrgent ? 'bg-danger' : 'bg-warning',
               )}
             />
-            <p className="text-xs font-bold text-zinc-text truncate">
+            <p className="text-sm font-bold text-zinc-text truncate">
               {title}
             </p>
           </div>
@@ -146,7 +146,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
             <span className="text-sm font-black text-zinc-text tracking-tight">
               {Number(currentBid || 0).toLocaleString()} IQD
             </span>
-            <span className="text-[10px] text-zinc-muted font-mono">
+            <span className="text-[11px] text-zinc-muted font-mono">
               {totalBids} {t('critical.bids')}
             </span>
           </div>
@@ -155,7 +155,7 @@ const CriticalNodeCard: React.FC<CriticalNodeCardProps> = ({
         <div className="flex flex-col items-end gap-2 shrink-0">
           <span
             className={cn(
-              'text-[10px] font-black font-mono uppercase tracking-wider flex items-center gap-1',
+              'text-[11px] font-black font-mono uppercase tracking-wider flex items-center gap-1',
               isUrgent ? 'text-danger' : 'text-warning',
             )}
           >

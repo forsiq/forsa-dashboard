@@ -93,10 +93,10 @@ export const OrderFormPage = () => {
           <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
         </AmberButton>
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-zinc-text">
             {isEdit ? t('orders.editOrder') : t('orders.new')}
           </h1>
-          <p className="text-zinc-400 mt-1">
+          <p className="text-zinc-muted mt-1">
             {isEdit ? t('orders.updateOrderDetails') : t('orders.createOrderSubtitle')}
           </p>
         </div>
@@ -105,10 +105,10 @@ export const OrderFormPage = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Customer Information */}
         <AmberCard className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">{t('orders.customerInformation')}</h2>
+          <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.customerInformation')}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.customerId')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.customerId')}</label>
               <AmberInput
                 {...register('customerId', { required: t('orders.customerIdRequired') })}
                 placeholder={t('orders.customerIdPlaceholder')}
@@ -120,10 +120,10 @@ export const OrderFormPage = () => {
 
         {/* Shipping Address */}
         <AmberCard className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">{t('orders.shippingAddress')}</h2>
+          <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.shippingAddress')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.fullName')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.fullName')}</label>
               <AmberInput
                 {...register('shippingAddress.fullName', { required: 'Required' })}
                 placeholder={t('orders.fullName')}
@@ -131,7 +131,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.phone')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.phone')}</label>
               <AmberInput
                 {...register('shippingAddress.phone', { required: 'Required' })}
                 placeholder={t('orders.phone')}
@@ -139,7 +139,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.street')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.street')}</label>
               <AmberInput
                 {...register('shippingAddress.street', { required: 'Required' })}
                 placeholder={t('orders.street')}
@@ -147,7 +147,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.city')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.city')}</label>
               <AmberInput
                 {...register('shippingAddress.city', { required: 'Required' })}
                 placeholder={t('orders.city')}
@@ -155,7 +155,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.state')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.state')}</label>
               <AmberInput
                 {...register('shippingAddress.state', { required: 'Required' })}
                 placeholder={t('orders.state')}
@@ -163,7 +163,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.country')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.country')}</label>
               <AmberInput
                 {...register('shippingAddress.country', { required: 'Required' })}
                 placeholder={t('orders.country')}
@@ -171,7 +171,7 @@ export const OrderFormPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.postalCode')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.postalCode')}</label>
               <AmberInput
                 {...register('shippingAddress.postalCode')}
                 placeholder={t('orders.postalCode')}
@@ -182,22 +182,22 @@ export const OrderFormPage = () => {
 
         {/* Additional Details */}
         <AmberCard className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">{t('orders.additionalDetails')}</h2>
+          <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.additionalDetails')}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.currency')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.currency')}</label>
               <select
                 {...register('currency')}
-                className="w-full px-4 py-2 bg-obsidian-card border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
+                className="w-full px-4 py-2 bg-obsidian-card border border-[var(--color-border)] rounded-lg text-zinc-text focus:outline-none focus:border-brand/30"
               >
                 <option value="IQD">IQD</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.priority')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.priority')}</label>
               <select
                 {...register('priority')}
-                className="w-full px-4 py-2 bg-obsidian-card border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
+                className="w-full px-4 py-2 bg-obsidian-card border border-[var(--color-border)] rounded-lg text-zinc-text focus:outline-none focus:border-brand/30"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -206,12 +206,12 @@ export const OrderFormPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">{t('orders.notes')}</label>
+              <label className="block text-sm text-zinc-muted mb-1">{t('orders.notes')}</label>
               <textarea
                 {...register('notes')}
                 rows={3}
                 placeholder={t('orders.notesPlaceholder')}
-                className="w-full px-4 py-2 bg-obsidian-card border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
+                className="w-full px-4 py-2 bg-obsidian-card border border-[var(--color-border)] rounded-lg text-zinc-text focus:outline-none focus:border-brand/30"
               />
             </div>
           </div>

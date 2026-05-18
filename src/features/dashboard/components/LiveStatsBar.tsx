@@ -53,7 +53,7 @@ export const LiveStatsBar: React.FC<LiveStatsBarProps> = ({
             className="hover:border-zinc-secondary/20 transition-all"
           >
             <div className="space-y-1">
-              <p className="text-xs font-black text-zinc-muted uppercase tracking-widest">
+              <p className="text-sm font-black text-zinc-muted uppercase tracking-widest">
                 {t(labelKeys[item.key])}
               </p>
               <div className="flex items-center justify-between">
@@ -72,7 +72,7 @@ export const LiveStatsBar: React.FC<LiveStatsBarProps> = ({
             {item.key === 'activeAuctions' && !isLoading && value > 0 && (
               <div className="flex items-center gap-1.5 mt-4 pt-4 border-t border-white/[0.03]">
                 <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                <span className="text-[10px] font-semibold text-success tracking-widest">
+                <span className="text-xs font-semibold text-success tracking-widest">
                   {t('live.live')}
                 </span>
               </div>

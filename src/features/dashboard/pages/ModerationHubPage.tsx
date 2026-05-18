@@ -85,7 +85,7 @@ function TimelineEventRow({ event, t }: { event: TimelineEvent; t: (key: string)
     <div className="flex items-start gap-3 py-2 border-b border-[var(--color-border)] last:border-0">
       <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-[var(--color-brand)]" />
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-zinc-text leading-relaxed">
+        <p className="text-[13px] text-zinc-text leading-relaxed">
           <span className="font-mono text-zinc-muted">{maskId(event.bidderId)}</span>
           {' '}
           <span className="text-zinc-muted">{t('moderation.activity.timeline_bid')
@@ -93,7 +93,7 @@ function TimelineEventRow({ event, t }: { event: TimelineEvent; t: (key: string)
             .replace('{auction}', event.auctionTitle || `#${event.auctionId}`)
           }</span>
         </p>
-        <p className="text-[10px] text-zinc-muted mt-0.5">
+        <p className="text-[11px] text-zinc-muted mt-0.5">
           {event.createdAt ? timeAgo(event.createdAt, t) : ''}
         </p>
       </div>
@@ -141,7 +141,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
                 variant={auctionStatusVariant(auction.status)}
                 showDot
                 size="sm"
-                className="font-bold text-[10px]"
+                className="font-bold text-[11px]"
               />
             </div>
           </div>
@@ -154,7 +154,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
               <span className="text-xs font-bold text-zinc-text">
                 {auction.bidCount}
               </span>
-              <span className="text-[10px] text-zinc-muted">
+              <span className="text-[11px] text-zinc-muted">
                 {t('moderation.activity.bids_count')}
               </span>
             </div>
@@ -165,7 +165,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
               <span className="text-xs font-black text-zinc-text tabular-nums">
                 {auction.currentPrice.toLocaleString()}
               </span>
-              <span className="text-[10px] text-zinc-muted">IQD</span>
+              <span className="text-[11px] text-zinc-muted">IQD</span>
             </div>
           </div>
 
@@ -174,16 +174,16 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
             {auction.lastBid ? (
               <>
                 <Clock className="w-3 h-3 text-zinc-muted" />
-                <span className="text-[10px] text-zinc-muted">
+                <span className="text-[11px] text-zinc-muted">
                   {t('moderation.activity.last_bid')}: {Number(auction.lastBid.amount).toLocaleString()} IQD
                 </span>
-                <span className="text-[10px] text-zinc-muted/60">•</span>
-                <span className="text-[10px] text-zinc-muted">
+                <span className="text-[11px] text-zinc-muted/60">•</span>
+                <span className="text-[11px] text-zinc-muted">
                   {timeAgo(auction.lastBid.timeAgo, t)}
                 </span>
               </>
             ) : (
-              <span className="text-[10px] text-zinc-muted">
+              <span className="text-[11px] text-zinc-muted">
                 {t('moderation.activity.no_bids_yet')}
               </span>
             )}
@@ -320,7 +320,7 @@ export const ModerationHubPage = () => {
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className="px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
+                className="px-3 py-2 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
               >
                 {t('moderation.activity.clear_filters')}
               </button>
@@ -391,7 +391,7 @@ export const ModerationHubPage = () => {
             </h3>
 
             {timeline.length === 0 ? (
-              <p className="text-xs text-zinc-muted py-4 text-center">
+              <p className="text-[13px] text-zinc-muted py-4 text-center">
                 {t('moderation.activity.no_activity')}
               </p>
             ) : (

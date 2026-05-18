@@ -65,7 +65,7 @@ export function SalesReportPage() {
                 key={t_frame}
                 onClick={() => setTimeframe(t_frame)}
                 className={cn(
-                  "px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
+                  "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all",
                   timeframe === t_frame 
                     ? "bg-brand text-black shadow-lg" 
                     : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
@@ -124,8 +124,8 @@ export function SalesReportPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={report?.products || []} layout="vertical" margin={{ left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                    <XAxis type="number" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" stroke="#71717a" tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 700 }} width={100} axisLine={false} tickLine={false} />
+                    <XAxis type="number" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" stroke="#71717a" tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 700 }} width={100} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
                       formatter={(value: string | number | (string | number)[]) => formatCurrency(Array.isArray(value) ? value[0] : value)}
@@ -142,8 +142,8 @@ export function SalesReportPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={report?.products?.map((p, i) => ({ ...p, goal: p.revenue * 0.85 })) || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="name" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="name" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }} />
                     <Area type="monotone" dataKey="revenue" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} strokeWidth={3} />
                     <Area type="monotone" dataKey="goal" stroke="#71717a" fill="transparent" strokeDasharray="5 5" />

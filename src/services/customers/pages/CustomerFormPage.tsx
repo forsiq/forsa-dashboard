@@ -232,7 +232,7 @@ export function CustomerFormPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest block px-1 text-start">
+                <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest block px-1 text-start">
                   {t('customer.type') || 'نوع العميل'}
                 </label>
                 <AmberDropdown 
@@ -333,7 +333,7 @@ export function CustomerFormPage() {
 
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className="text-xs font-black text-zinc-secondary uppercase tracking-[0.2em] block text-start">
+                <label className="text-[13px] font-black text-zinc-secondary uppercase tracking-[0.2em] block text-start">
                    {t('common.status') || 'Operational Status'}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -383,7 +383,7 @@ export function CustomerFormPage() {
                 <UserPlus className="w-5 h-5 text-[var(--color-brand)] shrink-0" />
                 <div className="space-y-1">
                    <h4 className="text-sm font-black text-[var(--color-brand)] uppercase tracking-widest">{t('customer.form_note_title') || 'ملاحظة'}</h4>
-                   <p className="text-xs font-medium text-zinc-muted leading-relaxed">
+                   <p className="text-[13px] font-medium text-zinc-muted leading-relaxed">
                       {t('customer.form_note_desc') || 'تأكد من صحة جميع البيانات قبل الحفظ.'}
                    </p>
                 </div>

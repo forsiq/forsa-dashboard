@@ -105,7 +105,7 @@ export const RegisterForm: React.FC = () => {
             className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
           >
             <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
-            <p className="text-xs font-bold text-danger">
+            <p className="text-[13px] font-bold text-danger">
               {currentError}
             </p>
           </motion.div>
@@ -155,7 +155,7 @@ export const RegisterForm: React.FC = () => {
                     />
                   ))}
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${
                   passwordStrength.label === 'weak' ? 'text-danger' :
                   passwordStrength.label === 'fair' ? 'text-warning' : 'text-success'
                 }`}>

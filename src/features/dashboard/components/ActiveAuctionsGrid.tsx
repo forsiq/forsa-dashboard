@@ -62,10 +62,10 @@ export const ActiveAuctionsGrid: React.FC = () => {
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 border-s-2 border-warning ps-3">
-        <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+        <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
           {t('live.activeAuctionsTitle')}
         </h3>
-        <span className="text-[10px] text-zinc-muted font-mono uppercase tracking-widest">
+        <span className="text-[11px] text-zinc-muted font-mono uppercase tracking-widest">
           {auctions.length} {t('live.liveCount')}
         </span>
       </div>
@@ -135,7 +135,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                 getUrgencyDot(auction.endTime),
               )}
             />
-            <p className="text-xs font-bold text-zinc-text truncate">
+            <p className="text-sm font-bold text-zinc-text truncate">
               {auction.title}
             </p>
           </div>
@@ -143,20 +143,20 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
             <span className="text-sm font-black text-zinc-text tracking-tight">
               {(auction.currentBid || auction.startPrice).toLocaleString()} IQD
             </span>
-            <span className="text-[10px] text-zinc-muted font-mono">
+            <span className="text-[11px] text-zinc-muted font-mono">
               {auction.totalBids} {t('live.bids')}
             </span>
           </div>
         </div>
 
         <div className="flex flex-col items-end shrink-0">
-          <span className="text-[10px] font-black font-mono text-zinc-muted uppercase tracking-wider flex items-center gap-1">
+          <span className="text-[11px] font-black font-mono text-zinc-muted uppercase tracking-wider flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {timeStr}
           </span>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-1 text-[9px] text-zinc-muted/60 hover:text-zinc-text uppercase tracking-widest font-bold transition-colors flex items-center gap-0.5"
+            className="mt-1 text-[11px] text-zinc-muted/60 hover:text-zinc-text uppercase tracking-widest font-bold transition-colors flex items-center gap-0.5"
           >
             {t('live.actions')}
             {expanded ? (

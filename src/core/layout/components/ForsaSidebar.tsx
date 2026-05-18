@@ -333,7 +333,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                   <AmberLogo className="w-8 h-8" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-lg font-black text-white leading-none block uppercase tracking-wider truncate">
+                  <span className="text-lg font-black text-zinc-text leading-none block uppercase tracking-wider truncate">
                     {t('app.name')}
                   </span>
                   <span className="text-xs font-black text-brand uppercase tracking-widest block truncate">
@@ -406,7 +406,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
             return (
               <nav key={sectionKey} className="space-y-1 mb-8">
                 {showSectionHeader && !isUnified && (
-                  <p className="px-5 text-xs font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">
+                  <p className="px-5 text-sm font-black text-zinc-muted/60 uppercase tracking-[0.2em] mb-3">
                     {t(section.title) || section.title}
                   </p>
                 )}
@@ -461,7 +461,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                                 ? t('sidebar.badge.new')
                                 : b;
                             return (
-                              <span className="ms-2 min-w-[1.25rem] rounded-full bg-brand/20 px-1.5 py-0.5 text-center text-[10px] font-black text-brand">
+                              <span className="ms-2 min-w-[1.25rem] rounded-full bg-brand/20 px-1.5 py-0.5 text-center text-[11px] font-black text-brand">
                                 {badgeLabel}
                               </span>
                             );
@@ -526,7 +526,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                   <span className="text-xs font-black text-zinc-muted uppercase tracking-widest group-hover:text-zinc-text transition-colors">
                     {t('sidebar.exit')}
                   </span>
-                  <span className="text-[10px] font-bold text-zinc-muted/60 uppercase tracking-tight group-hover:text-brand transition-colors">
+                  <span className="text-[11px] font-bold text-zinc-muted/60 uppercase tracking-tight group-hover:text-brand transition-colors">
                     {t('sidebar.back_portal')}
                   </span>
                 </div>

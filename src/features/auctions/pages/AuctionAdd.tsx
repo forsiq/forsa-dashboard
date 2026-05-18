@@ -157,15 +157,15 @@ export const AuctionAdd = () => {
           <ArrowLeft size={20} className={isRTL ? 'rotate-180' : ''} />
         </Button>
         <div className={isRTL ? 'text-right' : 'text-left'}>
-          <h1 className="text-2xl font-bold text-white">{t('auction.create_auction') || 'Create Auction'}</h1>
-          <p className="text-zinc-400">{t('auction.list_item_desc') || 'List an item for auction'}</p>
+          <h1 className="text-2xl font-bold text-zinc-text">{t('auction.create_auction') || 'Create Auction'}</h1>
+          <p className="text-zinc-muted">{t('auction.list_item_desc') || 'List an item for auction'}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <Card className="p-6 space-y-4">
-          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.basic_info') || 'Basic Information'}</h2>
+          <h2 className={`text-lg font-semibold text-zinc-text ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.basic_info') || 'Basic Information'}</h2>
 
           <AmberInput
             label={t('auction.form.title')}
@@ -197,7 +197,7 @@ export const AuctionAdd = () => {
 
         {/* Images */}
         <Card className="p-6 space-y-4">
-          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.images') || 'Images'}</h2>
+          <h2 className={`text-lg font-semibold text-zinc-text ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.images') || 'Images'}</h2>
 
           <AmberImageUpload
             value={uploadedImages}
@@ -213,7 +213,7 @@ export const AuctionAdd = () => {
 
         {/* Pricing */}
         <Card className="p-6 space-y-4">
-          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.pricing') || 'Pricing'}</h2>
+          <h2 className={`text-lg font-semibold text-zinc-text ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.form.pricing') || 'Pricing'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AmberInput
@@ -249,7 +249,7 @@ export const AuctionAdd = () => {
 
         {/* Timing */}
         <Card className="p-6 space-y-4">
-          <h2 className={`text-lg font-semibold text-white ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
+          <h2 className={`text-lg font-semibold text-zinc-text ${isRTL ? 'text-right' : 'text-left'}`}>{t('auction.auction_schedule') || 'Auction Schedule'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AmberDatePicker
@@ -273,7 +273,7 @@ export const AuctionAdd = () => {
           <Button
             type="button"
             variant="ghost"
-            className="text-zinc-400 hover:text-white"
+            className="text-zinc-muted hover:text-zinc-text"
             onClick={() => router.push('/auctions')}
           >
             {t('common.cancel')}

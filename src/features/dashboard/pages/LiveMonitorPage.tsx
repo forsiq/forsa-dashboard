@@ -26,7 +26,7 @@ export const LiveMonitorPage = () => {
               {t('live.title')}
             </h1>
             <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${
                 isConnected
                   ? 'bg-success/10 text-success border border-success/20'
                   : 'bg-danger/10 text-danger border border-danger/20'
@@ -46,7 +46,7 @@ export const LiveMonitorPage = () => {
         </div>
 
         {error && (
-          <div className="px-3 py-2 rounded-xl bg-warning/10 border border-warning/20 text-warning text-xs font-bold">
+          <div className="px-3 py-2 rounded-xl bg-warning/10 border border-warning/20 text-warning text-[13px] font-bold">
             {error}
           </div>
         )}

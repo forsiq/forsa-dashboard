@@ -134,7 +134,7 @@ export function UsersListPage() {
     const colors = {
       admin: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
       manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      user: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+      user: 'bg-zinc-500/20 text-zinc-muted border-zinc-500/30',
     };
     return colors[role as keyof typeof colors] || colors.user;
   };
@@ -152,7 +152,7 @@ export function UsersListPage() {
       label: t('user.username') || 'Username',
       cardTitle: true,
       render: (user: any) => (
-        <span className="text-sm font-medium text-white">{user.userName}</span>
+        <span className="text-sm font-medium text-zinc-text">{user.userName}</span>
       ),
       sortable: true,
     },
@@ -161,7 +161,7 @@ export function UsersListPage() {
       label: t('user.full_name') || 'Full Name',
       cardSubtitle: true,
       render: (user: any) => (
-        <span className="text-sm text-zinc-300">{user.fullName}</span>
+        <span className="text-sm text-zinc-secondary">{user.fullName}</span>
       ),
       sortable: true,
     },
@@ -170,7 +170,7 @@ export function UsersListPage() {
       label: t('user.email') || 'Email',
       hideInCard: true,
       render: (user: any) => (
-        <span className="text-sm text-zinc-400">{user.email || '-'}</span>
+        <span className="text-sm text-zinc-muted">{user.email || '-'}</span>
       ),
     },
     {
@@ -207,7 +207,7 @@ export function UsersListPage() {
       key: 'createdAt',
       label: t('user.created_at') || 'Created',
       render: (user: any) => (
-        <span className="text-sm text-zinc-400">{formatDate(user.createdAt)}</span>
+        <span className="text-sm text-zinc-muted">{formatDate(user.createdAt)}</span>
       ),
       sortable: true,
       align: 'center',
@@ -277,10 +277,10 @@ export function UsersListPage() {
         ) : paginatedUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <ShieldAlert className="h-16 w-16 text-zinc-600 mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-lg font-semibold text-zinc-text mb-2">
               {t('user.no_users')}
             </h3>
-            <p className="text-sm text-zinc-400 mb-6">
+            <p className="text-sm text-zinc-muted mb-6">
               {t('user.no_users_description')}
             </p>
             <AmberButton

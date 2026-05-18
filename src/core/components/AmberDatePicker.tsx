@@ -148,7 +148,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         {dayNames.map((name, i) => (
           <div
             key={i}
-            className="h-8 flex items-center justify-center text-[10px] font-black text-zinc-muted/60 uppercase tracking-widest"
+            className="h-8 flex items-center justify-center text-[11px] font-black text-zinc-muted/60 uppercase tracking-widest"
           >
             {name}
           </div>
@@ -208,7 +208,7 @@ const TimePicker: React.FC<TimePickerProps> = ({ hour, minute, onChange, isRTL, 
       <Clock className="w-4 h-4 text-zinc-muted shrink-0" />
       <div className="flex items-center gap-2 flex-1">
         <div className="flex-1">
-          <label className="block text-[9px] font-black text-zinc-muted/60 uppercase tracking-widest mb-1">
+          <label className="block text-[11px] font-black text-zinc-muted/60 uppercase tracking-widest mb-1">
             {labelHour}
           </label>
           <select
@@ -223,7 +223,7 @@ const TimePicker: React.FC<TimePickerProps> = ({ hour, minute, onChange, isRTL, 
         </div>
         <span className="text-lg font-black text-zinc-muted/40 mt-4">:</span>
         <div className="flex-1">
-          <label className="block text-[9px] font-black text-zinc-muted/60 uppercase tracking-widest mb-1">
+          <label className="block text-[11px] font-black text-zinc-muted/60 uppercase tracking-widest mb-1">
             {labelMinute}
           </label>
           <select
@@ -387,7 +387,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
         {label && (
           <label
             className={cn(
-              'text-xs font-bold uppercase tracking-[0.15em] px-1 flex justify-between transition-colors',
+              'text-[13px] font-bold uppercase tracking-[0.15em] px-1 flex justify-between transition-colors',
               error ? 'text-danger' : 'text-zinc-muted/90 dark:text-zinc-muted/80'
             )}
           >
@@ -396,7 +396,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
               {required ? <span className="text-brand ml-0.5">*</span> : null}
               {labelEndSlot}
             </span>
-            {error ? <span className="normal-case opacity-90 text-[10px]">{error}</span> : null}
+            {error ? <span className="normal-case opacity-90 text-[11px]">{error}</span> : null}
           </label>
         )}
 
@@ -508,7 +508,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
             <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-center justify-between">
               <button
                 type="button"
-                className="text-[10px] font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
+                className="text-[11px] font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
                 onClick={() => {
                   const now = new Date();
                   onChange(toDateString(
@@ -521,7 +521,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
               </button>
               <button
                 type="button"
-                className="text-[10px] font-black text-zinc-muted uppercase tracking-widest hover:text-zinc-text transition-colors"
+                className="text-[11px] font-black text-zinc-muted uppercase tracking-widest hover:text-zinc-text transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 {language === 'ar' ? 'إغلاق' : 'Close'}
@@ -532,7 +532,7 @@ export const AmberDatePicker = React.forwardRef<HTMLInputElement, AmberDatePicke
         )}
 
         {error && !label && (
-          <p className="text-xs text-danger font-medium">{error}</p>
+          <p className="text-[13px] text-danger font-medium">{error}</p>
         )}
       </div>
     );

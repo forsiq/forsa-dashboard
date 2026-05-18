@@ -14,7 +14,7 @@ export function FetchingOverlay({ message }: FetchingOverlayProps) {
       <div className="flex items-center gap-2 bg-obsidian-card/80 backdrop-blur-sm border border-white/[0.05] rounded-lg px-3 py-1.5 shadow-lg">
         <div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />
         {message && (
-          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-muted">
+          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">
             {message}
           </span>
         )}

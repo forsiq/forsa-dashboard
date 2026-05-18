@@ -48,7 +48,7 @@ export function ListingSourcesEditor({ sources, onChange }: ListingSourcesEditor
           </AmberButton>
         </div>
         {sources.length === 0 ? (
-          <p className="text-xs text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
+          <p className="text-sm text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
             {t('auction.form.no_sources') || 'No sources added.'}
           </p>
         ) : (

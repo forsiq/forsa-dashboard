@@ -337,7 +337,7 @@ export const ListingFormPage: React.FC = () => {
             uploadProgress={uploadProgress}
             uploadError={uploadError}
           />
-          <p className="text-[10px] text-zinc-muted font-bold uppercase tracking-widest text-center">
+          <p className="text-[11px] text-zinc-muted font-bold uppercase tracking-widest text-center">
             {t('common.image_upload_hint') || 'PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.'}
           </p>
         </div>
@@ -383,7 +383,7 @@ export const ListingFormPage: React.FC = () => {
               <Info className="w-4 h-4 text-brand" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-black text-brand uppercase">{t('listing.form.create_listing')}</p>
+              <p className="text-sm font-black text-brand uppercase">{t('listing.form.create_listing')}</p>
               <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                 {t('listing.description')}
               </p>

@@ -53,7 +53,7 @@ export function ListingWizardStepIndicator({
               >
                 <span
                   className={cn(
-                    'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black',
+                    'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black',
                     isActive && 'bg-brand text-black',
                     isDone && !isActive && 'bg-brand/20 text-brand',
                     !isActive && !isDone && 'bg-white/5 text-zinc-muted',
@@ -63,7 +63,7 @@ export function ListingWizardStepIndicator({
                 </span>
                 <span
                   className={cn(
-                    'text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap hidden sm:inline',
+                    'text-[11px] sm:text-[12px] font-black uppercase tracking-widest whitespace-nowrap hidden sm:inline',
                     isActive ? 'text-brand' : 'text-zinc-muted',
                   )}
                 >

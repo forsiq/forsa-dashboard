@@ -160,7 +160,7 @@ export function UserFormPage() {
   if (isEdit && (isLoadingUser || !router.isReady)) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-muted" />
       </div>
     );
   }
@@ -180,7 +180,7 @@ export function UserFormPage() {
           <div className="space-y-6">
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.username')} <span className="text-red-400">*</span>
               </label>
               <AmberInput
@@ -196,7 +196,7 @@ export function UserFormPage() {
 
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.full_name')} <span className="text-red-400">*</span>
               </label>
               <AmberInput
@@ -212,7 +212,7 @@ export function UserFormPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.email')}
               </label>
               <AmberInput
@@ -229,7 +229,7 @@ export function UserFormPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.phone')}
               </label>
               <AmberInput
@@ -242,13 +242,13 @@ export function UserFormPage() {
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.role')} <span className="text-red-400">*</span>
               </label>
               <select
                 value={formData.role}
                 onChange={(e) => handleChange('role', e.target.value)}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white shadow-sm"
+                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-zinc-text shadow-sm"
               >
                 <option value="user">{t('user.role.user')}</option>
                 <option value="manager">{t('user.role.manager')}</option>
@@ -258,7 +258,7 @@ export function UserFormPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-secondary mb-2">
                 {t('user.password')} {!isEdit && <span className="text-red-400">*</span>}
               </label>
               <AmberInput
@@ -279,10 +279,10 @@ export function UserFormPage() {
             {/* Active Status */}
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-secondary mb-1">
                   {t('user.is_active')}
                 </label>
-                <p className="text-xs text-zinc-500">{t('user.is_active_description')}</p>
+                <p className="text-[13px] text-zinc-500">{t('user.is_active_description')}</p>
               </div>
               <button
                 type="button"

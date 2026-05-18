@@ -205,7 +205,7 @@ export const ListingDetailPage: React.FC = () => {
               <div className="space-y-2">
                 <ListingImage listing={listing} className="aspect-square rounded-lg overflow-hidden border border-white/5" />
                 {listing.attachmentIds?.length > 1 && (
-                  <p className="text-[10px] text-zinc-muted font-bold text-center">
+                  <p className="text-[11px] text-zinc-muted font-bold text-center">
                     {listing.attachmentIds.length} {t('listing.detail.media') || 'photos'}
                   </p>
                 )}
@@ -223,7 +223,7 @@ export const ListingDetailPage: React.FC = () => {
               <Rocket className="w-4 h-4 text-brand" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-black text-brand uppercase">{t('listing.deploy.title')}</p>
+              <p className="text-sm font-black text-brand uppercase">{t('listing.deploy.title')}</p>
               {nextScheduleInfo ? (
                 <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                   {nextScheduleInfo.type === 'ending'
@@ -258,7 +258,7 @@ export const ListingDetailPage: React.FC = () => {
               {listing.model && <DetailField label={t('listing.form.model')} value={listing.model} />}
               {listing.condition && (
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.condition')}</p>
+                  <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.condition')}</p>
                   <StatusBadge
                     status={listing.condition}
                     variant={listing.condition === 'new' ? 'success' : listing.condition === 'used' ? 'warning' : 'info'}
@@ -283,7 +283,7 @@ export const ListingDetailPage: React.FC = () => {
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {listing.specs.map((spec, idx) => (
                   <div key={idx} className="space-y-1">
-                    <dt className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{spec.label}</dt>
+                    <dt className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{spec.label}</dt>
                     <dd className="text-sm font-bold text-zinc-text">{spec.value}</dd>
                   </div>
                 ))}
@@ -332,7 +332,7 @@ export const ListingDetailPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-black text-zinc-text uppercase tracking-wider">{t('listing.channels.auction')}</h4>
-                    <p className="text-[10px] text-zinc-muted font-bold tracking-tight">
+                    <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                       {sortedAuctions.length > 0
                         ? [
                             sortedAuctions.filter((a: any) => a.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'active').length)) : '',
@@ -358,19 +358,19 @@ export const ListingDetailPage: React.FC = () => {
                             {(auction.startTime || auction.endTime) && (
                               <div className="flex items-center gap-3 mt-1">
                                 {auction.startTime && (
-                                  <span className="text-[10px] text-zinc-muted font-bold flex items-center gap-1">
+                                  <span className="text-[11px] text-zinc-muted font-bold flex items-center gap-1">
                                     <Calendar className="w-2.5 h-2.5" />
                                     {new Date(auction.startTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 )}
                                 {isActive && auction.endTime && (
-                                  <span className="text-[10px] text-danger font-black flex items-center gap-1">
+                                  <span className="text-[11px] text-danger font-black flex items-center gap-1">
                                     <Timer className="w-2.5 h-2.5" />
                                     {(() => { const r = getCountdown(auction.endTime); return r === 'ENDED' ? (t('TIME.ENDED') || 'Ended') : r; })()}
                                   </span>
                                 )}
                                 {isScheduled && auction.startTime && getStartsIn(auction.startTime) && (
-                                  <span className="text-[10px] text-warning font-black flex items-center gap-1">
+                                  <span className="text-[11px] text-warning font-black flex items-center gap-1">
                                     <Clock className="w-2.5 h-2.5" />
                                     {t('listing.detail.starts_in')}: {getStartsIn(auction.startTime)}
                                   </span>
@@ -424,7 +424,7 @@ export const ListingDetailPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-black text-zinc-text uppercase tracking-wider">{t('listing.channels.group_buy')}</h4>
-                    <p className="text-[10px] text-zinc-muted font-bold tracking-tight">
+                    <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                       {sortedDeals.length > 0
                         ? [
                             sortedDeals.filter((d: any) => d.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'active').length)) : '',
@@ -450,19 +450,19 @@ export const ListingDetailPage: React.FC = () => {
                             {(deal.startTime || deal.endTime) && (
                               <div className="flex items-center gap-3 mt-1">
                                 {deal.startTime && (
-                                  <span className="text-[10px] text-zinc-muted font-bold flex items-center gap-1">
+                                  <span className="text-[11px] text-zinc-muted font-bold flex items-center gap-1">
                                     <Calendar className="w-2.5 h-2.5" />
                                     {new Date(deal.startTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 )}
                                 {isActive && deal.endTime && (
-                                  <span className="text-[10px] text-danger font-black flex items-center gap-1">
+                                  <span className="text-[11px] text-danger font-black flex items-center gap-1">
                                     <Timer className="w-2.5 h-2.5" />
                                     {(() => { const r = getCountdown(deal.endTime); return r === 'ENDED' ? (t('TIME.ENDED') || 'Ended') : r; })()}
                                   </span>
                                 )}
                                 {isScheduled && deal.startTime && getStartsIn(deal.startTime) && (
-                                  <span className="text-[10px] text-warning font-black flex items-center gap-1">
+                                  <span className="text-[11px] text-warning font-black flex items-center gap-1">
                                     <Clock className="w-2.5 h-2.5" />
                                     {t('listing.detail.starts_in')}: {getStartsIn(deal.startTime)}
                                   </span>
@@ -519,7 +519,7 @@ export const ListingDetailPage: React.FC = () => {
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{label}</p>
+      <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{label}</p>
       <p className="text-sm text-zinc-text font-bold">{value}</p>
     </div>
   );

@@ -129,7 +129,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 variant={campaign.status === 'active' ? 'success' : campaign.status === 'completed' ? 'warning' : 'info'}
                 size="sm"
               />
-              <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">#{campaign.id}</span>
+              <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">#{campaign.id}</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-black text-zinc-text tracking-tight leading-tight mt-1 truncate">
               {campaign.title}
@@ -216,13 +216,13 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 <div className="absolute top-4 start-4 flex items-center gap-2">
                   <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
                     {isUnlocked ? <Unlock className="w-3.5 h-3.5 text-emerald-400" /> : <Lock className="w-3.5 h-3.5 text-warning" />}
-                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
                       {isUnlocked ? (t('groupBuying.unlocked') || 'Unlocked') : (t('groupBuying.locked') || 'Locked')}
                     </span>
                   </div>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <span className="text-[10px] font-bold text-brand uppercase tracking-widest">{campaign.category?.name || 'General'}</span>
+                  <span className="text-[11px] font-bold text-brand uppercase tracking-widest">{campaign.category?.name || 'General'}</span>
                   <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{campaign.description}</h2>
                 </div>
               </>
@@ -236,16 +236,16 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                   <Target className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participation_progress') || 'Participation Progress'}</h3>
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participation_progress') || 'Participation Progress'}</h3>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{campaign.currentParticipants}</p>
                 </div>
                 <div className="w-px h-8 bg-white/5" />
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.target') || 'Target'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.target') || 'Target'}</span>
                   <p className="text-lg font-bold text-brand leading-none mt-0.5">{campaign.maxParticipants}</p>
                 </div>
               </div>
@@ -259,14 +259,14 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 className="h-3 bg-white/[0.03] rounded-full border border-white/5"
               />
               <div className="flex items-center justify-between mt-2">
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">0</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">0</span>
                 <span className={cn(
-                  "text-[10px] font-bold uppercase tracking-widest",
+                  "text-[11px] font-bold uppercase tracking-widest",
                   isUnlocked ? "text-emerald-400" : "text-warning"
                 )}>
                   {t('groupBuying.min_reach') || 'Min'}: {campaign.minParticipants}
                 </span>
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{campaign.maxParticipants}</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{campaign.maxParticipants}</span>
               </div>
             </div>
 
@@ -275,21 +275,21 @@ export const GroupBuyingDetailPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3 h-3 text-brand" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.currentParticipants}</p>
               </div>
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Zap className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.min_reach') || 'Min'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.min_reach') || 'Min'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.minParticipants}</p>
               </div>
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Activity className="w-3 h-3 text-info" />
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.capacity_cap') || 'Max'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.capacity_cap') || 'Max'}</span>
                 </div>
                 <p className="text-lg font-bold text-zinc-text tabular-nums">{campaign.maxParticipants}</p>
               </div>
@@ -303,11 +303,11 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participants') || 'Participants'}</h3>
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participants') || 'Participants'}</h3>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-end">
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.node_participation') || 'Total'}</span>
+                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.node_participation') || 'Total'}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{participants.length}</p>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
             {!participantsData ? (
               <div className="py-12 text-center">
                 <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-[10px] text-zinc-muted font-semibold tracking-widest mt-3">Loading...</p>
+                <p className="text-[11px] text-zinc-muted font-semibold tracking-widest mt-3">Loading...</p>
               </div>
             ) : participants.length === 0 ? (
               <div className="py-12 text-center space-y-3 bg-white/[0.02] rounded-xl border border-dashed border-white/5">
@@ -342,7 +342,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-sm font-semibold text-zinc-text tracking-tight">{p.userName || 'Anonymous'}</span>
-                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-muted tracking-widest mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-muted tracking-widest mt-0.5">
                           <Clock className="w-3 h-3" />
                           {new Date(p.joinedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -353,7 +353,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                         <Package className="w-3.5 h-3.5 text-brand" />
                         <span className="text-sm font-bold text-zinc-text tabular-nums">x{p.quantity}</span>
                       </div>
-                      <p className="text-[10px] font-semibold text-emerald-400 tracking-widest mt-0.5">#{participants.length - index}</p>
+                      <p className="text-[11px] font-semibold text-emerald-400 tracking-widest mt-0.5">#{participants.length - index}</p>
                     </div>
                   </div>
                 ))}
@@ -372,13 +372,13 @@ export const GroupBuyingDetailPage: React.FC = () => {
             {/* Price + Timer */}
             <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
               <div className="space-y-1 min-w-0 flex-1">
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
                 <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
                   {formatCurrency(campaign.dealPrice)}
                 </p>
               </div>
               <div className="space-y-1 text-end min-w-0 flex-1">
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
                 <p className="text-lg sm:text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
                   {formatCurrency(campaign.originalPrice)}
                 </p>
@@ -388,7 +388,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
             {/* Savings */}
             <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.savings') || 'Savings'}</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.savings') || 'Savings'}</span>
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
               </div>
               <p className="text-xl font-bold text-emerald-400 tabular-nums leading-none">
@@ -400,7 +400,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
             <div className="flex items-center justify-between p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
               <div className="flex items-center gap-2">
                 <Timer className="w-4 h-4 text-warning" />
-                <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.time_left') || 'Time Left'}</span>
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.time_left') || 'Time Left'}</span>
               </div>
               <span className={cn(
                 "text-lg font-bold tabular-nums leading-none tracking-tight",
@@ -414,7 +414,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
             <div className="space-y-3">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.join_quantity') || 'Quantity'}</label>
+                  <label className="text-[11px] font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.join_quantity') || 'Quantity'}</label>
                   <select
                     value={joinQuantity}
                     onChange={(e) => setJoinQuantity(Number(e.target.value))}
@@ -425,7 +425,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                <div className="text-[10px] text-zinc-muted font-semibold">
+                <div className="text-[11px] text-zinc-muted font-semibold">
                   {t('groupBuying.available_slots') || 'Available'}: {Math.max(0, campaign.maxParticipants - (campaign.currentParticipants || 0))}
                 </div>
               </div>
@@ -445,7 +445,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
             {/* Trust */}
             <div className="flex items-center gap-2.5 p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
               <ShieldCheck className="w-4 h-4 text-zinc-muted shrink-0" />
-              <span className="text-[10px] font-semibold text-zinc-muted tracking-wider">{t('groupBuying.secure_transaction') || 'Secure Transaction'}</span>
+              <span className="text-[11px] font-semibold text-zinc-muted tracking-wider">{t('groupBuying.secure_transaction') || 'Secure Transaction'}</span>
             </div>
           </div>
 
@@ -463,14 +463,14 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 <div key={i} className="flex items-start justify-between gap-3 group/row">
                   <div className="flex items-center gap-2.5 shrink-0">
                     <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
-                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{item.label}</span>
+                    <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
                   <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-[10px] h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
               {t('groupBuying.download_report') || 'Download Report'}
             </AmberButton>
           </div>
@@ -480,9 +480,9 @@ export const GroupBuyingDetailPage: React.FC = () => {
             <div className="p-5 rounded-xl bg-warning/5 border border-warning/10 space-y-3">
               <div className="flex items-center gap-2 text-warning">
                 <AlertCircle className="w-4 h-4" />
-                <h4 className="text-[10px] font-bold tracking-widest">{t('groupBuying.activation_pending') || 'Activation Pending'}</h4>
+                <h4 className="text-[11px] font-bold tracking-widest">{t('groupBuying.activation_pending') || 'Activation Pending'}</h4>
               </div>
-              <p className="text-[10px] text-warning/70 font-bold leading-relaxed">
+              <p className="text-[11px] text-warning/70 font-bold leading-relaxed">
                 {t('groupBuying.activation_desc', { amount: campaign.minParticipants - campaign.currentParticipants }) || `${campaign.minParticipants - campaign.currentParticipants} more participants needed to unlock the deal.`}
               </p>
             </div>

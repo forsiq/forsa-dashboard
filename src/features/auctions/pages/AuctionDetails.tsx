@@ -131,7 +131,7 @@ export const AuctionDetails: React.FC = () => {
                 variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
                 size="sm"
               />
-              <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">#{auction.id}</span>
+              <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">#{auction.id}</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words lg:truncate">
               {auction.title}
@@ -194,11 +194,11 @@ export const AuctionDetails: React.FC = () => {
                 <div className="absolute top-4 start-4 flex items-center gap-2">
                   <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
                     <Eye className="w-3.5 h-3.5 text-brand" />
-                    <span className="text-[10px] font-semibold text-white tracking-wider">{t('auction.detail.live_monitoring') || 'Live'}</span>
+                    <span className="text-xs font-semibold text-white tracking-wider">{t('auction.detail.live_monitoring') || 'Live'}</span>
                   </div>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <span className="text-[10px] font-semibold text-brand tracking-widest">{auction.categoryName || t('auction.detail.general')}</span>
+                  <span className="text-[11px] font-semibold text-brand tracking-widest">{auction.categoryName || t('auction.detail.general')}</span>
                   <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
                 </div>
               </>
@@ -212,16 +212,16 @@ export const AuctionDetails: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.high_frequency_telemetry') || 'Bid History'}</h3>
+                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.high_frequency_telemetry') || 'Bid History'}</h3>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-end">
-                  <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}</span>
+                  <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}</span>
                   <p className="text-lg font-bold text-brand leading-none mt-0.5 tabular-nums">{formatCurrency(currentBid || startPrice)}</p>
                 </div>
                 <div className="w-px h-8 bg-white/5" />
                 <div className="text-end">
-                  <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.total_bids')}</span>
+                  <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.total_bids')}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{auction.totalBids || 0}</p>
                 </div>
               </div>
@@ -230,7 +230,7 @@ export const AuctionDetails: React.FC = () => {
             {!bidsResponse ? (
               <div className="py-12 text-center">
                 <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-[10px] text-zinc-muted font-semibold tracking-widest mt-3">{t('auction.detail.loading')}</p>
+                <p className="text-[11px] text-zinc-muted font-semibold tracking-widest mt-3">{t('auction.detail.loading')}</p>
               </div>
             ) : bids?.length === 0 ? (
               <div className="py-12 text-center space-y-3 bg-white/[0.02] rounded-xl border border-dashed border-white/5">
@@ -256,7 +256,7 @@ export const AuctionDetails: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-sm font-bold text-zinc-text tracking-tight">{bid.bidderName || t('auction.detail.anonymous') || 'Anonymous'}</span>
-                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-muted tracking-widest mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-muted tracking-widest mt-0.5">
                           <Clock className="w-3 h-3" />
                           {new Date(bid.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -266,7 +266,7 @@ export const AuctionDetails: React.FC = () => {
                       <span className="text-lg font-bold text-zinc-text tracking-tight tabular-nums">
                         {formatCurrency(bid.amount)}
                       </span>
-                      <p className="text-[10px] font-semibold text-brand tracking-widest mt-0.5">#{bids.length - index}</p>
+                      <p className="text-[11px] font-semibold text-brand tracking-widest mt-0.5">#{bids.length - index}</p>
                     </div>
                   </div>
                 ))}
@@ -281,7 +281,7 @@ export const AuctionDetails: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
                   <FileText className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.specifications') || 'Specifications'}</h3>
+                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.specifications') || 'Specifications'}</h3>
               </div>
               <div className="space-y-0">
                 {auction.specs.map((spec, i) => (
@@ -289,7 +289,7 @@ export const AuctionDetails: React.FC = () => {
                     "flex items-center justify-between py-3 gap-4",
                     i < auction.specs!.length - 1 && "border-b border-white/5"
                   )}>
-                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{spec.label}</span>
+                    <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{spec.label}</span>
                     <span className="text-sm font-bold text-zinc-text text-end">{spec.value}</span>
                   </div>
                 ))}
@@ -304,7 +304,7 @@ export const AuctionDetails: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
                   <ExternalLink className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.sources') || 'Sources & References'}</h3>
+                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.sources') || 'Sources & References'}</h3>
               </div>
               <div className="space-y-2">
                 {auction.sources.map((source, i) => (
@@ -328,7 +328,7 @@ export const AuctionDetails: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-bold text-zinc-text tracking-tight group-hover:text-brand transition-colors">{source.label}</span>
-                      <p className="text-[10px] text-zinc-muted truncate mt-0.5">{source.url}</p>
+                      <p className="text-[11px] text-zinc-muted truncate mt-0.5">{source.url}</p>
                     </div>
                     <ExternalLink className="w-3.5 h-3.5 text-zinc-muted group-hover:text-brand transition-colors shrink-0" />
                   </a>
@@ -348,7 +348,7 @@ export const AuctionDetails: React.FC = () => {
             {/* Price + Timer */}
             <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
               <div className="space-y-1 min-w-0 flex-1">
-                <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">
+                <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">
                   {currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}
                 </span>
                 <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
@@ -356,7 +356,7 @@ export const AuctionDetails: React.FC = () => {
                 </p>
               </div>
               <div className="space-y-1 text-end min-w-0 flex-1">
-                <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.table.protocol_duration') || 'Time Left'}</span>
+                <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.table.protocol_duration') || 'Time Left'}</span>
                 <p className={cn(
                   "text-xl sm:text-2xl font-bold tabular-nums leading-none tracking-tight",
                   isEndingSoon ? "text-danger animate-pulse" : "text-warning"
@@ -369,8 +369,8 @@ export const AuctionDetails: React.FC = () => {
             {/* Bid Input */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
-                <span className="text-[10px] font-semibold text-zinc-muted tracking-wider">Min: {formatCurrency(nextMinBid)}</span>
+                <label className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
+                <span className="text-[11px] font-semibold text-zinc-muted tracking-wider">Min: {formatCurrency(nextMinBid)}</span>
               </div>
               <div className="relative group">
                 <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
@@ -400,7 +400,7 @@ export const AuctionDetails: React.FC = () => {
             {/* Trust */}
             <div className="flex items-center gap-2.5 p-3 rounded-lg bg-obsidian-panel/40 border border-white/5">
               <ShieldCheck className="w-4 h-4 text-zinc-muted shrink-0" />
-              <span className="text-[10px] font-semibold text-zinc-muted tracking-wider">{t('auction.detail.encrypted_infrastructure') || 'Secure Transaction'}</span>
+              <span className="text-[11px] font-semibold text-zinc-muted tracking-wider">{t('auction.detail.encrypted_infrastructure') || 'Secure Transaction'}</span>
             </div>
           </div>
 
@@ -418,14 +418,14 @@ export const AuctionDetails: React.FC = () => {
                 <div key={i} className="flex items-start justify-between gap-3 group/row">
                   <div className="flex items-center gap-2.5 shrink-0">
                     <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
-                    <span className="text-xs font-semibold text-zinc-muted tracking-wide">{item.label}</span>
+                    <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
                   <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-[10px] h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
               {t('auction.detail.download_manifest') || 'Download Report'}
             </AmberButton>
           </div>

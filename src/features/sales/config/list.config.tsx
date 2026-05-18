@@ -104,21 +104,21 @@ export const groupBuyingListConfig: ListConfig = {
       render: (row: any) => (
         <div className="flex items-center justify-end gap-1">
           <button
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-muted hover:text-zinc-text"
             onClick={() => (window.location.href = `/group-buying/${row.id}`)}
             title="view"
           >
             <Eye className="h-4 w-4" />
           </button>
           <button
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-muted hover:text-zinc-text"
             onClick={() => (window.location.href = `/group-buying/${row.id}/edit`)}
             title="edit"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
-            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-zinc-400 hover:text-red-400"
+            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-zinc-muted hover:text-red-400"
             onClick={() => {
               /* Handle delete */
             }}

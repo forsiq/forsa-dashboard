@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
-import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign } from 'lucide-react';
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { getOrders, getOrderStats, orderKeys } from '../api/orders';
-import type { Order, OrderFilters, OrderStats } from '../types';
+import { getOrders, getOrderStats, updateOrderStatus, orderKeys } from '../api/orders';
+import type { Order, OrderFilters, OrderStatus, OrderStats } from '../types';
 import {
   AmberButton,
   AmberCard as Card,
@@ -20,6 +20,8 @@ import { Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useIsClient } from '@core/hooks/useIsClient';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useToast } from '@core/contexts/ToastContext';
 
 export const OrdersListPage = () => {
   const router = useRouter();
@@ -135,6 +137,75 @@ export const OrdersListPage = () => {
     },
   ];
 
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { openConfirm, ConfirmModal } = useConfirmModal();
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
+      updateOrderStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(t('orders.status_updated') || 'تم تحديث حالة الطلب');
+    },
+    onError: () => {
+      toast.error(t('orders.status_update_failed') || 'فشل تحديث حالة الطلب');
+    },
+  });
+
+  const handleStatusChange = useCallback((order: Order, newStatus: OrderStatus) => {
+    openConfirm({
+      title: t('orders.updateStatus') || 'تحديث حالة الطلب',
+      message: `${t('orders.status_change_confirm') || 'هل تريد تغيير حالة الطلب إلى'} "${t(`orders.status.${newStatus}`) || newStatus}"?\n\n${order.orderNumber}`,
+      variant: newStatus === 'cancelled' ? 'destructive' : 'warning',
+      confirmText: t(`orders.status.${newStatus}`) || newStatus,
+      onConfirm: () => {
+        statusMutation.mutate({ id: order.id, status: newStatus });
+      },
+    });
+  }, [openConfirm, statusMutation, t]);
+
+  const statusTransitions: Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant?: 'default' | 'danger' | 'success' }[]> = useMemo(() => ({
+    pending: [
+      { status: 'processing', icon: Clock },
+      { status: 'cancelled', icon: XCircle, variant: 'danger' },
+    ],
+    processing: [
+      { status: 'shipped', icon: Truck },
+      { status: 'cancelled', icon: XCircle, variant: 'danger' },
+    ],
+    shipped: [
+      { status: 'delivered', icon: CheckCircle, variant: 'success' },
+      { status: 'cancelled', icon: XCircle, variant: 'danger' },
+    ],
+    delivered: [],
+    cancelled: [],
+    refunded: [],
+  }), []);
+
+  const rowActions: Action<Order>[] = useMemo(() => [
+    {
+      label: t('orders.view_details') || 'عرض التفاصيل',
+      icon: Eye,
+      onClick: (order) => router.push(`/orders/${order.id}`),
+    },
+    ...(['pending', 'processing', 'shipped'] as OrderStatus[]).flatMap((fromStatus) =>
+      statusTransitions[fromStatus].map((transition) => ({
+        label: (order: Order) =>
+          order.status === fromStatus
+            ? (t(`orders.status.${transition.status}`) || transition.status)
+            : null,
+        icon: transition.icon,
+        variant: transition.variant as 'default' | 'danger' | 'success',
+        onClick: (order: Order) => {
+          if (order.status === fromStatus) {
+            handleStatusChange(order, transition.status);
+          }
+        },
+      }))
+    ),
+  ], [router, t, statusTransitions, handleStatusChange]);
+
   const handleRowClick = (order: Order) => {
     router.push(`/orders/${order.id}`);
   };
@@ -225,12 +296,15 @@ export const OrdersListPage = () => {
             columns={columns}
             data={ordersData?.data || []}
             onRowClick={handleRowClick}
+            rowActions={rowActions}
             pagination
             pageSize={filters.limit}
             showViewToggle
           />
         )}
       </div>
+
+      <ConfirmModal />
     </div>
   );
 };

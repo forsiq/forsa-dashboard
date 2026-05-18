@@ -114,7 +114,7 @@ export const LoginForm: React.FC = () => {
           >
             {errorInfo.icon}
             <div className="flex-1 min-w-0">
-              <p className={`text-xs font-bold ${
+              <p className={`text-[13px] font-bold ${
                 errorInfo.type === 'validation' && isRateLimited
                   ? 'text-warning'
                   : 'text-danger'
@@ -171,7 +171,7 @@ export const LoginForm: React.FC = () => {
             <div className="flex justify-end px-1">
               <Link
                 href="/forgot-password"
-                className="text-[10px] font-bold text-brand hover:opacity-80 transition-opacity uppercase tracking-[0.1em]"
+                className="text-[11px] font-bold text-brand hover:opacity-80 transition-opacity uppercase tracking-[0.1em]"
               >
                 {t('login.forgot')}
               </Link>

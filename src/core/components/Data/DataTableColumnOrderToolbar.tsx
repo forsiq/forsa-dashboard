@@ -41,7 +41,7 @@ export function DataTableColumnOrderToolbar({
       aria-label={labels.title}
       dir={dir}
     >
-      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-muted whitespace-nowrap">
+      <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted whitespace-nowrap">
         {labels.title}
       </span>
       <label className="sr-only" htmlFor={selectId}>

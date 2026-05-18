@@ -102,7 +102,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-zinc-text">{t('report.sales_overview_section')}</h3>
-                <p className="text-xs text-zinc-muted font-medium mt-0.5">{t('report.sales_overview_desc')}</p>
+                <p className="text-[13px] text-zinc-muted font-medium mt-0.5">{t('report.sales_overview_desc')}</p>
               </div>
             </div>
           </AmberCard>
@@ -116,7 +116,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-zinc-text">{t('report.auction_performance')}</h3>
-                <p className="text-xs text-zinc-muted font-medium mt-0.5">{t('report.auction_performance_desc')}</p>
+                <p className="text-[13px] text-zinc-muted font-medium mt-0.5">{t('report.auction_performance_desc')}</p>
               </div>
             </div>
           </AmberCard>
@@ -130,7 +130,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-zinc-text">{t('report.group_buying_analytics')}</h3>
-                <p className="text-xs text-zinc-muted font-medium mt-0.5">{t('report.group_buying_analytics_desc')}</p>
+                <p className="text-[13px] text-zinc-muted font-medium mt-0.5">{t('report.group_buying_analytics_desc')}</p>
               </div>
             </div>
           </AmberCard>
@@ -144,7 +144,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-zinc-text">{t('report.customer_insights')}</h3>
-                <p className="text-xs text-zinc-muted font-medium mt-0.5">{t('report.customer_insights_subtitle')}</p>
+                <p className="text-[13px] text-zinc-muted font-medium mt-0.5">{t('report.customer_insights_subtitle')}</p>
               </div>
             </div>
           </AmberCard>

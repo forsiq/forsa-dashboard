@@ -249,10 +249,10 @@ export function AmazonProductDetailModal({
               {/* Description */}
               {product.description && (
                 <div className="space-y-2">
-                  <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <h3 className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('amazon.description') || 'Description'}
                   </h3>
-                  <p className="text-xs text-zinc-text/80 leading-relaxed line-clamp-4">
+                  <p className="text-[13px] text-zinc-text/80 leading-relaxed line-clamp-4">
                     {product.description}
                   </p>
                 </div>
@@ -261,12 +261,12 @@ export function AmazonProductDetailModal({
               {/* Features */}
               {product.feature_bullets && product.feature_bullets.length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <h3 className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('amazon.features') || 'Features'}
                   </h3>
                   <ul className="space-y-1.5">
                     {product.feature_bullets.slice(0, 5).map((feature, index) => (
-                      <li key={index} className="text-xs text-zinc-text/70 flex gap-2">
+                      <li key={index} className="text-[13px] text-zinc-text/70 flex gap-2">
                         <span className="text-brand mt-0.5 shrink-0">&#8226;</span>
                         <span>{feature}</span>
                       </li>
@@ -278,14 +278,14 @@ export function AmazonProductDetailModal({
               {/* Specifications */}
               {product.specifications && Object.keys(product.specifications).length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <h3 className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('amazon.specifications') || 'Specifications'}
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(product.specifications).slice(0, 6).map(([key, value]) => (
                       <div key={key} className="px-3 py-2 rounded-lg bg-obsidian-outer border border-white/5">
-                        <p className="text-[9px] text-zinc-muted uppercase tracking-wider">{key}</p>
-                        <p className="text-xs font-bold text-zinc-text mt-0.5">
+                        <p className="text-[11px] text-zinc-muted uppercase tracking-wider">{key}</p>
+                        <p className="text-[13px] font-bold text-zinc-text mt-0.5">
                           {typeof value === 'object' ? (value as any).value : String(value)}
                         </p>
                       </div>
@@ -327,7 +327,7 @@ export function AmazonProductDetailModal({
               </div>
 
               {/* ASIN */}
-              <p className="text-[9px] font-mono text-zinc-muted/40 tracking-wider text-center">
+              <p className="text-[11px] font-mono text-zinc-muted/40 tracking-wider text-center">
                 ASIN: {product.asin}
               </p>
             </div>

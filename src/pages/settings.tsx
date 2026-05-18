@@ -171,7 +171,7 @@ export default function SettingsPage() {
                         {t('settings.sidebar_modular')}
                       </h4>
                     </div>
-                    <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase">
+                    <p className="text-[13px] font-bold text-zinc-muted leading-relaxed uppercase">
                       {t('settings.sidebar_modular_desc')}
                     </p>
                   </button>
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                         {t('settings.sidebar_unified')}
                       </h4>
                     </div>
-                    <p className="text-xs font-bold text-zinc-muted leading-relaxed uppercase">
+                    <p className="text-[13px] font-bold text-zinc-muted leading-relaxed uppercase">
                       {t('settings.sidebar_unified_desc')}
                     </p>
                   </button>

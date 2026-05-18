@@ -128,7 +128,7 @@ export const MyBidsPage: React.FC = () => {
           </div>
           <div className="min-w-0">
             <DataTableEntityTitle text={bid.auctionTitle} />
-            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
+            <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
           </div>
         </div>
       ),
@@ -209,7 +209,7 @@ export const MyBidsPage: React.FC = () => {
                 <Icon className="w-3.5 h-3.5" />
                 {t(tab.labelKey) || tab.fallback}
                 <span className={cn(
-                  'ml-1 px-1.5 py-0.5 rounded text-[9px] tabular-nums',
+                  'ml-1 px-1.5 py-0.5 rounded text-[11px] tabular-nums',
                   isActive ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-muted'
                 )}>
                   {count}

@@ -30,7 +30,7 @@ export const OTPForm: React.FC = () => {
         </div>
         <div className="text-center space-y-1">
           <h3 className="text-base font-black text-zinc-text uppercase tracking-widest">{t('auth.otp.verify_identity') || 'SECURE VERIFICATION'}</h3>
-          <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.15em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
+          <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.15em]">{t('auth.otp.sent_to') || 'ENTER THE 6-DIGIT CODE'}</p>
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export const OTPForm: React.FC = () => {
             className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
           >
             <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
-            <p className="text-xs font-bold text-danger">
+            <p className="text-[13px] font-bold text-danger">
               {error}
             </p>
           </motion.div>

@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-obsidian-outer text-zinc-text px-6">
-      <p className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-muted mb-2">Forsa</p>
+      <p className="text-[11px] font-black uppercase tracking-[0.35em] text-zinc-muted mb-2">Forsa</p>
       <h1 className="text-5xl font-black tracking-tighter text-brand mb-2">404</h1>
       <p className="text-sm text-zinc-muted font-bold text-center max-w-md mb-8">
         This route does not exist or was removed.

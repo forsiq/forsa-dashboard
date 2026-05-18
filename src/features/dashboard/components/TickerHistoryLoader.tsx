@@ -12,10 +12,10 @@ export const TickerHistoryLoader: React.FC = () => {
     <AmberCard className="border-white/5 shadow-lg bg-obsidian-panel/80 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4 border-s-2 border-brand ps-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('live.recentBids')}
           </h3>
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-widest bg-warning/10 text-warning border border-warning/20">
             {t('live.loading')}
           </span>
         </div>
@@ -34,7 +34,7 @@ export const TickerHistoryLoader: React.FC = () => {
             <p className="text-sm text-zinc-muted/50 font-bold">
               {t('live.noRecentBids')}
             </p>
-            <p className="text-[10px] text-zinc-muted/30 uppercase tracking-widest mt-1">
+            <p className="text-[11px] text-zinc-muted/30 uppercase tracking-widest mt-1">
               {t('live.connectToSee')}
             </p>
           </div>
@@ -49,7 +49,7 @@ export const TickerHistoryLoader: React.FC = () => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-zinc-text truncate">
+                <p className="text-[13px] font-bold text-zinc-text truncate">
                   {item.auctionTitle || `Auction #${item.auctionId}`}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
@@ -57,14 +57,14 @@ export const TickerHistoryLoader: React.FC = () => {
                     {Number(item.amount).toLocaleString()} IQD
                   </span>
                   {item.bidderId && (
-                    <span className="text-[10px] text-zinc-muted/60 font-mono">
+                    <span className="text-[11px] text-zinc-muted/60 font-mono">
                       {t('live.by')} {item.bidderId.slice(0, 8)}...
                     </span>
                   )}
                 </div>
               </div>
 
-              <span className="shrink-0 text-[9px] text-zinc-muted/40 font-mono uppercase tracking-wider">
+              <span className="shrink-0 text-[11px] text-zinc-muted/40 font-mono uppercase tracking-wider">
                 {new Date(item.timestamp).toLocaleTimeString()}
               </span>
             </div>

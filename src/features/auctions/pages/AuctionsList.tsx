@@ -62,7 +62,7 @@ const TABS: TabConfig[] = [
   { key: 'all', labelKey: 'auction.tabs.all', color: 'text-zinc-muted', activeColor: 'bg-zinc-text text-black', countField: 'totalAuctions' },
   { key: 'active', labelKey: 'auction.tabs.active', color: 'text-green-400', activeColor: 'bg-green-500 text-black', countField: 'activeAuctions' },
   { key: 'scheduled', labelKey: 'auction.tabs.scheduled', color: 'text-blue-400', activeColor: 'bg-blue-500 text-black', countField: 'scheduledAuctions' },
-  { key: 'draft', labelKey: 'auction.tabs.draft', color: 'text-zinc-400', activeColor: 'bg-zinc-400 text-black' },
+  { key: 'draft', labelKey: 'auction.tabs.draft', color: 'text-zinc-muted', activeColor: 'bg-zinc-400 text-black' },
   { key: 'ended', labelKey: 'auction.tabs.ended', color: 'text-red-400', activeColor: 'bg-red-500 text-black', countField: 'endedAuctions' },
   { key: 'paused', labelKey: 'auction.tabs.paused', color: 'text-amber-400', activeColor: 'bg-amber-500 text-black' },
   { key: 'cancelled', labelKey: 'auction.tabs.cancelled', color: 'text-red-300', activeColor: 'bg-red-900 text-red-100' },
@@ -187,7 +187,7 @@ export const AuctionsList: React.FC = () => {
             </div>
             <div className="min-w-0">
               <DataTableEntityTitle text={auction.title} />
-              <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
             </div>
           </div>
         ),
@@ -215,7 +215,7 @@ export const AuctionsList: React.FC = () => {
           const raw = getCountdown(auction.endTime);
           const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
           return (
-          <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
+          <div className="inline-flex items-center gap-2 text-xs font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
             <Clock className="w-3 h-3" />
             {label}
           </div>
@@ -328,7 +328,7 @@ export const AuctionsList: React.FC = () => {
                             {t(tab.labelKey)}
                             {count > 0 && (
                                 <span className={cn(
-                                    "inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[9px] font-black tabular-nums",
+                                    "inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-black tabular-nums",
                                     isActive ? "bg-black/20 text-inherit" : "bg-white/5 text-zinc-muted"
                                 )}>{count}</span>
                             )}
@@ -367,7 +367,7 @@ export const AuctionsList: React.FC = () => {
                                 aria-live="polite"
                             >
                                 <Clock className="w-8 h-8 text-brand animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-text">
+                                <span className="text-[11px] font-black uppercase tracking-widest text-zinc-text">
                                     {t('common.loading') || 'Loading...'}
                                 </span>
                             </div>
@@ -403,12 +403,12 @@ export const AuctionsList: React.FC = () => {
             >
                 <div className="space-y-8 py-4">
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                        <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setCategoryIdFilter('all')}
                                 className={cn(
-                                    "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                                    "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                                     categoryIdFilter === 'all'
                                         ? "bg-brand text-black border-brand"
                                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -421,7 +421,7 @@ export const AuctionsList: React.FC = () => {
                                     key={cat.id}
                                     onClick={() => { setCategoryIdFilter(cat.id); setPage(1); }}
                                     className={cn(
-                                        "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                                        "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                                         categoryIdFilter === cat.id
                                             ? "bg-brand text-black border-brand"
                                             : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"

@@ -44,7 +44,7 @@ export const WatchlistPage: React.FC = () => {
           </div>
           <div className="min-w-0">
             <DataTableEntityTitle text={auction.title} />
-            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
+            <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
               {auction.categoryName || t('auction.detail.general')}
             </p>
           </div>
@@ -82,7 +82,7 @@ export const WatchlistPage: React.FC = () => {
         const raw = getCountdown(auction.endTime);
         const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
         return (
-        <div className="inline-flex items-center gap-2 text-[10px] font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
+        <div className="inline-flex items-center gap-2 text-xs font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
           <Clock className="w-3 h-3" />
           {label}
         </div>

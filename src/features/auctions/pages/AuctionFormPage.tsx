@@ -410,7 +410,7 @@ export const AuctionFormPage: React.FC = () => {
                                 onChange={(val) => handleChange('categoryId', val ? Number(val) : undefined)}
                             />
                             {errors.categoryId ? (
-                              <p className="text-xs text-danger font-medium mt-1.5 px-1">{errors.categoryId}</p>
+                              <p className="text-[13px] text-danger font-medium mt-1.5 px-1">{errors.categoryId}</p>
                             ) : null}
                         </div>
                     </div>
@@ -468,7 +468,7 @@ export const AuctionFormPage: React.FC = () => {
                          <Info className="w-4 h-4 text-emerald-400" />
                     </div>
                     <div className="space-y-1">
-                         <p className="text-xs font-black text-emerald-400 uppercase">{t('auction.form.pricing_note_title')}</p>
+                         <p className="text-sm font-black text-emerald-400 uppercase">{t('auction.form.pricing_note_title')}</p>
                          <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('auction.form.pricing_note_desc')}</p>
                     </div>
                 </div>
@@ -498,7 +498,7 @@ export const AuctionFormPage: React.FC = () => {
                 </div>
                 <div className="space-y-3">
                   {(formData.specs || []).length === 0 && (
-                    <p className="text-xs text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
+                    <p className="text-sm text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
                       {t('auction.form.no_specs') || 'No specifications added. Click "Add Spec" to add product details.'}
                     </p>
                   )}
@@ -564,7 +564,7 @@ export const AuctionFormPage: React.FC = () => {
                 </div>
                 <div className="space-y-3">
                   {(formData.sources || []).length === 0 && (
-                    <p className="text-xs text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
+                    <p className="text-sm text-zinc-muted text-center py-4 uppercase tracking-widest font-bold">
                       {t('auction.form.no_sources') || 'No sources added. Click "Add Source" to link product references.'}
                     </p>
                   )}
@@ -626,7 +626,7 @@ export const AuctionFormPage: React.FC = () => {
             {/* Visual Identity Ingestion */}
             <FormSection icon={<ImageIcon className="w-5 h-5" />} iconBgColor="info" title={t('auction.form.section.visualization')}>
                 <div className="space-y-4">
-                    <label className="block text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1">
+                    <label className="block text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] mb-2 px-1">
                         {t('auction.form.imagery_specs')}
                     </label>
                     <AmberImageUpload 
@@ -649,7 +649,7 @@ export const AuctionFormPage: React.FC = () => {
                         uploadProgress={uploadProgress}
                         uploadError={uploadError}
                     />
-                    <p className="text-[10px] text-zinc-muted font-bold text-center uppercase tracking-widest">{t('auction.form.imagery_format_note')}</p>
+                    <p className="text-[11px] text-zinc-muted font-bold text-center uppercase tracking-widest">{t('auction.form.imagery_format_note')}</p>
                 </div>
             </FormSection>
 
@@ -718,7 +718,7 @@ export const AuctionFormPage: React.FC = () => {
                                 max={90}
                             />
                             <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 space-y-3">
-                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                                <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
                                     <span className="text-zinc-muted">{t('auction.form.temporal_end')}</span>
                                     <span className="text-success font-mono text-xs">
                                         {computedEndTime
@@ -736,12 +736,12 @@ export const AuctionFormPage: React.FC = () => {
                                         style={{ width: `${Math.min((durationDays / 30) * 100, 100)}%` }}
                                     />
                                 </div>
-                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mt-1">
+                                <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest mt-1">
                                     <span className="text-zinc-muted">{durationDays} {durationDays === 1 ? 'day' : 'days'}</span>
                                     <span className="text-warning">{Math.round((durationDays / 30) * 100)}%</span>
                                 </div>
                                 {errors.endTime ? (
-                                  <p className="text-xs text-danger font-medium pt-2">{errors.endTime}</p>
+                                  <p className="text-[13px] text-danger font-medium pt-2">{errors.endTime}</p>
                                 ) : null}
                             </div>
                         </>

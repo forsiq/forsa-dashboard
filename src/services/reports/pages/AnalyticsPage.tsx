@@ -123,13 +123,13 @@ export function AnalyticsPage() {
                     <XAxis 
                       dataKey="date" 
                       stroke="#3f3f46" 
-                      tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }}
+                      tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <YAxis 
                       stroke="#3f3f46" 
-                      tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }}
+                      tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                       tickLine={false}
                       axisLine={false}
                     />
@@ -168,7 +168,7 @@ export function AnalyticsPage() {
                   {pieData.map((d, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                      <span className="text-[10px] font-black text-zinc-muted uppercase tracking-tight">{d.name}</span>
+                      <span className="text-[11px] font-black text-zinc-muted uppercase tracking-tight">{d.name}</span>
                     </div>
                   ))}
                 </div>
@@ -185,13 +185,13 @@ export function AnalyticsPage() {
                   <XAxis 
                     dataKey="date" 
                     stroke="#3f3f46" 
-                    tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }}
+                    tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
                     stroke="#3f3f46" 
-                    tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }}
+                    tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                     tickLine={false}
                     axisLine={false}
                   />

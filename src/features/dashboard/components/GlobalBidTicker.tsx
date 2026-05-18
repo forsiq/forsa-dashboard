@@ -117,12 +117,12 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4 border-s-2 border-brand ps-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em]">
             {t('live.liveBidTicker')}
           </h3>
           <span
             className={cn(
-              'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest',
+              'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-widest',
               isConnected
                 ? 'bg-success/10 text-success border border-success/20'
                 : 'bg-danger/10 text-danger border border-danger/20',
@@ -141,7 +141,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
           <button
             onClick={() => setIsPaused(!isPaused)}
             className={cn(
-              'text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg transition-colors',
+              'text-xs font-black uppercase tracking-widest px-2 py-1 rounded-lg transition-colors',
               isPaused
                 ? 'text-warning bg-warning/10 hover:bg-warning/20'
                 : 'text-zinc-muted hover:text-zinc-text',
@@ -151,7 +151,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
           </button>
           <button
             onClick={onClear}
-            className="text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:text-zinc-text px-2 py-1 rounded-lg transition-colors"
+            className="text-xs font-black uppercase tracking-widest text-zinc-muted hover:text-zinc-text px-2 py-1 rounded-lg transition-colors"
           >
             {t('live.clear')}
           </button>
@@ -172,7 +172,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
             <p className="text-sm text-zinc-muted/50 font-bold">
               {t('live.waitingForBids')}
             </p>
-            <p className="text-[10px] text-zinc-muted/30 uppercase tracking-widest mt-1">
+            <p className="text-[11px] text-zinc-muted/30 uppercase tracking-widest mt-1">
               {t('live.eventsWillAppear')}
             </p>
           </div>
@@ -203,14 +203,14 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
-                        'text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded',
+                        'text-[11px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded',
                         config.bg,
                         config.color,
                       )}
                     >
                       {t(config.labelKey)}
                     </span>
-                    <p className="text-xs font-bold text-zinc-text truncate">
+                    <p className="text-[13px] font-bold text-zinc-text truncate">
                       {event.auctionTitle || `Auction #${event.auctionId}`}
                     </p>
                   </div>
@@ -222,28 +222,28 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
                       </span>
                     )}
                     {event.previousBid !== undefined && event.previousBid > 0 && (
-                      <span className="text-[10px] text-zinc-muted font-mono">
+                      <span className="text-[11px] text-zinc-muted font-mono">
                         {t('live.from')} {event.previousBid.toLocaleString()}
                       </span>
                     )}
                     {event.bidderId ? (
-                      <span className="text-[10px] text-zinc-muted/60 font-mono">
+                      <span className="text-[11px] text-zinc-muted/60 font-mono">
                         {t('live.by')} {maskBidderId(event.bidderId)}
                       </span>
                     ) : (
-                      <span className="text-[10px] text-zinc-muted/60 font-mono">
+                      <span className="text-[11px] text-zinc-muted/60 font-mono">
                         {t('bid_ticker.anonymous')}
                       </span>
                     )}
                     {event.minutesLeft !== undefined && (
-                      <span className="text-[10px] text-warning font-bold">
+                      <span className="text-[11px] text-warning font-bold">
                         {event.minutesLeft}m {t('live.left')}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <span className="shrink-0 text-[9px] text-zinc-muted/40 font-mono uppercase tracking-wider">
+                <span className="shrink-0 text-[11px] text-zinc-muted/40 font-mono uppercase tracking-wider">
                   {formatTimeAgo(event.timestamp, t)}
                 </span>
               </div>
@@ -255,7 +255,7 @@ export const GlobalBidTicker: React.FC<GlobalBidTickerProps> = ({
       {/* Footer */}
       {events.length > 0 && (
         <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/5">
-          <span className="text-[10px] text-zinc-muted/50 font-mono uppercase tracking-widest">
+          <span className="text-[11px] text-zinc-muted/50 font-mono uppercase tracking-widest">
             {events.length} {t('live.events')}
           </span>
         </div>

@@ -346,7 +346,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 <div className="space-y-7 relative pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
-                             <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.asset_scan_label')}</label>
+                             <label className={`text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.asset_scan_label')}</label>
                              <AmberDropdown 
                                 options={[
                                     { label: t('groupBuying.form.manual_asset_protocol'), value: '' },
@@ -358,10 +358,10 @@ export const GroupBuyingFormPage: React.FC = () => {
                                 value={String(formData.productId || '')}
                                 onChange={(val) => handleChange('productId', val)}
                              />
-                             {errors.productId && <p className={`text-[10px] text-danger font-black uppercase px-1 text-start`}>{errors.productId}</p>}
+                             {errors.productId && <p className={`text-[11px] text-danger font-black uppercase px-1 text-start`}>{errors.productId}</p>}
                         </div>
                         <div className="space-y-3">
-                            <label className={`text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.tactical_division')}</label>
+                            <label className={`text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.tactical_division')}</label>
                             <AmberDropdown 
                                 options={[
                                     { label: t('groupBuying.form.manual_select') || 'Select Category...', value: '' },
@@ -430,7 +430,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                          <Info className="w-5 h-5 text-primary" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-xs font-black text-primary uppercase tracking-widest">{t('groupBuying.form.reach_insight_title')}</p>
+                        <p className="text-sm font-black text-primary uppercase tracking-widest">{t('groupBuying.form.reach_insight_title')}</p>
                         <p className="text-[11px] text-zinc-muted font-bold tracking-tight uppercase">{t('groupBuying.form.reach_insight_desc')}</p>
                     </div>
                 </div>
@@ -448,8 +448,8 @@ export const GroupBuyingFormPage: React.FC = () => {
                         )} />
                     </div>
                     <div className="space-y-0.5">
-                        <p className="text-xs font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.form.auto_create_order') || 'Auto-Create Orders'}</p>
-                        <p className="text-[10px] text-zinc-muted font-bold tracking-tight">{t('groupBuying.form.auto_create_order_desc') || 'Automatically generate orders when campaign succeeds'}</p>
+                        <p className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.form.auto_create_order') || 'Auto-Create Orders'}</p>
+                        <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('groupBuying.form.auto_create_order_desc') || 'Automatically generate orders when campaign succeeds'}</p>
                     </div>
                 </div>
             </Card>

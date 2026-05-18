@@ -142,7 +142,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
               {t('auction.reschedule.current_end') || 'Current End Time'}
             </label>
             <div className="flex items-center gap-2 text-sm text-zinc-text bg-obsidian-outer border border-white/5 rounded-lg px-4 py-3">
@@ -154,7 +154,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
           <div className="h-px bg-white/5" />
 
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
               {t('auction.reschedule.quick_extend') || 'Quick Extend'}
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -182,7 +182,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
           <div className="h-px bg-white/5" />
 
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
               {t('auction.reschedule.custom_time') || 'Set Custom Time'}
             </label>
             <AmberDatePicker

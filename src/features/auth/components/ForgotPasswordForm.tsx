@@ -86,7 +86,7 @@ export const ForgotPasswordForm: React.FC = () => {
             className="bg-danger/10 border border-danger/20 p-4 rounded-2xl flex items-center gap-3 overflow-hidden"
           >
             <div className="w-2 h-2 rounded-full bg-danger shrink-0" />
-            <p className="text-xs font-bold text-danger">{error}</p>
+            <p className="text-[13px] font-bold text-danger">{error}</p>
           </motion.div>
         )}
       </AnimatePresence>

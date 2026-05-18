@@ -61,7 +61,7 @@ export const userListConfig: ListConfig = {
         const roleColors = {
           admin: 'bg-purple-500/20 text-purple-300',
           manager: 'bg-blue-500/20 text-blue-300',
-          user: 'bg-gray-500/20 text-gray-300',
+          user: 'bg-zinc-500/20 text-zinc-muted',
         };
         const roleKey = row.role as keyof typeof roleColors;
         return (

@@ -59,7 +59,7 @@ export function AmazonSearchBar({ onSearch, isLoading }: AmazonSearchBarProps) {
       </form>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+        <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
           {t('amazon.quick_search') || 'Quick Search'}:
         </span>
         {quickSearches.map((term) => (
@@ -68,7 +68,7 @@ export function AmazonSearchBar({ onSearch, isLoading }: AmazonSearchBarProps) {
             onClick={() => handleQuickSearch(term)}
             disabled={isLoading}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest',
+              'px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest',
               'border border-white/5 bg-obsidian-panel text-zinc-muted',
               'hover:border-brand/30 hover:text-brand transition-all',
               'disabled:opacity-50 disabled:cursor-not-allowed'

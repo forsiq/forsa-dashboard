@@ -83,7 +83,7 @@ export const InventoryOverviewPage: React.FC = () => {
             <p className="text-sm font-black text-zinc-text tracking-tight uppercase">
               {row.name}
             </p>
-            <p className="text-[10px] font-mono text-zinc-muted font-bold tracking-tight">{row.sku || 'NO-SKU-ID'}</p>
+            <p className="text-[11px] font-mono text-zinc-muted font-bold tracking-tight">{row.sku || 'NO-SKU-ID'}</p>
           </div>
         </div>
       ),
@@ -129,7 +129,7 @@ export const InventoryOverviewPage: React.FC = () => {
       key: 'warehouse',
       label: t('inventory.storageNode'),
       render: () => (
-        <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+        <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
           {t('inventory.default_warehouse') || 'Primary Vault'}
         </span>
       ),
@@ -183,7 +183,7 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-brand/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                    <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                       {t('inventory.global_units') || 'Global Inventory Units'}
                     </span>
                     <StatValue value={products.length} />
@@ -192,7 +192,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <Package className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-success mt-4">
                 <TrendingUp className="w-3 h-3" />
                 <span>+12.8% {t('inventory.sincePreviousCycle')}</span>
             </div>
@@ -201,7 +201,7 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-danger/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-danger uppercase tracking-widest">
+                    <span className="text-[11px] font-black text-danger uppercase tracking-widest">
                       {t('inventory.critical_alert') || 'Critical Supply Alert'}
                     </span>
                     <StatValue value={lowStockItems.length} className="!text-danger" />
@@ -210,7 +210,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <AlertCircle className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-danger mt-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-danger mt-4">
                 <ArrowRight className={cn("w-3 h-3", isRTL && "rotate-180")} />
                 <span>{t('inventory.requiresProcurement')}</span>
             </div>
@@ -219,14 +219,14 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-info/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-info uppercase tracking-widest">{t('inventory.activeLogisticsNodes')}</span>
+                    <span className="text-[11px] font-black text-info uppercase tracking-widest">{t('inventory.activeLogisticsNodes')}</span>
                     <StatValue value={warehouses.length} className="!text-info" />
                 </div>
                 <div className="p-3 bg-info/10 text-info rounded-xl border border-info/20">
                     <Warehouse className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-muted mt-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-zinc-muted mt-4">
                 <span>{t('inventory.operationalEfficiency')}</span>
             </div>
           </Card>
@@ -234,7 +234,7 @@ export const InventoryOverviewPage: React.FC = () => {
           <Card className="!p-5 bg-obsidian-card border-border hover:border-success/30 transition-all cursor-default relative overflow-hidden group">
             <div className="flex items-start justify-between mb-2">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-success uppercase tracking-widest">{t('inventory.aggregatedFiscalValue')}</span>
+                    <span className="text-[11px] font-black text-success uppercase tracking-widest">{t('inventory.aggregatedFiscalValue')}</span>
                     <StatValue
                         value={formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
                         className="!text-success"
@@ -244,7 +244,7 @@ export const InventoryOverviewPage: React.FC = () => {
                     <TrendingUp className="w-5 h-5" />
                 </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-success mt-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-success mt-4">
                 <span>{t('inventory.equityOptimization')}</span>
             </div>
           </Card>
@@ -287,10 +287,10 @@ export const InventoryOverviewPage: React.FC = () => {
                    <AlertCircle className="w-24 h-24 text-danger rotate-12" />
                 </div>
                 <div className="flex items-center justify-between mb-6 relative z-10">
-                    <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em] flex items-center gap-2">
+                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.15em] flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-danger animate-pulse" /> {t('inventory.criticalDepletionAlerts')}
                     </h3>
-                    <span className="text-[10px] font-black text-danger bg-danger/10 px-3 py-1 rounded-full border border-danger/30">
+                    <span className="text-xs font-black text-danger bg-danger/10 px-3 py-1 rounded-full border border-danger/30">
                         {lowStockItems.length} {t('inventory.detected')}
                     </span>
                 </div>
@@ -299,8 +299,8 @@ export const InventoryOverviewPage: React.FC = () => {
                         <div key={i} className="p-4 bg-obsidian-card border border-border rounded-xl hover:border-danger/30 transition-all group">
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
-                                    <p className="text-xs font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
-                                    <p className="text-[10px] font-bold text-zinc-muted uppercase">{t('inventory.highUrgencyProcurement')}</p>
+                                    <p className="text-[13px] font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
+                                    <p className="text-[11px] font-bold text-zinc-muted uppercase">{t('inventory.highUrgencyProcurement')}</p>
                                 </div>
                                 <div className="text-end">
                                     <p className="text-sm font-black text-danger leading-none">{item.inventory_quantity || 0}</p>
@@ -311,13 +311,13 @@ export const InventoryOverviewPage: React.FC = () => {
                     )) : (
                         <div className="py-12 text-center space-y-3 opacity-40">
                              <Box className="w-8 h-8 mx-auto text-zinc-muted" />
-                             <p className="text-[10px] font-black uppercase tracking-widest">
+                             <p className="text-[11px] font-black uppercase tracking-widest">
                                {t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}
                              </p>
                         </div>
                     )}
                 </div>
-                <AmberButton variant="outline" className="w-full mt-6 h-11 border-danger/20 text-danger hover:bg-danger/5 font-black uppercase text-[10px] tracking-widest">
+                <AmberButton variant="outline" className="w-full mt-6 h-11 border-danger/20 text-danger hover:bg-danger/5 font-black uppercase text-xs tracking-widest">
                     {t('inventory.generate_procurement_order') || 'Generate Procurement Order'}
                 </AmberButton>
            </Card>
@@ -326,12 +326,12 @@ export const InventoryOverviewPage: React.FC = () => {
            <Card className="!p-6 bg-obsidian-card border-border shadow-lg">
                 <div className="flex items-center gap-3 mb-8">
                    <Warehouse className="w-4 h-4 text-brand" />
-                   <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.15em]">{t('inventory.facilityCapacityIndex')}</h3>
+                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.15em]">{t('inventory.facilityCapacityIndex')}</h3>
                 </div>
                 <div className="space-y-10">
                    {warehouses.map((wh, i) => (
                        <div key={i} className="group cursor-default">
-                           <div className="flex items-center justify-between mb-3 text-[10px] font-black uppercase tracking-widest">
+                           <div className="flex items-center justify-between mb-3 text-[11px] font-black uppercase tracking-widest">
                                <span className="text-zinc-text group-hover:text-brand transition-colors">{wh.name}</span>
                                <span className={cn(
                                    "px-2 py-0.5 rounded border",
@@ -345,7 +345,7 @@ export const InventoryOverviewPage: React.FC = () => {
                                 variant={wh.used / wh.capacity > 0.8 ? 'warning' : 'primary'}
                                 className="h-2"
                            />
-                           <div className="flex items-center justify-between mt-3 text-[10px] font-black text-zinc-muted uppercase tracking-[0.2em]">
+                           <div className="flex items-center justify-between mt-3 text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em]">
                                <span>{t('inventory.allocated')}: {wh.used} {t('inventory.units')}</span>
                                <span>{t('inventory.capacity')}: {wh.capacity} {t('inventory.units')}</span>
                            </div>
@@ -365,7 +365,7 @@ export const InventoryOverviewPage: React.FC = () => {
       >
           <div className="space-y-8 py-4">
               <div className="space-y-3">
-                  <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.globalSearch')}</label>
+                  <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.globalSearch')}</label>
                   <AmberInput 
                     placeholder={t('inventory.scanPlaceholder')} 
                     value={searchQuery}
@@ -378,7 +378,7 @@ export const InventoryOverviewPage: React.FC = () => {
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.operationalStatus')}</label>
+                    <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.operationalStatus')}</label>
                     <AmberDropdown 
                         options={[
                             { label: t('inventory.allProtocols'), value: 'all' },

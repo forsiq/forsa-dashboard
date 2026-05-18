@@ -90,7 +90,7 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           {isNew && (
-            <span className="shrink-0 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-brand/15 text-brand border border-brand/20 rounded-sm">
+            <span className="shrink-0 px-2 py-0.5 text-[11px] font-black uppercase tracking-widest bg-brand/15 text-brand border border-brand/20 rounded-sm">
               {t('changelog.new_badge')}
             </span>
           )}
@@ -99,12 +99,12 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({
               <span className="text-xs font-mono font-bold text-zinc-muted/60">
                 v{release.version}
               </span>
-              <span className="text-[10px] text-zinc-muted/40">•</span>
-              <span className="text-[10px] font-medium text-zinc-muted/50 tabular-nums">
+              <span className="text-[11px] text-zinc-muted/40">•</span>
+              <span className="text-[11px] font-medium text-zinc-muted/50 tabular-nums">
                 {formatChangelogDate(release.date)}
               </span>
             </div>
-            <h4 className="text-sm font-black text-white tracking-tight truncate">
+            <h4 className="text-sm font-black text-zinc-text tracking-tight truncate">
               {localize(release.title, language)}
             </h4>
           </div>
@@ -141,10 +141,10 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({
                       >
                         <Icon className={cn('w-3 h-3', config.colorClass)} />
                       </div>
-                      <span className={cn('text-[10px] font-black uppercase tracking-widest', config.colorClass)}>
+                      <span className={cn('text-[11px] font-black uppercase tracking-widest', config.colorClass)}>
                         {t(`changelog.type.${type}`)}
                       </span>
-                      <span className="text-[10px] text-zinc-muted/30 font-mono">
+                      <span className="text-[11px] text-zinc-muted/30 font-mono">
                         ({entries.length})
                       </span>
                     </div>
@@ -166,7 +166,7 @@ export const ChangelogCard: React.FC<ChangelogCardProps> = ({
               {isLatest && (
                 <div className="flex items-center gap-2 pt-2 text-brand/60">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">
                     {t('changelog.whats_new')}
                   </span>
                 </div>

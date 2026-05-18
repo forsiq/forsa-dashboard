@@ -128,36 +128,10 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   }
 
   const data = await response.json();
-  console.log('[authApi] Login successful, fetching profile...');
+  console.log('[authApi] Login successful, tokens received');
 
-  // Fetch user profile immediately after login
-  try {
-    const userResponse = await fetchWithTimeout(buildAuthUrl('user/'), {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${data.access}`,
-        ...getProjectHeaders()
-      }
-    });
-
-    if (userResponse.ok) {
-      const userData = await userResponse.json();
-      return {
-        access: data.access,
-        refresh: data.refresh,
-        user: {
-          id: userData.id || 'unknown',
-          username: userData.username || credentials.username,
-          email: userData.email || ''
-        }
-      };
-    }
-  } catch (profileErr) {
-    console.warn('[authApi] Profile fetch failed, using fallback:', profileErr);
-  }
-
-  // Fallback if profile fetch fails
-  return {
+  // Return immediately with fallback user data
+  const result: AuthResponse = {
     access: data.access,
     refresh: data.refresh,
     user: {
@@ -166,6 +140,24 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
       email: ''
     }
   };
+
+  // Fetch profile in background - don't block login flow
+  fetchWithTimeout(buildAuthUrl('user/'), {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${data.access}`,
+      ...getProjectHeaders()
+    }
+  }).then(userResponse => {
+    if (userResponse.ok) return userResponse.json();
+    throw new Error('Profile fetch failed');
+  }).then(userData => {
+    console.log('[authApi] Background profile fetch succeeded:', userData.username);
+  }).catch(err => {
+    console.warn('[authApi] Background profile fetch failed:', err);
+  });
+
+  return result;
 };
 
 /**

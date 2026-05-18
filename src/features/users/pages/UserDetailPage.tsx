@@ -36,7 +36,7 @@ export function UserDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <UserX className="h-16 w-16 text-zinc-600 mb-4" />
-        <h3 className="text-lg font-semibold text-white mb-2">
+        <h3 className="text-lg font-semibold text-zinc-text mb-2">
           {t('user.not_found')}
         </h3>
         <AmberButton variant="outline" onClick={() => router.push('/users')} className="mt-4">
@@ -63,7 +63,7 @@ export function UserDetailPage() {
     const colors = {
       admin: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
       manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      user: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+      user: 'bg-zinc-500/20 text-zinc-muted border-zinc-500/30',
     };
     return colors[role as keyof typeof colors] || colors.user;
   };
@@ -100,17 +100,17 @@ export function UserDetailPage() {
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-zinc-text">
                     {user.fullName.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">{user.fullName}</h2>
-                  <p className="text-sm text-zinc-400">@{user.userName}</p>
+                  <h2 className="text-xl font-bold text-zinc-text">{user.fullName}</h2>
+                  <p className="text-sm text-zinc-muted">@{user.userName}</p>
                 </div>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getRoleBadgeColor(user.role)}`}>
-                <Shield className="inline h-4 w-4 me-1 text-zinc-400" />
+                <Shield className="inline h-4 w-4 me-1 text-zinc-muted" />
                 {t(`user.role.${user.role}`)}
               </span>
             </div>
@@ -119,22 +119,22 @@ export function UserDetailPage() {
               {/* Email */}
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center">
-                  <Mail className="h-5 w-5 text-zinc-400" />
+                  <Mail className="h-5 w-5 text-zinc-muted" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">{t('user.email')}</p>
-                  <p className="text-sm text-white">{user.email || '-'}</p>
+                  <p className="text-[13px] text-zinc-500">{t('user.email')}</p>
+                  <p className="text-sm text-zinc-text">{user.email || '-'}</p>
                 </div>
               </div>
 
               {/* Phone */}
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center">
-                  <Phone className="h-5 w-5 text-zinc-400" />
+                  <Phone className="h-5 w-5 text-zinc-muted" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">{t('user.phone')}</p>
-                  <p className="text-sm text-white" dir="ltr">{user.phone ? formatPhone(user.phone) : '-'}</p>
+                  <p className="text-[13px] text-zinc-500">{t('user.phone')}</p>
+                  <p className="text-sm text-zinc-text" dir="ltr">{user.phone ? formatPhone(user.phone) : '-'}</p>
                 </div>
               </div>
 
@@ -148,7 +148,7 @@ export function UserDetailPage() {
                   )}
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">{t('user.is_active')}</p>
+                  <p className="text-[13px] text-zinc-500">{t('user.is_active')}</p>
                   <p className={`text-sm font-medium ${user.isActive ? 'text-green-400' : 'text-red-400'}`}>
                     {t(user.isActive ? 'user.status.active' : 'user.status.inactive')}
                   </p>
@@ -162,7 +162,7 @@ export function UserDetailPage() {
                     <Shield className="h-5 w-5 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500">{t('user.password_status')}</p>
+                    <p className="text-[13px] text-zinc-500">{t('user.password_status')}</p>
                     <p className="text-sm text-yellow-400">{t('user.temp_password')}</p>
                   </div>
                 </div>
@@ -172,21 +172,21 @@ export function UserDetailPage() {
 
           {/* Timestamps Card */}
           <AmberCard className="p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">{t('user.timestamps')}</h3>
+            <h3 className="text-lg font-semibold text-zinc-text mb-4">{t('user.timestamps')}</h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-zinc-400" />
+                <Calendar className="h-5 w-5 text-zinc-muted" />
                 <div>
-                  <p className="text-xs text-zinc-500">{t('user.created_at')}</p>
-                  <p className="text-sm text-white">{formatDate(user.createdAt)}</p>
+                  <p className="text-[13px] text-zinc-500">{t('user.created_at')}</p>
+                  <p className="text-sm text-zinc-text">{formatDate(user.createdAt)}</p>
                 </div>
               </div>
               {user.updatedAt && user.updatedAt !== user.createdAt && (
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-zinc-400" />
+                  <Calendar className="h-5 w-5 text-zinc-muted" />
                   <div>
-                    <p className="text-xs text-zinc-500">{t('user.updated_at')}</p>
-                    <p className="text-sm text-white">{formatDate(user.updatedAt)}</p>
+                    <p className="text-[13px] text-zinc-500">{t('user.updated_at')}</p>
+                    <p className="text-sm text-zinc-text">{formatDate(user.updatedAt)}</p>
                   </div>
                 </div>
               )}

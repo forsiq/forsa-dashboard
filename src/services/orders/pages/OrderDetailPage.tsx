@@ -49,7 +49,7 @@ export const OrderDetailPage = () => {
   }
 
   if (!order) {
-    return <div className="text-white">{t('orders.notFound')}</div>;
+    return <div className="text-zinc-text">{t('orders.notFound')}</div>;
   }
 
   const statusColors: Record<Order['status'], string> = {
@@ -81,8 +81,8 @@ export const OrderDetailPage = () => {
             <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
           </AmberButton>
           <div>
-            <h1 className="text-2xl font-bold text-white">{order.orderNumber}</h1>
-            <p className="text-zinc-400 mt-1">
+            <h1 className="text-2xl font-bold text-zinc-text">{order.orderNumber}</h1>
+            <p className="text-zinc-muted mt-1">
               {new Date(order.createdAt).toLocaleString()}
             </p>
           </div>
@@ -93,9 +93,9 @@ export const OrderDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <AmberCard className="p-4">
           <div className="flex items-center gap-3">
-            <Package className="text-zinc-400" size={20} />
+            <Package className="text-zinc-muted" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">{t('orders.orderStatus')}</div>
+              <div className="text-zinc-muted text-sm">{t('orders.orderStatus')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
                 {t(`orders.status.${order.status}`) || order.status}
               </span>
@@ -104,9 +104,9 @@ export const OrderDetailPage = () => {
         </AmberCard>
         <AmberCard className="p-4">
           <div className="flex items-center gap-3">
-            <CreditCard className="text-zinc-400" size={20} />
+            <CreditCard className="text-zinc-muted" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">{t('orders.payment')}</div>
+              <div className="text-zinc-muted text-sm">{t('orders.payment')}</div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[order.paymentStatus]}`}>
                 {t(`orders.payment_status.${order.paymentStatus}`) || order.paymentStatus}
               </span>
@@ -115,10 +115,10 @@ export const OrderDetailPage = () => {
         </AmberCard>
         <AmberCard className="p-4">
           <div className="flex items-center gap-3">
-            <User className="text-zinc-400" size={20} />
+            <User className="text-zinc-muted" size={20} />
             <div>
-              <div className="text-zinc-400 text-sm">{t('orders.customer')}</div>
-              <div className="text-white font-medium">{order.customerName}</div>
+              <div className="text-zinc-muted text-sm">{t('orders.customer')}</div>
+              <div className="text-zinc-text font-medium">{order.customerName}</div>
             </div>
           </div>
         </AmberCard>
@@ -128,19 +128,19 @@ export const OrderDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Items */}
         <AmberCard className="p-6 lg:col-span-2">
-          <h2 className="text-lg font-semibold text-white mb-4">{t('orders.orderItems')}</h2>
+          <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.orderItems')}</h2>
           <div className="space-y-4">
             {order.items.map((item) => (
               <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
                 <div className="flex-1">
-                  <div className="text-white font-medium">{item.productName}</div>
+                  <div className="text-zinc-text font-medium">{item.productName}</div>
                   {item.productSku && (
-                    <div className="text-sm text-zinc-400">SKU: {item.productSku}</div>
+                    <div className="text-sm text-zinc-muted">SKU: {item.productSku}</div>
                   )}
                 </div>
                 <div className="text-end">
-                  <div className="text-white">{item.quantity} x {formatCurrency(item.unitPrice ?? 0)}</div>
-                  <div className="text-sm font-medium text-white">{formatCurrency(item.totalPrice ?? 0)}</div>
+                  <div className="text-zinc-text">{item.quantity} x {formatCurrency(item.unitPrice ?? 0)}</div>
+                  <div className="text-sm font-medium text-zinc-text">{formatCurrency(item.totalPrice ?? 0)}</div>
                 </div>
               </div>
             ))}
@@ -148,15 +148,15 @@ export const OrderDetailPage = () => {
 
           {/* Totals */}
           <div className="mt-6 pt-6 border-t border-white/10 space-y-2">
-            <div className="flex justify-between text-zinc-400">
+            <div className="flex justify-between text-zinc-muted">
               <span>{t('orders.subtotal')}</span>
               <span>{formatCurrency(order.subtotal ?? 0)}</span>
             </div>
-            <div className="flex justify-between text-zinc-400">
+            <div className="flex justify-between text-zinc-muted">
               <span>{t('orders.tax')}</span>
               <span>{formatCurrency(order.tax ?? 0)}</span>
             </div>
-            <div className="flex justify-between text-zinc-400">
+            <div className="flex justify-between text-zinc-muted">
               <span>{t('orders.shipping')}</span>
               <span>{formatCurrency(order.shipping ?? 0)}</span>
             </div>
@@ -166,7 +166,7 @@ export const OrderDetailPage = () => {
                 <span>-{formatCurrency(order.discount ?? 0)}</span>
               </div>
             )}
-            <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-white/10">
+            <div className="flex justify-between text-zinc-text font-bold text-lg pt-2 border-t border-white/10">
               <span>{t('orders.total')}</span>
               <span>{formatCurrency(order.total ?? 0)}</span>
             </div>
@@ -178,24 +178,24 @@ export const OrderDetailPage = () => {
           {/* Shipping Address */}
           <AmberCard className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <MapPin className="text-zinc-400" size={18} />
-              <h2 className="text-lg font-semibold text-white">{t('orders.shippingAddress')}</h2>
+              <MapPin className="text-zinc-muted" size={18} />
+              <h2 className="text-lg font-semibold text-zinc-text">{t('orders.shippingAddress')}</h2>
             </div>
             <div className="space-y-1 text-sm">
-              <div className="text-white">{order.shippingAddress.fullName}</div>
-              <div className="text-zinc-400" dir="ltr">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
-              <div className="text-zinc-400">
+              <div className="text-zinc-text">{order.shippingAddress.fullName}</div>
+              <div className="text-zinc-muted" dir="ltr">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
+              <div className="text-zinc-muted">
                 {order.shippingAddress.street}
                 {order.shippingAddress.building && `, ${order.shippingAddress.building}`}
                 {order.shippingAddress.floor && `, Floor ${order.shippingAddress.floor}`}
                 {order.shippingAddress.apartment && `, Apt ${order.shippingAddress.apartment}`}
               </div>
-              <div className="text-zinc-400">
+              <div className="text-zinc-muted">
                 {order.shippingAddress.city}, {order.shippingAddress.state}
               </div>
-              <div className="text-zinc-400">{order.shippingAddress.country}</div>
+              <div className="text-zinc-muted">{order.shippingAddress.country}</div>
               {order.shippingAddress.postalCode && (
-                <div className="text-zinc-400">{order.shippingAddress.postalCode}</div>
+                <div className="text-zinc-muted">{order.shippingAddress.postalCode}</div>
               )}
             </div>
           </AmberCard>
@@ -203,14 +203,14 @@ export const OrderDetailPage = () => {
           {/* Notes */}
           {order.notes && (
             <AmberCard className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('orders.notes')}</h2>
-              <p className="text-zinc-400 text-sm">{order.notes}</p>
+              <h2 className="text-lg font-semibold text-zinc-text mb-2">{t('orders.notes')}</h2>
+              <p className="text-zinc-muted text-sm">{order.notes}</p>
             </AmberCard>
           )}
 
           {/* Status Actions */}
           <AmberCard className="p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">{t('orders.updateStatus')}</h2>
+            <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.updateStatus')}</h2>
             <div className="space-y-2">
               {(['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as Order['status'][]).map((status) => (
                 <AmberButton

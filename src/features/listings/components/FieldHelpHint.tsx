@@ -45,7 +45,7 @@ export function FieldHelpHint({ text, className }: FieldHelpHintProps) {
         <div
           role="tooltip"
           className={cn(
-            'absolute top-full z-[80] mt-1.5 w-64 max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-white/10 bg-obsidian-card p-3 text-xs font-medium leading-relaxed text-zinc-text shadow-xl',
+            'absolute top-full z-[80] mt-1.5 w-64 max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-white/10 bg-obsidian-card p-3 text-[13px] font-medium leading-relaxed text-zinc-text shadow-xl',
             dir === 'rtl' ? 'end-0 start-auto' : 'start-0 end-auto',
           )}
         >

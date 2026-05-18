@@ -14,7 +14,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
   return (
     <AmberCard className="!p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-         <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
+         <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
            {t('dash.top_performing')}
          </h3>
       </div>
@@ -22,7 +22,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
       <div className="flex-1 space-y-3">
         {products.length === 0 ? (
           <div className="h-40 flex items-center justify-center border border-dashed border-white/5 rounded-2xl">
-             <span className="text-[10px] font-semibold text-zinc-muted tracking-widest">{t('common.no_data')}</span>
+             <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('common.no_data')}</span>
           </div>
         ) : (
           products.map((item, index) => (
@@ -39,19 +39,19 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                  </div>
                  <div className="min-w-0">
                    <p className="text-sm font-bold text-zinc-text tracking-tight truncate max-w-[200px]">{item.name}</p>
-                   <p className="text-[10px] font-semibold text-zinc-muted mt-0.5">{item.category}</p>
+                   <p className="text-[11px] font-semibold text-zinc-muted mt-0.5">{item.category}</p>
                  </div>
                </div>
                
                <div className="flex items-center gap-5">
                  {/* Revenue */}
                  <div className="text-end">
-                   <p className="text-[10px] font-semibold text-zinc-muted mb-0.5">{t('dash.revenue')}</p>
+                   <p className="text-[11px] font-semibold text-zinc-muted mb-0.5">{t('dash.revenue')}</p>
                    <p className="text-sm font-bold text-brand tabular-nums">{formatCurrency(item.revenue)}</p>
                  </div>
                  {/* Bids / Views */}
                  <div className="text-end">
-                    <p className="text-[10px] font-semibold text-zinc-muted mb-0.5">{t('dash.sales')}</p>
+                    <p className="text-[11px] font-semibold text-zinc-muted mb-0.5">{t('dash.sales')}</p>
                     <div className="flex items-center gap-1.5 justify-end">
                        {item.sales > 0 ? (
                          <TrendingUp className="w-3 h-3 text-success" />

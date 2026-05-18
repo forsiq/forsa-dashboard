@@ -29,7 +29,7 @@ function StatCard({ label, value, icon: Icon, className, iconClassName, isLoadin
     <AmberCard className="!p-5 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm hover:border-white/10 transition-all group overflow-hidden relative">
       <div className="flex items-start justify-between relative z-10">
         <div className="space-y-1">
-          <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider block">
+          <span className="text-[13px] font-bold text-zinc-muted uppercase tracking-wider block">
             {label}
           </span>
           {isLoading ? (
@@ -122,7 +122,7 @@ export function CompactCategoriesStats({ stats, isLoading }: CompactCategoriesSt
         { label: t('category.subcategories') || 'Subcategories', value: stats.withParent },
       ].map((stat) => (
         <div key={stat.label} className="text-start p-4 border border-white/5 rounded-xl bg-obsidian-card hover:border-white/10 transition-all">
-          <p className="text-[10px] text-zinc-muted font-black uppercase tracking-widest h-4">
+          <p className="text-[11px] text-zinc-muted font-black uppercase tracking-widest h-4">
             {stat.label}
           </p>
           {isLoading ? (

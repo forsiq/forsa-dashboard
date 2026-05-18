@@ -44,7 +44,7 @@ export const AboutPage: React.FC = () => {
       <div className={cn('absolute top-4 z-20', dir === 'rtl' ? 'right-4' : 'left-4')}>
         <Link
           href="/"
-          className="flex items-center gap-2 text-[10px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest transition-colors bg-obsidian-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border hover:border-brand/20"
+          className="flex items-center gap-2 text-[11px] font-black text-zinc-muted hover:text-zinc-text uppercase tracking-widest transition-colors bg-obsidian-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border hover:border-brand/20"
         >
           <ArrowLeft className={cn('w-3 h-3', dir === 'rtl' && 'rotate-180')} />{' '}
           {t('about.return_home')}
@@ -68,7 +68,7 @@ export const AboutPage: React.FC = () => {
             {t('about.hero.subtitle')}
           </p>
           {latestVersion && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] font-black text-zinc-text uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] font-black text-zinc-text uppercase tracking-widest">
               <span>{t('about.hero.latest_build')}:</span>
               <span className="text-brand font-mono">v{latestVersion.version}</span>
             </div>
@@ -82,10 +82,10 @@ export const AboutPage: React.FC = () => {
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 blur-[80px] rounded-full pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-          <h3 className="text-brand uppercase tracking-[0.4em] text-[10px] font-black">
+          <h3 className="text-brand uppercase tracking-[0.4em] text-[11px] font-black">
             {t('about.directive.title')}
           </h3>
-          <p className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight">
+          <p className="text-2xl md:text-3xl font-black text-zinc-text leading-tight tracking-tight">
             {t('about.directive.desc')}
           </p>
         </div>
@@ -111,10 +111,10 @@ export const AboutPage: React.FC = () => {
                 <feat.icon className="w-5 h-5" />
               </div>
             </div>
-            <h4 className="text-xs font-black text-zinc-text uppercase tracking-widest mb-1 leading-tight">
+            <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest mb-1 leading-tight">
               {feat.title}
             </h4>
-            <p className="text-[10px] font-bold text-zinc-muted uppercase leading-relaxed">{feat.desc}</p>
+            <p className="text-[11px] font-bold text-zinc-muted uppercase leading-relaxed">{feat.desc}</p>
           </Card>
         ))}
       </div>
@@ -124,7 +124,7 @@ export const AboutPage: React.FC = () => {
           <div className="p-1.5 bg-brand/10 rounded-lg">
             <Terminal className="w-4 h-4 text-brand" />
           </div>
-          <h3 className="text-xs font-black text-zinc-text uppercase tracking-[0.4em]">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.4em]">
             {t('about.history.title')}
           </h3>
         </div>
@@ -132,7 +132,7 @@ export const AboutPage: React.FC = () => {
       </section>
 
       <div className="pt-12 border-t border-white/5 text-center">
-        <p className="text-[10px] text-zinc-muted/20 font-bold uppercase tracking-[1em]">
+        <p className="text-[11px] text-zinc-muted/20 font-bold uppercase tracking-[1em]">
           Forsa © {new Date().getFullYear()}
         </p>
       </div>

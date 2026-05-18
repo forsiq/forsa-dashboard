@@ -28,7 +28,7 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             <span className="text-lg font-black text-zinc-text tracking-tighter uppercase leading-none">
               ZONE<span className="text-brand">VAST</span>
             </span>
-            <span className="text-[9px] font-black text-zinc-muted uppercase tracking-[0.4em] mt-0.5">
+            <span className="text-[11px] font-black text-zinc-muted uppercase tracking-[0.4em] mt-0.5">
               FORSA
             </span>
           </div>
@@ -49,7 +49,7 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             <h1 className="text-3xl font-black text-zinc-text tracking-tight uppercase">
               {title || t('login.welcome')}
             </h1>
-            <p className="text-xs font-bold text-brand uppercase tracking-[0.2em] mt-2">
+            <p className="text-sm font-bold text-brand uppercase tracking-[0.2em] mt-2">
               {subtitle || t('login.subtitle')}
             </p>
           </motion.div>
@@ -74,12 +74,12 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             <div className="flex items-center justify-center gap-6">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-success" />
-                <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-[0.2em]">
+                <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-[0.2em]">
                   Secure Connection
                 </p>
               </div>
               <span className="text-zinc-muted/30">|</span>
-              <p className="text-[10px] font-bold text-zinc-muted/60 uppercase tracking-[0.2em]">
+              <p className="text-[11px] font-bold text-zinc-muted/60 uppercase tracking-[0.2em]">
                 &copy; {new Date().getFullYear()} ZoneVast
               </p>
             </div>

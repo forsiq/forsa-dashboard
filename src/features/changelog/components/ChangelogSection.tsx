@@ -29,7 +29,7 @@ export const ChangelogSection: React.FC<ForsaChangelogSectionProps> = ({ classNa
             <Sparkles className="w-5 h-5 text-brand" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-white tracking-tighter uppercase">
+            <h2 className="text-xl font-black text-zinc-text tracking-tighter uppercase">
               {t('changelog.title')}
             </h2>
             <p className="text-[11px] text-zinc-muted font-medium tracking-tight">
@@ -37,7 +37,7 @@ export const ChangelogSection: React.FC<ForsaChangelogSectionProps> = ({ classNa
             </p>
           </div>
           {changelog.unseenCount > 0 && (
-            <span className="px-2 py-0.5 text-[10px] font-black bg-brand/15 text-brand border border-brand/20 rounded-full">
+            <span className="px-2 py-0.5 text-[11px] font-black bg-brand/15 text-brand border border-brand/20 rounded-full">
               {changelog.unseenCount}
             </span>
           )}
@@ -46,7 +46,7 @@ export const ChangelogSection: React.FC<ForsaChangelogSectionProps> = ({ classNa
           <button
             type="button"
             onClick={changelog.markAllAsSeen}
-            className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-black text-zinc-muted hover:text-brand bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-brand/20 rounded-sm transition-all uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-black text-zinc-muted hover:text-brand bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-brand/20 rounded-sm transition-all uppercase tracking-widest"
           >
             <CheckCheck className="w-3.5 h-3.5" />
             {t('changelog.mark_all_read')}

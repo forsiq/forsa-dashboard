@@ -113,7 +113,7 @@ export const GroupBuyingListPage: React.FC = () => {
           </div>
           <div className="min-w-0">
             <DataTableEntityTitle text={campaign.title} />
-            <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
+            <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {campaign.category?.name || 'GENERAL'}
             </p>
           </div>
@@ -144,7 +144,7 @@ export const GroupBuyingListPage: React.FC = () => {
         return (
           <div className="w-36 space-y-1.5">
             <AmberProgress value={progress} className="h-1.5" variant={progress >= 100 ? 'success' : 'primary'} />
-            <div className="flex justify-between text-[10px] font-black">
+            <div className="flex justify-between text-[11px] font-black">
               <span className="text-zinc-text">{campaign.currentParticipants}/{campaign.maxParticipants}</span>
               <span className="text-zinc-muted">{Math.round(progress)}%</span>
             </div>
@@ -166,11 +166,11 @@ export const GroupBuyingListPage: React.FC = () => {
               {formatCurrency(campaign.dealPrice)}
             </span>
             <div className="flex items-center justify-end gap-1.5 mt-0.5">
-              <p className="text-[10px] font-black text-zinc-muted line-through">
+              <p className="text-[11px] font-black text-zinc-muted line-through">
                 {formatCurrency(campaign.originalPrice)}
               </p>
               {discount > 0 && (
-                <span className="text-[9px] font-black text-success bg-success/10 px-1.5 py-0.5 rounded-full">
+                <span className="text-[11px] font-black text-success bg-success/10 px-1.5 py-0.5 rounded-full">
                   -{discount}%
                 </span>
               )}
@@ -189,11 +189,11 @@ export const GroupBuyingListPage: React.FC = () => {
         const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
         return (
         <div className="flex flex-col items-center gap-1">
-          <div className="inline-flex items-center gap-1.5 text-[10px] font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
+          <div className="inline-flex items-center gap-1.5 text-xs font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
             <Clock className="w-3 h-3" />
             {label}
           </div>
-          <span className="text-[9px] text-zinc-muted">
+          <span className="text-[11px] text-zinc-muted">
             {new Date(campaign.endTime).toLocaleDateString()}
           </span>
         </div>
@@ -326,7 +326,7 @@ export const GroupBuyingListPage: React.FC = () => {
       >
         <div className="space-y-8 py-6">
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.nomenclature_scan') || 'Search'}</label>
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.nomenclature_scan') || 'Search'}</label>
             <AmberInput
               placeholder={t('groupBuying.enter_identifier') || "Search campaigns..."}
               value={searchQuery}
@@ -339,14 +339,14 @@ export const GroupBuyingListPage: React.FC = () => {
 
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.strategy') || 'Status'}</label>
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.strategy') || 'Status'}</label>
               <div className="grid grid-cols-2 gap-3">
                 {['all', 'active', 'scheduled', 'completed', 'cancelled', 'draft', 'unlocked', 'expired'].map((status) => (
                   <button
                     key={status}
                     onClick={() => setStatusFilter(status)}
                     className={cn(
-                      "h-11 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                      "h-11 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border",
                       statusFilter === status
                         ? "bg-brand text-black border-brand shadow-lg"
                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -362,12 +362,12 @@ export const GroupBuyingListPage: React.FC = () => {
 
             {(categoriesData?.categories || []).length > 0 && (
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setCategoryIdFilter('all')}
                     className={cn(
-                      "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                      "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                       categoryIdFilter === 'all'
                         ? "bg-brand text-black border-brand"
                         : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
@@ -380,7 +380,7 @@ export const GroupBuyingListPage: React.FC = () => {
                       key={cat.id}
                       onClick={() => setCategoryIdFilter(String(cat.id))}
                       className={cn(
-                        "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border",
+                        "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
                         categoryIdFilter === String(cat.id)
                           ? "bg-brand text-black border-brand"
                           : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"

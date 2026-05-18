@@ -166,7 +166,7 @@ export default function AmazonImportPage() {
                 </>
               )}
             </h2>
-            <span className="text-[10px] font-bold text-zinc-muted/50 uppercase tracking-widest">
+            <span className="text-[11px] font-bold text-zinc-muted/50 uppercase tracking-widest">
               {products.length} {t('amazon.products') || 'products'}
             </span>
           </div>

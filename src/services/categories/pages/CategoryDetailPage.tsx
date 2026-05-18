@@ -104,11 +104,11 @@ export function CategoryDetailPage() {
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-brand uppercase tracking-widest">
+              <span className="text-[11px] font-black text-brand uppercase tracking-widest">
                 {t('category.title') || 'Category'}
               </span>
               <div className="w-1 h-1 rounded-full bg-zinc-muted/30" />
-              <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+              <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                 ID: {category.id}
               </span>
             </div>
@@ -194,11 +194,11 @@ export function CategoryDetailPage() {
                 <div className="flex items-start justify-between group">
                   <div className="flex items-center gap-3">
                     <FileText className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors mt-0.5" />
-                    <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                    <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                       {t('category.description') || 'Description'}
                     </span>
                   </div>
-                  <span className="text-xs font-bold text-zinc-text tracking-tight max-w-[60%] text-end">
+                  <span className="text-[13px] font-bold text-zinc-text tracking-tight max-w-[60%] text-end">
                     {getLocalizedDescription(category, language)}
                   </span>
                 </div>
@@ -238,7 +238,7 @@ export function CategoryDetailPage() {
               <div className="flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <ToggleLeft className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
-                  <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('category.active') || 'Active'}
                   </span>
                 </div>
@@ -271,7 +271,7 @@ export function CategoryDetailPage() {
             <div className="pt-4">
               <AmberButton
                   variant="secondary"
-                  className="w-full gap-2 font-black uppercase tracking-widest text-[10px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all"
+                  className="w-full gap-2 font-black uppercase tracking-widest text-[11px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all"
                   onClick={() => router.push(`/categories/${category.id}/edit`)}
               >
                   <Edit className="w-4 h-4" />
@@ -307,13 +307,13 @@ function DetailRow({
         <span className="text-zinc-muted group-hover:text-brand transition-colors">
           {icon}
         </span>
-        <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+        <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
           {label}
         </span>
       </div>
       <span
         className={cn(
-          'text-xs font-bold text-zinc-text tracking-tight',
+          'text-[13px] font-bold text-zinc-text tracking-tight',
           mono && 'font-mono'
         )}
       >
