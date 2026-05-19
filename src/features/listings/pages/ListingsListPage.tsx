@@ -77,9 +77,9 @@ export const ListingsListPage: React.FC = () => {
     const all = pagination?.total || listings.length;
     return {
       total: all,
-      withAuction: listingsData?.stats?.withAuction ?? listings.filter(l => l._auctionCount && l._auctionCount > 0).length || 0,
-      withDeal: listingsData?.stats?.withDeal ?? listings.filter(l => l._dealCount && l._dealCount > 0).length || 0,
-      orphan: listingsData?.stats?.orphan ?? listings.filter(l => !l._auctionCount && !l._dealCount).length || 0,
+      withAuction: listingsData?.stats?.withAuction ?? (listings.filter(l => l._auctionCount && l._auctionCount > 0).length || 0),
+      withDeal: listingsData?.stats?.withDeal ?? (listings.filter(l => l._dealCount && l._dealCount > 0).length || 0),
+      orphan: listingsData?.stats?.orphan ?? (listings.filter(l => !l._auctionCount && !l._dealCount).length || 0),
     };
   }, [listings, pagination, listingsData?.stats]);
 

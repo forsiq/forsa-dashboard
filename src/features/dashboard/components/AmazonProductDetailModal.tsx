@@ -16,7 +16,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { useAmazonProduct } from '@services/amazon/hooks/useAmazonSearch';
 import { useCreateListing } from '@features/listings/api/listing-hooks';
 import { uploadAttachmentAndGetId } from '@features/auctions/utils/auction-utils';
-import type { ListingSpec } from '@types/services/listings.types';
+import type { ListingSpec } from '../../../types/services/listings.types';
 import { useRouter } from 'next/router';
 
 interface AmazonProductDetailModalProps {
