@@ -146,30 +146,9 @@ export function UserFormPage() {
     }
 
     try {
-      if (isEdit) {
-        await updateMutation.mutateAsync({
-          id: id as string,
-          userName: formData.userName,
-          fullName: formData.fullName,
-          email: formData.email || undefined,
-          phone: formData.phone || undefined,
-          role: formData.role,
-          isActive: formData.isActive,
-        });
-        toast.success(t('user.update_success') || 'User updated successfully');
-      } else {
-        await createMutation.mutateAsync({
-          userName: formData.userName,
-          fullName: formData.fullName,
-          email: formData.email || undefined,
-          phone: formData.phone || undefined,
-          role: formData.role,
-          password: formData.password,
-          isActive: formData.isActive,
-        });
-        toast.success(t('user.create_success') || 'User created successfully');
-      }
-      router.push('/users');
+      // Backend POST /users endpoint does not exist in auction-service
+      // User management belongs to the auth service
+      toast.info(t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.');
     } catch (error: any) {
       toast.error(error.message || (isEdit ? t('user.update_failed') : t('user.create_failed')));
     }
