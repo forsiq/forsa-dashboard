@@ -160,9 +160,9 @@ export const MyBidsPage: React.FC = () => {
         const cfg = DISPLAY_STATUS_LABEL[bid.displayStatus] || DISPLAY_STATUS_LABEL.active;
         return (
           <StatusBadge
-            status={bid.displayStatus}
+            status={bid.displayStatus || 'active'}
             labelKey={cfg.key}
-            variant={DISPLAY_STATUS_VARIANT[bid.displayStatus] || 'info'}
+            variant={DISPLAY_STATUS_VARIANT[bid.displayStatus || 'active']}
             size="sm"
           />
         );

@@ -976,4 +976,41 @@ export const ar: Record<string, string> = {
 
   // مزاد (مفقود)
   "auction.create_auction": "مزاد جديد",
+
+  // إنشاء مزاد
+  "auction.create.title": "إنشاء مزاد",
+  "auction.create.flow_desc": "اختر كيف تريد إنشاء قائمة المزاد",
+  "auction.create.step1_title": "إنشاء سريع",
+  "auction.create.step1_desc": "إنشاء مزاد جديد من الصفر بكل التفاصيل",
+  "auction.create.new_listing": "مزاد جديد",
+  "auction.create.step2_title": "من منتج",
+  "auction.create.step2_desc": "اختر منتجاً موجوداً لنشره كمزاد",
+  "auction.create.view_listings": "عرض المنتجات",
+
+  // تبويبات المزاد (مزايداتي)
+  "auction.tabs.winning": "فائز",
+  "auction.tabs.outbid": "تم التفوق",
+
+  // صفحة المستخدمين
+  "user.filter_description": "تصفية والبحث في المستخدمين",
+
+  // صفحة الملف الشخصي
+  "profile.title": "الملف الشخصي",
+  "profile.subtitle": "إدارة معلوماتك الشخصية",
+  "profile.edit_info": "تعديل المعلومات",
+  "profile.change_password": "تغيير كلمة المرور",
+  "profile.current_password": "كلمة المرور الحالية",
+  "profile.new_password": "كلمة المرور الجديدة",
+  "profile.password_hint": "8 أحرف على الأقل",
+  "profile.update_password": "تحديث كلمة المرور",
+
+  // صفحة الإعدادات
+  "settings.general_info": "معلومات عامة",
+  "settings.project_name": "اسم المشروع",
+  "settings.project_id": "معرف المشروع",
+  "settings.description": "الوصف",
+
+  // صفحة المخزون
+  "inventory.bulk_delete": "حذف المحدد",
+  "inventory.empty_description": "لا توجد عناصر في المخزون. أضف أول منتج للبدء.",
 };

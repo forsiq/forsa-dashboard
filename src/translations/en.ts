@@ -975,4 +975,41 @@ export const en: Record<string, string> = {
 
   // Auction (missing)
   "auction.create_auction": "New Auction",
+
+  // Auction Create Page
+  "auction.create.title": "Create Auction",
+  "auction.create.flow_desc": "Choose how to create your auction listing",
+  "auction.create.step1_title": "Quick Create",
+  "auction.create.step1_desc": "Create a new auction from scratch with all details",
+  "auction.create.new_listing": "New Auction",
+  "auction.create.step2_title": "From Product",
+  "auction.create.step2_desc": "Select an existing product listing to deploy as auction",
+  "auction.create.view_listings": "View Listings",
+
+  // Auction Tabs (My Bids)
+  "auction.tabs.winning": "Winning",
+  "auction.tabs.outbid": "Outbid",
+
+  // User Page
+  "user.filter_description": "Filter and search users",
+
+  // Profile Page
+  "profile.title": "Profile",
+  "profile.subtitle": "Manage your personal information",
+  "profile.edit_info": "Edit Info",
+  "profile.change_password": "Change Password",
+  "profile.current_password": "Current Password",
+  "profile.new_password": "New Password",
+  "profile.password_hint": "Minimum 8 characters",
+  "profile.update_password": "Update Password",
+
+  // Settings Page
+  "settings.general_info": "General Information",
+  "settings.project_name": "Project Name",
+  "settings.project_id": "Project ID",
+  "settings.description": "Description",
+
+  // Inventory Page
+  "inventory.bulk_delete": "Delete Selected",
+  "inventory.empty_description": "No inventory items found. Add your first product to get started.",
 };

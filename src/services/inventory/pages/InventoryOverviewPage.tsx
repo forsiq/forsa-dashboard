@@ -50,6 +50,7 @@ export const InventoryOverviewPage: React.FC = () => {
 
   const { data: inventoryData, isLoading: itemsLoading } = useList();
   const products = (inventoryData as any)?.items || [];
+  const lowStockThreshold = 10;
 
   const filteredProducts = useMemo(() => {
     return products.filter((p: any) => {
@@ -78,7 +79,6 @@ export const InventoryOverviewPage: React.FC = () => {
     }];
   }, [products, t]);
 
-  const lowStockThreshold = 10;
   const lowStockItems = products.filter((p: any) => (p.inventory_quantity || p.stock || 0) <= lowStockThreshold);
 
   // --- Table Configuration ---

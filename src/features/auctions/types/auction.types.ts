@@ -8,10 +8,11 @@ export type BidStatus = 'active' | 'outbid' | 'winning' | 'cancelled';
 
 export type BidDisplayStatus = 'winning' | 'outbid' | 'won' | 'lost' | 'active' | 'cancelled';
 
-export function computeBidDisplayStatus(bidStatus: BidStatus, auctionStatus: AuctionStatus | string): BidDisplayStatus {
+export function computeBidDisplayStatus(bidStatus: BidStatus | null | undefined, auctionStatus: AuctionStatus | string): BidDisplayStatus {
+  if (!bidStatus) return 'active';
   if (bidStatus === 'winning' && (auctionStatus === 'sold' || auctionStatus === 'ended')) return 'won';
   if (bidStatus === 'outbid' && (auctionStatus === 'sold' || auctionStatus === 'ended')) return 'lost';
-  return bidStatus;
+  return bidStatus as BidDisplayStatus;
 }
 
 export interface Auction {

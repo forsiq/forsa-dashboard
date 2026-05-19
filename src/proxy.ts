@@ -1,38 +1,66 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-/**
- * Next.js Middleware for Route Protection
- *
- * Logic:
- * 1. Define public paths that don't need auth
- * 2. Check for 'access' cookie
- * 3. Redirect to login if unauthenticated on protected paths
- */
+type RouteRoleConfig = {
+  roles: string[];
+  redirectPath: string;
+};
+
+const ADMIN_ONLY_ROLES = ['admin'];
+const MANAGER_PLUS_ROLES = ['admin', 'manager'];
+
+const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
+  '/moderation': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/settlements': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/users': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/settings': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/live-monitor': { roles: MANAGER_PLUS_ROLES, redirectPath: '/dashboard' },
+  '/reports': { roles: MANAGER_PLUS_ROLES, redirectPath: '/dashboard' },
+};
+
+const parseJwtPayload = (token?: string): Record<string, unknown> | null => {
+  if (!token) return null;
+  try {
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) return null;
+    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    const payloadJson = atob(padded);
+    return JSON.parse(payloadJson);
+  } catch {
+    return null;
+  }
+};
+
+const parseJwtExp = (token?: string): number | null => {
+  const payload = parseJwtPayload(token);
+  if (!payload) return null;
+  return typeof payload.exp === 'number' ? payload.exp : null;
+};
+
+const decodeJwtRole = (token: string): string | null => {
+  const payload = parseJwtPayload(token);
+  if (!payload) return null;
+  if (payload.role && typeof payload.role === 'string') return payload.role.toLowerCase();
+  if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+    return (payload.roles[0] as string).toLowerCase();
+  }
+  return 'user';
+};
+
+const isTokenValid = (token?: string): boolean => {
+  if (!token) return false;
+  const exp = parseJwtExp(token);
+  if (!exp) return false;
+  return Date.now() < (exp - 30) * 1000;
+};
+
+function matchRoute(pathname: string, routePrefix: string): boolean {
+  return pathname === routePrefix || pathname.startsWith(`${routePrefix}/`);
+}
+
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
-
-  const parseJwtExp = (token?: string): number | null => {
-    if (!token) return null;
-    try {
-      const payloadPart = token.split('.')[1];
-      if (!payloadPart) return null;
-      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
-      const payloadJson = atob(padded);
-      const payload = JSON.parse(payloadJson) as { exp?: number };
-      return typeof payload.exp === 'number' ? payload.exp : null;
-    } catch {
-      return null;
-    }
-  };
-
-  const isTokenValid = (token?: string): boolean => {
-    if (!token) return false;
-    const exp = parseJwtExp(token);
-    if (!exp) return false;
-    return Date.now() < (exp - 30) * 1000;
-  };
 
   // 1. Define public routes
   const isPublicPath =
@@ -51,9 +79,8 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get('access')?.value;
   const hasValidToken = isTokenValid(token);
 
-  // 3. Protection Logic
+  // 3. Protection Logic - redirect to login if unauthenticated on protected paths
   if (!isPublicPath && !hasValidToken) {
-    // Redirect to login if trying to access protected route without token
     const url = new URL('/login', request.url);
     url.searchParams.set('from', pathname);
     const response = NextResponse.redirect(url);
@@ -67,6 +94,24 @@ export function proxy(request: NextRequest) {
   const isForcedLogin = searchParams.get('expired') === 'true';
   if ((pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') && hasValidToken && !isForcedLogin) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // 5. Role-based route protection
+  if (hasValidToken && token) {
+    let matchedConfig: RouteRoleConfig | null = null;
+    for (const [routePrefix, config] of Object.entries(PROTECTED_ROUTES)) {
+      if (matchRoute(pathname, routePrefix)) {
+        matchedConfig = config;
+        break;
+      }
+    }
+
+    if (matchedConfig) {
+      const role = decodeJwtRole(token) || 'user';
+      if (!matchedConfig.roles.includes(role)) {
+        return NextResponse.redirect(new URL(matchedConfig.redirectPath, request.url));
+      }
+    }
   }
 
   return NextResponse.next();
