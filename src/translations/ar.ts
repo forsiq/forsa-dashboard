@@ -7,6 +7,12 @@ export const ar: Record<string, string> = {
   "auth_guard.authenticating": "...جاري المصادقة",
   "auth_guard.session_expired": "...انتهت الجلسة",
 
+  // Auth Login
+  "auth.login.password_tab": "كلمة المرور",
+  "auth.login.otp_tab": "OTP",
+  "login.phone": "رقم الهاتف",
+  "login.phone_placeholder": "+966...",
+
   // Critical Nodes
   "critical.title": "العقد الحرجة",
   "critical.ended": "منتهي",

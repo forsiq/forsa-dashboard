@@ -222,8 +222,132 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Placeholder for other tabs - rendered by core-ui behavior */}
-          {activeTab !== 'navigation' && (
+          {/* General Tab */}
+          {activeTab === 'general' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
+              <AmberCard className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
+                  {t('settings.general_info') || 'General Information'}
+                </h3>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest block mb-2 text-start">
+                        {t('settings.project_name') || 'Project Name'}
+                      </label>
+                      <div className="h-11 px-4 flex items-center bg-[var(--color-obsidian-outer)] border border-[var(--color-border)] rounded-xl text-sm text-zinc-text font-bold">
+                        Forsa Auctions
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest block mb-2 text-start">
+                        {t('settings.project_id') || 'Project ID'}
+                      </label>
+                      <div className="h-11 px-4 flex items-center bg-[var(--color-obsidian-outer)] border border-[var(--color-border)] rounded-xl text-sm text-zinc-text font-bold">
+                        11
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest block mb-2 text-start">
+                      {t('settings.description') || 'Description'}
+                    </label>
+                    <div className="px-4 py-3 bg-[var(--color-obsidian-outer)] border border-[var(--color-border)] rounded-xl text-sm text-zinc-text font-medium leading-relaxed">
+                      Forsa is a real-time auction platform for managing and participating in live auctions.
+                    </div>
+                  </div>
+                </div>
+              </AmberCard>
+            </div>
+          )}
+
+          {/* Appearance Tab */}
+          {activeTab === 'auction' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
+              <AmberCard className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] mb-8 pb-4 border-b border-[var(--color-border)]">
+                  {t('settings.appearance') || 'Appearance'}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Light Mode Option */}
+                  <button
+                    type="button"
+                    onClick={() => { if (theme === 'dark') toggleTheme(); }}
+                    className={cn(
+                      'relative p-6 rounded-2xl border-2 transition-all text-start group',
+                      theme !== 'dark'
+                        ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5 shadow-lg shadow-[var(--color-brand)]/10'
+                        : 'border-[var(--color-border)] bg-[var(--color-obsidian-card)] hover:border-white/20',
+                    )}
+                  >
+                    {theme !== 'dark' && (
+                      <div className="absolute top-4 end-4">
+                        <CheckCircle className="w-5 h-5 text-[var(--color-brand)]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={cn(
+                        'p-2.5 rounded-xl',
+                        theme !== 'dark' ? 'bg-[var(--color-brand)]/15' : 'bg-white/5',
+                      )}>
+                        <Sun className={cn(
+                          'w-5 h-5',
+                          theme !== 'dark' ? 'text-[var(--color-brand)]' : 'text-zinc-muted',
+                        )} />
+                      </div>
+                      <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+                        {t('settings.light_mode') || 'Light Mode'}
+                      </h4>
+                    </div>
+                    <p className="text-[13px] font-bold text-zinc-muted leading-relaxed uppercase">
+                      {t('settings.light_mode_desc') || 'Clean and bright interface'}
+                    </p>
+                  </button>
+
+                  {/* Dark Mode Option */}
+                  <button
+                    type="button"
+                    onClick={() => { if (theme !== 'dark') toggleTheme(); }}
+                    className={cn(
+                      'relative p-6 rounded-2xl border-2 transition-all text-start group',
+                      theme === 'dark'
+                        ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5 shadow-lg shadow-[var(--color-brand)]/10'
+                        : 'border-[var(--color-border)] bg-[var(--color-obsidian-card)] hover:border-white/20',
+                    )}
+                  >
+                    {theme === 'dark' && (
+                      <div className="absolute top-4 end-4">
+                        <CheckCircle className="w-5 h-5 text-[var(--color-brand)]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={cn(
+                        'p-2.5 rounded-xl',
+                        theme === 'dark' ? 'bg-[var(--color-brand)]/15' : 'bg-white/5',
+                      )}>
+                        <Moon className={cn(
+                          'w-5 h-5',
+                          theme === 'dark' ? 'text-[var(--color-brand)]' : 'text-zinc-muted',
+                        )} />
+                      </div>
+                      <h4 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+                        {t('settings.dark_mode') || 'Dark Mode'}
+                      </h4>
+                    </div>
+                    <p className="text-[13px] font-bold text-zinc-muted leading-relaxed uppercase">
+                      {t('settings.dark_mode_desc') || 'Easy on the eyes, designed for extended use'}
+                    </p>
+                  </button>
+                </div>
+              </AmberCard>
+            </div>
+          )}
+
+          {/* Placeholder for other tabs */}
+          {activeTab !== 'navigation' && activeTab !== 'general' && activeTab !== 'auction' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
               <AmberCard className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
                 <div className="flex items-center justify-center py-12 text-zinc-muted">

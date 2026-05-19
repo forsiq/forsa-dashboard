@@ -8,6 +8,7 @@ import type {
   OrderStats,
   OrdersResponse,
   OrderStatus,
+  OrderItem,
 } from '../types';
 import { pickOrderWinnerName } from '../utils/order-display';
 
@@ -27,17 +28,31 @@ const mapToOrder = (raw: any): Order => {
   const winnerName = pickOrderWinnerName(row);
   const apiStatus = String(row.status ?? 'pending') as OrderStatus;
 
+  // Map order items from API response
+  const rawItems = (row.items ?? row.order_items ?? row.orderItems) as any[] | undefined;
+  const items: OrderItem[] = Array.isArray(rawItems)
+    ? rawItems.map((item: any, idx: number) => ({
+        id: String(item.id ?? idx),
+        productId: String(item.productId ?? item.product_id ?? item.auctionId ?? item.auction_id ?? ''),
+        productName: String(item.productName ?? item.product_name ?? item.title ?? ''),
+        productSku: item.productSku ?? item.product_sku ?? undefined,
+        quantity: Number(item.quantity ?? 1),
+        unitPrice: Number(item.unitPrice ?? item.unit_price ?? item.price ?? 0),
+        totalPrice: Number(item.totalPrice ?? item.total_price ?? item.unitPrice ?? item.unit_price ?? item.price ?? 0),
+      }))
+    : [];
+
   return {
   id: String(row.id ?? ''),
   orderNumber: `ORD-${row.id ?? ''}`,
   customerId: String(row.winnerId ?? row.winner_id ?? winnerName ?? ''),
   customerName: winnerName,
   customerEmail: String(row.winnerPhone ?? row.winner_phone ?? ''),
-  items: [],
+  items,
   subtotal: Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0),
-  tax: 0,
-  shipping: 0,
-  discount: 0,
+  tax: Number(row.tax ?? 0),
+  shipping: Number(row.shipping ?? row.shipping_cost ?? 0),
+  discount: Number(row.discount ?? 0),
   total: Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0),
   currency: 'IQD',
   status: apiStatus,
@@ -48,7 +63,7 @@ const mapToOrder = (raw: any): Order => {
   billingAddress: {} as any,
   createdAt: String(row.createdAt ?? row.created_at ?? row.date ?? new Date().toISOString()),
   updatedAt: String(row.updatedAt ?? row.updated_at ?? row.createdAt ?? row.created_at ?? row.date ?? new Date().toISOString()),
-};
+  };
 };
 
 export async function getOrders(filters: OrderFilters = {} as any, signal?: AbortSignal): Promise<OrdersResponse> {

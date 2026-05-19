@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@core/query/queryClient';
@@ -17,6 +17,7 @@ import { AuthGuard } from '@core/core/components/AuthGuard';
 import { PageTransition } from '@core/components/PageTransition';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 import { appTranslations } from '../translations';
 import '@styles/globals.css';
 
@@ -24,6 +25,24 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
+
+  // Intercept route changes to /login and clear auth cookies BEFORE render.
+  // The AmberTopbar logout button only does router.push('/login') without clearing cookies.
+  // We must clear them synchronously before the AuthGuard on the previous page re-checks.
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      if (url === '/login' || url.startsWith('/login?')) {
+        Cookies.remove('access', { path: '/' });
+        Cookies.remove('refresh', { path: '/' });
+        Cookies.remove('zv_user', { path: '/' });
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('user');
+        }
+      }
+    };
+    router.events.on('routeChangeStart', handleRouteChange);
+    return () => router.events.off('routeChangeStart', handleRouteChange);
+  }, [router.events]);
 
   return (
     <QueryClientProvider client={queryClient}>

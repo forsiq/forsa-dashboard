@@ -7,6 +7,12 @@ export const en: Record<string, string> = {
   "auth_guard.authenticating": "AUTHENTICATING...",
   "auth_guard.session_expired": "SESSION EXPIRED...",
 
+  // Auth Login
+  "auth.login.password_tab": "PASSWORD",
+  "auth.login.otp_tab": "OTP",
+  "login.phone": "Phone Number",
+  "login.phone_placeholder": "+966...",
+
   // Critical Nodes
   "critical.title": "Critical Nodes",
   "critical.ended": "Ended",

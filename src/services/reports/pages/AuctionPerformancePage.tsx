@@ -266,7 +266,7 @@ export function AuctionPerformancePage() {
                               'inline-flex px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider',
                               auction.status === 'active'
                                 ? 'bg-success/10 text-success'
-                                : auction.status === 'ended' || auction.status === 'sold'
+                                : auction.status === 'ended'
                                   ? 'bg-zinc-500/10 text-zinc-400'
                                   : 'bg-warning/10 text-warning'
                             )}

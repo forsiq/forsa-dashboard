@@ -278,7 +278,7 @@ export const AuctionsList: React.FC = () => {
       {
         label: (auction) => ['draft', 'scheduled'].includes(auction.status) ? (t('auction.lifecycle.start') || 'Start') : null,
         icon: Play,
-        variant: 'success',
+        variant: 'success' as const,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.start_title') || 'Start Auction',
           message: t('auction.lifecycle.start_confirm') || 'Are you sure you want to start this auction?',
@@ -289,7 +289,7 @@ export const AuctionsList: React.FC = () => {
       {
         label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null,
         icon: Pause,
-        variant: 'warning',
+        variant: 'default' as const,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.pause_title') || 'Pause Auction',
           message: t('auction.lifecycle.pause_confirm') || 'Are you sure you want to pause this auction?',
@@ -300,7 +300,7 @@ export const AuctionsList: React.FC = () => {
       {
         label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null,
         icon: RotateCcw,
-        variant: 'success',
+        variant: 'success' as const,
         onClick: (auction) => openConfirm({
           title: t('auction.lifecycle.resume_title') || 'Resume Auction',
           message: t('auction.lifecycle.resume_confirm') || 'Are you sure you want to resume this auction?',

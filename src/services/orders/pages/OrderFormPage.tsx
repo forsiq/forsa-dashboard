@@ -64,9 +64,16 @@ export const OrderFormPage = () => {
   });
 
   const onSubmit = async (data: CreateOrderInput) => {
-    // Backend POST /orders endpoint does not exist yet
-    setComingSoon(true);
-    setSubmitError('This feature is coming soon. Backend endpoint is not available yet.');
+    try {
+      setSubmitError(null);
+      if (isEdit) {
+        await updateMutation.mutateAsync({ ...data, id: id as string });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+    } catch (err: any) {
+      setSubmitError(err?.response?.data?.message || err?.message || 'Failed to save order. Please try again.');
+    }
   };
 
   if (!isClient) return null;
