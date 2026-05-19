@@ -1,16 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, LayoutGrid, Edit, Trash2, Activity, Ban, Layers, Power, PowerOff } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
-import { AmberCard } from '@core/components/AmberCard';
-import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { DataTable } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { getIconByName } from '@core/components/IconPicker';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
@@ -18,6 +14,15 @@ import { useGetCategories, useGetCategoryStats, useDeleteCategoryMutation, useUp
 import type { Category } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
 import { useIsClient } from '@core/hooks/useIsClient';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
+
+type StatusTab = 'all' | 'active' | 'inactive';
 
 /**
  * CategoriesPage - Main categories list page
@@ -26,15 +31,19 @@ export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
+  const [sortBy, setSortBy] = useState<string>('sortOrder');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50);
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   // Fetch all categories (backend does not support search/isActive filtering yet)
-  const { data, isPending, error, refetch } = useGetCategories({
+  const { data, isPending, isFetching, error, refetch } = useGetCategories({
     page: 1,
-    limit: 50,
+    limit: 100,
   });
 
   // Client-side filtering since backend ignores search/isActive params
@@ -55,8 +64,18 @@ export function CategoriesPage() {
       );
     }
 
+    // Client-side sorting
+    categories.sort((a: Category, b: Category) => {
+      const aVal = (a as any)[sortBy];
+      const bVal = (b as any)[sortBy];
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = typeof aVal === 'string' ? aVal.localeCompare(bVal) : aVal - bVal;
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+
     return categories;
-  }, [data?.categories, statusFilter, debouncedSearch, language]);
+  }, [data?.categories, statusFilter, debouncedSearch, language, sortBy, sortOrder]);
 
   // Fetch stats
   const { data: stats, isPending: statsLoading } = useGetCategoryStats();
@@ -103,6 +122,52 @@ export function CategoriesPage() {
       },
     });
   };
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
+  };
+
+  const queryClient = useQueryClient();
+
+  const bulkActions = [
+    {
+      label: t('category.bulk_activate') || 'Activate Selected',
+      icon: Power,
+      onClick: (selectedIds: string[]) => {
+        openConfirm({
+          title: t('category.bulk_activate') || 'Activate Selected',
+          message: `${t('category.bulk_activate_confirm') || 'Are you sure you want to activate'} ${selectedIds.length} ${t('category.items') || 'items'}?`,
+          variant: 'warning',
+          onConfirm: () => {
+            selectedIds.forEach(id => {
+              updateMutation.mutate({ id, isActive: true });
+            });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+          },
+        });
+      },
+    },
+    {
+      label: t('category.bulk_deactivate') || 'Deactivate Selected',
+      icon: PowerOff,
+      variant: 'danger' as const,
+      onClick: (selectedIds: string[]) => {
+        openConfirm({
+          title: t('category.bulk_deactivate') || 'Deactivate Selected',
+          message: `${t('category.bulk_deactivate_confirm') || 'Are you sure you want to deactivate'} ${selectedIds.length} ${t('category.items') || 'items'}?`,
+          variant: 'destructive',
+          onConfirm: () => {
+            selectedIds.forEach(id => {
+              updateMutation.mutate({ id, isActive: false });
+            });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+          },
+        });
+      },
+    },
+  ];
 
   // Table columns
   const columns = [
@@ -201,111 +266,59 @@ export function CategoriesPage() {
     },
   ];
 
+  const STATUS_TABS: { key: StatusTab; labelKey: string }[] = [
+    { key: 'all', labelKey: 'common.all' },
+    { key: 'active', labelKey: 'status.active' },
+    { key: 'inactive', labelKey: 'status.inactive' },
+  ];
+
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
-        <div className="space-y-1 text-start">
-          <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
-            {t('category.title') || 'الفئات'}
-          </h1>
-          <p className="text-base text-zinc-secondary font-bold">
-            {t('category.subtitle') || 'عرض وإدارة جميع فئات المنتجات في الكتالوج'}
-          </p>
-        </div>
+    <AdminListPageShell
+      title={t('category.title') || 'الفئات'}
+      description={t('category.subtitle') || 'عرض وإدارة جميع فئات المنتجات في الكتالوج'}
+      icon={LayoutGrid}
+      headerActions={
         <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none" onClick={() => router.push('/categories/new')}>
             <span>{t('category.add_new') || 'إضافة فئة جديدة'}</span>
             <Plus className="w-5 h-5" />
         </AmberButton>
-      </div>
-
-      {/* Statistics Grid */}
-      <StatsGrid
-        stats={[
-          {
-            label: t('category.total') || 'Total Categories',
-            value: stats?.total ?? 0,
-            icon: LayoutGrid,
-            color: 'warning',
-          },
-          {
-            label: t('category.active') || 'Active',
-            value: stats?.active ?? 0,
-            icon: Activity,
-            color: 'success',
-          },
-          {
-            label: t('category.inactive') || 'Inactive',
-            value: stats?.inactive ?? 0,
-            icon: Ban,
-            color: 'danger',
-          },
-          {
-            label: t('category.main') || 'Main Categories',
-            value: stats?.withParent ?? 0,
-            icon: Layers,
-            color: 'info',
-          },
-        ]}
-      />
-
-      <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
-        {/* Status Tabs */}
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'all'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5'
-            )}
-          >
-            {t('common.all') || 'الكل'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('active')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'active'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5'
-            )}
-          >
-            {t('status.active') || 'نشط'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('inactive')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'inactive'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5'
-            )}
-          >
-            {t('status.inactive') || 'غير نشط'}
-          </button>
+      }
+      statsLoading={statsLoading}
+      stats={[
+        { label: t('category.total') || 'Total Categories', value: stats?.total ?? 0, icon: LayoutGrid, color: 'warning' },
+        { label: t('category.active') || 'Active', value: stats?.active ?? 0, icon: Activity, color: 'success' },
+        { label: t('category.inactive') || 'Inactive', value: stats?.inactive ?? 0, icon: Ban, color: 'danger' },
+        { label: t('category.main') || 'Main Categories', value: stats?.withParent ?? 0, icon: Layers, color: 'info' },
+      ]}
+      tabs={
+        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => { setStatusFilter(tab.key); setPage(1); }}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
+                statusFilter === tab.key
+                  ? "bg-[var(--color-brand)] text-black shadow-sm"
+                  : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
+              )}
+            >
+              {t(tab.labelKey)}
+            </button>
+          ))}
         </div>
-
-        {/* Search Input */}
-        <div className="relative flex-1 max-w-sm w-full">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted" />
-          <AmberInput
-            dir={dir}
-            placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
-          />
-        </div>
-      </div>
-
-      {/* Categories Table Container */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+      }
+      toolbar={
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('category.search_placeholder') || 'البحث عن فئة...'} />}
+        />
+      }
+    >
+      <div className="space-y-6">
         {isPending ? (
-          <AmberTableSkeleton rows={8} columns={6} hasActions />
+          <ListPageSkeleton count={8} columns={4} showStats />
         ) : error ? (
           <div className="p-12 text-center">
             <p className="text-danger font-bold">{t('category.error_loading') || 'حدث خطأ في تحميل الفئات'}</p>
@@ -318,28 +331,44 @@ export function CategoriesPage() {
               {t('common.retry') || 'إعادة المحاولة'}
             </AmberButton>
           </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={filteredCategories}
-            keyField="id"
-            sortable
-            selectable
-            rowActions={rowActions}
-            pagination
-            pageSize={10}
-            showViewToggle
-            emptyMessage={
-              (debouncedSearch ?? '').trim()
-                ? t('category.no_results')
-                : t('category.empty')
+        ) : filteredCategories.length === 0 ? (
+          <EmptyState
+            icon={LayoutGrid}
+            title={t('category.empty') || 'No Categories'}
+            description={debouncedSearch
+              ? (t('category.no_results') || 'No categories match your search.')
+              : (t('category.empty_description') || 'No categories found.')
             }
+            actionLabel={t('category.add_new') || 'Add Category'}
+            onAction={() => router.push('/categories/new')}
           />
+        ) : (
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
+            <DataTable
+              columns={columns}
+              data={filteredCategories}
+              keyField="id"
+              sortable
+              selectable
+              bulkActions={bulkActions}
+              rowActions={rowActions}
+              pagination
+              pageSize={limit}
+              currentPage={page}
+              totalItems={filteredCategories.length}
+              onPageChange={(newPage) => setPage(newPage)}
+              showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+            />
+          </div>
         )}
       </div>
 
       <ConfirmModal />
-    </div>
+    </AdminListPageShell>
   );
 }
 

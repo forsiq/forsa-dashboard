@@ -11,8 +11,7 @@ import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
-import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
+import { cn } from '@core/lib/utils/cn';
 import {
   AdminListPageShell,
   ListPageToolbar,
@@ -23,12 +22,17 @@ import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { Plus, Eye, Edit, Trash2, Shield, ShieldAlert, User, UserCheck, UserX } from 'lucide-react';
 import type { UserFilters } from '../types';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
+import { AmberSlideOver } from '@core/components';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 
 export function UsersListPage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const toast = useToast();
   const [isClient, setIsClient] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -38,19 +42,21 @@ export function UsersListPage() {
   const [searchInput, setSearchInput] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
-  // Debounce search — only hit API after 300ms of inactivity
+  // Debounce search
   const debouncedSearch = useDebounce(searchInput, 300);
 
-  // API filters — only search goes to backend (role/status filtered client-side)
+  // API filters
   const apiFilters: UserFilters = useMemo(() => ({
     page: 1,
     limit: 200,
     search: debouncedSearch || undefined,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  }), [debouncedSearch]);
+    sortBy,
+    sortOrder,
+  }), [debouncedSearch, sortBy, sortOrder]);
 
   // Queries
   const { data: usersData, isPending: isLoadingUsers, isFetching, error: usersError } = useGetUsers(apiFilters);
@@ -59,6 +65,7 @@ export function UsersListPage() {
   // Mutations
   const deleteMutation = useDeleteUser();
   const statusMutation = useUpdateUserStatus();
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   // Error handling
   useEffect(() => {
@@ -67,7 +74,7 @@ export function UsersListPage() {
     }
   }, [usersError, toast, t]);
 
-  // Client-side filtering for role and status (backend compat doesn't support these)
+  // Client-side filtering for role and status
   const filteredUsers = useMemo(() => {
     let users = usersData?.users || [];
 
@@ -86,7 +93,6 @@ export function UsersListPage() {
   // Paginate filtered results
   const pageSize = 20;
   const totalFiltered = filteredUsers.length;
-  const totalPages = Math.ceil(totalFiltered / pageSize);
   const paginatedUsers = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filteredUsers.slice(start, start + pageSize);
@@ -110,14 +116,19 @@ export function UsersListPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`${t('user.confirm_delete') || 'Are you sure you want to delete'} ${name}?`)) {
-      try {
-        await deleteMutation.mutateAsync(id);
-        toast.success(t('user.delete_success'));
-      } catch (error: any) {
-        toast.error(error.message || t('user.delete_failed'));
-      }
-    }
+    openConfirm({
+      title: t('user.confirm_delete') || 'Delete User',
+      message: `${t('user.confirm_delete') || 'Are you sure you want to delete'} ${name}?`,
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteMutation.mutateAsync(id);
+          toast.success(t('user.delete_success'));
+        } catch (error: any) {
+          toast.error(error.message || t('user.delete_failed'));
+        }
+      },
+    });
   };
 
   const handleToggleStatus = async (id: string, isActive: boolean) => {
@@ -127,6 +138,12 @@ export function UsersListPage() {
     } catch (error: any) {
       toast.error(error.message || t('user.status_update_failed'));
     }
+  };
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
   };
 
   // Get role badge color
@@ -254,60 +271,128 @@ export function UsersListPage() {
         </AmberButton>
       }
       toolbar={
-        <ListPageToolbar>
-          <ListPageToolbarSearch value={searchInput} onChange={setSearchInput} placeholder={t('user.search_placeholder')} className="flex-1 min-w-[200px]" />
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-4 py-2.5 h-11 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl text-zinc-text text-sm font-bold shadow-sm">
-            <option value="all">{t('user.filter.all_roles') || 'All Roles'}</option>
-            <option value="manager">{t('user.role.manager') || 'Manager'}</option>
-            <option value="admin">{t('user.role.admin') || 'Admin'}</option>
-            <option value="user">{t('user.role.user') || 'User'}</option>
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-2.5 h-11 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl text-zinc-text text-sm font-bold shadow-sm">
-            <option value="all">{t('user.filter.all_status') || 'All Status'}</option>
-            <option value="active">{t('user.status.active') || 'Active'}</option>
-            <option value="inactive">{t('user.status.inactive') || 'Inactive'}</option>
-          </select>
-        </ListPageToolbar>
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPage(1); }} placeholder={t('user.search_placeholder')} className="flex-1 min-w-[200px]" />}
+          onFilterClick={() => setIsFilterOpen(true)}
+          filterLabel={t('common.filters') || 'Filters'}
+          activeFilterCount={activeFilterCount}
+        />
       }
     >
       {/* Users DataTable */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+      <div className="space-y-6">
         {isLoadingUsers ? (
-          <AmberTableSkeleton columns={7} rows={5} />
+          <ListPageSkeleton count={8} columns={4} showStats />
         ) : paginatedUsers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <ShieldAlert className="h-16 w-16 text-zinc-600 mb-4" />
-            <h3 className="text-lg font-semibold text-zinc-text mb-2">
-              {t('user.no_users')}
-            </h3>
-            <p className="text-sm text-zinc-muted mb-6">
-              {t('user.no_users_description')}
-            </p>
-            <AmberButton
-              variant="primary"
-              onClick={() => router.push('/users/new')}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              {t('user.add_first')}
-            </AmberButton>
-          </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={paginatedUsers}
-            keyField="id"
-            rowActions={rowActions}
-            onRowClick={(row) => handleView(String(row.id))}
-            pagination
-            pageSize={pageSize}
-            totalItems={totalFiltered}
-            currentPage={page}
-            onPageChange={setPage}
-            showViewToggle
+          <EmptyState
+            icon={ShieldAlert}
+            title={t('user.no_users') || 'No Users'}
+            description={t('user.no_users_description') || 'No users found matching your criteria.'}
+            actionLabel={t('user.add_first') || 'Add User'}
+            onAction={() => router.push('/users/new')}
           />
+        ) : (
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
+            <DataTable
+              columns={columns}
+              data={paginatedUsers}
+              keyField="id"
+              rowActions={rowActions}
+              onRowClick={(row) => handleView(String(row.id))}
+              pagination
+              pageSize={pageSize}
+              totalItems={totalFiltered}
+              currentPage={page}
+              onPageChange={setPage}
+              showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+            />
+          </div>
         )}
       </div>
+
+      {/* Filter SlideOver */}
+      <AmberSlideOver
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title={t('common.filters') || 'Filters'}
+        description={t('user.filter_description') || 'Filter users by role and status.'}
+      >
+        <div className="space-y-8 py-4">
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('user.role') || 'Role'}</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'all', label: t('user.filter.all_roles') || 'All Roles' },
+                { value: 'admin', label: t('user.role.admin') || 'Admin' },
+                { value: 'manager', label: t('user.role.manager') || 'Manager' },
+                { value: 'user', label: t('user.role.user') || 'User' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setRoleFilter(opt.value)}
+                  className={cn(
+                    "h-11 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border",
+                    roleFilter === opt.value
+                      ? "bg-brand text-black border-brand shadow-lg"
+                      : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-white/5" />
+
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('user.is_active') || 'Status'}</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'all', label: t('user.filter.all_status') || 'All Status' },
+                { value: 'active', label: t('user.status.active') || 'Active' },
+                { value: 'inactive', label: t('user.status.inactive') || 'Inactive' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setStatusFilter(opt.value)}
+                  className={cn(
+                    "h-11 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border",
+                    statusFilter === opt.value
+                      ? "bg-brand text-black border-brand shadow-lg"
+                      : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-8 space-y-3">
+            <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95 transition-all" onClick={() => setIsFilterOpen(false)}>
+              {t('common.done') || 'Apply'}
+            </AmberButton>
+            <AmberButton
+              variant="secondary"
+              className="w-full h-12 font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all"
+              onClick={() => {
+                setRoleFilter('all');
+                setStatusFilter('all');
+                setIsFilterOpen(false);
+              }}
+            >
+              {t('common.reset') || 'Reset'}
+            </AmberButton>
+          </div>
+        </div>
+      </AmberSlideOver>
+
+      <ConfirmModal />
     </AdminListPageShell>
   );
 }

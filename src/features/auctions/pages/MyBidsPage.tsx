@@ -13,6 +13,7 @@ import { BidActionSheet } from '../components/BidActionSheet';
 import { computeBidDisplayStatus, type BidDisplayStatus } from '../types/auction.types';
 import { EmptyState } from '@core/components/EmptyState';
 import { AdminListPageShell } from '@core/components/Layout';
+import { ListPageSkeleton } from '@core/loading';
 
 interface BidRow {
   id: number;
@@ -62,6 +63,8 @@ export const MyBidsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BidTab>('all');
   const [selectedBid, setSelectedBid] = useState<BidRow | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     setIsClient(true);
@@ -111,6 +114,11 @@ export const MyBidsPage: React.FC = () => {
     outbid: bids.filter((b) => b.displayStatus === 'outbid').length,
     ended: bids.filter((b) => b.displayStatus === 'won' || b.displayStatus === 'lost').length,
   }), [bids]);
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+  };
 
   const columns: Column<BidRow>[] = [
     {
@@ -223,11 +231,7 @@ export const MyBidsPage: React.FC = () => {
     >
       <div className="space-y-6">
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 rounded-xl bg-white/[0.02] border border-white/[0.05] animate-pulse" />
-          ))}
-        </div>
+        <ListPageSkeleton count={5} columns={3} />
       ) : filteredBids.length === 0 ? (
         <EmptyState
           icon={Gavel}
@@ -243,6 +247,9 @@ export const MyBidsPage: React.FC = () => {
             onRowClick={handleRowClick}
             pagination
             pageSize={10}
+            onSortChange={handleSortChange}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
           />
         </div>
       )}

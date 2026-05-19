@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmberInput } from '@core/components/AmberInput';
@@ -25,6 +26,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 
 export const RegisterForm: React.FC = () => {
   const { t } = useLanguage();
+  const router = useRouter();
   const { register, isLoading, error: authError } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export const RegisterForm: React.FC = () => {
             {t('auth.register.success_desc')}
           </p>
         </div>
-        <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl" onClick={() => window.location.href = '/login'}>
+        <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl" onClick={() => void router.push('/login')}>
             <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.proceed_login')}</span>
         </AmberButton>
       </motion.div>

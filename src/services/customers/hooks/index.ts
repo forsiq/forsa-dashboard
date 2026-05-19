@@ -1,5 +1,6 @@
 /** Customers Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from '../api/customers';
 import type { Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilters, CustomersResponse } from '../types';
 
@@ -39,27 +40,38 @@ export const useGetCustomerBids = (id: string, page = 1, limit = 20) => {
 
 export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: CreateCustomerInput) => api.createCustomer(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
+      toast.success('Customer created successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create customer: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useUpdateCustomer = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: UpdateCustomerInput) => api.updateCustomer(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
+      toast.success('Customer updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update customer: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useDeleteCustomer = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (id: string) => api.deleteCustomer(id),
     onMutate: async (id) => {
@@ -81,21 +93,28 @@ export const useDeleteCustomer = () => {
           queryClient.setQueryData(key, data);
         });
       }
+      toast.error('Failed to delete customer', 6000);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
+      toast.success('Customer deleted successfully');
     },
   });
 };
 
 export const useUpdateCustomerStatus = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Customer['status'] }) =>
       api.updateCustomerStatus(id, status),
     onSuccess: (data: Customer) => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
+      toast.success('Customer status updated');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update status: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };

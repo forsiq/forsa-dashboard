@@ -51,6 +51,22 @@ export const InventoryOverviewPage: React.FC = () => {
   const { data: inventoryData, isLoading: itemsLoading } = useList();
   const products = (inventoryData as any)?.items || [];
 
+  const filteredProducts = useMemo(() => {
+    return products.filter((p: any) => {
+      const matchesSearch = !searchQuery ||
+        (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
+
+      const qty = p.inventory_quantity || p.stock || 0;
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'in_stock' && qty > lowStockThreshold) ||
+        (statusFilter === 'low_stock' && qty > 0 && qty <= lowStockThreshold) ||
+        (statusFilter === 'out_of_stock' && qty === 0);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [products, searchQuery, statusFilter]);
+
   // Compute warehouse info from real product data
   const warehouses = useMemo(() => {
     const totalStock = products.reduce((sum: number, p: any) => sum + (p.inventory_quantity || p.stock || 0), 0);
@@ -270,7 +286,7 @@ export const InventoryOverviewPage: React.FC = () => {
           <div className="bg-obsidian-card border border-border rounded-2xl shadow-lg overflow-hidden">
              <DataTable 
                columns={columns}
-               data={products}
+               data={filteredProducts}
                pagination
                pageSize={15}
                selectable

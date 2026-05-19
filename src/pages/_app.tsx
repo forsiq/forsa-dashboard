@@ -14,6 +14,7 @@ import { TimerProvider } from '@core/contexts/TimerContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { AuthGuard } from '@core/core/components/AuthGuard';
+import { ProjectGuard } from '@core/components/ProjectGuard';
 import { PageTransition } from '@core/components/PageTransition';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
@@ -67,11 +68,13 @@ function MyApp({ Component, pageProps }: AppProps) {
                       </PageTransition>
                     ) : (
                       <AuthGuard>
-                        <ForsaDashboardLayout>
-                          <PageTransition>
-                            <Component {...pageProps} />
-                          </PageTransition>
-                        </ForsaDashboardLayout>
+                        <ProjectGuard>
+                          <ForsaDashboardLayout>
+                            <PageTransition>
+                              <Component {...pageProps} />
+                            </PageTransition>
+                          </ForsaDashboardLayout>
+                        </ProjectGuard>
                       </AuthGuard>
                     )}
                     </TimerProvider>

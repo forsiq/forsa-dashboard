@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Settings2,
   CreditCard,
@@ -15,22 +15,101 @@ import {
   Layers,
   Sun,
   Moon,
+  DollarSign,
+  Wallet,
+  Banknote,
+  Globe,
+  Package,
+  TruckIcon,
+  Mail,
+  MessageSquare,
+  Smartphone,
+  Megaphone,
+  Clock,
 } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
+import { AmberInput } from '@core/components/AmberInput';
 import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
 import { cn } from '@core/lib/utils/cn';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
+import { useToast } from '@core/contexts/ToastContext';
+import { FormSection } from '@core/components/FormSection';
 
 type Tab = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };
+
+function Toggle({ enabled, onChange, label }: { enabled: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!enabled)}
+      className={cn(
+        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0',
+        enabled ? 'bg-brand' : 'bg-zinc-600'
+      )}
+      aria-label={label}
+    >
+      <span
+        className={cn(
+          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+          enabled ? 'translate-x-6' : 'translate-x-1'
+        )}
+      />
+    </button>
+  );
+}
+
+const SETTINGS_KEY = 'forsa_settings';
+
+function loadSettings(): Record<string, any> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSettings(settings: Record<string, any>) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // ignore
+  }
+}
 
 export default function SettingsPage() {
   const { t, dir } = useLanguage();
   const { mode, setMode } = useSidebarMode();
   const { theme, toggleTheme } = useTheme();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+
+  // Settings state
+  const [settings, setSettings] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    setSettings(loadSettings());
+  }, []);
+
+  const updateSetting = (key: string, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      saveSettings(settings);
+      setIsSaving(false);
+      setShowSavedToast(true);
+      toast.success(t('settings.saved') || 'Settings saved successfully');
+      setTimeout(() => setShowSavedToast(false), 3000);
+    }, 800);
+  };
 
   const tabs: Tab[] = [
     { id: 'general', label: t('settings.general'), icon: Settings2 },
@@ -40,15 +119,6 @@ export default function SettingsPage() {
     { id: 'notifications', label: t('settings.notifications'), icon: Bell },
     { id: 'navigation', label: t('settings.navigation'), icon: LayoutDashboard },
   ];
-
-  const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      setShowSavedToast(true);
-      setTimeout(() => setShowSavedToast(false), 3000);
-    }, 1200);
-  };
 
   return (
     <div
@@ -263,7 +333,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Appearance Tab */}
+          {/* Appearance / Auction Tab */}
           {activeTab === 'auction' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
               <AmberCard className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
@@ -346,16 +416,233 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Placeholder for other tabs */}
-          {activeTab !== 'navigation' && activeTab !== 'general' && activeTab !== 'auction' && (
+          {/* Payments Tab */}
+          {activeTab === 'payments' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
-              <AmberCard className="p-8 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
-                <div className="flex items-center justify-center py-12 text-zinc-muted">
-                  <p className="text-sm font-bold uppercase tracking-widest">
-                    {activeTab} settings
-                  </p>
+              <FormSection
+                icon={<DollarSign className="w-5 h-5" />}
+                iconBgColor="brand"
+                title={t('settings.payment_currency') || 'Currency & Tax'}
+              >
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest block mb-2 text-start">
+                      {t('settings.currency') || 'Default Currency'}
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => updateSetting('currency', 'IQD')}
+                        className={cn(
+                          'p-4 rounded-xl border-2 transition-all text-center',
+                          settings.currency !== 'USD'
+                            ? 'border-brand bg-brand/5'
+                            : 'border-border bg-obsidian-card hover:border-white/20'
+                        )}
+                      >
+                        <span className="text-sm font-black text-zinc-text">IQD</span>
+                        <p className="text-[11px] text-zinc-muted mt-1">Iraqi Dinar</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateSetting('currency', 'USD')}
+                        className={cn(
+                          'p-4 rounded-xl border-2 transition-all text-center',
+                          settings.currency === 'USD'
+                            ? 'border-brand bg-brand/5'
+                            : 'border-border bg-obsidian-card hover:border-white/20'
+                        )}
+                      >
+                        <span className="text-sm font-black text-zinc-text">USD</span>
+                        <p className="text-[11px] text-zinc-muted mt-1">US Dollar</p>
+                      </button>
+                    </div>
+                  </div>
+
+                  <AmberInput
+                    label={t('settings.tax_rate') || 'Tax Rate (%)'}
+                    type="number"
+                    placeholder="0"
+                    value={settings.taxRate ?? ''}
+                    onChange={(e) => updateSetting('taxRate', e.target.value)}
+                  />
                 </div>
-              </AmberCard>
+              </FormSection>
+
+              <FormSection
+                icon={<Wallet className="w-5 h-5" />}
+                iconBgColor="success"
+                title={t('settings.payment_methods') || 'Payment Methods'}
+              >
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Banknote className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.cash_payment') || 'Cash on Delivery'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.cash_payment_desc') || 'Accept cash payments'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.cashPayment !== false} onChange={(v) => updateSetting('cashPayment', v)} label="Cash payment" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <CreditCard className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.card_payment') || 'Card Payment'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.card_payment_desc') || 'Accept credit/debit cards'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.cardPayment === true} onChange={(v) => updateSetting('cardPayment', v)} label="Card payment" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                        <Globe className="w-4 h-4 text-violet-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.online_payment') || 'Online Payment'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.online_payment_desc') || 'Accept online payment gateways'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.onlinePayment === true} onChange={(v) => updateSetting('onlinePayment', v)} label="Online payment" />
+                  </div>
+                </div>
+              </FormSection>
+            </div>
+          )}
+
+          {/* Shipping Tab */}
+          {activeTab === 'shipping' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
+              <FormSection
+                icon={<TruckIcon className="w-5 h-5" />}
+                iconBgColor="info"
+                title={t('settings.shipping_config') || 'Shipping Configuration'}
+              >
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                        <Package className="w-4 h-4 text-info" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.shipping_enabled') || 'Enable Shipping'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.shipping_enabled_desc') || 'Allow shipping for auction items'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.shippingEnabled !== false} onChange={(v) => updateSetting('shippingEnabled', v)} label="Enable shipping" />
+                  </div>
+
+                  <AmberInput
+                    label={t('settings.default_shipping_cost') || 'Default Shipping Cost (IQD)'}
+                    type="number"
+                    placeholder="5000"
+                    value={settings.defaultShippingCost ?? ''}
+                    onChange={(e) => updateSetting('defaultShippingCost', e.target.value)}
+                  />
+
+                  <AmberInput
+                    label={t('settings.free_shipping_threshold') || 'Free Shipping Threshold (IQD)'}
+                    type="number"
+                    placeholder="50000"
+                    value={settings.freeShippingThreshold ?? ''}
+                    onChange={(e) => updateSetting('freeShippingThreshold', e.target.value)}
+                  />
+                </div>
+              </FormSection>
+            </div>
+          )}
+
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
+              <FormSection
+                icon={<Bell className="w-5 h-5" />}
+                iconBgColor="warning"
+                title={t('settings.notification_channels') || 'Notification Channels'}
+              >
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.email_notifications') || 'Email Notifications'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.email_notifications_desc') || 'Receive updates via email'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.emailNotifications !== false} onChange={(v) => updateSetting('emailNotifications', v)} label="Email notifications" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Megaphone className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.push_notifications') || 'Push Notifications'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.push_notifications_desc') || 'Browser and mobile push alerts'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.pushNotifications !== false} onChange={(v) => updateSetting('pushNotifications', v)} label="Push notifications" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                        <Smartphone className="w-4 h-4 text-violet-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.sms_notifications') || 'SMS Notifications'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.sms_notifications_desc') || 'Receive text message alerts'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.smsNotifications === true} onChange={(v) => updateSetting('smsNotifications', v)} label="SMS notifications" />
+                  </div>
+                </div>
+              </FormSection>
+
+              <FormSection
+                icon={<Clock className="w-5 h-5" />}
+                iconBgColor="danger"
+                title={t('settings.auction_alerts') || 'Auction Alerts'}
+              >
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                        <Gavel className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.bid_alerts') || 'Bid Alerts'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.bid_alerts_desc') || 'Notify when outbid on auctions'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.bidAlerts !== false} onChange={(v) => updateSetting('bidAlerts', v)} label="Bid alerts" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-rose-400" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-zinc-text">{t('settings.auction_reminders') || 'Auction Reminders'}</span>
+                        <p className="text-[11px] text-zinc-muted">{t('settings.auction_reminders_desc') || 'Remind before auction ends'}</p>
+                      </div>
+                    </div>
+                    <Toggle enabled={settings.auctionReminders !== false} onChange={(v) => updateSetting('auctionReminders', v)} label="Auction reminders" />
+                  </div>
+                </div>
+              </FormSection>
             </div>
           )}
         </div>

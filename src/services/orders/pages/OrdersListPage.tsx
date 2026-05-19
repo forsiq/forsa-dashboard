@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
-import { Plus, Search, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
+import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { getOrders, getOrderStats, updateOrderStatus, orderKeys } from '../api/orders';
@@ -15,10 +14,7 @@ import {
 import {
   AmberButton,
   AmberCard as Card,
-  AmberTableSkeleton,
   DataTable,
-  AmberInput,
-  AmberDropdown,
   StatusBadge
 } from '@core/components';
 import { Column, Action } from '@core/components/Data/DataTable';
@@ -27,6 +23,15 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useToast } from '@core/contexts/ToastContext';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
+
+type StatusTab = 'all' | 'pending' | 'processing' | 'delivered' | 'cancelled';
 
 export const OrdersListPage = () => {
   const router = useRouter();
@@ -34,7 +39,11 @@ export const OrdersListPage = () => {
   const isClient = useIsClient();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'delivered' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'total' | 'orderNumber'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
 
   useEffect(() => {
     if (!router.isReady || router.pathname !== '/orders') return;
@@ -46,25 +55,24 @@ export const OrdersListPage = () => {
       setStatusFilter('all');
     }
   }, [router.isReady, router.pathname, router.query.status]);
-  const [debouncedSearch] = useDebounce(searchQuery, 300);
-  const [filters, setFilters] = useState<OrderFilters>({
-    page: 1,
-    limit: 20,
-    status: 'all',
-  });
+
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Fetch orders
-  const { data: ordersData, isPending: isLoadingOrders, refetch } = useQuery({
-    queryKey: orderKeys.list({ ...filters, status: statusFilter, search: debouncedSearch }),
+  const { data: ordersData, isPending: isLoadingOrders, isFetching, refetch } = useQuery({
+    queryKey: orderKeys.list({ page, limit, status: statusFilter, search: debouncedSearch, sortBy, sortOrder }),
     queryFn: async () => {
       const apiStatus =
         statusFilter === 'all' || statusFilter === 'processing'
           ? undefined
           : statusFilter;
       const response = await getOrders({
-        ...filters,
+        page,
+        limit,
         status: apiStatus as OrderFilters['status'],
         search: debouncedSearch || undefined,
+        sortBy,
+        sortOrder,
       });
       if (statusFilter === 'processing') {
         return {
@@ -86,6 +94,33 @@ export const OrdersListPage = () => {
     queryFn: getOrderStats,
     enabled: isClient,
   });
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    const validKeys = ['createdAt', 'total', 'orderNumber'] as const;
+    const typedKey = validKeys.includes(key as any) ? (key as 'createdAt' | 'total' | 'orderNumber') : 'createdAt';
+    setSortBy(typedKey);
+    setSortOrder(direction);
+    setPage(1);
+  };
+
+  const bulkActions = [
+    {
+      label: t('orders.bulk_processing') || 'Mark as Processing',
+      icon: Clock,
+      onClick: (selectedIds: string[]) => {
+        openConfirm({
+          title: t('orders.bulk_processing') || 'Mark as Processing',
+          message: `${t('orders.bulk_processing_confirm') || 'Are you sure you want to mark'} ${selectedIds.length} ${t('orders.as_processing') || 'orders as processing'}?`,
+          variant: 'warning',
+          onConfirm: () => {
+            selectedIds.forEach(id => {
+              statusMutation.mutate({ id, status: 'processing' as OrderStatus });
+            });
+          },
+        });
+      },
+    },
+  ];
 
   const columns: Column<Order>[] = [
     {
@@ -241,101 +276,88 @@ export const OrdersListPage = () => {
     router.push(`/orders/${order.id}`);
   };
 
+  const orders = ordersData?.data || [];
+
+  const STATUS_TABS: { key: StatusTab; labelKey: string }[] = [
+    { key: 'all', labelKey: 'common.all' },
+    { key: 'pending', labelKey: 'orders.status.pending' },
+    { key: 'processing', labelKey: 'orders.status.processing' },
+    { key: 'delivered', labelKey: 'orders.status.delivered' },
+    { key: 'cancelled', labelKey: 'orders.status.cancelled' },
+  ];
+
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
-            {t('orders.title') || 'الطلبات'}
-          </h1>
-          <p className="text-base text-zinc-secondary font-bold">
-            {t('orders.subtitle') || 'إدارة وتتبع جميع طلبات العملاء'}
-          </p>
+    <AdminListPageShell
+      title={t('orders.title') || 'الطلبات'}
+      description={t('orders.subtitle') || 'إدارة وتتبع جميع طلبات العملاء'}
+      icon={Package}
+      statsLoading={statsLoading}
+      stats={[
+        { label: t('orders.stat.total'), value: statsData?.total || 0, icon: Package, color: 'brand' },
+        { label: t('orders.stat.revenue'), value: formatCurrency(statsData?.totalRevenue), icon: DollarSign, color: 'success' },
+        { label: t('orders.stat.pending'), value: statsData?.pending || 0, icon: AlertCircle, color: 'warning' },
+        { label: t('orders.stat.active'), value: statsData?.todayOrders || 0, icon: TrendingUp, color: 'info' },
+      ]}
+      tabs={
+        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => { setStatusFilter(tab.key); setPage(1); }}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
+                statusFilter === tab.key
+                  ? "bg-[var(--color-brand)] text-black shadow-sm"
+                  : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
+              )}
+            >
+              {t(tab.labelKey)}
+            </button>
+          ))}
         </div>
-      </div>
-
-      {/* Stats Grid */}
-      <StatsGrid
-        stats={[
-          { label: t('orders.stat.total'), value: statsData?.total.toString() || '0', icon: Package, color: 'brand' },
-          { label: t('orders.stat.revenue'), value: formatCurrency(statsData?.totalRevenue), icon: DollarSign, color: 'success' },
-          { label: t('orders.stat.pending'), value: statsData?.pending?.toString() || '0', icon: AlertCircle, color: 'warning' },
-          { label: t('orders.stat.active'), value: statsData?.todayOrders?.toString() || '0', icon: TrendingUp, color: 'info' },
-        ]}
-      />
-
-      {/* Toolbar */}
-      <div className="flex flex-col md:flex-row items-center gap-4 pt-2 text-start">
-        {/* Status Tabs */}
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'all'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('common.all') || 'الكل'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('pending')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'pending'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('orders.status.pending') || 'معلق'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('processing')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'processing'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('orders.status.processing') || 'قيد المعالجة'}
-          </button>
-        </div>
-
-        {/* Search Input */}
-        <div className="relative flex-1 max-w-sm w-full group">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
-          <AmberInput
-            placeholder={t('orders.search') || 'البحث في الطلبات...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+      }
+      toolbar={
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('orders.search') || 'البحث في الطلبات...'} />}
+        />
+      }
+    >
+      <div className="space-y-6">
         {isLoadingOrders ? (
-          <AmberTableSkeleton rows={8} columns={6} />
-        ) : (
-          <DataTable
-            columns={columns}
-            data={ordersData?.data || []}
-            onRowClick={handleRowClick}
-            rowActions={rowActions}
-            pagination
-            pageSize={filters.limit}
-            showViewToggle
+          <ListPageSkeleton count={8} columns={4} showStats />
+        ) : orders.length === 0 ? (
+          <EmptyState
+            icon={Package}
+            title={t('orders.empty') || 'No Orders'}
+            description={t('orders.empty_description') || 'No orders found matching your criteria.'}
           />
+        ) : (
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
+            <DataTable
+              columns={columns}
+              data={orders}
+              onRowClick={handleRowClick}
+              rowActions={rowActions}
+              selectable
+              bulkActions={bulkActions}
+              pagination
+              pageSize={limit}
+              currentPage={page}
+              totalItems={ordersData?.total || 0}
+              onPageChange={(newPage) => setPage(newPage)}
+              showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+            />
+          </div>
         )}
       </div>
 
       <ConfirmModal />
-    </div>
+    </AdminListPageShell>
   );
 };

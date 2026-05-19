@@ -1,5 +1,6 @@
 /** Inventory Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from '../api/products';
 import type { ProductFilters, ProductsResponse } from '../types';
 
@@ -31,27 +32,38 @@ export const useStats = () => {
 
 export const useCreate = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: any) => api.createProduct(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
+      toast.success('Product created successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create product: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useUpdate = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: any) => api.updateProduct(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
+      toast.success('Product updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update product: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useDelete = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (id: string) => api.deleteProduct(id),
     onMutate: async (id) => {
@@ -73,9 +85,11 @@ export const useDelete = () => {
           queryClient.setQueryData(key, data);
         });
       }
+      toast.error('Failed to delete product', 6000);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
+      toast.success('Product deleted successfully');
     },
   });
 };

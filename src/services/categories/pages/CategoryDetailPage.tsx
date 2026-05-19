@@ -14,6 +14,9 @@ import {
   FileText,
   Globe,
   Loader2,
+  Gavel,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -281,6 +284,53 @@ export function CategoryDetailPage() {
           </AmberCard>
         </div>
       </div>
+
+      {/* Auctions in this Category */}
+      <AmberCard className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
+        <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
+              <Gavel className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
+                {t('category.auctions') || 'Auctions in this Category'}
+              </h3>
+              {category.productCount != null && (
+                <p className="text-[11px] text-zinc-muted mt-1">
+                  {t('category.total_products') || '{count} products in this category'.replace('{count}', String(category.productCount))}
+                </p>
+              )}
+            </div>
+          </div>
+          <AmberButton
+            className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-xl px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
+            onClick={() => void router.push(`/auctions?category=${category.id}`)}
+          >
+            {t('category.view_auctions') || 'View Auctions'}
+            <ArrowRight className={cn('w-3.5 h-3.5', isRTL && 'rotate-180')} />
+          </AmberButton>
+        </div>
+
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center space-y-3">
+            <div className="w-14 h-14 bg-brand/5 rounded-2xl flex items-center justify-center mx-auto border border-brand/10">
+              <Gavel className="w-7 h-7 text-brand/40" />
+            </div>
+            <p className="text-sm font-bold text-zinc-muted">
+              {t('category.auctions_desc') || 'Browse all auctions listed under this category'}
+            </p>
+            <AmberButton
+              variant="outline"
+              className="font-bold uppercase tracking-wider text-xs gap-2 h-9 mt-2"
+              onClick={() => void router.push(`/auctions?category=${category.id}`)}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              {t('category.browse_auctions') || 'Browse All'}
+            </AmberButton>
+          </div>
+        </div>
+      </AmberCard>
 
       <ConfirmModal />
     </div>

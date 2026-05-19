@@ -1,5 +1,6 @@
 /** Categories Hooks - Using CrudServiceFactory + custom list hook */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useToast } from '@core/contexts/ToastContext';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse } from '../types';
@@ -38,31 +39,42 @@ export const useStats = () => {
 
 export const useCreate = (options?: any) => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+      toast.success('Category created successfully');
       if (options?.onSuccess) options.onSuccess(data, variables, context);
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create category: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useUpdate = (options?: any) => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+      toast.success('Category updated successfully');
       if (options?.onSuccess) options.onSuccess(data, variables, context);
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update category: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useDelete = (options?: any) => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
     onMutate: async (id) => {
@@ -84,10 +96,14 @@ export const useDelete = (options?: any) => {
           queryClient.setQueryData(key, data);
         });
       }
+      if (!options?.onError) {
+        toast.error(`Failed to delete category`, 6000);
+      }
     },
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+      toast.success('Category deleted successfully');
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
   });

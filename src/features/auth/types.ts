@@ -1,3 +1,5 @@
+export type UserRole = 'admin' | 'manager' | 'user';
+
 export interface LoginCredentials {
   username: string;
   password: string;
@@ -31,4 +33,17 @@ export interface ForgotPasswordData {
 export interface AuthError {
   message: string;
   code?: string;
+}
+
+export interface JwtPayload {
+  sub: string;
+  user_id: string;
+  phone?: string;
+  projectId?: number;
+  project_id?: number;
+  role?: string;
+  roles?: string[];
+  userType?: string;
+  exp?: number;
+  iat?: number;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import {
   Heart,
@@ -19,18 +19,26 @@ import { useWatchedAuctions } from '../api';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { AdminListPageShell } from '@core/components/Layout';
+import { ListPageSkeleton } from '@core/loading';
 import type { Auction } from '../types/auction.types';
 
 export const WatchlistPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('title');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const { data: auctions, isLoading } = useWatchedAuctions();
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+  };
 
   const columns: Column<Auction>[] = [
     {
@@ -114,11 +122,7 @@ export const WatchlistPage: React.FC = () => {
       iconTileClassName="bg-danger/10 text-danger border-danger/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
     >
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 rounded-xl bg-white/[0.02] border border-white/[0.05] animate-pulse" />
-          ))}
-        </div>
+        <ListPageSkeleton count={5} columns={3} />
       ) : !auctions || auctions.length === 0 ? (
         <EmptyState
           icon={Heart}
@@ -134,6 +138,9 @@ export const WatchlistPage: React.FC = () => {
             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
             pagination
             pageSize={10}
+            onSortChange={handleSortChange}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
           />
         </div>
       )}

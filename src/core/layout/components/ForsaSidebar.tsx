@@ -7,10 +7,11 @@
  * Prefer extending this file over patching `node_modules/@yousef2001/core-ui` so upgrades stay predictable.
  */
 
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
+import Cookies from 'js-cookie';
 import { AmberLogo } from '@yousef2001/core-ui/components';
 import { useFeatureConfig, useLanguage, useNavigation } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
@@ -19,6 +20,7 @@ import { getActiveSidebarItemPath, getNavPathBase } from '@core/utils/isNavItemA
 import { prefetchRouteData } from '@core/query/prefetch';
 import { CHANGELOG_NEW_BADGE } from '@config/sidebar/applySidebarBadges';
 import { useAuth } from '@features/auth/hooks/useAuth';
+import type { UserRole } from '@features/auth/types';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
@@ -37,6 +39,48 @@ const FEATURE_MAP: Record<string, string> = {
   '/my-bids': 'bidding',
   '/watchlist': 'auctions',
 };
+
+const ROLE_MAP: Record<string, UserRole[]> = {
+  '/moderation': ['admin'],
+  '/settlements': ['admin'],
+  '/users': ['admin'],
+  '/settings': ['admin'],
+  '/live-monitor': ['admin', 'manager'],
+  '/reports': ['admin', 'manager'],
+};
+
+function decodeJwtRoleFromCookie(): UserRole {
+  if (typeof window === 'undefined') return 'user';
+  try {
+    const token = Cookies.get('access');
+    if (!token) return 'user';
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return 'user';
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (payload.role) {
+      const normalized = payload.role.toLowerCase();
+      if (normalized === 'admin' || normalized === 'manager' || normalized === 'user') {
+        return normalized as UserRole;
+      }
+    }
+    if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+      const priority: UserRole[] = ['admin', 'manager', 'user'];
+      for (const p of priority) {
+        if (payload.roles.some((r: string) => r.toLowerCase() === p)) return p;
+      }
+    }
+    return 'user';
+  } catch {
+    return 'user';
+  }
+}
 
 // ── Per-section collapse state (unified mode) ─────────────────────────
 
@@ -214,6 +258,8 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
   const { isSectionCollapsed, toggleSection } = useSectionCollapseState();
 
+  const userRole = useMemo(() => decodeJwtRoleFromCookie(), []);
+
   useEffect(() => {
     const loadSidebar = async () => {
       if (isPortal) {
@@ -264,6 +310,18 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
       return {
         ...section,
         items: section.items.filter(item => {
+          // Role-based filtering
+          const base = getNavPathBase(item.path);
+          let roleAllowed = true;
+          for (const [prefix, allowedRoles] of Object.entries(ROLE_MAP)) {
+            if (base === prefix || base.startsWith(`${prefix}/`)) {
+              roleAllowed = allowedRoles.includes(userRole);
+              break;
+            }
+          }
+          if (!roleAllowed) return false;
+
+          // Feature flag filtering
           const feature = getFeatureForPath(item.path);
           if (!feature) return true;
           return isFeatureEnabled(feature);

@@ -1,5 +1,6 @@
 /** Orders Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useToast } from '@core/contexts/ToastContext';
 import * as api from '../api/orders';
 import type { OrderFilters, OrdersResponse } from '../types';
 
@@ -31,27 +32,38 @@ export const useStats = () => {
 
 export const useCreate = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: any) => api.createOrder(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+      toast.success('Order created successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create order: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useUpdate = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: any) => api.updateOrder(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+      toast.success('Order updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update order: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useDelete = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (id: string) => api.deleteOrder(id),
     onMutate: async (id) => {
@@ -76,24 +88,31 @@ export const useDelete = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
+      toast.success('Order deleted successfully');
     },
   });
 };
 
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => api.updateOrderStatus(id, status),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.stats() });
+      toast.success('Order status updated');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update status: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };
 
 export const useUpdateOrderPaymentStatus = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: ({ id, isPaid, notes }: { id: string; isPaid: boolean; notes?: string }) =>
       api.updateOrderPaymentStatus(id, isPaid, notes),
@@ -101,6 +120,10 @@ export const useUpdateOrderPaymentStatus = () => {
       queryClient.invalidateQueries({ queryKey: api.orderKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.all });
       queryClient.invalidateQueries({ queryKey: api.orderKeys.stats() });
+      toast.success('Payment status updated');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update payment: ${error?.message || 'Unknown error'}`, 6000);
     },
   });
 };

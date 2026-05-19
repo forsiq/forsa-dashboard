@@ -28,10 +28,18 @@ import {
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { StatValue } from '@core/components/Data/StatValue';
-import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberSlideOver } from '@core/components';
 import { DeleteCardConfirmation } from '@core/components/Feedback/DeleteCardConfirmation';
-import { useList, useStats } from '../hooks';
+import { useList, useStats, useDelete } from '../hooks';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
+import { useDebounce } from '@core/hooks/useDebounce';
 
 export const InventoryPage = () => {
   const { t, dir } = useLanguage();
@@ -39,8 +47,13 @@ export const InventoryPage = () => {
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
     id: null
@@ -53,7 +66,7 @@ export const InventoryPage = () => {
 
   const isRTL = dir === 'rtl';
 
-  const { data: inventoryData, isLoading } = useList();
+  const { data: inventoryData, isLoading, isFetching } = useList();
   const { data: statsData } = useStats();
 
   const products: any[] = (inventoryData as any)?.items || [];
@@ -80,8 +93,8 @@ export const InventoryPage = () => {
 
   const filteredData = useMemo(() => {
     return data.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                           p.sku.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
                            (statusFilter === 'in_stock' && p.stock > 5) ||
                            (statusFilter === 'low_stock' && p.stock > 0 && p.stock <= 5) ||
@@ -89,8 +102,15 @@ export const InventoryPage = () => {
       const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
 
       return matchesSearch && matchesStatus && matchesCategory;
+    }).sort((a, b) => {
+      const aVal = (a as any)[sortBy];
+      const bVal = (b as any)[sortBy];
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = typeof aVal === 'string' ? aVal.localeCompare(bVal) : aVal - bVal;
+      return sortOrder === 'asc' ? cmp : -cmp;
     });
-  }, [data, searchQuery, statusFilter, categoryFilter]);
+  }, [data, debouncedSearch, statusFilter, categoryFilter, sortBy, sortOrder]);
 
   const lowStockAlerts = useMemo(() => {
     return data.filter(p => p.stock <= 5 && p.stock > 0);
@@ -100,11 +120,35 @@ export const InventoryPage = () => {
     return data.reduce((sum, p) => sum + (p.price * p.stock), 0);
   }, [data]);
 
-  const stats = [
-    { label: t('inventory.total_items'), value: data.length.toString(), icon: Package, color: 'brand' as const, description: '' },
-    { label: t('inventory.low_stock'), value: lowStockAlerts.length.toString(), icon: AlertCircle, color: 'danger' as const, description: t('inventory.needs_review') },
-    { label: t('inventory.warehouses'), value: '1', icon: Warehouse, color: 'info' as const, description: t('inventory.global_dist') },
-    { label: t('inventory.total_value'), value: formatCurrency(totalValue), icon: TrendingUp, color: 'success' as const, description: '' },
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (categoryFilter !== 'all' ? 1 : 0);
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
+  };
+
+  const { openConfirm } = useConfirmModal();
+  const deleteProduct = useDelete();
+
+  const bulkActions = [
+    {
+      label: t('inventory.bulk_delete') || 'Delete Selected',
+      icon: Trash2,
+      variant: 'danger' as const,
+      onClick: (selectedIds: string[]) => {
+        openConfirm({
+          title: t('inventory.bulk_delete') || 'Delete Selected',
+          message: `${t('inventory.bulk_delete_confirm') || 'Are you sure you want to delete'} ${selectedIds.length} ${t('inventory.items') || 'items'}?`,
+          variant: 'destructive',
+          onConfirm: () => {
+            selectedIds.forEach(id => {
+              deleteProduct.mutate(id);
+            });
+          },
+        });
+      },
+    },
   ];
 
   const columns: Column<any>[] = [
@@ -215,17 +259,11 @@ export const InventoryPage = () => {
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
-        <div className="space-y-1 text-start">
-          <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
-            {t('inventory.overview')}
-          </h1>
-          <p className="text-base text-zinc-secondary font-bold">
-            {t('inventory.overview_subtitle')}
-          </p>
-        </div>
+    <AdminListPageShell
+      title={t('inventory.overview')}
+      description={t('inventory.overview_subtitle')}
+      icon={Package}
+      headerActions={
         <div className="flex flex-wrap gap-3">
           <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory')}>
               <span>{t('inventory.add_item')}</span>
@@ -236,86 +274,53 @@ export const InventoryPage = () => {
             {t('inventory.transactions')}
           </AmberButton>
         </div>
-      </div>
-
-      {/* Stats Grid */}
-      <StatsGrid
-        stats={stats.map(s => ({
-          label: s.label,
-          value: s.value,
-          icon: s.icon,
-          color: s.color,
-          description: s.description,
-        }))}
-      />
-
-      {/* Filters & Search Row */}
-      <div className="flex flex-col md:flex-row items-center gap-4 pt-2 text-start">
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'all'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('common.all') || 'All'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('in_stock')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'in_stock'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('inventory.stock_in_stock') || 'In Stock'}
-          </button>
-          <button
-            onClick={() => setStatusFilter('low_stock')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              statusFilter === 'low_stock'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('inventory.stock_low') || 'Low Stock'}
-          </button>
-        </div>
-
-        <div className="relative flex-1 max-w-sm w-full group">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
-          <AmberInput
-            placeholder={t('inventory.search') || 'Search inventory...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm rounded-xl h-11 focus:ring-[var(--color-brand)]/20 ps-10 pe-4"
-          />
-        </div>
-      </div>
-
+      }
+      stats={[
+        { label: t('inventory.total_items'), value: data.length, icon: Package, color: 'brand', description: '' },
+        { label: t('inventory.low_stock'), value: lowStockAlerts.length, icon: AlertCircle, color: 'danger', description: t('inventory.needs_review') },
+        { label: t('inventory.warehouses'), value: '1', icon: Warehouse, color: 'info', description: t('inventory.global_dist') },
+        { label: t('inventory.total_value'), value: formatCurrency(totalValue), icon: TrendingUp, color: 'success', description: '' },
+      ]}
+      toolbar={
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('inventory.search') || 'Search inventory...'} />}
+          onFilterClick={() => setIsFilterOpen(true)}
+          filterLabel={t('common.filters') || 'Filters'}
+          activeFilterCount={activeFilterCount}
+        />
+      }
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Table Area */}
         <div className="lg:col-span-2 space-y-4">
           {isLoading ? (
-            <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm p-12 text-center">
-              <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-            </div>
+            <ListPageSkeleton count={10} columns={4} showStats />
+          ) : filteredData.length === 0 ? (
+            <EmptyState
+              icon={Package}
+              title={t('inventory.empty') || 'No Items'}
+              description={t('inventory.empty_description') || 'No inventory items found.'}
+              actionLabel={t('inventory.add_item') || 'Add Item'}
+              onAction={() => router.push('/inventory')}
+            />
           ) : (
-            <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+              {isFetching && <FetchingOverlay />}
               <DataTable
                 columns={columns}
                 data={filteredData}
                 pagination
-                pageSize={10}
+                pageSize={limit}
+                currentPage={page}
+                totalItems={filteredData.length}
+                onPageChange={(newPage) => setPage(newPage)}
                 selectable
+                bulkActions={bulkActions}
                 rowActions={rowActions}
-                emptyMessage={t('inventory.empty')}
                 showViewToggle
+                onSortChange={handleSortChange}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
               />
             </div>
           )}
@@ -414,71 +419,80 @@ export const InventoryPage = () => {
         }
       >
         <div className="space-y-8">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-brand/10 rounded-sm">
-                <Search className="w-3.5 h-3.5 text-brand" />
+          <div className="space-y-3">
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('common.status')}</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: 'all', label: t('common.all') || 'All' },
+                  { value: 'in_stock', label: t('inventory.stock_in_stock') || 'In Stock' },
+                  { value: 'low_stock', label: t('inventory.stock_low') || 'Low Stock' },
+                  { value: 'out_of_stock', label: t('inventory.stock_out') || 'Out of Stock' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setStatusFilter(opt.value)}
+                    className={cn(
+                      "h-11 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border",
+                      statusFilter === opt.value
+                        ? "bg-brand text-black border-brand shadow-lg"
+                        : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-              <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
-                {t('inventory.search_label')}
-              </label>
             </div>
-            <div className="relative group">
-              <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted transition-colors group-focus-within:text-brand" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('inventory.search')}
-                className="w-full h-12 bg-obsidian-outer border border-white/5 rounded-sm shadow-inner focus:bg-obsidian-card text-xs font-bold text-zinc-text outline-none focus:border-brand/30 transition-all placeholder:text-zinc-muted/40 ps-10 pe-4"
-              />
-            </div>
-          </div>
 
-          <div className="h-px bg-white/[0.05]" />
-
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 bg-info/10 rounded-sm">
-                  <Package className="w-3.5 h-3.5 text-info" />
+            {uniqueCategories.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('inventory.table.category')}</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCategoryFilter('all')}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
+                      categoryFilter === 'all'
+                        ? "bg-brand text-black border-brand"
+                        : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                    )}
+                  >
+                    {t('common.all') || 'All'}
+                  </button>
+                  {uniqueCategories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setCategoryFilter(cat)}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
+                        categoryFilter === cat
+                          ? "bg-brand text-black border-brand"
+                          : "bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10"
+                      )}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
-                <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
-                  {t('common.status')}
-                </label>
               </div>
-              <AmberDropdown
-                options={[
-                  { label: t('common.all') || 'All Status', value: 'all' },
-                  { label: t('inventory.stock_in_stock'), value: 'in_stock' },
-                  { label: t('inventory.stock_low'), value: 'low_stock' },
-                  { label: t('inventory.stock_out'), value: 'out_of_stock' },
-                ]}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                className="w-full h-12"
-              />
-            </div>
+            )}
 
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 bg-success/10 rounded-sm">
-                  <Filter className="w-3.5 h-3.5 text-success" />
-                </div>
-                <label className="text-[11px] font-black text-zinc-text uppercase tracking-widest">
-                  {t('inventory.table.category')}
-                </label>
-              </div>
-              <AmberDropdown
-                options={[
-                  { label: t('common.all') || 'All Categories', value: 'all' },
-                  ...uniqueCategories.map(cat => ({ label: cat, value: cat })),
-                ]}
-                value={categoryFilter}
-                onChange={setCategoryFilter}
-                className="w-full h-12"
-              />
-            </div>
+          <div className="pt-8 space-y-3">
+            <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95 transition-all" onClick={() => setIsFilterOpen(false)}>
+              {t('common.done') || 'Apply'}
+            </AmberButton>
+            <AmberButton
+              variant="secondary"
+              className="w-full h-12 font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all"
+              onClick={() => {
+                setStatusFilter('all');
+                setCategoryFilter('all');
+                setSearchQuery('');
+                setIsFilterOpen(false);
+              }}
+            >
+              {t('common.reset') || 'Reset'}
+            </AmberButton>
           </div>
         </div>
       </AmberSlideOver>
@@ -496,6 +510,6 @@ export const InventoryPage = () => {
         title={t('inventory.delete_title')}
         message={t('inventory.delete_message')}
       />
-    </div>
+    </AdminListPageShell>
   );
 };

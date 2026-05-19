@@ -5,11 +5,12 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
-import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { cn } from '@core/lib/utils/cn';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import { DollarSign, Clock, AlertTriangle, Bell, UserCheck, XCircle, Receipt } from 'lucide-react';
 import type { SettlementItem } from '../../auctions/api/auction-api';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
 
 function maskId(id: string | null): string {
   if (!id) return '-';
@@ -40,8 +41,10 @@ export const SettlementDeskPage = () => {
   const isRTL = dir === 'rtl';
   const [activeTab, setActiveTab] = useState('');
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string>('endTime');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { data: settlementsData, isLoading } = useSettlements({
+  const { data: settlementsData, isLoading, isFetching } = useSettlements({
     status: activeTab || undefined,
     page,
     limit: 20,
@@ -69,6 +72,12 @@ export const SettlementDeskPage = () => {
       }).length,
     };
   }, [items]);
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
+  };
 
   const columns: Column<SettlementItem>[] = [
     {
@@ -248,22 +257,33 @@ export const SettlementDeskPage = () => {
       <ConfirmModalComponent />
 
       {/* Table */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+      <div className="space-y-6">
         {isLoading ? (
-          <AmberTableSkeleton rows={8} columns={5} />
-        ) : (
-          <DataTable
-            columns={columns}
-            data={items}
-            keyField="id"
-            rowActions={rowActions}
-            pagination
-            pageSize={20}
-            totalItems={total}
-            currentPage={page}
-            onPageChange={setPage}
-            emptyMessage={t('settlement.no_settlements')}
+          <ListPageSkeleton count={8} columns={4} showStats />
+        ) : items.length === 0 ? (
+          <EmptyState
+            icon={Receipt}
+            title={t('settlement.no_settlements') || 'No Settlements'}
+            description={t('settlement.no_settlements_desc') || 'No settlements found.'}
           />
+        ) : (
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
+            <DataTable
+              columns={columns}
+              data={items}
+              keyField="id"
+              rowActions={rowActions}
+              pagination
+              pageSize={20}
+              totalItems={total}
+              currentPage={page}
+              onPageChange={setPage}
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+            />
+          </div>
         )}
       </div>
     </AdminListPageShell>

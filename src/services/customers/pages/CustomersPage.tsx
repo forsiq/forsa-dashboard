@@ -5,10 +5,8 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
 import { AmberAvatar } from '@core/components/AmberAvatar';
-import { AmberTableSkeleton } from '@core/components/Loading/AmberTableSkeleton';
 import { DataTable, Column } from '@core/components/Data/DataTable';
 import { DataTableColumnOrderToolbar } from '@core/components/Data/DataTableColumnOrderToolbar';
 import { usePersistedColumnOrder } from '@core/hooks/usePersistedColumnOrder';
@@ -19,6 +17,15 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useGetCustomers, useGetCustomerStats, useDeleteCustomer, useUpdateCustomerStatus } from '../hooks';
 import type { Customer } from '../types';
 import { useIsClient } from '@core/hooks/useIsClient';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
+
+type TypeTab = 'all' | 'individual' | 'business';
 
 /**
  * CustomersPage - Customers list page
@@ -27,8 +34,12 @@ export function CustomersPage() {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'individual' | 'business'>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeTab>('all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50);
   const isClient = useIsClient();
 
   const isRTL = dir === 'rtl';
@@ -37,8 +48,10 @@ export function CustomersPage() {
   const { data, isPending, isFetching, error, refetch } = useGetCustomers({
     search: debouncedSearch || undefined,
     type: typeFilter === 'all' ? undefined : typeFilter,
-    page: 1,
-    limit: 50,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
   });
 
   const { data: stats } = useGetCustomerStats();
@@ -66,6 +79,12 @@ export function CustomersPage() {
         updateStatusMutation.mutate({ id: customer.id, status: newStatus as Customer['status'] });
       },
     });
+  };
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
   };
 
   const columns: Column<any>[] = [
@@ -189,143 +208,60 @@ export function CustomersPage() {
     },
   ];
 
+  const TYPE_TABS: { key: TypeTab; labelKey: string }[] = [
+    { key: 'all', labelKey: 'common.all' },
+    { key: 'individual', labelKey: 'customer.individual' },
+    { key: 'business', labelKey: 'customer.business' },
+  ];
+
+  const customers = data?.customers || [];
+
   if (!isClient) return null;
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
-            {t('customer.title') || 'العملاء'}
-          </h1>
-          <p className="text-base text-zinc-secondary font-bold">
-            {t('customer.subtitle') || 'إدارة وتتبع حسابات العملاء'}
-          </p>
-        </div>
+    <AdminListPageShell
+      title={t('customer.title') || 'العملاء'}
+      description={t('customer.subtitle') || 'إدارة وتتبع حسابات العملاء'}
+      icon={User}
+      headerActions={
         <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/customers/new')}>
           <Plus className="w-5 h-5" />
           <span>{t('customer.add_new') || 'Initialize Customer'}</span>
         </AmberButton>
-      </div>
-
-      {/* Statistics Grid */}
-      {stats && (
-        <StatsGrid
-          stats={[
-            {
-              label: t('common.total') || 'Aggregated Total',
-              value: stats.total ?? 0,
-              color: 'brand',
-            },
-            {
-              label: t('status.active') || 'Operational Nodes',
-              value: stats.active ?? 0,
-              color: 'success',
-            },
-            {
-              label: t('customer.new_this_month') || 'Monthly Iterations',
-              value: stats.newThisMonth ?? 0,
-              color: 'brand',
-            },
-            {
-              label: t('customer.top_spenders') || 'Priority Accounts',
-              value: ((stats.topSpenders || []) as any).length,
-              color: 'brand',
-              footer: (
-                <>
-                  {((stats.topSpenders as any) || []).length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex -space-x-2 rtl:space-x-reverse">
-                        {((stats.topSpenders as any) || []).slice(0, 5).map((c: any, index: number) => (
-                          <button
-                            key={c.id || `top-spender-${index}`}
-                            type="button"
-                            onClick={() => c.id && router.push(`/customers/${c.id}`)}
-                            className="relative group/avatar transition-all duration-200 hover:z-10 hover:scale-110 active:scale-95 focus:outline-none"
-                            title={c.name}
-                          >
-                            <AmberAvatar
-                              src={c.avatar}
-                              fallback={c.name || 'U'}
-                              size="sm"
-                              className="ring-2 ring-[var(--color-obsidian-card)] transition-shadow group-hover/avatar:ring-brand/50"
-                            />
-                            {/* Tooltip on hover */}
-                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-obsidian-outer border border-white/10 rounded-md text-[11px] font-bold text-zinc-text whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
-                              {c.name?.split(' ')[0]}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-[11px] font-bold text-brand/80 uppercase tracking-widest truncate">
-                        {((stats.topSpenders as any) || []).slice(0, 3).map((c: any) => c.name?.split(' ')[0]).filter(Boolean).join(', ')}
-                        {((stats.topSpenders as any) || []).length > 3 && ` +${((stats.topSpenders as any) || []).length - 3}`}
-                      </p>
-                    </div>
-                  )}
-                </>
-              ),
-            },
-          ]}
+      }
+      stats={stats ? [
+        { label: t('common.total') || 'Aggregated Total', value: stats.total ?? 0, color: 'brand' },
+        { label: t('status.active') || 'Operational Nodes', value: stats.active ?? 0, color: 'success' },
+        { label: t('customer.new_this_month') || 'Monthly Iterations', value: stats.newThisMonth ?? 0, color: 'brand' },
+        { label: t('customer.top_spenders') || 'Priority Accounts', value: ((stats.topSpenders || []) as any).length, color: 'brand' },
+      ] : []}
+      tabs={
+        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+          {TYPE_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => { setTypeFilter(tab.key); setPage(1); }}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
+                typeFilter === tab.key
+                  ? "bg-[var(--color-brand)] text-black shadow-sm"
+                  : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
+              )}
+            >
+              {t(tab.labelKey)}
+            </button>
+          ))}
+        </div>
+      }
+      toolbar={
+        <ListPageToolbar
+          search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('customer.search_placeholder') || 'البحث عن العملاء...'} />}
         />
-      )}
-
-      {/* Interactive Controls */}
-      <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
-        {/* Status Tabs */}
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-          <button
-            onClick={() => setTypeFilter('all')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              typeFilter === 'all'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('common.all') || 'Aggregated'}
-          </button>
-          <button
-            onClick={() => setTypeFilter('individual')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              typeFilter === 'individual'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('customer.individual') || 'Personal'}
-          </button>
-          <button
-            onClick={() => setTypeFilter('business')}
-            className={cn(
-              'px-6 py-2.5 text-sm font-bold transition-colors rounded-lg',
-              typeFilter === 'business'
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-[var(--color-obsidian-hover)]'
-            )}
-          >
-            {t('customer.business') || 'Corporate'}
-          </button>
-        </div>
-
-        {/* Search Input */}
-        <div className="relative flex-1 max-w-sm w-full group">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-4 w-5 h-5 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
-          <AmberInput
-            placeholder={t('customer.search_placeholder') || 'البحث عن العملاء...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white/5 border-[var(--color-border)] shadow-sm h-14 focus:ring-[var(--color-brand)]/20 text-lg ps-12 pe-4"
-          />
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+      }
+    >
+      <div className="space-y-6">
         {isPending ? (
-          <AmberTableSkeleton rows={8} columns={6} hasActions />
+          <ListPageSkeleton count={8} columns={4} showStats />
         ) : error ? (
           <div className="p-12 text-center">
             <p className="text-[var(--color-danger)] font-black uppercase tracking-widest">{t('customer.error_loading') || 'Sync Interrupted'}</p>
@@ -338,14 +274,23 @@ export function CustomersPage() {
               {t('common.retry') || 'Retry Sync'}
             </AmberButton>
           </div>
+        ) : customers.length === 0 ? (
+          <EmptyState
+            icon={User}
+            title={t('customer.empty') || 'No Customers'}
+            description={t('customer.empty_description') || 'No customers found matching your criteria.'}
+            actionLabel={t('customer.add_new') || 'Add Customer'}
+            onAction={() => router.push('/customers/new')}
+          />
         ) : (
-          <div>
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
             <DataTableColumnOrderToolbar
               columns={orderedColumns}
               selectedKey={selectedKey}
               onSelectKey={setSelectedKey}
               onMove={(delta) => moveColumn(selectedKey, delta)}
-              disabled={!(data?.customers || []).length}
+              disabled={!customers.length}
               dir={isRTL ? 'rtl' : 'ltr'}
               labels={{
                 title: t('datatable.column_order') || 'Columns',
@@ -356,20 +301,26 @@ export function CustomersPage() {
             />
             <DataTable
               columns={orderedColumns}
-              data={data?.customers || []}
+              data={customers}
               pagination
-              pageSize={10}
+              pageSize={limit}
+              currentPage={page}
+              totalItems={(data as any)?.total || customers.length}
+              onPageChange={(newPage) => setPage(newPage)}
               selectable
               rowActions={rowActions}
               onRowClick={(row) => router.push(`/customers/${row.id}`)}
               showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
             />
           </div>
         )}
       </div>
 
       <ConfirmModal />
-    </div>
+    </AdminListPageShell>
   );
 }
 

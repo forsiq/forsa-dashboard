@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -30,6 +30,7 @@ import {
   ListPageToolbar,
   ListPageToolbarSearch,
 } from '@core/components/Layout';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
@@ -62,6 +63,10 @@ export const GroupBuyingListPage: React.FC = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<any>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string | 'all'>('all');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
   const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (categoryIdFilter !== 'all' ? 1 : 0);
 
@@ -88,6 +93,12 @@ export const GroupBuyingListPage: React.FC = () => {
       case 'expired': return 'failed';
       default: return 'warning';
     }
+  };
+
+  const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
+    setSortBy(key);
+    setSortOrder(direction);
+    setPage(1);
   };
 
   // Table columns
@@ -279,7 +290,7 @@ export const GroupBuyingListPage: React.FC = () => {
       ]}
       toolbar={
         <ListPageToolbar
-          search={<ListPageToolbarSearch value={searchQuery} onChange={setSearchQuery} placeholder={t('groupBuying.scan_nomenclature') || 'Search campaigns...'} />}
+          search={<ListPageToolbarSearch value={searchQuery} onChange={(v) => { setSearchQuery(v); setPage(1); }} placeholder={t('groupBuying.scan_nomenclature') || 'Search campaigns...'} />}
           onFilterClick={() => setIsFilterOpen(true)}
           filterLabel={t('common.filters') || 'Filters'}
           activeFilterCount={activeFilterCount}
@@ -288,11 +299,7 @@ export const GroupBuyingListPage: React.FC = () => {
     >
       <div className="space-y-6">
         {listLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-[300px] rounded-xl bg-white/[0.02] border border-white/[0.05] animate-pulse" />
-            ))}
-          </div>
+          <ListPageSkeleton count={6} columns={4} showStats />
         ) : campaigns.length === 0 ? (
           <EmptyState
             icon={Target}
@@ -302,7 +309,8 @@ export const GroupBuyingListPage: React.FC = () => {
             onAction={() => router.push('/group-buying/new')}
           />
         ) : (
-          <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            {isFetching && <FetchingOverlay />}
             <DataTable
               columns={columns}
               data={campaigns}
@@ -310,8 +318,14 @@ export const GroupBuyingListPage: React.FC = () => {
               rowActions={rowActions}
               onRowClick={(row) => router.push(`/group-buying/${row.id}`)}
               pagination
-              pageSize={10}
+              pageSize={limit}
+              currentPage={page}
+              totalItems={campaignsData?.total || campaigns.length}
+              onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
+              onSortChange={handleSortChange}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
             />
           </div>
         )}
@@ -325,18 +339,6 @@ export const GroupBuyingListPage: React.FC = () => {
         description={t('groupBuying.config_desc') || "Filter campaigns by status."}
       >
         <div className="space-y-8 py-6">
-          <div className="space-y-3">
-              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.nomenclature_scan') || 'Search'}</label>
-            <AmberInput
-              placeholder={t('groupBuying.enter_identifier') || "Search campaigns..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 bg-obsidian-outer"
-            />
-          </div>
-
-          <div className="h-px bg-white/5" />
-
           <div className="space-y-6">
             <div className="space-y-3">
               <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('groupBuying.strategy') || 'Status'}</label>
