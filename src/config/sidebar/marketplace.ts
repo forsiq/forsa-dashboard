@@ -22,7 +22,10 @@ export const sidebarSections: MenuSection[] = [
   },
   {
     title: 'sidebar.engagement',
-    items: [{ path: '/watchlist', label: 'sidebar.watchlist', icon: 'Eye' }],
+    items: [
+      { path: '/watchlist', label: 'sidebar.watchlist', icon: 'Eye' },
+      { path: '/my-bids', label: 'sidebar.my_bids', icon: 'BadgeDollarSign' },
+    ],
   },
   {
     title: 'sidebar.inventory_heading',

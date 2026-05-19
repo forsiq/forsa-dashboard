@@ -1,16 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff, Loader2, ChevronRight, CheckCircle2, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberButton } from '@core/components/AmberButton';
 import { useAuth } from '../hooks/useAuth';
-import { RegisterData } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
 function getPasswordStrength(password: string): { score: number; label: string; color: string } {
   if (!password) return { score: 0, label: '', color: '' };
-  
+
   let score = 0;
   if (password.length >= 6) score++;
   if (password.length >= 8) score++;
@@ -25,16 +24,17 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 
 export const RegisterForm: React.FC = () => {
   const { t } = useLanguage();
-  const { register, isLoading, error: authError } = useAuth();
+  const { registerInit, isLoading, error: authError } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
 
-  const [formData, setFormData] = useState<RegisterData>({
-    username: '',
-    email: '',
+  const [formData, setFormData] = useState({
+    phone: '',
+    firstName: '',
+    lastName: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const passwordStrength = useMemo(() => getPasswordStrength(formData.password), [formData.password]);
@@ -43,57 +43,42 @@ export const RegisterForm: React.FC = () => {
     e.preventDefault();
     setLocalError(null);
 
-    if (formData.password !== formData.confirmPassword) {
-      setLocalError(t('error.password_mismatch') || 'Passwords do not match');
+    if (!formData.phone.trim()) {
+      setLocalError(t('auth.errors.phone_required') || 'Phone number is required');
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (formData.password && formData.password.length < 6) {
       setLocalError(t('validation.password_too_short') || 'Password must be at least 6 characters');
       return;
     }
 
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      setLocalError(t('error.password_mismatch') || 'Passwords do not match');
+      return;
+    }
+
     try {
-      await register(formData);
-      setIsSuccess(true);
+      // Store phone + names in sessionStorage for OTP page to use
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('zv_auth_phone', formData.phone);
+        if (formData.firstName) sessionStorage.setItem('zv_auth_firstName', formData.firstName);
+        if (formData.lastName) sessionStorage.setItem('zv_auth_lastName', formData.lastName);
+      }
+
+      await registerInit(formData.phone, formData.password || undefined);
+      // OTP sent — redirect to OTP verification page
+      window.location.href = '/otp';
     } catch (err: any) {
-      console.error('[RegisterForm] Registration failed:', err);
+      console.error('[RegisterForm] Registration init failed:', err);
       setLocalError(err?.message || 'Registration failed. Please try again.');
     }
   };
 
   const currentError = localError || authError;
 
-  if (isSuccess) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center space-y-8 py-8"
-      >
-        <div className="flex justify-center">
-          <div className="w-20 h-20 bg-success/10 rounded-2xl flex items-center justify-center border border-success/20">
-            <CheckCircle2 className="w-10 h-10 text-success" />
-          </div>
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-2xl font-black text-zinc-text tracking-tight uppercase">
-            {t('auth.register.success_title')}
-          </h2>
-          <p className="text-sm font-medium text-zinc-muted max-w-[320px] mx-auto leading-relaxed">
-            {t('auth.register.success_desc')}
-          </p>
-        </div>
-        <AmberButton variant="primary" size="lg" className="w-full h-14 rounded-2xl" onClick={() => window.location.href = '/login'}>
-            <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.proceed_login')}</span>
-        </AmberButton>
-      </motion.div>
-    );
-  }
-
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -117,34 +102,44 @@ export const RegisterForm: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-5">
+          {/* Phone Number */}
           <AmberInput
-            label={t('auth.register.username') || 'Username'}
-            placeholder={t('auth.register.username_placeholder') || 'IDENTITY'}
+            label={t('auth.register.phone') || 'Phone Number'}
+            placeholder={t('auth.register.phone_placeholder') || '+966...'}
+            icon={<Phone className="w-5 h-5 text-brand/60" />}
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            required
+            type="tel"
+          />
+
+          {/* First Name */}
+          <AmberInput
+            label={t('auth.register.first_name') || 'First Name'}
+            placeholder={t('auth.register.first_name_placeholder') || 'First Name'}
             icon={<User className="w-5 h-5 text-brand/60" />}
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            required
+            value={formData.firstName}
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
           />
 
+          {/* Last Name */}
           <AmberInput
-            label={t('auth.register.email') || 'Email'}
-            type="email"
-            placeholder={t('auth.register.email_placeholder') || 'CONTACT@PROTOCOL.COM'}
-            icon={<Mail className="w-5 h-5 text-brand/60" />}
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
+            label={t('auth.register.last_name') || 'Last Name'}
+            placeholder={t('auth.register.last_name_placeholder') || 'Last Name'}
+            icon={<User className="w-5 h-5 text-brand/60" />}
+            value={formData.lastName}
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
           />
 
+          {/* Password (optional) */}
           <div className="space-y-2">
             <AmberInput
-              label={t('auth.register.password') || 'Password'}
+              label={t('auth.register.password') || 'Password (optional)'}
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               icon={<Lock className="w-5 h-5 text-brand/60" />}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
             />
             {formData.password && (
               <div className="flex items-center gap-3 px-1">
@@ -168,25 +163,28 @@ export const RegisterForm: React.FC = () => {
             )}
           </div>
 
-          <AmberInput
-            label={t('auth.register.confirm_password') || 'Confirm'}
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            icon={<Lock className="w-5 h-5 text-brand/60" />}
-            rightElement={
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="p-2 me-2 text-zinc-muted hover:text-brand transition-colors outline-none"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            }
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            error={formData.password !== formData.confirmPassword && formData.confirmPassword ? t('auth.register.password_mismatch_inline') : ''}
-            required
-          />
+          {/* Confirm Password */}
+          {formData.password && (
+            <AmberInput
+              label={t('auth.register.confirm_password') || 'Confirm Password'}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              icon={<Lock className="w-5 h-5 text-brand/60" />}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-2 me-2 text-zinc-muted hover:text-brand transition-colors outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              }
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              error={formData.password !== formData.confirmPassword && formData.confirmPassword ? t('auth.register.password_mismatch_inline') : ''}
+              required
+            />
+          )}
         </div>
 
         <AmberButton
@@ -203,7 +201,9 @@ export const RegisterForm: React.FC = () => {
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
-              <span className="font-bold uppercase tracking-[0.15em]">{t('auth.register.submit') || 'INITIALIZE ACCOUNT'}</span>
+              <span className="font-bold uppercase tracking-[0.15em]">
+                {t('auth.register.send_otp') || 'SEND VERIFICATION CODE'}
+              </span>
               <ChevronRight className="w-4 h-4" />
             </div>
           )}

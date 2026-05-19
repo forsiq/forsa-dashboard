@@ -3,10 +3,16 @@ import {
   useModerationActivity,
   useModerationActivityStats,
   useModerationTimeline,
+  useAllBids,
+  useVoidBid,
+  useSuspendUser,
+  useUnsuspendUser,
 } from '../../auctions/api/auction-hooks';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useToast } from '@core/contexts/ToastContext';
 import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { AmberButton } from '@core/components/AmberButton';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
@@ -22,6 +28,10 @@ import {
   ChevronRight,
   Timer,
   Eye,
+  Ban,
+  UserX,
+  UserCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import type { ActivityAuctionItem, TimelineEvent } from '../../auctions/api/auction-api';
 
@@ -191,6 +201,182 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Bid Moderation Section ──────────────────────────────────────────────
+function BidModerationSection() {
+  const { t } = useLanguage();
+  const toast = useToast();
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'void' | 'suspend' | 'unsuspend';
+    id: string;
+    label: string;
+  } | null>(null);
+
+  const { data: bidsData, isLoading: bidsLoading } = useAllBids({ limit: 20 });
+  const voidBid = useVoidBid();
+  const suspendUser = useSuspendUser();
+  const unsuspendUser = useUnsuspendUser();
+
+  const bids = (bidsData as any)?.data || (bidsData as any)?.bids || [];
+
+  const handleConfirm = () => {
+    if (!confirmAction) return;
+    const { type, id } = confirmAction;
+    if (type === 'void') {
+      voidBid.mutate(id, { onSettled: () => setConfirmAction(null) });
+    } else if (type === 'suspend') {
+      suspendUser.mutate(id, { onSettled: () => setConfirmAction(null) });
+    } else {
+      unsuspendUser.mutate(id, { onSettled: () => setConfirmAction(null) });
+    }
+  };
+
+  const isBusy = voidBid.isPending || suspendUser.isPending || unsuspendUser.isPending;
+
+  return (
+    <>
+      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-3 border-b border-[var(--color-border)] pb-4">
+          <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+            {t('moderation.recent_bids') || 'Recent Bids – Moderation'}
+          </h3>
+        </div>
+
+        {bidsLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-14 bg-[var(--color-obsidian-outer)] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : bids.length === 0 ? (
+          <div className="py-8 text-center">
+            <Activity className="w-8 h-8 text-zinc-muted mx-auto mb-2" />
+            <p className="text-sm text-zinc-muted font-bold">{t('moderation.no_bids') || 'No recent bids to moderate'}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {bids.map((bid: any) => (
+              <div
+                key={bid.id}
+                className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-obsidian-outer)]/40 border border-[var(--color-border)]"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center text-brand text-xs font-black shrink-0">
+                    {bid.bidderName?.[0] || '?'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-zinc-text truncate">
+                      {bid.bidderName || maskId(bid.bidderId || bid.id)}
+                    </p>
+                    <p className="text-[11px] text-zinc-muted">
+                      {Number(bid.amount).toLocaleString()} IQD — {bid.auctionTitle || `Auction #${bid.auctionId}`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <AmberButton
+                    className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
+                    onClick={() =>
+                      setConfirmAction({
+                        type: 'void',
+                        id: String(bid.id),
+                        label: `Bid #${bid.id} (${Number(bid.amount).toLocaleString()} IQD)`,
+                      })
+                    }
+                    disabled={bid.status === 'voided'}
+                  >
+                    <Ban className="w-3 h-3 me-1" />
+                    {bid.status === 'voided' ? 'Voided' : 'Void'}
+                  </AmberButton>
+
+                  <AmberButton
+                    className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-all"
+                    onClick={() =>
+                      setConfirmAction({
+                        type: 'suspend',
+                        id: String(bid.bidderId),
+                        label: bid.bidderName || maskId(bid.bidderId),
+                      })
+                    }
+                  >
+                    <UserX className="w-3 h-3 me-1" />
+                    Suspend
+                  </AmberButton>
+
+                  <AmberButton
+                    className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-success/10 border border-success/20 text-success hover:bg-success/20 rounded-lg transition-all"
+                    onClick={() =>
+                      setConfirmAction({
+                        type: 'unsuspend',
+                        id: String(bid.bidderId),
+                        label: bid.bidderName || maskId(bid.bidderId),
+                      })
+                    }
+                  >
+                    <UserCheck className="w-3 h-3 me-1" />
+                    Unsuspend
+                  </AmberButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Confirmation Dialog */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-danger" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+                  {confirmAction.type === 'void' ? 'Void Bid' : confirmAction.type === 'suspend' ? 'Suspend User' : 'Unsuspend User'}
+                </h3>
+                <p className="text-[13px] text-zinc-muted font-bold">{confirmAction.label}</p>
+              </div>
+            </div>
+            <p className="text-sm text-zinc-muted mb-6">
+              {confirmAction.type === 'void'
+                ? 'Are you sure you want to void this bid? This action cannot be undone.'
+                : confirmAction.type === 'suspend'
+                  ? 'Are you sure you want to suspend this user? They will not be able to place bids.'
+                  : 'Are you sure you want to unsuspend this user? They will be able to place bids again.'}
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <AmberButton
+                variant="outline"
+                className="h-10 px-6 font-bold uppercase tracking-wider text-xs"
+                onClick={() => setConfirmAction(null)}
+                disabled={isBusy}
+              >
+                Cancel
+              </AmberButton>
+              <AmberButton
+                className={cn(
+                  'h-10 px-6 font-bold uppercase tracking-wider text-xs border-none',
+                  confirmAction.type === 'unsuspend'
+                    ? 'bg-success text-black hover:bg-success/90'
+                    : 'bg-danger text-white hover:bg-danger/90'
+                )}
+                onClick={handleConfirm}
+                disabled={isBusy}
+              >
+                {isBusy ? 'Processing...' : 'Confirm'}
+              </AmberButton>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -404,6 +590,9 @@ export const ModerationHubPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Bid Moderation Section */}
+      <BidModerationSection />
     </AdminListPageShell>
   );
 };

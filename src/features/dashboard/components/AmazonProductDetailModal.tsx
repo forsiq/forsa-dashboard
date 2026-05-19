@@ -15,6 +15,8 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { useAmazonProduct } from '@services/amazon/hooks/useAmazonSearch';
 import { useCreateListing } from '@features/listings/api/listing-hooks';
+import { uploadAttachmentAndGetId } from '@features/auctions/utils/auction-utils';
+import type { ListingSpec } from '@types/services/listings.types';
 import { useRouter } from 'next/router';
 
 interface AmazonProductDetailModalProps {
@@ -64,18 +66,44 @@ export function AmazonProductDetailModal({
 
     setIsImporting(true);
     try {
-      const images = getAllImages();
+      const imageUrls = getAllImages();
+
+      // Upload Amazon images as attachments
+      const attachmentIds: number[] = [];
+      for (const url of imageUrls) {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const fileName = url.split('/').pop() || `amazon-${product.asin}-${attachmentIds.length}.jpg`;
+          const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+          const attachmentId = await uploadAttachmentAndGetId(file);
+          attachmentIds.push(attachmentId);
+        } catch {
+          // Skip images that fail to upload
+        }
+      }
+
+      // Convert Amazon specifications to ListingSpec[] format
+      const specs: ListingSpec[] = product.specifications
+        ? Object.entries(product.specifications).map(([key, value]) => ({
+            label: key,
+            value: typeof value === 'object' ? String((value as any).value || '') : String(value),
+          }))
+        : [];
+
       const payload: any = {
         title: product.title || '',
         description: product.description || product.feature_bullets?.join('\n') || '',
-        images,
+        images: imageUrls,
         brand: product.brand || '',
         sku: product.asin,
+        specs: specs.length > 0 ? specs : undefined,
+        attachmentIds: attachmentIds.length > 0 ? attachmentIds : undefined,
+        mainAttachmentId: attachmentIds.length > 0 ? attachmentIds[0] : undefined,
         metadata: {
-          ...(product.specifications || {}),
           source: 'amazon',
           asin: product.asin,
-          originalImageUrls: images,
+          originalImageUrls: imageUrls,
         },
       };
 

@@ -13,10 +13,12 @@ import {
   LayoutDashboard,
   PanelLeft,
   Layers,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
-import { useLanguage } from '@yousef2001/core-ui/contexts';
+import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
 import { cn } from '@core/lib/utils/cn';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 
@@ -25,6 +27,7 @@ type Tab = { id: string; label: string; icon: React.ComponentType<{ className?: 
 export default function SettingsPage() {
   const { t, dir } = useLanguage();
   const { mode, setMode } = useSidebarMode();
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);

@@ -18,8 +18,11 @@ const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 export function SalesReportPage() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
-  const { data: report, isLoading } = useGetSalesReport();
   const [timeframe, setTimeframe] = useState('month');
+  const { data: report, isLoading } = useGetSalesReport({
+    queryKey: [`sales-report-${timeframe}`],
+    queryFn: () => import('../api/reports').then((m) => m.getSalesReport(timeframe)),
+  });
 
   const kpis = [
     { 

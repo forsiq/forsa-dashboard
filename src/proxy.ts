@@ -39,9 +39,11 @@ export function proxy(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/otp' ||
+    pathname === '/forgot-password' ||
     pathname === '/zvs.config.json' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/public') ||
+    pathname.startsWith('/api/auth') ||
     pathname.startsWith('/public') ||
     pathname === '/favicon.ico';
 
@@ -63,7 +65,7 @@ export function proxy(request: NextRequest) {
 
   // 4. Prevent logged-in users from accessing login/register
   const isForcedLogin = searchParams.get('expired') === 'true';
-  if ((pathname === '/login' || pathname === '/register') && hasValidToken && !isForcedLogin) {
+  if ((pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') && hasValidToken && !isForcedLogin) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

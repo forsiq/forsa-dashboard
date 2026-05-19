@@ -1,11 +1,15 @@
 /**
  * User REST API Service
- * Comprehensive implementation for Forsa Users
- * Uses compat endpoints derived from bids + orders data
+ * Uses flex-auth-service admin endpoints for user management
  */
 
-import { createApiClient } from '@core/services/ApiClientFactory';
-import { getWithListFilters } from '@core/services/serviceListFetch';
+import {
+  adminListUsers,
+  adminGetUser,
+  adminUpdateUser,
+  adminDeleteUser,
+} from '../../auth/services/authApi';
+import type { FlexAuthUser } from '../../auth/types';
 import type {
   User,
   UserCreateInput,
@@ -15,48 +19,38 @@ import type {
   UserStats,
 } from '../types';
 
-/**
- * Base User API implementation using shared factory
- */
-import { API_BASE_URL } from '@config/api';
-
-export const userBaseApi = createApiClient<User, UserCreateInput, UserUpdateInput, UserFilters>({
-  serviceName: 'users',
-  endpoint: '/users',
-  apiBaseUrl: API_BASE_URL,
-});
-
-const mapToUser = (raw: any): User => ({
-  id: raw?.id || '',
-  userName: raw?.userName || raw?.username || '',
-  fullName: raw?.fullName || raw?.full_name || raw?.name || '',
-  email: raw?.email || undefined,
-  phone: raw?.phone || undefined,
-  role: (raw?.role ?? 'user') as User['role'],
-  isActive: Boolean(raw?.isActive ?? raw?.is_active ?? true),
-  isTempPass: Boolean(raw?.isTempPass ?? raw?.is_temp_pass ?? false),
-  createdAt: raw?.createdAt ?? raw?.created_at,
-  updatedAt: raw?.updatedAt ?? raw?.updated_at,
+const mapFlexUserToUser = (raw: FlexAuthUser): User => ({
+  id: raw.id as any,
+  userName: raw.username || raw.phone || '',
+  fullName: [raw.firstName, raw.lastName].filter(Boolean).join(' '),
+  email: raw.email || undefined,
+  phone: raw.phone || undefined,
+  role: (raw.role === 'admin' ? 'admin' : raw.role === 'staff' ? 'manager' : 'user') as User['role'],
+  isActive: raw.status === 'active',
+  isTempPass: false,
+  createdAt: undefined,
+  updatedAt: undefined,
 });
 
 /**
- * User API - main user operations
+ * User API — backed by flex-auth admin endpoints
  */
 export const userApi = {
   /**
    * Get paginated list of users
    */
   list: async (filters?: UserFilters, signal?: AbortSignal): Promise<UsersResponse> => {
-    const axiosRes = await getWithListFilters(
-      userBaseApi.getInstance(),
-      '/users/',
-      filters as Record<string, unknown> | undefined,
-      signal,
-    );
-    const response = axiosRes.data as { data?: unknown[]; total?: number };
-    const users = (response.data || []).map(mapToUser);
-    const total = response.total || users.length;
-    
+    const result = await adminListUsers({
+      page: filters?.page,
+      limit: filters?.limit,
+      search: filters?.search,
+      role: filters?.role && filters.role !== 'all' ? filters.role : undefined,
+      status: filters?.status && filters.status !== 'all' ? filters.status : undefined,
+    });
+
+    const users = (result.users || []).map(mapFlexUserToUser);
+    const total = result.total || users.length;
+
     return {
       users,
       total,
@@ -70,69 +64,62 @@ export const userApi = {
    * Get single user by ID
    */
   get: async (id: string): Promise<User> => {
-    const response = await userBaseApi.getById(id);
-    return mapToUser(response.data);
+    const flexUser = await adminGetUser(id);
+    return mapFlexUserToUser(flexUser);
   },
 
   /**
-   * Create a new user (compat - returns mock/empty)
+   * Create a new user via flex-auth admin
+   * Note: flex-auth doesn't have a direct admin create endpoint;
+   * users self-register and admins can update them.
    */
   create: async (data: UserCreateInput): Promise<User> => {
-    return {
-      id: Date.now(),
-      userName: data.userName,
-      fullName: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      role: data.role,
-      isActive: true,
-      isTempPass: false,
-    };
+    // flex-auth doesn't support admin user creation directly
+    // Users must self-register via the registration flow
+    throw new Error('User creation is handled through the registration flow. Users self-register and admins manage them after.');
   },
 
   /**
-   * Update an existing user (compat - limited)
+   * Update an existing user via flex-auth admin
    */
   update: async (input: UserUpdateInput): Promise<User> => {
-    try {
-      const response = await userBaseApi.update({ ...input, id: String(input.id) } as any);
-      return mapToUser(response.data);
-    } catch {
-      // Compat users are read-only - return the input as-is
-      return {
-        id: Number(input.id) || 0,
-        userName: input.userName || '',
-        fullName: input.fullName || '',
-        email: input.email,
-        phone: input.phone,
-        role: input.role || 'user',
-        isActive: input.isActive ?? true,
-        isTempPass: false,
-      };
+    const updateData: Record<string, any> = {};
+
+    if (input.fullName) {
+      const parts = input.fullName.trim().split(/\s+/);
+      updateData.firstName = parts[0] || '';
+      updateData.lastName = parts.slice(1).join(' ') || '';
     }
+    if (input.email !== undefined) updateData.email = input.email;
+    if (input.role) updateData.role = input.role;
+    if (input.isActive !== undefined) updateData.status = input.isActive ? 'active' : 'inactive';
+
+    const flexUser = await adminUpdateUser(String(input.id), updateData);
+    return mapFlexUserToUser(flexUser);
   },
 
   /**
-   * Delete a user (compat - no-op)
+   * Delete a user via flex-auth admin
    */
   delete: async (id: string): Promise<void> => {
-    // Compat users are read-only - no actual delete
+    await adminDeleteUser(id);
   },
 
   /**
-   * Get user statistics
+   * Get user statistics (derived from list)
    */
   getStats: async (): Promise<UserStats> => {
     try {
-      const response = await userBaseApi.getStats();
-      const stats = response.data;
+      const result = await adminListUsers({ limit: 1000 });
+      const users = result.users || [];
+
       return {
-        total: stats.total || 0,
-        active: stats.active || 0,
-        inactive: stats.inactive || 0,
-        admins: stats.admins || 0,
-        managers: stats.managers || 0,
-        newThisMonth: stats.new_this_month || 0,
+        total: result.total || users.length,
+        active: users.filter((u) => u.status === 'active').length,
+        inactive: users.filter((u) => u.status !== 'active').length,
+        admins: users.filter((u) => u.role === 'admin').length,
+        managers: users.filter((u) => u.role === 'staff').length,
+        newThisMonth: 0,
       };
     } catch {
       return {
@@ -147,23 +134,24 @@ export const userApi = {
   },
 
   /**
-   * Update user status (compat - no-op)
+   * Update user status via flex-auth admin
    */
   setStatus: async (id: string, isActive: boolean): Promise<User> => {
-    return {
-      id: Number(id) || 0,
-      userName: '',
-      fullName: '',
-      role: 'user',
-      isActive,
-      isTempPass: false,
-    };
+    const flexUser = await adminUpdateUser(id, {
+      status: isActive ? 'active' : 'inactive',
+    });
+    return mapFlexUserToUser(flexUser);
   },
 
   /**
-   * Reset user password (compat - no-op)
+   * Reset user password (not directly supported by flex-auth admin)
    */
   resetPassword: async (id: string): Promise<void> => {
-    // Compat users are read-only
+    // flex-auth doesn't have an admin password reset endpoint
+    // Users should use the forgot-password flow
+    throw new Error('Admin password reset not supported. User should use the forgot-password flow.');
   },
 };
+
+// Keep base API export for backward compat (no longer used internally)
+export { userApi as userBaseApi };

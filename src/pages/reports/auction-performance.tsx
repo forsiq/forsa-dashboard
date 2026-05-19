@@ -1,5 +1,5 @@
-import { AnalyticsPage } from '@services/reports/pages/AnalyticsPage';
+import { AuctionPerformancePage } from '@services/reports/pages/AuctionPerformancePage';
 
 export default function AuctionPerformanceReport() {
-  return <AnalyticsPage />;
+  return <AuctionPerformancePage />;
 }

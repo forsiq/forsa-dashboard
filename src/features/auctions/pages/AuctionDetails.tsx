@@ -177,7 +177,29 @@ export const AuctionDetails: React.FC = () => {
             </AmberButton>
           ) : null}
 
-          <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
+          <button 
+            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all"
+            onClick={async () => {
+              const shareData = {
+                title: auction.title,
+                text: `${auction.title} — ${formatCurrency(currentBid || startPrice)}`,
+                url: window.location.href,
+              };
+              try {
+                if (navigator.share) {
+                  await navigator.share(shareData);
+                } else {
+                  await navigator.clipboard.writeText(window.location.href);
+                  // Brief visual feedback
+                  const el = document.activeElement as HTMLElement;
+                  el?.classList?.add('text-brand');
+                  setTimeout(() => el?.classList?.remove('text-brand'), 1500);
+                }
+              } catch {
+                // User cancelled or share failed — silent
+              }
+            }}
+          >
             <Share2 className="w-4 h-4" />
           </button>
           <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5" onClick={() => {
@@ -441,7 +463,28 @@ export const AuctionDetails: React.FC = () => {
               ))}
             </div>
 
-            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+            <AmberButton 
+              variant="outline" 
+              className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2"
+              onClick={() => {
+                if (!bids || bids.length === 0) return;
+                const headers = ['Bid #', 'Bidder', 'Amount (IQD)', 'Time'];
+                const rows = bids.map((bid, index) => [
+                  String(bids.length - index),
+                  bid.bidderName || 'Anonymous',
+                  String(bid.amount),
+                  new Date(bid.createdAt).toLocaleString(),
+                ]);
+                const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `auction-${auction.id}-bids.csv`;
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               {t('auction.detail.download_manifest') || 'Download Report'}
             </AmberButton>
           </div>

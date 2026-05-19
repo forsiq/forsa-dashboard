@@ -72,16 +72,16 @@ export const ListingsListPage: React.FC = () => {
   const listings = listingsData?.data || [];
   const pagination = listingsData?.pagination;
 
-  // Compute stats from listings
+  // Compute stats from listings — prefer API aggregate counts when available
   const stats = useMemo(() => {
     const all = pagination?.total || listings.length;
     return {
       total: all,
-      withAuction: listings.filter(l => (l as any)._auctionCount > 0).length || 0,
-      withDeal: listings.filter(l => (l as any)._dealCount > 0).length || 0,
-      orphan: listings.filter(l => !(l as any)._auctionCount && !(l as any)._dealCount).length || 0,
+      withAuction: listingsData?.stats?.withAuction ?? listings.filter(l => l._auctionCount && l._auctionCount > 0).length || 0,
+      withDeal: listingsData?.stats?.withDeal ?? listings.filter(l => l._dealCount && l._dealCount > 0).length || 0,
+      orphan: listingsData?.stats?.orphan ?? listings.filter(l => !l._auctionCount && !l._dealCount).length || 0,
     };
-  }, [listings, pagination]);
+  }, [listings, pagination, listingsData?.stats]);
 
   // Extract unique brands and conditions for filter
   const brands = useMemo(() => {
@@ -156,7 +156,7 @@ export const ListingsListPage: React.FC = () => {
       render: (listing) => (
         <div className="flex items-center justify-center gap-1.5">
           <Gavel className="w-3.5 h-3.5 text-brand" />
-          <span className="font-black text-zinc-text text-sm tabular-nums">{(listing as any)._auctionCount || 0}</span>
+          <span className="font-black text-zinc-text text-sm tabular-nums">{listing._auctionCount || 0}</span>
         </div>
       ),
       align: 'center',
@@ -167,7 +167,7 @@ export const ListingsListPage: React.FC = () => {
       render: (listing) => (
         <div className="flex items-center justify-center gap-1.5">
           <Users className="w-3.5 h-3.5 text-info" />
-          <span className="font-black text-zinc-text text-sm tabular-nums">{(listing as any)._dealCount || 0}</span>
+          <span className="font-black text-zinc-text text-sm tabular-nums">{listing._dealCount || 0}</span>
         </div>
       ),
       align: 'center',

@@ -166,6 +166,14 @@ export const ar: Record<string, string> = {
   "deal.activationNote": "يتم تفعيل العرض عند اكتمال عدد المشاركين في اللُمّة",
   "deal.withdraw": "انسحاب من اللُمّة",
 
+  // Sales - Group Buying Review
+  "sales.dealEvaluation": "تقييم الصفقات",
+  "sales.reviewQueueSubtitle": "صفقات نشطة تحتاج اهتمام",
+  "sales.capacityReached": "تم الوصول للسعة القصوى",
+  "sales.thresholdUnlocked": "تم تجاوز الحد الأدنى",
+  "sales.finalizeDeal": "إنهاء الصفقة",
+  "sales.pendingSync": "بانتظار المزامنة",
+
   // Auth errors (login / session)
   "auth.errors.invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة. يرجى التحقق من بيانات الدخول.",
   "auth.errors.authenticationFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
@@ -667,6 +675,9 @@ export const ar: Record<string, string> = {
 
   // Amazon Import
   "sidebar.amazon_import": "استيراد من أمازون",
+
+  // Sidebar - my bids
+  "sidebar.my_bids": "مزايداتي",
   "amazon.title": "استيراد من أمازون",
   "amazon.subtitle": "ابحث واستورد المنتجات من أمازون",
   "amazon.search": "بحث",
@@ -702,6 +713,39 @@ export const ar: Record<string, string> = {
   "report.auction_performance": "أداء المزادات",
   "report.customer_insights": "رؤى العملاء",
   "report.group_buying_analytics": "تحليلات الشراء الجماعي",
+
+  // Report page
+  "report.title": "التقارير",
+  "report.subtitle": "نظرة عامة على أداء أعمالك ومؤشراتك",
+  "report.total_sales": "إجمالي المبيعات",
+  "report.total_orders": "إجمالي الطلبات",
+  "report.avg_order": "متوسط قيمة الطلب",
+  "report.customers": "العملاء",
+  "report.total_revenue": "إجمالي الإيرادات",
+  "report.active_users": "المستخدمون النشطون",
+  "report.conversion_rate": "معدل التحويل",
+  "report.sales_performance": "أداء المبيعات",
+  "report.inventory_dist": "توزيع المخزون",
+  "report.orders_overview": "نظرة عامة على الطلبات",
+  "report.analytics_subtitle": "تحليلات ورؤى مفصلة",
+  "report.sales_report": "تقرير المبيعات",
+  "report.sales_subtitle": "تفصيل المبيعات",
+  "report.gross_sales": "إجمالي المبيعات",
+  "report.net_profit": "صافي الربح",
+  "report.tax_collected": "الضرائب المحصلة",
+  "report.shipping": "الشحن",
+  "report.export": "تصدير",
+  "report.product_performance": "أداء المنتجات",
+  "report.period_comparison": "مقارنة الفترات",
+  "report.top_buyers": "أفضل المشترين",
+  "report.retention_rate": "معدل الاحتفاظ",
+  "report.delivery_hotspots": "نقاط التوصيل النشطة",
+  "report.customer_base": "قاعدة العملاء",
+  "report.no_data": "لا توجد بيانات متاحة",
+  "report.timeframe.day": "يوم",
+  "report.timeframe.week": "أسبوع",
+  "report.timeframe.month": "شهر",
+  "report.timeframe.year": "سنة",
 
   // Categories (dashboard) — mirrors core-ui; ensures Arabic when merged bundle differs
   "category.title": "الفئات",

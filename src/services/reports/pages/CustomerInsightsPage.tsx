@@ -18,8 +18,14 @@ export function CustomerInsightsPage() {
   }, []);
 
   const topCustomers = data?.topCustomers || [];
-  const retentionRate = topCustomers.length > 0 ? 68 : 0;
-  const concentration = topCustomers.length > 0 ? 3 : 0;
+  const retentionRate = topCustomers.length > 0
+    ? Math.round(
+        (topCustomers.filter((c: any) => (c.orders ?? 0) > 1).length / Math.max(topCustomers.length, 1)) * 100
+      )
+    : 0;
+  const concentration = topCustomers.length > 0
+    ? new Set(topCustomers.map((c: any) => c.city).filter(Boolean)).size
+    : 0;
 
   if (!isClient) return null;
 
@@ -58,7 +64,7 @@ export function CustomerInsightsPage() {
         />
         <ReportStatsCard
           label={t('report.customer_base')}
-          value={topCustomers.length * 12}
+          value={topCustomers.length > 0 ? topCustomers.length : 'N/A'}
           icon={Users}
           color="text-warning"
           isRTL={isRTL}

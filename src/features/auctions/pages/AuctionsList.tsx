@@ -11,6 +11,9 @@ import {
   Edit,
   Trash2,
   XCircle,
+  Play,
+  Pause,
+  RotateCcw,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -38,6 +41,9 @@ import {
   useGetAuctionStats,
   useDeleteAuction,
   useCancelAuction,
+  useStartAuction,
+  usePauseAuction,
+  useResumeAuction,
   auctionKeys,
 } from '../api';
 import { auctionApi } from '../api/auction-api';
@@ -101,6 +107,9 @@ export const AuctionsList: React.FC = () => {
     const { data: categoriesData } = useCategories({ limit: 100 });
     const { mutate: deleteAuction } = useDeleteAuction();
     const cancelAuction = useCancelAuction();
+    const startAuction = useStartAuction();
+    const pauseAuction = usePauseAuction();
+    const resumeAuction = useResumeAuction();
     const { openConfirm, ConfirmModal } = useConfirmModal();
     const queryClient = useQueryClient();
     const toast = useToast();
@@ -264,6 +273,39 @@ export const AuctionsList: React.FC = () => {
           if (!isSafePathResourceId(auction.id)) return;
           void router.push(`/auctions/edit/${auction.id}`);
         },
+      },
+      // Start - for draft or scheduled
+      {
+        label: (auction) => ['draft', 'scheduled'].includes(auction.status) ? (t('auction.lifecycle.start') || 'Start') : null,
+        icon: Play,
+        variant: 'success',
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.start_title') || 'Start Auction',
+          message: t('auction.lifecycle.start_confirm') || 'Are you sure you want to start this auction?',
+          onConfirm: () => startAuction.mutate(auction.id),
+        }),
+      },
+      // Pause - for active
+      {
+        label: (auction) => auction.status === 'active' ? (t('auction.lifecycle.pause') || 'Pause') : null,
+        icon: Pause,
+        variant: 'warning',
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.pause_title') || 'Pause Auction',
+          message: t('auction.lifecycle.pause_confirm') || 'Are you sure you want to pause this auction?',
+          onConfirm: () => pauseAuction.mutate(auction.id),
+        }),
+      },
+      // Resume - for paused
+      {
+        label: (auction) => auction.status === 'paused' ? (t('auction.lifecycle.resume') || 'Resume') : null,
+        icon: RotateCcw,
+        variant: 'success',
+        onClick: (auction) => openConfirm({
+          title: t('auction.lifecycle.resume_title') || 'Resume Auction',
+          message: t('auction.lifecycle.resume_confirm') || 'Are you sure you want to resume this auction?',
+          onConfirm: () => resumeAuction.mutate(auction.id),
+        }),
       },
       {
         label: (auction) => !['ended', 'sold', 'cancelled'].includes(auction.status) ? (t('auction.lifecycle.cancel') || 'Cancel') : null,

@@ -112,7 +112,7 @@ export const groupBuyingListConfig: ListConfig = {
           </button>
           <button
             className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-muted hover:text-zinc-text"
-            onClick={() => (window.location.href = `/group-buying/${row.id}/edit`)}
+            onClick={() => (window.location.href = `/group-buying/edit/${row.id}`)}
             title="edit"
           >
             <Edit className="h-4 w-4" />

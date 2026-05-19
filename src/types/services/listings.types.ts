@@ -38,6 +38,8 @@ export interface ProductListing {
   translations?: Record<string, Record<string, string>>;
   metadata?: Record<string, any>;
   projectId?: number;
+  _auctionCount?: number;
+  _dealCount?: number;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
@@ -63,6 +65,12 @@ export interface ListingsResponse {
     totalPages: number;
     hasNext: boolean;
     hasPrevious: boolean;
+  };
+  /** Aggregate counts — provided when backend includes stats in response */
+  stats?: {
+    withAuction?: number;
+    withDeal?: number;
+    orphan?: number;
   };
 }
 

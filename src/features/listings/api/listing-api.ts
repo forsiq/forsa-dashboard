@@ -30,6 +30,7 @@ export const listingApi = {
       data?: ProductListing[];
       pagination?: ListingsResponse['pagination'];
       total?: number;
+      stats?: ListingsResponse['stats'];
     };
     return {
       data: raw.data || [],
@@ -41,6 +42,7 @@ export const listingApi = {
         hasNext: false,
         hasPrevious: false,
       },
+      stats: raw.stats,
     };
   },
 

@@ -166,6 +166,14 @@ export const en: Record<string, string> = {
   "deal.activationNote": "Deal activates when required participants join",
   "deal.withdraw": "Withdraw",
 
+  // Sales - Group Buying Review
+  "sales.dealEvaluation": "Deal Evaluation",
+  "sales.reviewQueueSubtitle": "Active deals requiring attention",
+  "sales.capacityReached": "Capacity Reached",
+  "sales.thresholdUnlocked": "Threshold Unlocked",
+  "sales.finalizeDeal": "Finalize Deal",
+  "sales.pendingSync": "Pending Sync",
+
   // Auth errors (login / session)
   "auth.errors.invalidCredentials": "Invalid username or password. Please verify your credentials.",
   "auth.errors.authenticationFailed": "Authentication failed. Please try again.",
@@ -666,6 +674,9 @@ export const en: Record<string, string> = {
 
   // Amazon Import
   "sidebar.amazon_import": "Amazon Import",
+
+  // Sidebar - my bids
+  "sidebar.my_bids": "My Bids",
   "amazon.title": "Amazon Import",
   "amazon.subtitle": "Search & import products from Amazon",
   "amazon.search": "Search",
@@ -701,6 +712,39 @@ export const en: Record<string, string> = {
   "report.auction_performance": "Auction performance",
   "report.customer_insights": "Customer insights",
   "report.group_buying_analytics": "Group buying analytics",
+
+  // Report page
+  "report.title": "Reports",
+  "report.subtitle": "Overview of your business performance and metrics",
+  "report.total_sales": "Total Sales",
+  "report.total_orders": "Total Orders",
+  "report.avg_order": "Average Order Value",
+  "report.customers": "Customers",
+  "report.total_revenue": "Total Revenue",
+  "report.active_users": "Active Users",
+  "report.conversion_rate": "Conversion Rate",
+  "report.sales_performance": "Sales Performance",
+  "report.inventory_dist": "Inventory Distribution",
+  "report.orders_overview": "Orders Overview",
+  "report.analytics_subtitle": "Detailed analytics and insights",
+  "report.sales_report": "Sales Report",
+  "report.sales_subtitle": "Detailed sales breakdown",
+  "report.gross_sales": "Gross Sales",
+  "report.net_profit": "Net Profit",
+  "report.tax_collected": "Tax Collected",
+  "report.shipping": "Shipping",
+  "report.export": "Export",
+  "report.product_performance": "Product Performance",
+  "report.period_comparison": "Period Comparison",
+  "report.top_buyers": "Top Buyers",
+  "report.retention_rate": "Retention Rate",
+  "report.delivery_hotspots": "Delivery Hotspots",
+  "report.customer_base": "Customer Base",
+  "report.no_data": "No data available",
+  "report.timeframe.day": "Day",
+  "report.timeframe.week": "Week",
+  "report.timeframe.month": "Month",
+  "report.timeframe.year": "Year",
 
   // Categories (dashboard)
   "category.title": "Categories",

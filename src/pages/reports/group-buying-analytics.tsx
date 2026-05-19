@@ -1,5 +1,5 @@
-import { AnalyticsPage } from '@services/reports/pages/AnalyticsPage';
+import { GroupBuyingAnalyticsPage } from '@services/reports/pages/GroupBuyingAnalyticsPage';
 
 export default function GroupBuyingAnalyticsReport() {
-  return <AnalyticsPage />;
+  return <GroupBuyingAnalyticsPage />;
 }
