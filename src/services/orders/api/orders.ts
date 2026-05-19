@@ -14,7 +14,7 @@ import { pickOrderWinnerName } from '../utils/order-display';
 /**
  * Base Order API implementation
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL } from '@config/api';
 
 export const orderBaseApi = createApiClient<Order, CreateOrderInput, UpdateOrderInput, OrderFilters>({
   serviceName: 'orders',

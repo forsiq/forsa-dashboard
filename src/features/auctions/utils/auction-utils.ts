@@ -14,7 +14,7 @@
 import axios from 'axios';
 import { createClient } from '@core/services/ApiClientFactory';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL, getApiOrigin } from '@config/api';
 
 const ALLOWED_IMAGE_HOSTNAMES = [
   'file.zonevast.com',
@@ -74,13 +74,7 @@ export function filterImageUrls(urls: unknown): string[] {
   return list.filter((u): u is string => typeof u === 'string' && isValidImageUrl(u));
 }
 
-function getApiOrigin(): string {
-  try {
-    return new URL(API_BASE_URL).origin;
-  } catch {
-    return '';
-  }
-}
+/* getApiOrigin imported from @config/api */
 
 const API_ORIGIN = getApiOrigin();
 

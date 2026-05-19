@@ -1,15 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@core/services/ApiClientFactory';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL, getApiOrigin } from '@config/api';
 
-function getApiOrigin(): string {
-  try {
-    return new URL(API_BASE_URL).origin;
-  } catch {
-    return '';
-  }
-}
+/* getApiOrigin imported from @config/api */
 
 const PROJECT_API_URL = `${getApiOrigin()}/api/v1`;
 

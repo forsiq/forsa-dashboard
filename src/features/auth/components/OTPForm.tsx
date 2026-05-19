@@ -9,12 +9,16 @@ export const OTPForm: React.FC = () => {
   const { t } = useLanguage();
   const { verifyOTP, isLoading, error } = useAuth();
   const [code, setCode] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await verifyOTP({ code });
-    } catch (err) { }
+    } catch (err: any) {
+      console.error('[OTPForm] Verification failed:', err);
+      setLocalError(err?.message || 'Verification failed. Please try again.');
+    }
   };
 
   return (

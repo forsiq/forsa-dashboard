@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { TickerEvent, TickerWSMessage } from '../types/ticker.types';
 
-const WS_API_URL = process.env.VITE_WS_API_URL || '';
+const WS_API_URL = process.env.NEXT_PUBLIC_WS_API_URL || '';
 const MAX_EVENTS = 200;
 const POLL_INTERVAL = 30000;
 

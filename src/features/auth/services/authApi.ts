@@ -5,7 +5,7 @@ import { AUTH_ERROR_CODES, AuthApiError } from '../constants/authErrors';
  * Auth API base URL - dedicated env var for auth service,
  * with hardcoded fallback to zv-auth-service on test.
  */
-const AUTH_API_BASE = process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://test.zonevast.com/api/v1/auth/auth/';
+import { AUTH_API_BASE } from '@config/api';
 
 /**
  * Build the full auth API URL by appending a path to the base.
@@ -191,26 +191,6 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
 export const logout = async (): Promise<void> => {
   // Can be expanded to call sign-out endpoint if necessary
   console.log('[authApi] Logging out user...');
-};
-
-/**
- * Refresh access token
- */
-export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
-  const response = await fetchWithTimeout(buildAuthUrl('token/refresh/'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getProjectHeaders()
-    },
-    body: JSON.stringify({ refresh })
-  });
-
-  if (!response.ok) {
-    throw new AuthApiError(AUTH_ERROR_CODES.SESSION_EXPIRED);
-  }
-
-  return response.json();
 };
 
 /**

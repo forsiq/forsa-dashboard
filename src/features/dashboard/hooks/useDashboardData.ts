@@ -101,22 +101,22 @@ const sharedDashboardKeys = {
 // ============================================================================
 
 async function fetchCategories() {
-  const res = await categoryBaseApi.list().catch(() => ({ data: [] }));
+  const res = await categoryBaseApi.list().catch((err) => { console.warn('[Dashboard] categories fetch failed:', err?.message); return { data: [] }; });
   return (res as any).data || [];
 }
 
 async function fetchAuctionsList(params: Record<string, unknown>) {
-  const res = await auctionBaseApi.list(params).catch(() => ({ data: [] }));
+  const res = await auctionBaseApi.list(params).catch((err) => { console.warn('[Dashboard] auctions fetch failed:', err?.message); return { data: [] }; });
   return (res as any).data || [];
 }
 
 async function fetchOrdersList(params: Record<string, unknown>) {
-  const res = await orderBaseApi.list(params).catch(() => ({ data: [] }));
+  const res = await orderBaseApi.list(params).catch((err) => { console.warn('[Dashboard] orders fetch failed:', err?.message); return { data: [] }; });
   return (res as any).data || [];
 }
 
 async function fetchGroupBuyingsList(params: Record<string, unknown>) {
-  const res = await groupBuyingBaseApi.list(params).catch(() => ({ data: [] }));
+  const res = await groupBuyingBaseApi.list(params).catch((err) => { console.warn('[Dashboard] group-buyings fetch failed:', err?.message); return { data: [] }; });
   return (res as any).data || [];
 }
 
@@ -174,9 +174,9 @@ export const useDashboardStats = () => {
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<AllStatsData> => {
       const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.getStats().catch(() => ({ data: {} })),
-        groupBuyingBaseApi.getStats().catch(() => ({ data: {} })),
-        orderBaseApi.getStats().catch(() => ({ data: {} })),
+        auctionBaseApi.getStats().catch((err) => { console.warn('[Dashboard] auction-stats fetch failed:', err?.message); return { data: {} }; }),
+        groupBuyingBaseApi.getStats().catch((err) => { console.warn('[Dashboard] group-buying-stats fetch failed:', err?.message); return { data: {} }; }),
+        orderBaseApi.getStats().catch((err) => { console.warn('[Dashboard] order-stats fetch failed:', err?.message); return { data: {} }; }),
       ]);
 
       const auctionStats = (auctionStatsRes as any).data || {};

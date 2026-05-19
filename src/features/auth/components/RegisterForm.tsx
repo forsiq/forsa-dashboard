@@ -56,7 +56,10 @@ export const RegisterForm: React.FC = () => {
     try {
       await register(formData);
       setIsSuccess(true);
-    } catch (err) { }
+    } catch (err: any) {
+      console.error('[RegisterForm] Registration failed:', err);
+      setLocalError(err?.message || 'Registration failed. Please try again.');
+    }
   };
 
   const currentError = localError || authError;

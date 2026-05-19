@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import { groupBuyingApi } from '@features/sales/api/group-buying-api';
 import { groupBuyingKeys } from '@features/sales/api/group-buying-hooks';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL } from '@config/api';
 
 const GROUP_BUYING_SIDEBAR_LIST_FILTERS = { limit: 1 } as const;
 

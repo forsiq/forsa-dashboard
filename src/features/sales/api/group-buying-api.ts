@@ -17,7 +17,7 @@ import type {
 /**
  * Base Group Buying API implementation
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL } from '@config/api';
 
 export const groupBuyingBaseApi = createApiClient<GroupBuying, GroupBuyingCreateInput, GroupBuyingUpdateInput, GroupBuyingFilters>({
   serviceName: 'group-deals',

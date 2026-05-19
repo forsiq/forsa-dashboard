@@ -16,7 +16,7 @@ import type {
  * still depend on the auction-service returning `translations`, `nameAr`, or locale-aware fields;
  * if only `name` is populated, the UI shows that default (often English) via `getLocalizedName`.
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL } from '@config/api';
 
 export const categoryBaseApi = createApiClient<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   serviceName: 'categories',

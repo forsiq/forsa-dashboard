@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { LiveBiddingState, WSMessage } from '../types/bidding.types';
 
-const WS_BASE_URL = process.env.VITE_WS_BASE_URL || 'ws://localhost:3000';
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 'ws://localhost:3000';
 
 interface UseLiveBiddingOptions {
   auctionId: number;

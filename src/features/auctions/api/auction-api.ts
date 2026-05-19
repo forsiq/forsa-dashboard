@@ -19,7 +19,7 @@ import type {
 /**
  * Base Auction API implementation using shared factory
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.zonevast.com/forsa/api/v1';
+import { API_BASE_URL } from '@config/api';
 
 export const auctionBaseApi = createApiClient<Auction, AuctionCreateInput, AuctionUpdateInput, AuctionFilters>({
   serviceName: 'auctions',
