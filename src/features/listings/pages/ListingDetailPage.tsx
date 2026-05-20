@@ -18,13 +18,15 @@ import {
   CheckCircle,
   AlertCircle,
   Plus,
+  SendHorizonal,
+  Eye,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing } from '../api/listing-hooks';
+import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing, useSubmitListingForReview } from '../api/listing-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { ListingImage } from '../components/ListingImage';
 import { ProductReadinessCard } from '../components/ProductReadinessCard';
@@ -46,10 +48,33 @@ export const ListingDetailPage: React.FC = () => {
   const { data: auctionsData } = useGetListingAuctions(listingId!, !!listingId);
   const { data: dealsData } = useGetListingDeals(listingId!, !!listingId);
   const deleteMutation = useDeleteListing();
+  const submitForReviewMutation = useSubmitListingForReview();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const auctions = auctionsData || [];
   const deals = dealsData || [];
+
+  // Approval status helpers
+  const approvalStatus = (listing as any)?.approvalStatus || 'draft';
+  const rejectionReason = (listing as any)?.rejectionReason || '';
+
+  const canSubmitForReview = ['draft', 'rejected', 'changes_requested'].includes(approvalStatus);
+
+  const approvalStatusLabel: Record<string, string> = {
+    draft: t('approval.status.draft') || 'Draft',
+    pending_review: t('approval.status.pending_review') || 'Pending Review',
+    approved: t('approval.status.approved') || 'Approved',
+    rejected: t('approval.status.rejected') || 'Rejected',
+    changes_requested: t('approval.status.changes_requested') || 'Changes Requested',
+  };
+
+  const approvalStatusVariant: Record<string, 'inactive' | 'warning' | 'success' | 'failed' | 'warning'> = {
+    draft: 'inactive',
+    pending_review: 'warning',
+    approved: 'success',
+    rejected: 'failed',
+    changes_requested: 'warning',
+  };
 
   // Compute overall publish status from linked auctions/deals
   const publishStatus = useMemo(() => {
@@ -163,6 +188,11 @@ export const ListingDetailPage: React.FC = () => {
                 variant={publishStatusVariant[publishStatus]}
                 size="sm"
               />
+              <StatusBadge
+                status={approvalStatusLabel[approvalStatus] || approvalStatus}
+                variant={approvalStatusVariant[approvalStatus] || 'inactive'}
+                size="sm"
+              />
             </div>
             <p className="text-sm text-zinc-muted font-bold tracking-tight uppercase mt-1">
               {listing.brand ? `${listing.brand}${listing.model ? ` ${listing.model}` : ''}` : ''}
@@ -172,6 +202,25 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
+          {canSubmitForReview && (
+            <AmberButton
+              className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+              disabled={submitForReviewMutation.isPending}
+              onClick={() => openConfirm({
+                title: t('approval.actions.submit') || 'Submit for Review',
+                message: t('approval.messages.submit_confirm') || 'Are you sure you want to submit this product for review?',
+                onConfirm: () => submitForReviewMutation.mutate(Number(listingId)),
+                variant: 'info',
+              })}
+            >
+              {submitForReviewMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <SendHorizonal className="w-4 h-4" />
+              )}
+              {t('approval.actions.submit') || 'Submit for Review'}
+            </AmberButton>
+          )}
           <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/edit`)}>
               <Edit className="w-4 h-4" />
               {t('listing.edit')}
@@ -190,6 +239,23 @@ export const ListingDetailPage: React.FC = () => {
           </AmberButton>
         </div>
       </div>
+
+      {/* Rejection / Changes Requested Reason */}
+      {(approvalStatus === 'rejected' || approvalStatus === 'changes_requested') && rejectionReason && (
+        <div className="p-5 rounded-2xl bg-danger/10 border border-danger/20 flex items-start gap-4">
+          <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-4 h-4 text-danger" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-black text-danger uppercase">
+              {approvalStatus === 'rejected'
+                ? (t('moderation.rejection_reason') || 'Rejection Reason')
+                : (t('approval.status.changes_requested') || 'Changes Requested')}
+            </p>
+            <p className="text-sm text-zinc-text font-medium">{rejectionReason}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Images Column */}

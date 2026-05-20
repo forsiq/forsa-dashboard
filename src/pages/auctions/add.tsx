@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import { RoleGuard } from '@core/components/RoleGuard';
 import { Gavel, List, Plus, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberButton } from '@core/components/AmberButton';
@@ -6,6 +7,14 @@ import { AmberCard } from '@core/components/AmberCard';
 import { cn } from '@core/lib/utils/cn';
 
 export default function AuctionAddPage() {
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
+      <AuctionAddPageContent />
+    </RoleGuard>
+  );
+}
+
+function AuctionAddPageContent() {
   const router = useRouter();
   const { t, dir } = useLanguage();
 

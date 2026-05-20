@@ -29,22 +29,24 @@ function decodeJwtPayload(token: string): JwtPayload | null {
   }
 }
 
+const VALID_ROLES: readonly UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'] as const;
+
 function extractRole(payload: JwtPayload): UserRole {
   if (payload.role) {
     const normalized = payload.role.toLowerCase();
-    if (normalized === 'admin' || normalized === 'manager' || normalized === 'user') {
+    if (VALID_ROLES.includes(normalized as UserRole)) {
       return normalized as UserRole;
     }
   }
   if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
-    const priority: UserRole[] = ['admin', 'manager', 'user'];
+    const priority: UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'];
     for (const p of priority) {
       if (payload.roles.some(r => r.toLowerCase() === p)) {
         return p;
       }
     }
   }
-  return 'user';
+  return 'customer_support';
 }
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fallback }) => {
@@ -67,7 +69,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
       return;
     }
 
-    const role = payload ? extractRole(payload) : 'user';
+    const role = payload ? extractRole(payload) : 'customer_support';
     const allowed = allowedRoles.includes(role);
     setIsAllowed(allowed);
     setChecking(false);

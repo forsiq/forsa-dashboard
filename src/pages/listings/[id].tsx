@@ -1,3 +1,4 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import dynamic from 'next/dynamic';
 import { DetailPageSkeleton } from '@core/loading';
 
@@ -9,4 +10,10 @@ const ListingDetailPage = dynamic(
   },
 );
 
-export default ListingDetailPage;
+export default function ListingDetailPageWrapper() {
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
+      <ListingDetailPage />
+    </RoleGuard>
+  );
+}

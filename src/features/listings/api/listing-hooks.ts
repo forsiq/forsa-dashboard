@@ -209,4 +209,24 @@ export function useDeployAsGroupBuy() {
   });
 }
 
+export function useSubmitListingForReview() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useLanguage();
+  const mapApiError = useMapApiValidationError();
+
+  return useMutation({
+    mutationFn: (id: number) => listingApi.submitForReview(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: listingKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
+      toast.success(t('approval.messages.submitted') || 'Product submitted for review');
+    },
+    onError: (error: unknown) => {
+      const detail = mapApiError(error) || (error as any)?.message || 'Unknown error';
+      toast.error(detail, 8000);
+    },
+  });
+}
+
 export { listingKeys };

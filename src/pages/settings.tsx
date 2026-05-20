@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { RoleGuard } from '@core/components/RoleGuard';
 import {
   Settings2,
   CreditCard,
@@ -81,6 +82,14 @@ function saveSettings(settings: Record<string, any>) {
 }
 
 export default function SettingsPage() {
+  return (
+    <RoleGuard allowedRoles={['admin']}>
+      <SettingsPageContent />
+    </RoleGuard>
+  );
+}
+
+function SettingsPageContent() {
   const { t, dir } = useLanguage();
   const { mode, setMode } = useSidebarMode();
   const { theme, toggleTheme } = useTheme();

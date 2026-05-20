@@ -1,3 +1,4 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import dynamic from 'next/dynamic';
 import { ListPageSkeleton } from '@core/loading';
 
@@ -10,5 +11,9 @@ const SettlementDeskPage = dynamic(
 );
 
 export default function Settlements() {
-  return <SettlementDeskPage />;
+  return (
+    <RoleGuard allowedRoles={['admin']}>
+      <SettlementDeskPage />
+    </RoleGuard>
+  );
 }

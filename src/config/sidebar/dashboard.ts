@@ -16,6 +16,7 @@ export const sidebarSections: MenuSection[] = [
   {
     title: 'sidebar.administration',
     items: [
+      { path: '/merchants', label: 'sidebar.merchants', icon: 'Store' },
       { path: '/settlements', label: 'sidebar.settlements', icon: 'Landmark' },
       { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
       { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },

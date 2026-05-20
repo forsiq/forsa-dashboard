@@ -88,4 +88,10 @@ export const listingApi = {
     const response = await client.get(`/listings/${id}/deals`);
     return response.data.data || [];
   },
+
+  submitForReview: async (id: number): Promise<ProductListing> => {
+    const client = listingBaseApi.getInstance();
+    const response = await client.post(`/listings/${id}/submit`);
+    return response.data.data;
+  },
 };

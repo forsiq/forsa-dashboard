@@ -45,17 +45,31 @@ const ROLE_MAP: Record<string, UserRole[]> = {
   '/settlements': ['admin'],
   '/users': ['admin'],
   '/settings': ['admin'],
-  '/live-monitor': ['admin', 'manager'],
-  '/reports': ['admin', 'manager'],
+  '/merchants': ['admin'],
+  '/live-monitor': ['admin', 'product_analyst'],
+  '/listings': ['admin', 'merchant'],
+  '/auctions': ['admin', 'merchant', 'product_analyst'],
+  '/group-buying': ['admin', 'merchant', 'product_analyst'],
+  '/inventory': ['admin', 'merchant'],
+  '/orders': ['admin', 'merchant', 'customer_support'],
+  '/customers': ['admin', 'customer_support'],
+  '/reports': ['admin', 'merchant', 'product_analyst', 'customer_support'],
+  '/reports/customer-insights': ['admin', 'customer_support'],
+  '/reports/auction-performance': ['admin', 'merchant', 'product_analyst'],
+  '/watchlist': ['admin', 'merchant'],
+  '/my-bids': ['admin', 'merchant'],
+  '/amazon-import': ['admin', 'merchant'],
 };
 
+const VALID_ROLES: readonly UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'] as const;
+
 function decodeJwtRoleFromCookie(): UserRole {
-  if (typeof window === 'undefined') return 'user';
+  if (typeof window === 'undefined') return 'customer_support';
   try {
     const token = Cookies.get('access');
-    if (!token) return 'user';
+    if (!token) return 'customer_support';
     const base64Url = token.split('.')[1];
-    if (!base64Url) return 'user';
+    if (!base64Url) return 'customer_support';
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
       atob(base64)
@@ -66,19 +80,19 @@ function decodeJwtRoleFromCookie(): UserRole {
     const payload = JSON.parse(jsonPayload);
     if (payload.role) {
       const normalized = payload.role.toLowerCase();
-      if (normalized === 'admin' || normalized === 'manager' || normalized === 'user') {
+      if (VALID_ROLES.includes(normalized as UserRole)) {
         return normalized as UserRole;
       }
     }
     if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
-      const priority: UserRole[] = ['admin', 'manager', 'user'];
+      const priority: UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'];
       for (const p of priority) {
         if (payload.roles.some((r: string) => r.toLowerCase() === p)) return p;
       }
     }
-    return 'user';
+    return 'customer_support';
   } catch {
-    return 'user';
+    return 'customer_support';
   }
 }
 

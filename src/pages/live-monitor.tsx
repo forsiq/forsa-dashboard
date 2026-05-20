@@ -1,3 +1,4 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import dynamic from 'next/dynamic';
 import { ListPageSkeleton } from '@core/loading';
 
@@ -10,5 +11,9 @@ const LiveMonitorPage = dynamic(
 );
 
 export default function LiveMonitor() {
-  return <LiveMonitorPage />;
+  return (
+    <RoleGuard allowedRoles={['admin', 'product_analyst']}>
+      <LiveMonitorPage />
+    </RoleGuard>
+  );
 }

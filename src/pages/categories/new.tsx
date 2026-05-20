@@ -1,5 +1,10 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import { CategoryAddPage } from '@services/categories/pages/CategoryAddPage';
 
 export default function NewCategoryPage() {
-  return <CategoryAddPage />;
+  return (
+    <RoleGuard allowedRoles={['admin']}>
+      <CategoryAddPage />
+    </RoleGuard>
+  );
 }

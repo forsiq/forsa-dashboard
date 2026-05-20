@@ -1,5 +1,10 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import { OrdersListPage } from '../../services/orders/pages/OrdersListPage';
 
 export default function Orders() {
-  return <OrdersListPage />;
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant', 'customer_support']}>
+      <OrdersListPage />
+    </RoleGuard>
+  );
 }

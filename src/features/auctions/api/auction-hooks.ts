@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { useErrorHandler } from '@core/hooks';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import Cookies from 'js-cookie';
@@ -699,6 +700,26 @@ export function useUnsuspendUser() {
     onError: (error: any) => {
       const detail = mapApiError(error) || error?.message || 'Unknown error';
       toast.error(`Failed to unsuspend user: ${detail}`, 8000);
+    },
+  });
+}
+
+export function useSubmitAuctionForReview() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useLanguage();
+  const mapApiError = useMapApiValidationError();
+
+  return useMutation({
+    mutationFn: (id: number | string) => auctionApi.submitForReview(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      toast.success(t('approval.messages.submitted') || 'Auction submitted for review');
+    },
+    onError: (error: unknown) => {
+      const detail = mapApiError(error) || (error as any)?.message || 'Unknown error';
+      toast.error(detail, 8000);
     },
   });
 }

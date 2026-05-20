@@ -11,6 +11,8 @@ import {
   AlertCircle,
   X,
   FileText,
+  SendHorizonal,
+  CheckCircle,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -43,6 +45,7 @@ import {
   useGetListing,
   useDeployAsAuction,
   useDeployAsGroupBuy,
+  useSubmitListingForReview,
 } from '../api/listing-hooks';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
@@ -160,6 +163,9 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const updateMutation = useUpdateListing();
   const deployAuctionMutation = useDeployAsAuction();
   const deployGroupBuyMutation = useDeployAsGroupBuy();
+  const submitForReviewMutation = useSubmitListingForReview();
+
+  const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
 
   const categoryOptions = useMemo(
     () =>
@@ -267,7 +273,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     updateMutation.isPending ||
     isUploading ||
     deployAuctionMutation.isPending ||
-    deployGroupBuyMutation.isPending;
+    deployGroupBuyMutation.isPending ||
+    submitForReviewMutation.isPending;
 
   useFormUX({
     values: catalog,
@@ -311,7 +318,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         const id = listingId!;
         await saveMedia(id);
         if (maxStep <= WIZARD_STEP.MEDIA) {
-          router.push(`/listings/${id}`);
+          // After save in edit mode, show success with submit option
+          setShowSubmitSuccess(true);
           return;
         }
         goToStep(WIZARD_STEP.CHANNEL);
@@ -499,6 +507,48 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           <button type="button" onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {showSubmitSuccess && listingId && (
+        <div className="bg-success/10 border border-success/20 p-6 rounded-2xl space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-success" />
+            </div>
+            <div>
+              <p className="text-lg font-black text-zinc-text uppercase">{t('listing.wizard.saved') || 'Product Saved'}</p>
+              <p className="text-sm text-zinc-muted">{t('listing.wizard.submit_prompt') || 'Your product has been saved. Submit it for review to get approved.'}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <AmberButton
+              className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+              disabled={submitForReviewMutation.isPending}
+              onClick={() => {
+                submitForReviewMutation.mutate(listingId, {
+                  onSuccess: () => {
+                    setShowSubmitSuccess(false);
+                    router.push(`/listings/${listingId}`);
+                  },
+                });
+              }}
+            >
+              {submitForReviewMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <SendHorizonal className="w-4 h-4" />
+              )}
+              {t('approval.actions.submit') || 'Submit for Review'}
+            </AmberButton>
+            <AmberButton
+              variant="outline"
+              className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
+              onClick={() => router.push(`/listings/${listingId}`)}
+            >
+              {t('listing.form.save') || 'Save Draft'}
+            </AmberButton>
+          </div>
         </div>
       )}
 

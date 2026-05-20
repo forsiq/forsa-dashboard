@@ -6,6 +6,7 @@ import { QuickActions } from '@core/core/dashboard/QuickActions';
 import { DashboardCharts } from '../components/DashboardCharts';
 import { TopAuctions } from '../components/TopAuctions';
 import { CriticalNodes } from '../components/CriticalNodes';
+import { RoleDashboardStats } from '../components/RoleDashboardStats';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AlertTriangle, RefreshCw, Plus, Gavel, Users, BarChart2, ShoppingBag, Tag, Package } from 'lucide-react';
 import type { QuickAction } from '@core/core/dashboard/types';
@@ -114,12 +115,8 @@ export const DashboardHomePage = () => {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <StatsCard key={stat.id} stat={stat} />
-        ))}
-      </div>
+      {/* Role-Based Stats Grid */}
+      <RoleDashboardStats />
 
       {/* Critical Nodes */}
       <CriticalNodes />

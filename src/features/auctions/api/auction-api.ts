@@ -215,6 +215,15 @@ export const auctionApi = {
   placeBid: async (auctionId: number | string, input: any) => {
     return bidApi.create(input);
   },
+
+  /**
+   * Submit auction for review (approval workflow)
+   */
+  submitForReview: async (id: number | string): Promise<Auction> => {
+    const client = auctionBaseApi.getInstance();
+    const response = await client.post(`/auctions/${id}/submit`);
+    return response.data.data;
+  },
 };
 
 /**

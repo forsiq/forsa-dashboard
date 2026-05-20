@@ -1,3 +1,4 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import dynamic from 'next/dynamic';
 import { ListPageSkeleton } from '@core/loading';
 
@@ -10,5 +11,9 @@ const SalesReportPage = dynamic(
 );
 
 export default function SalesReport() {
-  return <SalesReportPage />;
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant', 'product_analyst', 'customer_support']}>
+      <SalesReportPage />
+    </RoleGuard>
+  );
 }

@@ -1,5 +1,10 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import { UserFormPage } from '../../../features/users/pages/UserFormPage';
 
 export default function UserEditPage() {
-  return <UserFormPage />;
+  return (
+    <RoleGuard allowedRoles={['admin']}>
+      <UserFormPage />
+    </RoleGuard>
+  );
 }
