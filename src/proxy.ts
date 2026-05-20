@@ -69,6 +69,7 @@ export function proxy(request: NextRequest) {
     pathname === '/otp' ||
     pathname === '/forgot-password' ||
     pathname === '/zvs.config.json' ||
+    pathname.startsWith('/.well-known') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/public') ||
     pathname.startsWith('/api/auth') ||

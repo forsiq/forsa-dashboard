@@ -13,12 +13,12 @@ import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
 import { TimerProvider } from '@core/contexts/TimerContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
+import { clearViewportBlockers } from '@core/lib/utils/clearViewportBlockers';
 import { AuthGuard } from '@core/core/components/AuthGuard';
 import { ProjectGuard } from '@core/components/ProjectGuard';
 import { PageTransition } from '@core/components/PageTransition';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
 import { appTranslations } from '../translations';
 import '@styles/globals.css';
 
@@ -27,18 +27,11 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
 
-  // Intercept route changes to /login and clear auth cookies BEFORE render.
-  // The AmberTopbar logout button only does router.push('/login') without clearing cookies.
-  // We must clear them synchronously before the AuthGuard on the previous page re-checks.
+  // Clear stuck modal layers when navigating to auth pages (logout uses Topbar clearAuthCookies)
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (url === '/login' || url.startsWith('/login?')) {
-        Cookies.remove('access', { path: '/' });
-        Cookies.remove('refresh', { path: '/' });
-        Cookies.remove('zv_user', { path: '/' });
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('user');
-        }
+        clearViewportBlockers();
       }
     };
     router.events.on('routeChangeStart', handleRouteChange);
@@ -60,7 +53,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   <ProjectProvider>
                     <TimerProvider>
                     <Toast />
-                    <SessionExpiredDialog />
+                    {!isPublicRoute && <SessionExpiredDialog />}
                     <RouteProgressBar />
                     {isPublicRoute ? (
                       <PageTransition>

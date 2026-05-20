@@ -13,6 +13,7 @@
 .page-transition-exit {
   opacity: 0;
   transform: translateY(2px);
+  pointer-events: none;
   transition: opacity 100ms ease-in, transform 100ms ease-in;
 }
 

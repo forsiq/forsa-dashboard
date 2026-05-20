@@ -1,3 +1,24 @@
+- version: "1.5.2"
+  date: "2026-05-20"
+  title:
+    en: "Session and login stability"
+    ar: "استقرار الجلسة وتسجيل الدخول"
+  entries:
+    - description:
+        en: "Fixed unexpected logout on page refresh when project config was still loading."
+        ar: "إصلاح تسجيل الخروج غير المتوقع عند تحديث الصفحة أثناء تحميل إعدادات المشروع."
+      type: fixed
+
+    - description:
+        en: "Login page no longer blocks clicks after redirect or logout; stuck modal overlays are cleared automatically."
+        ar: "صفحة تسجيل الدخول لم تعد تمنع النقر بعد إعادة التوجيه أو تسجيل الخروج؛ تُزال طبقات الـ overlay العالقة تلقائياً."
+      type: fixed
+
+    - description:
+        en: "Session expired dialog now appears on protected pages only and uses JWT-aware cookie expiry on login."
+        ar: "حوار انتهاء الجلسة يظهر في الصفحات المحمية فقط، مع مدة صلاحية cookies مرتبطة بـ JWT عند تسجيل الدخول."
+      type: fixed
+
 - version: "1.5.1"
   date: "2026-05-17"
   title:

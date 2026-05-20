@@ -73,7 +73,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login(credentials);
-      
+
       if (typeof window !== 'undefined') {
         if (rememberMe) {
           localStorage.setItem('remember_username', credentials.username);

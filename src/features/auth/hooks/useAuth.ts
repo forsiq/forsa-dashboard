@@ -4,8 +4,8 @@ import * as authApi from '../services/authApi';
 import { LoginCredentials, RegisterData, OTPData } from '../types';
 import { AUTH_ERROR_CODES, isAuthApiError } from '../constants/authErrors';
 import {
-  setAccessToken,
-  setRefreshToken,
+  setAccessTokenWithExpiry,
+  setRefreshTokenWithExpiry,
   setUser,
   getUser,
   clearAuthCookies,
@@ -42,8 +42,8 @@ export const useAuth = () => {
   }, [router.query.from]);
 
   const handleAuthSuccess = useCallback((response: AuthResponse) => {
-    setAccessToken(response.access);
-    setRefreshToken(response.refresh);
+    setAccessTokenWithExpiry(response.access);
+    setRefreshTokenWithExpiry(response.refresh);
     setUser(response.user);
     setUserState(response.user);
   }, []);
