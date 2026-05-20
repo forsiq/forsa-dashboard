@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import {
   Clock,
@@ -38,6 +38,24 @@ import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useCountdown } from '@core/hooks/useCountdown';
+
+interface AuctionCountdownDisplayProps {
+  endTime: string;
+  t: (key: string) => string;
+  isEndingSoon: boolean;
+}
+
+const AuctionCountdownDisplay = React.memo(({ endTime, t, isEndingSoon }: AuctionCountdownDisplayProps) => {
+  const countdown = useCountdown(endTime);
+  return (
+    <p className={cn(
+      "text-xl sm:text-2xl font-bold tabular-nums leading-none tracking-tight",
+      isEndingSoon ? "text-danger animate-pulse" : "text-warning"
+    )}>
+      {countdown === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdown}
+    </p>
+  );
+});
 
 export const AuctionDetails: React.FC = () => {
   const router = useRouter();
@@ -82,8 +100,6 @@ export const AuctionDetails: React.FC = () => {
     }
   };
 
-  const countdown = useCountdown(auction?.endTime);
-
   if (!paramReady || !auctionId || auctionLoading) {
     return <DetailPageSkeleton />;
   }
@@ -109,23 +125,26 @@ export const AuctionDetails: React.FC = () => {
   const nextMinBid = (currentBid || startPrice) + bidIncrement;
   const isEndingSoon = new Date(auction.endTime).getTime() - Date.now() < 1000 * 60 * 30;
 
-  // Detail rows data
-  const detailRows = [
-    { icon: DollarSign, label: currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price'), value: formatCurrency(currentBid || startPrice) },
-    { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
-    { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
-    { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
-    { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
-    { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
-  ];
+  const detailRows = useMemo(() => {
+    const rows = [
+      { icon: DollarSign, label: currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price'), value: formatCurrency(currentBid || startPrice) },
+      { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
+      { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
+      { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
+      { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
+      { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
+    ];
 
-  if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
-    detailRows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
-  }
+    if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
+      rows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
+    }
 
-  if (auction.createdAt) {
-    detailRows.push({ icon: History, label: t('auction.detail.created_at') || 'Created At', value: new Date(auction.createdAt).toLocaleString() });
-  }
+    if (auction.createdAt) {
+      rows.push({ icon: History, label: t('auction.detail.created_at') || 'Created At', value: new Date(auction.createdAt).toLocaleString() });
+    }
+
+    return rows;
+  }, [auction, t, currentBid, startPrice, bidIncrement]);
 
   return (
     <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
@@ -395,12 +414,7 @@ export const AuctionDetails: React.FC = () => {
               </div>
               <div className="space-y-1 text-end min-w-0 flex-1">
                 <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.table.protocol_duration') || 'Time Left'}</span>
-                <p className={cn(
-                  "text-xl sm:text-2xl font-bold tabular-nums leading-none tracking-tight",
-                  isEndingSoon ? "text-danger animate-pulse" : "text-warning"
-                )}>
-                  {countdown === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdown}
-                </p>
+                <AuctionCountdownDisplay endTime={auction.endTime} t={t} isEndingSoon={isEndingSoon} />
               </div>
             </div>
 

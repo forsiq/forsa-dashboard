@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
 
+import { auctionApi } from '@features/auctions/api/auction-api';
 import { groupBuyingApi } from '@features/sales/api/group-buying-api';
 import { groupBuyingKeys } from '@features/sales/api/group-buying-hooks';
-
-import { API_BASE_URL } from '@config/api';
+import { getOrders } from '@services/orders/api/orders';
+import { listingApi } from '@features/listings/api/listing-api';
 
 const GROUP_BUYING_SIDEBAR_LIST_FILTERS = { limit: 1 } as const;
 
@@ -32,33 +32,17 @@ export function useSidebarBadges() {
   >>({
     queryKey: ['sidebar-badges'],
     queryFn: async () => {
-      const baseUrl = API_BASE_URL;
-      const token = Cookies.get('access');
-      const projectId = localStorage.getItem('zv_project') || '11';
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-Project-ID': projectId,
-      };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const fetchCount = async (url: string): Promise<number> => {
-        try {
-          const res = await fetch(`${baseUrl}${url}`, { headers });
-          if (!res.ok) return 0;
-          const data = await res.json();
-          return data?.pagination?.total ?? 0;
-        } catch {
-          return 0;
-        }
-      };
-
-      const [activeAuctions, pendingOrders, totalListings] = await Promise.all([
-        fetchCount('/auctions?status=active&limit=1'),
-        fetchCount('/orders?status=pending&limit=1'),
-        fetchCount('/listings?limit=1'),
+      const [auctionsRes, ordersRes, listingsRes] = await Promise.all([
+        auctionApi.list({ status: 'active', limit: 1 }).catch(() => ({ total: 0 } as const)),
+        getOrders({ status: 'pending', limit: 1 } as any).catch(() => ({ total: 0 } as const)),
+        listingApi.list({ limit: 1 }).catch(() => ({ pagination: { total: 0 } } as const)),
       ]);
 
-      return { activeAuctions, pendingOrders, totalListings };
+      return {
+        activeAuctions: auctionsRes.total ?? 0,
+        pendingOrders: ordersRes.total ?? 0,
+        totalListings: listingsRes.pagination?.total ?? 0,
+      };
     },
     placeholderData: {
       activeAuctions: 0,

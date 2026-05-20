@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { getLanguage } from '@core/lib/utils/cookieStorage';
@@ -256,7 +257,7 @@ export const useRecentOrders = () => {
 // Top Products Hook
 // ============================================================================
 
-export const useTopProducts = () => {
+export const useTopProducts = (options?: { enabled?: boolean }) => {
   const { data: auctions = [] } = useSharedAuctionsList({ limit: 10, status: 'active', sortBy: 'totalBids', sortOrder: 'desc' });
   const { data: categories = [] } = useSharedCategories();
 
@@ -282,6 +283,7 @@ export const useTopProducts = () => {
         .slice(0, 5);
     },
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled !== false,
   });
 };
 
@@ -289,7 +291,7 @@ export const useTopProducts = () => {
 // Category Distribution Hook
 // ============================================================================
 
-export const useCategoryDistribution = () => {
+export const useCategoryDistribution = (options?: { enabled?: boolean }) => {
   const { data: categories = [] } = useSharedCategories();
 
   return useQuery({
@@ -312,6 +314,7 @@ export const useCategoryDistribution = () => {
       }));
     },
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled !== false,
   });
 };
 
@@ -319,7 +322,7 @@ export const useCategoryDistribution = () => {
 // Sales Chart Data Hook
 // ============================================================================
 
-export const useSalesChartData = () => {
+export const useSalesChartData = (options?: { enabled?: boolean }) => {
   const { data: orders = [] } = useSharedOrdersList({ limit: 30 });
 
   return useQuery({
@@ -351,6 +354,7 @@ export const useSalesChartData = () => {
       }));
     },
     staleTime: 1000 * 60 * 10,
+    enabled: options?.enabled !== false,
   });
 };
 
@@ -372,11 +376,18 @@ export const useDashboardQuickCounts = () => {
 
 export const useDashboardData = () => {
   const { t } = useLanguage();
+  const [deferredReady, setDeferredReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDeferredReady(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const { data: allStatsData, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
   const { data: recentActivities, isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useRecentOrders();
-  const { data: topProducts, isLoading: topProductsLoading } = useTopProducts();
-  const { data: categoryData, isLoading: categoriesLoading } = useCategoryDistribution();
-  const { data: salesChart, isLoading: salesLoading } = useSalesChartData();
+  const { data: topProducts, isLoading: topProductsLoading } = useTopProducts({ enabled: deferredReady });
+  const { data: categoryData, isLoading: categoriesLoading } = useCategoryDistribution({ enabled: deferredReady });
+  const { data: salesChart, isLoading: salesLoading } = useSalesChartData({ enabled: deferredReady });
 
   const stats = allStatsData?.stats;
   const quickCounts = allStatsData?.quickCounts;
@@ -440,7 +451,8 @@ export const useDashboardData = () => {
     categoryData,
     salesChart,
     quickCounts,
-    isLoading: statsLoading || activitiesLoading || topProductsLoading || categoriesLoading || salesLoading,
+    isLoading: statsLoading || activitiesLoading,
+    isDeferredLoading: statsLoading || activitiesLoading || topProductsLoading || categoriesLoading || salesLoading,
     isError: statsError || activitiesError,
     refetch: () => {
       refetchStats();

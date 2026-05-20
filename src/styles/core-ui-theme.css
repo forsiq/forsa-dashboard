@@ -2,15 +2,15 @@
 
 :root {
   /* High-Contrast Light Mode */
-  --color-obsidian-outer: #F4F7FB;
-  --color-obsidian-panel: #FFFFFF;
+  --color-obsidian-outer: #EFF2F7;
+  --color-obsidian-panel: #F8FAFC;
   --color-obsidian-card: #FFFFFF;
-  --color-obsidian-hover: #F8FAFC;
+  --color-obsidian-hover: #F1F5F9;
 
   --color-zinc-text: #1E293B;
   --color-zinc-secondary: #475569;
-  --color-zinc-muted: #94A3B8;
-  --color-border: rgba(0, 0, 0, 0.06);
+  --color-zinc-muted: #64748B;
+  --color-border: rgba(0, 0, 0, 0.08);
 
   --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(255, 255, 255, 0.6);
@@ -18,19 +18,27 @@
 
   /* Brand Colors */
   --color-brand: #FFC000;
+  --color-brand-hover: #E5AD00;
   --color-brand-muted: #FFF9E6;
+  --color-brand-muted-dark: rgba(255, 192, 0, 0.1);
+  --color-brand-text: #1E293B;
 
   /* Status Colors */
   --color-success: #10B981;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
-  --color-info: #3B82F6;
+  --color-success-bg: #ECFDF5;
+  --color-success-border: #A7F3D0;
 
-  /* legacy helpers */
-  --color-success-bg: #E7FBF3;
-  --color-success-text: #059669;
-  --color-danger-bg: #FFF1F2;
-  --color-danger-text: #E11D48;
+  --color-danger: #EF4444;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-border: #FECACA;
+
+  --color-warning: #F59E0B;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-border: #FDE68A;
+
+  --color-info: #3B82F6;
+  --color-info-bg: #EFF6FF;
+  --color-info-border: #BFDBFE;
 
   /* Chart Colors */
   --chart-1: #FFC000;
@@ -55,6 +63,29 @@
   --glass-bg: rgba(13, 19, 38, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 16px;
+
+  /* Brand Dark Variants */
+  --color-brand-muted: rgba(255, 192, 0, 0.1);
+
+  /* Status Colors - Dark Mode Backgrounds */
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-success-border: rgba(16, 185, 129, 0.2);
+
+  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-danger-border: rgba(239, 68, 68, 0.2);
+
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(245, 158, 11, 0.2);
+
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-info-border: rgba(59, 130, 246, 0.2);
+
+  /* Chart Colors - Brighter for Dark Mode */
+  --chart-1: #FFD54F;
+  --chart-2: #60A5FA;
+  --chart-3: #34D399;
+  --chart-4: #F87171;
+  --chart-5: #A78BFA;
 }
 
 

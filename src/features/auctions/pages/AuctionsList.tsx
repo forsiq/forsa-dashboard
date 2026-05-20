@@ -18,7 +18,7 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { getCountdown } from '@core/utils/countdown';
+import { useCountdown } from '@core/hooks/useCountdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
@@ -73,6 +73,22 @@ const TABS: TabConfig[] = [
   { key: 'paused', labelKey: 'auction.tabs.paused', color: 'text-amber-400', activeColor: 'bg-amber-500 text-black' },
   { key: 'cancelled', labelKey: 'auction.tabs.cancelled', color: 'text-red-300', activeColor: 'bg-red-900 text-red-100' },
 ];
+
+interface CountdownCellProps {
+  endTime: string;
+  t: (key: string) => string;
+}
+
+const CountdownCell = React.memo(({ endTime, t }: CountdownCellProps) => {
+  const countdown = useCountdown(endTime);
+  const label = countdown === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : countdown;
+  return (
+    <div className="inline-flex items-center gap-2 text-xs font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
+      <Clock className="w-3 h-3" />
+      {label}
+    </div>
+  );
+});
 
 /**
  * AuctionsList - Auction Management with DataTable and Status Tabs
@@ -220,16 +236,9 @@ export const AuctionsList: React.FC = () => {
       {
         key: 'endTime',
         label: t('auction.table.protocol_duration') || 'Duration',
-        render: (auction) => {
-          const raw = getCountdown(auction.endTime);
-          const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
-          return (
-          <div className="inline-flex items-center gap-2 text-xs font-black text-warning tabular-nums bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
-            <Clock className="w-3 h-3" />
-            {label}
-          </div>
-          );
-        },
+        render: (auction) => (
+          <CountdownCell endTime={auction.endTime} t={t} />
+        ),
         align: 'center',
       },
       {
@@ -330,8 +339,6 @@ export const AuctionsList: React.FC = () => {
         }),
       },
     ];
-
-    if (typeof window === 'undefined') return null;
 
     return (
         <AdminListPageShell

@@ -1012,4 +1012,23 @@ export const en: Record<string, string> = {
   // Inventory Page
   "inventory.bulk_delete": "Delete Selected",
   "inventory.empty_description": "No inventory items found. Add your first product to get started.",
+
+  // Help Page
+  "help.title": "Help Center",
+  "help.subtitle": "Find answers to common questions",
+  "help.faq_title": "Frequently Asked Questions",
+  "help.contact_title": "Contact Support",
+  "help.faq.bid_question": "How do I place a bid?",
+  "help.faq.bid_answer": "Navigate to any active auction, enter your bid amount, and click \"Place Bid\". Your bid must be higher than the current bid. You'll receive a confirmation once your bid is accepted.",
+  "help.faq.watchlist_question": "How does the watchlist work?",
+  "help.faq.watchlist_answer": "Click the heart icon on any auction to add it to your watchlist. You'll receive notifications when watched auctions are ending soon or when new bids are placed.",
+  "help.faq.payment_question": "What payment methods are accepted?",
+  "help.faq.payment_answer": "We currently accept Cash on Delivery (COD) and Bank Transfer. Credit card support is coming soon. All prices are displayed in Iraqi Dinar (IQD).",
+  "help.faq.auction_types_question": "What types of auctions are available?",
+  "help.faq.auction_types_answer": "We offer standard auctions where the highest bid wins, and group buying deals where you can get discounts based on participant count. Check the auction details for specific rules.",
+  "help.faq.account_question": "How do I update my account information?",
+  "help.faq.account_answer": "Go to your Profile page to update your name, email, and avatar. Use Settings to manage notifications, appearance, and navigation preferences.",
+  "help.email": "Email",
+  "help.phone": "Phone",
+  "help.whatsapp": "WhatsApp",
 };
