@@ -97,7 +97,37 @@ export function MerchantDetailPage() {
         },
       ]}
       statsColumns={4}
+      tabs={
+        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm w-fit">
+          {([
+            { key: 'products' as TabValue, label: t('merchant.detail.tabs.products') || 'Products', icon: Package, count: productList.length },
+            { key: 'auctions' as TabValue, label: t('merchant.detail.tabs.auctions') || 'Auctions', icon: Gavel, count: auctionList.length },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
+                activeTab === tab.key
+                  ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                  : 'text-zinc-muted hover:text-zinc-text hover:bg-white/[0.02]',
+              )}
+            >
+              <tab.icon className="w-3.5 h-3.5" />
+              {tab.label}
+              <span className={cn(
+                'text-[10px] font-black px-1.5 py-0.5 rounded-full',
+                activeTab === tab.key ? 'bg-black/20' : 'bg-white/[0.05]',
+              )}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      }
     >
+      <div className="space-y-6">
       {/* Merchant Info Card */}
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-5 space-y-4">
         <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
@@ -157,40 +187,13 @@ export function MerchantDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm w-fit">
-        {([
-          { key: 'products' as TabValue, label: t('merchant.detail.tabs.products') || 'Products', icon: Package, count: productList.length },
-          { key: 'auctions' as TabValue, label: t('merchant.detail.tabs.auctions') || 'Auctions', icon: Gavel, count: auctionList.length },
-        ]).map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
-              activeTab === tab.key
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-white/[0.02]',
-            )}
-          >
-            <tab.icon className="w-3.5 h-3.5" />
-            {tab.label}
-            <span className={cn(
-              'text-[10px] font-black px-1.5 py-0.5 rounded-full',
-              activeTab === tab.key ? 'bg-black/20' : 'bg-white/[0.05]',
-            )}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
-
       {/* Tab Content */}
       {activeTab === 'products' ? (
         <ProductsTab products={productList} isLoading={productsLoading} t={t} />
       ) : (
         <AuctionsTab auctions={auctionList} isLoading={auctionsLoading} t={t} />
       )}
+      </div>
     </AdminListPageShell>
   );
 }

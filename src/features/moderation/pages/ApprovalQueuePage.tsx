@@ -129,6 +129,34 @@ function ApprovalQueuePage() {
         },
       ]}
       statsColumns={2}
+      tabs={
+        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm w-fit">
+          {([
+            { key: 'listings' as TabValue, label: t('moderation.approval.tabs.listings') || 'Listings', icon: Package, count: listings.length },
+            { key: 'auctions' as TabValue, label: t('moderation.approval.tabs.auctions') || 'Auctions', icon: Gavel, count: auctions.length },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
+                activeTab === tab.key
+                  ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                  : 'text-zinc-muted hover:text-zinc-text hover:bg-white/[0.02]',
+              )}
+            >
+              <tab.icon className="w-3.5 h-3.5" />
+              {tab.label}
+              <span className={cn(
+                'text-[10px] font-black px-1.5 py-0.5 rounded-full',
+                activeTab === tab.key ? 'bg-black/20' : 'bg-white/[0.05]',
+              )}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      }
     >
       {/* Fetching overlay */}
       {isFetching && !isPending && (
@@ -137,34 +165,6 @@ function ApprovalQueuePage() {
           <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">Refreshing...</span>
         </div>
       )}
-
-      {/* Tabs */}
-      <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm w-fit">
-        {([
-          { key: 'listings' as TabValue, label: t('moderation.approval.tabs.listings') || 'Listings', icon: Package, count: listings.length },
-          { key: 'auctions' as TabValue, label: t('moderation.approval.tabs.auctions') || 'Auctions', icon: Gavel, count: auctions.length },
-        ]).map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
-              activeTab === tab.key
-                ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                : 'text-zinc-muted hover:text-zinc-text hover:bg-white/[0.02]',
-            )}
-          >
-            <tab.icon className="w-3.5 h-3.5" />
-            {tab.label}
-            <span className={cn(
-              'text-[10px] font-black px-1.5 py-0.5 rounded-full',
-              activeTab === tab.key ? 'bg-black/20' : 'bg-white/[0.05]',
-            )}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
 
       {/* Content */}
       {isPending ? (

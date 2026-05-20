@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { AdminListPageShell } from '@core/components/Layout';
+import {
+  AdminListPageShell,
+  ListPageToolbar,
+  ListPageToolbarSearch,
+} from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberButton } from '@core/components/AmberButton';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import {
   Store,
-  Search,
   Package,
   Gavel,
   Phone,
@@ -46,7 +49,7 @@ export function MerchantsListPage() {
     limit: 20,
   });
 
-  const merchants = merchantsData?.data || [];
+  const merchants = Array.isArray(merchantsData?.data) ? merchantsData.data : [];
   const total = merchantsData?.total || 0;
   const totalPages = merchantsData?.totalPages || 1;
 
@@ -72,11 +75,8 @@ export function MerchantsListPage() {
         },
       ]}
       statsColumns={1}
-    >
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        {/* Status Tabs */}
-        <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm">
+      tabs={
+        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
           {[
             { key: 'all', label: t('merchant.filter.all') || 'All' },
             { key: 'active', label: t('merchant.filter.active') || 'Active' },
@@ -87,42 +87,42 @@ export function MerchantsListPage() {
               key={tab.key}
               onClick={() => { setStatusFilter(tab.key); setPage(1); }}
               className={cn(
-                'px-3 py-2 text-xs font-bold transition-colors rounded-lg whitespace-nowrap',
+                'px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-colors rounded-lg whitespace-nowrap',
                 statusFilter === tab.key
                   ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                  : 'text-zinc-muted hover:text-zinc-text hover:bg-white/[0.02]',
+                  : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
               )}
             >
               {tab.label}
             </button>
           ))}
         </div>
-
-        {/* Search */}
-        <div className="relative flex-1 max-w-xs w-full group">
-          <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-zinc-muted group-focus-within:text-[var(--color-brand)] transition-colors" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => { setSearchInput(e.target.value); setPage(1); }}
-            placeholder={t('merchant.search') || 'Search merchants...'}
-            className="w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] shadow-sm rounded-xl h-9 text-xs text-zinc-text font-bold focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 ps-9 pe-3"
-          />
-        </div>
-
-        {/* Clear */}
-        {hasFilters && (
-          <button
-            onClick={clearFilters}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
-          >
-            <X className="w-3 h-3" />
-            {t('common.clear_filters') || 'Clear'}
-          </button>
-        )}
-      </div>
-
-      {/* Content */}
+      }
+      toolbar={
+        <ListPageToolbar
+          search={
+            <ListPageToolbarSearch
+              value={searchInput}
+              onChange={(v) => { setSearchInput(v); setPage(1); }}
+              placeholder={t('merchant.search') || 'Search merchants...'}
+            />
+          }
+          endActions={
+            hasFilters ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
+              >
+                <X className="w-3 h-3" />
+                {t('common.clear_filters') || 'Clear'}
+              </button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      <div className="space-y-6">
       {isPending ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -199,6 +199,7 @@ export function MerchantsListPage() {
           )}
         </>
       )}
+      </div>
     </AdminListPageShell>
   );
 }

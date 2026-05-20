@@ -1,5 +1,6 @@
 /** Customers API - Using REST */
 import { createApiClient } from '@core/services/ApiClientFactory';
+import { resolveCustomerDisplayName } from '@core/utils/userDisplayName';
 import type { 
   Customer, 
   CreateCustomerInput, 
@@ -19,24 +20,7 @@ function pickNonEmptyString(...candidates: unknown[]): string {
 /** Map list API rows (camelCase / snake_case / nested) to Customer for UI. */
 export function normalizeCustomerRow(raw: Record<string, unknown>): Customer {
   const r = raw as Record<string, any>;
-  const firstLast = pickNonEmptyString(
-    [r.firstName, r.lastName].filter(Boolean).join(' '),
-    [r.first_name, r.last_name].filter(Boolean).join(' '),
-  );
-
-  const name =
-    pickNonEmptyString(
-      r.name,
-      r.fullName,
-      r.full_name,
-      r.displayName,
-      r.display_name,
-      firstLast,
-    ) ||
-    pickNonEmptyString(r.email, r.primary_email) ||
-    pickNonEmptyString(r.phone, r.phone_number, r.mobile) ||
-    (typeof r.id === 'string' && r.id.length > 0 ? r.id.slice(0, 12) : '') ||
-    '—';
+  const name = resolveCustomerDisplayName(r);
 
   const email = pickNonEmptyString(r.email, r.primary_email);
   const phone = pickNonEmptyString(r.phone, r.phone_number, r.mobile) || undefined;

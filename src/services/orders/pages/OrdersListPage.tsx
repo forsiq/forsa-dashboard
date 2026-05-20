@@ -286,7 +286,9 @@ export const OrdersListPage = () => {
     { key: 'cancelled', labelKey: 'orders.status.cancelled' },
   ];
 
-  if (!isClient) return null;
+  if (!isClient) {
+    return <ListPageSkeleton count={6} columns={5} showStats />;
+  }
 
   return (
     <AdminListPageShell

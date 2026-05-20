@@ -19,6 +19,7 @@ import type {
  * Base User API implementation using shared factory
  */
 import { API_BASE_URL } from '@config/api';
+import { isPlaceholderUserLabel } from '@core/utils/userDisplayName';
 
 export const userBaseApi = createApiClient<User, UserCreateInput, UserUpdateInput, UserFilters>({
   serviceName: 'users',
@@ -26,10 +27,17 @@ export const userBaseApi = createApiClient<User, UserCreateInput, UserUpdateInpu
   apiBaseUrl: API_BASE_URL,
 });
 
-const mapToUser = (raw: any): User => ({
+const mapToUser = (raw: any): User => {
+  const fullNameRaw = raw?.fullName || raw?.full_name || raw?.name || '';
+  const fullName =
+    typeof fullNameRaw === 'string' && fullNameRaw.trim() && !isPlaceholderUserLabel(fullNameRaw)
+      ? fullNameRaw.trim()
+      : raw?.phone?.trim() || (typeof raw?.id === 'string' && raw.id.length > 12 ? `${raw.id.slice(0, 8)}…` : raw?.id || '');
+
+  return {
   id: raw?.id || '',
   userName: raw?.userName || raw?.username || '',
-  fullName: raw?.fullName || raw?.full_name || raw?.name || '',
+  fullName,
   email: raw?.email || undefined,
   phone: raw?.phone || undefined,
   role: (raw?.role ?? 'user') as User['role'],
@@ -37,7 +45,8 @@ const mapToUser = (raw: any): User => ({
   isTempPass: Boolean(raw?.isTempPass ?? raw?.is_temp_pass ?? false),
   createdAt: raw?.createdAt ?? raw?.created_at,
   updatedAt: raw?.updatedAt ?? raw?.updated_at,
-});
+};
+};
 
 /**
  * User API - main user operations

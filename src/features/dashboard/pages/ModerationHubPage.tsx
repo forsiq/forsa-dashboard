@@ -449,6 +449,7 @@ export const ModerationHubPage = () => {
       ]}
       statsColumns={4}
     >
+      <div className="space-y-8">
       {/* Main Layout: Activity + Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left: Filters + Auction Cards */}
@@ -593,6 +594,7 @@ export const ModerationHubPage = () => {
 
       {/* Bid Moderation Section */}
       <BidModerationSection />
+      </div>
     </AdminListPageShell>
   );
 };

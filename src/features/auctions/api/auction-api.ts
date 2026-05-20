@@ -5,6 +5,7 @@
 
 import { createApiClient } from '@core/services/ApiClientFactory';
 import { getWithListFilters } from '@core/services/serviceListFetch';
+import { formatBidderDisplayName } from '@core/utils/userDisplayName';
 import type {
   Auction,
   AuctionsResponse,
@@ -237,8 +238,12 @@ export const bidApi = {
     const response = await auctionBaseApi.getInstance().get('/bids/', {
       params: { auctionId, page, limit }
     });
+    const rows = Array.isArray(response.data.data) ? response.data.data : [];
     return {
-      data: response.data.data,
+      data: rows.map((row: Record<string, unknown>) => ({
+        ...row,
+        bidderName: formatBidderDisplayName(row),
+      })) as Bid[],
       total: response.data.total,
     };
   },
@@ -446,7 +451,12 @@ export const moderationApi = {
   }): Promise<AllBidsResponse> => {
     const client = auctionBaseApi.getInstance();
     const response = await client.get('/moderation/bids', { params: filters });
-    return response.data;
+    const payload = response.data;
+    const items = (payload.items || payload.data || []).map((row: Record<string, unknown>) => ({
+      ...row,
+      bidderName: formatBidderDisplayName(row),
+    }));
+    return { ...payload, items, data: items };
   },
 
   voidBid: async (bidId: number | string): Promise<any> => {
