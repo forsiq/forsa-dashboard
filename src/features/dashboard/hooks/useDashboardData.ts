@@ -258,7 +258,7 @@ export const useRecentOrders = () => {
 // ============================================================================
 
 export const useTopProducts = (options?: { enabled?: boolean }) => {
-  const { data: auctions = [] } = useSharedAuctionsList({ limit: 10, status: 'active', sortBy: 'totalBids', sortOrder: 'desc' });
+  const { data: auctions = [] } = useSharedAuctionsList({ limit: 10, status: 'active', sortBy: 'currentBid', sortOrder: 'desc' });
   const { data: categories = [] } = useSharedCategories();
 
   return useQuery({

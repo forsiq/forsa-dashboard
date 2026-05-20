@@ -128,12 +128,12 @@ export const DashboardHomePage = () => {
       <DashboardCharts salesData={salesChart || []} categoryData={categoryData || []} />
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+        <div className="space-y-6">
           <TopAuctions products={topProducts || []} />
           <ActivityFeed activities={activities} />
         </div>
-        <div>
+        <div className="min-w-0">
           <QuickActions actions={quickActionItems} />
         </div>
       </div>

@@ -43,11 +43,21 @@ const attachmentKeys = {
   batch: (ids: number[]) => ['attachments', 'batch', ids] as const,
 };
 
-async function fetchBatchAttachmentUrls(ids: number[]): Promise<Map<number, string | null>> {
+async function fetchIndividualAttachmentUrl(id: number): Promise<BatchAttachmentResult | null> {
+  try {
+    const response = await sharedClient.get(`/project/attachment/${id}/`);
+    return response.data?.data || response.data || null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchAttachmentUrlsWithFallback(ids: number[]): Promise<Map<number, string | null>> {
   const urlMap = new Map<number, string | null>();
 
   if (ids.length === 0) return urlMap;
 
+  // Try batch endpoint first
   try {
     const response = await sharedClient.post('/project/attachment/batch/', {
       attachment_ids: ids,
@@ -63,11 +73,24 @@ async function fetchBatchAttachmentUrls(ids: number[]): Promise<Map<number, stri
         urlMap.set(id, null);
       }
     }
-  } catch (error: any) {
-    console.warn('[useAttachmentUrls] Batch fetch failed:', error.message);
+    return urlMap;
+  } catch {
+    // Batch endpoint failed — fall back to individual fetches
+  }
 
-    for (const id of ids) {
-      urlMap.set(id, null);
+  // Fallback: fetch attachments individually (up to 10 concurrent)
+  const batchSize = 10;
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map((id) => fetchIndividualAttachmentUrl(id)));
+
+    for (let j = 0; j < batch.length; j++) {
+      const item = results[j];
+      if (item?.file_url) {
+        urlMap.set(batch[j], normalizeResolvedFileUrl(item.file_url));
+      } else {
+        urlMap.set(batch[j], null);
+      }
     }
   }
 
@@ -80,7 +103,7 @@ export function useAttachmentUrls(ids: number[]) {
 
   return useQuery({
     queryKey: attachmentKeys.batch(sortedKey),
-    queryFn: () => fetchBatchAttachmentUrls(sortedKey),
+    queryFn: () => fetchAttachmentUrlsWithFallback(sortedKey),
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     enabled: sortedKey.length > 0,
