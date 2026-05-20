@@ -1,23 +1,77 @@
 - version: "1.5.2"
   date: "2026-05-20"
   title:
-    en: "Session and login stability"
-    ar: "استقرار الجلسة وتسجيل الدخول"
+    en: "Auth stability, RBAC, and dashboard polish"
+    ar: "استقرار المصادقة، صلاحيات الأدوار، وتحسينات اللوحة"
   entries:
     - description:
-        en: "Fixed unexpected logout on page refresh when project config was still loading."
-        ar: "إصلاح تسجيل الخروج غير المتوقع عند تحديث الصفحة أثناء تحميل إعدادات المشروع."
+        en: "Fixed unexpected logout on page refresh while project config was still loading (ProjectGuard + core-ui project cache)."
+        ar: "إصلاح تسجيل الخروج غير المتوقع عند تحديث الصفحة أثناء تحميل إعدادات المشروع (ProjectGuard + تخزين المشروع في core-ui)."
       type: fixed
 
     - description:
-        en: "Login page no longer blocks clicks after redirect or logout; stuck modal overlays are cleared automatically."
-        ar: "صفحة تسجيل الدخول لم تعد تمنع النقر بعد إعادة التوجيه أو تسجيل الخروج؛ تُزال طبقات الـ overlay العالقة تلقائياً."
+        en: "Login page no longer blocks clicks after redirect or logout; stuck modal overlays are cleared on auth navigation."
+        ar: "صفحة تسجيل الدخول لم تعد تمنع النقر بعد إعادة التوجيه أو تسجيل الخروج؛ تُزال طبقات الـ overlay العالقة عند الانتقال لصفحات المصادقة."
       type: fixed
 
     - description:
-        en: "Session expired dialog now appears on protected pages only and uses JWT-aware cookie expiry on login."
-        ar: "حوار انتهاء الجلسة يظهر في الصفحات المحمية فقط، مع مدة صلاحية cookies مرتبطة بـ JWT عند تسجيل الدخول."
+        en: "Session expired dialog shows on protected routes only; login stores JWT-aware cookie expiry via core-ui 0.5.17."
+        ar: "حوار انتهاء الجلسة يظهر في المسارات المحمية فقط؛ تسجيل الدخول يستخدم مدة cookies مرتبطة بـ JWT عبر core-ui 0.5.17."
       type: fixed
+
+    - description:
+        en: "Resolved hydration mismatch in language and theme providers after page load."
+        ar: "إصلاح عدم تطابق hydration في مزودي اللغة والثيم بعد تحميل الصفحة."
+      type: fixed
+
+    - description:
+        en: "Streamlined login to username and password; forgot-password and OTP flows consolidated with clearer API error handling."
+        ar: "تبسيط تسجيل الدخول باسم المستخدم وكلمة المرور؛ توحيد استعادة كلمة المرور وOTP مع معالجة أوضح لأخطاء الـ API."
+      type: improved
+      sidebarPath: /login
+
+    - description:
+        en: "Role-based access control in sidebar menu and proxy: routes and nav items respect JWT roles."
+        ar: "صلاحيات حسب الدور في القائمة الجانبية والـ proxy: المسارات وعناصر التنقل تتبع أدوار JWT."
+      type: added
+
+    - description:
+        en: "Proxy auth refactor: legacy middleware removed; JWT validation and public paths (including /.well-known) handled in one place."
+        ar: "إعادة هيكلة مصادقة الـ proxy: إزالة middleware القديم؛ التحقق من JWT والمسارات العامة (بما فيها /.well-known) في مكان واحد."
+      type: changed
+
+    - description:
+        en: "Sidebar badges now load auction, order, and listing counts from the API instead of static placeholders."
+        ar: "شارات الشريط الجانبي تعرض الآن أعداد المزادات والطلبات والمنتجات من الـ API بدل القيم الثابتة."
+      type: improved
+
+    - description:
+        en: "Auction details: dedicated countdown display; auction list uses optimized countdown cells and deferred dashboard stats."
+        ar: "تفاصيل المزاد: عرض عدّاد تنازلي مخصص؛ قائمة المزادات بعدّادات محسّنة وإحصائيات لوحة تُحمّل عند الحاجة."
+      type: improved
+      sidebarPath: /auctions
+
+    - description:
+        en: "Sorting added on My Bids, Watchlist, Group Buying, Users, and Settlement Desk; list pages use consistent loading skeletons."
+        ar: "إضافة ترتيب في عروضي والمفضلة والشراء الجماعي والمستخدمين ومكتب التسويات؛ صفحات القوائم تستخدم هياكل تحميل موحّدة."
+      type: improved
+
+    - description:
+        en: "Settings page with General, Auction, Navigation, Notifications, Payments, and Shipping tabs; preferences persist in local storage."
+        ar: "صفحة إعدادات بأقسام عام، مزاد، تنقل، إشعارات، مدفوعات، وشحن؛ تُحفظ التفضيلات في التخزين المحلي."
+      type: added
+      sidebarPath: /settings
+
+    - description:
+        en: "Arabic and English translations for dashboard, live monitor, settlement desk, and moderation hub."
+        ar: "ترجمات عربية وإنجليزية للوحة التحكم والمراقبة الحية ومكتب التسويات ومركز الإشراف."
+      type: improved
+
+    - description:
+        en: "Listings statistics and import paths refined for more accurate counts on the listings page."
+        ar: "تحسين إحصائيات المنتجات ومسارات الاستيراد لعرض أعداد أدق في صفحة المنتجات."
+      type: improved
+      sidebarPath: /listings
 
 - version: "1.5.1"
   date: "2026-05-17"
