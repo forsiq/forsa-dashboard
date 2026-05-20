@@ -175,6 +175,8 @@ export const en: Record<string, string> = {
   "sales.pendingSync": "Pending Sync",
 
   // Auth errors (login / session)
+  "auth.loginTitle": "Sign In",
+  "auth.loginSubtitle": "Welcome back! Enter your credentials to continue.",
   "auth.errors.invalidCredentials": "Invalid username or password. Please verify your credentials.",
   "auth.errors.authenticationFailed": "Authentication failed. Please try again.",
   "auth.errors.connectionTimeout": "Connection timed out. Please check your connectivity and try again.",
@@ -859,6 +861,14 @@ export const en: Record<string, string> = {
 
   // Publish Channels
   "listing.channels.title": "Publish Channels",
+
+  // Listing Readiness
+  "listing.readiness.title": "Product Readiness",
+  "listing.readiness.score_label": "Score",
+  "listing.readiness.warnings": "critical",
+  "listing.readiness.suggestions": "suggestions",
+  "listing.readiness.ready": "Ready to Publish",
+  "listing.readiness.ready_desc": "All key fields are filled. This product is ready to be published.",
   "listing.channels.auction": "Auction",
   "listing.channels.group_buy": "Group Buy",
   "listing.channels.not_published": "Not Published",

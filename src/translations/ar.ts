@@ -175,6 +175,8 @@ export const ar: Record<string, string> = {
   "sales.pendingSync": "بانتظار المزامنة",
 
   // Auth errors (login / session)
+  "auth.loginTitle": "تسجيل الدخول",
+  "auth.loginSubtitle": "مرحباً بعودتك! أدخل بيانات الدخول للمتابعة.",
   "auth.errors.invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة. يرجى التحقق من بيانات الدخول.",
   "auth.errors.authenticationFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
   "auth.errors.connectionTimeout": "انتهت مهلة الاتصال. يرجى التحقق من الاتصال والمحاولة مرة أخرى.",
@@ -860,6 +862,14 @@ export const ar: Record<string, string> = {
 
   // Publish Channels
   "listing.channels.title": "قنوات النشر",
+
+  // Listing Readiness
+  "listing.readiness.title": "جاهزية المنتج",
+  "listing.readiness.score_label": "النتيجة",
+  "listing.readiness.warnings": "حرج",
+  "listing.readiness.suggestions": "اقتراحات",
+  "listing.readiness.ready": "جاهز للنشر",
+  "listing.readiness.ready_desc": "جميع الحقول الأساسية مكتملة. المنتج جاهز للنشر.",
   "listing.channels.auction": "المزاد",
   "listing.channels.group_buy": "الصفقة الجماعية",
   "listing.channels.not_published": "غير منشور",

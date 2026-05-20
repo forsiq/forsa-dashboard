@@ -62,7 +62,7 @@ export const useAuth = () => {
       } else {
         setError(AUTH_ERROR_CODES.LOGIN_FAILED);
       }
-      throw err;
+      return undefined as unknown as AuthResponse;
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +82,7 @@ export const useAuth = () => {
       } else {
         setError(AUTH_ERROR_CODES.REGISTRATION_FAILED);
       }
-      throw err;
+      return undefined as unknown as AuthResponse;
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +102,7 @@ export const useAuth = () => {
       } else {
         setError(AUTH_ERROR_CODES.OTP_VERIFICATION_FAILED);
       }
-      throw err;
+      return undefined as unknown as AuthResponse;
     } finally {
       setIsLoading(false);
     }

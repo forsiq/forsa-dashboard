@@ -81,8 +81,8 @@ export const LoginForm: React.FC = () => {
           localStorage.removeItem('remember_username');
         }
       }
-    } catch (err) {
-      console.error('[LoginForm] login error:', err);
+    } catch {
+      // Error is already handled by useAuth hook and displayed via authError state
     }
   };
 

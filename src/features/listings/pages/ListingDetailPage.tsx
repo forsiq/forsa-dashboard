@@ -27,6 +27,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing } from '../api/listing-hooks';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { ListingImage } from '../components/ListingImage';
+import { ProductReadinessCard } from '../components/ProductReadinessCard';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
@@ -216,6 +217,9 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             )}
           </Card>
+
+          {/* Product Readiness */}
+          <ProductReadinessCard listing={listing} />
 
           {/* Quick Deploy Card */}
           <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-4">
