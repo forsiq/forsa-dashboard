@@ -10,13 +10,14 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import {
   Package,
   Save,
-  X,
-  Image as ImageIcon,
+  AlertCircle,
   TrendingUp,
   ArrowLeft,
   Loader2,
-  AlertCircle,
 } from 'lucide-react';
+import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
+import { uploadAttachmentAndGetId } from '@features/auctions/utils/auction-utils';
+import { useCreate } from '../hooks';
 
 // --- Types ---
 
@@ -31,7 +32,6 @@ interface ProductForm {
   startingBid: string;
   buyNowPrice: string;
   duration: string;
-  images: string[];
 }
 
 const INITIAL_FORM: ProductForm = {
@@ -45,7 +45,6 @@ const INITIAL_FORM: ProductForm = {
   startingBid: '',
   buyNowPrice: '',
   duration: '7',
-  images: [],
 };
 
 // --- Component ---
@@ -60,8 +59,10 @@ export const ProductAddPage = () => {
   const [formData, setFormData] = useState<ProductForm>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [comingSoonShown, setComingSoonShown] = useState(false);
+  const imageUpload = usePendingImageFiles();
+  const createProduct = useCreate();
 
   useEffect(() => {
     setIsClient(true);
@@ -78,32 +79,6 @@ export const ProductAddPage = () => {
     }
   };
 
-  const handleImageUpload = (files: File[]) => {
-    const remaining = 5 - formData.images.length;
-    const toProcess = files.slice(0, remaining);
-    toProcess.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, reader.result as string].slice(0, 5)
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
-
-  const reorderImages = (newOrder: string[]) => {
-    setFormData(prev => ({ ...prev, images: newOrder }));
-  };
-
   const validate = () => {
     const e: Record<string, string> = {};
     if (!formData.name) e.name = t('error.required_fields') || 'الحقل مطلوب';
@@ -118,27 +93,53 @@ export const ProductAddPage = () => {
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    
-    // Backend POST /inventory endpoint does not exist yet
     setIsSubmitting(true);
-    setComingSoonShown(true);
-    setTimeout(() => {
+    setSubmitError(null);
+    
+    try {
+      const newAttachmentIds: number[] = [];
+      for (const file of imageUpload.pendingFiles) {
+        const id = await uploadAttachmentAndGetId(file);
+        newAttachmentIds.push(id);
+      }
+      
+      const allAttachmentIds = [...newAttachmentIds];
+      
+      const payload = {
+        name: formData.name,
+        sku: formData.sku,
+        category: formData.category,
+        condition: formData.condition,
+        price: parseFloat(formData.price),
+        stockQuantity: parseInt(formData.stockQuantity),
+        description: formData.description,
+        type: 'simple' as const,
+        unit: 'piece',
+        costPrice: parseFloat(formData.price),
+        sellingPrice: parseFloat(formData.price),
+        images: [] as string[],
+        mainAttachmentId: allAttachmentIds[0],
+        attachmentIds: allAttachmentIds,
+      };
+      
+      await createProduct.mutateAsync(payload);
+      router.push('/inventory');
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Failed to create product');
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   if (!isClient) return null;
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Coming Soon Banner */}
-      {comingSoonShown && (
-        <div className="bg-info/10 border border-info/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-          <AlertCircle className="w-5 h-5 text-info shrink-0" />
-          <p className="text-sm text-info font-medium">{t('common.coming_soon') || 'This feature is coming soon. Backend endpoint is not available yet.'}</p>
-          <button onClick={() => setComingSoonShown(false)} className="ms-auto text-info/60 hover:text-info">
-            <X className="w-4 h-4" />
-          </button>
+      {/* Error Banner */}
+      {submitError && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0" />
+          <p className="text-sm text-danger font-medium">{submitError}</p>
         </div>
       )}
       {/* Header */}
@@ -354,10 +355,10 @@ export const ProductAddPage = () => {
             </h3>
 
             <AmberImageUpload
-              value={formData.images}
-              onChange={handleImageUpload}
-              onRemove={removeImage}
-              onReorder={reorderImages}
+              value={imageUpload.previewUrls}
+              onChange={imageUpload.appendFiles}
+              onRemove={imageUpload.removeAt}
+              onReorder={imageUpload.reorder}
               multiple={true}
               sortable={true}
               maxFiles={5}

@@ -26,6 +26,9 @@ export interface Product {
   lowStockThreshold: number;
   stockStatus: StockStatus;
   images: string[];
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
+  imageUrl?: string;
   isActive: boolean;
   attributes?: Record<string, string | number | boolean>;
   variants?: ProductVariant[];
@@ -97,6 +100,8 @@ export interface CreateProductInput {
   taxRate?: number;
   lowStockThreshold?: number;
   images?: string[];
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
   attributes?: Record<string, string | number | boolean>;
   variants?: Omit<ProductVariant, 'id' | 'productId'>[];
 }
@@ -119,6 +124,8 @@ export interface UpdateProductInput {
   taxRate?: number;
   lowStockThreshold?: number;
   images?: string[];
+  mainAttachmentId?: number;
+  attachmentIds?: number[];
   attributes?: Record<string, string | number | boolean>;
   isActive?: boolean;
 }

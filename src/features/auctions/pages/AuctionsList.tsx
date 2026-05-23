@@ -19,6 +19,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useCountdown } from '@core/hooks/useCountdown';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { EmptyState } from '@core/components/EmptyState';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
@@ -98,14 +99,14 @@ export const AuctionsList: React.FC = () => {
     const router = useRouter();
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useFilterState('search', '');
     const debouncedSearch = useDebounce(searchQuery, 300);
-    const [activeTab, setActiveTab] = useState<TabValue>('all');
-    const [categoryIdFilter, setCategoryIdFilter] = useState<number | 'all'>('all');
-    const [page, setPage] = useState(1);
+    const [activeTab, setActiveTab] = useFilterState<TabValue>('status', 'all');
+    const [categoryIdFilter, setCategoryIdFilter] = useFilterState<number | 'all'>('category', 'all');
+    const [page, setPage] = useFilterState('page', 1);
     const [limit] = useState(12);
-    const [sortBy, setSortBy] = useState<string>('createdAt');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
+    const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
 
     const activeFilterCount = categoryIdFilter === 'all' ? 0 : 1;
 

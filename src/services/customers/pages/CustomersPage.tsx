@@ -14,6 +14,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { useGetCustomers, useGetCustomerStats, useDeleteCustomer, useUpdateCustomerStatus } from '../hooks';
 import type { Customer } from '../types';
 import { useIsClient } from '@core/hooks/useIsClient';
@@ -33,12 +34,12 @@ type TypeTab = 'all' | 'individual' | 'business';
 export function CustomersPage() {
   const { t, dir } = useLanguage();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<TypeTab>('all');
+  const [searchQuery, setSearchQuery] = useFilterState('search', '');
+  const [typeFilter, setTypeFilter] = useFilterState<TypeTab>('type', 'all');
   const [debouncedSearch] = useDebounce(searchQuery, 300);
-  const [sortBy, setSortBy] = useState<string>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
+  const [page, setPage] = useFilterState('page', 1);
   const [limit] = useState(50);
   const isClient = useIsClient();
 

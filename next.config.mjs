@@ -37,6 +37,15 @@ const nextConfig = {
       // @core resolves: local src/core/ overrides take priority,
       // then falls back to core-ui package
       '@core': [localCorePath, corePkgPath],
+      // Safe StatusBadge / resolveStatusLabel override (undefined status from API)
+      '@yousef2001/core-ui/dist/components/Data/StatusBadge': path.join(
+        localCorePath,
+        'components/Data/StatusBadge.tsx',
+      ),
+      '@yousef2001/core-ui/dist/lib/utils/resolveStatusLabel': path.join(
+        localCorePath,
+        'lib/utils/resolveStatusLabel.ts',
+      ),
     };
 
     // YAML → JS module (yaml-loader emits `export default …`).

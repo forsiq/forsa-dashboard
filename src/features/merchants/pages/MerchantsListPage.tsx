@@ -10,6 +10,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberButton } from '@core/components/AmberButton';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useFilterState } from '@core/hooks/useFilterState';
 import {
   Store,
   Package,
@@ -37,9 +38,9 @@ export function MerchantsListPage() {
   const { t } = useLanguage();
   const router = useRouter();
 
-  const [searchInput, setSearchInput] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useFilterState('search', '');
+  const [statusFilter, setStatusFilter] = useFilterState<string>('status', 'all');
+  const [page, setPage] = useFilterState('page', 1);
   const debouncedSearch = useDebounce(searchInput, 300);
 
   const { data: merchantsData, isPending, isFetching } = useGetMerchants({

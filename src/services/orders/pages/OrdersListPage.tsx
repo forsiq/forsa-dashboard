@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
@@ -20,6 +20,7 @@ import {
 import { Column, Action } from '@core/components/Data/DataTable';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useToast } from '@core/contexts/ToastContext';
@@ -38,23 +39,12 @@ export const OrdersListPage = () => {
   const { t, dir } = useLanguage();
   const isClient = useIsClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'total' | 'orderNumber'>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFilterState('search', '');
+  const [statusFilter, setStatusFilter] = useFilterState<StatusTab>('status', 'all');
+  const [sortBy, setSortBy] = useFilterState<'createdAt' | 'total' | 'orderNumber'>('sortBy', 'createdAt');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
+  const [page, setPage] = useFilterState('page', 1);
   const [limit] = useState(20);
-
-  useEffect(() => {
-    if (!router.isReady || router.pathname !== '/orders') return;
-    const raw = router.query.status;
-    const v = Array.isArray(raw) ? raw[0] : raw;
-    if (v === 'pending' || v === 'processing' || v === 'delivered' || v === 'cancelled') {
-      setStatusFilter(v);
-    } else if (raw === undefined) {
-      setStatusFilter('all');
-    }
-  }, [router.isReady, router.pathname, router.query.status]);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 

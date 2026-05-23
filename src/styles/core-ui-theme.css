@@ -93,13 +93,13 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 14px;
+  font-size: 16px;
   font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 @media (min-width: 1024px) {
   html {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 

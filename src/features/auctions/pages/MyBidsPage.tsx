@@ -9,6 +9,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useGetMyBids } from '../api';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { BidActionSheet } from '../components/BidActionSheet';
 import { computeBidDisplayStatus, type BidDisplayStatus } from '../types/auction.types';
 import { EmptyState } from '@core/components/EmptyState';
@@ -60,11 +61,11 @@ export const MyBidsPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [activeTab, setActiveTab] = useState<BidTab>('all');
+  const [activeTab, setActiveTab] = useFilterState<BidTab>('tab', 'all');
   const [selectedBid, setSelectedBid] = useState<BidRow | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<string>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
 
   useEffect(() => {
     setIsClient(true);

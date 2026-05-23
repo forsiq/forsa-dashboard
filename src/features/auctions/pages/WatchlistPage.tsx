@@ -16,6 +16,7 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useWatchedAuctions } from '../api';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { AdminListPageShell } from '@core/components/Layout';
@@ -26,8 +27,8 @@ export const WatchlistPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [sortBy, setSortBy] = useState<string>('title');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'title');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'asc');
 
   useEffect(() => {
     setIsClient(true);

@@ -40,19 +40,54 @@ import {
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useFilterState } from '@core/hooks/useFilterState';
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
+
+interface ProductRow {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  price: number;
+  stock: number;
+  warehouse: string;
+  lastUpdated: string;
+  image: string;
+  images: string[];
+  mainAttachmentId?: number | null;
+  attachmentIds?: number[];
+}
+
+const ProductListImage: React.FC<{ product: ProductRow }> = ({ product }) => {
+  const directUrl = product.image || (product.images?.length > 0 ? product.images[0] : null);
+  const ids = product.attachmentIds?.length ? product.attachmentIds : [];
+  const { data: urlMap } = useAttachmentUrls(!directUrl && ids.length > 0 ? ids : []);
+
+  const src = directUrl || (urlMap && ids[0] ? urlMap.get(ids[0]) : null) || '';
+
+  return (
+    <div className="w-12 h-12 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+      {src ? (
+        <NextImage src={src} alt="" width={48} height={48} className="w-full h-full object-cover" />
+      ) : (
+        <ImageIcon className="w-5 h-5 text-zinc-muted" />
+      )}
+    </div>
+  );
+};
 
 export const InventoryPage = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useFilterState('status', 'all');
+  const [categoryFilter, setCategoryFilter] = useFilterState('category', 'all');
+  const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'name');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'asc');
+  const [page, setPage] = useFilterState('page', 1);
   const [limit] = useState(10);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
@@ -82,7 +117,10 @@ export const InventoryPage = () => {
       stock: p.inventory_quantity || p.stock || 0,
       warehouse: p.warehouse || t('inventory.default_warehouse') || 'Default',
       lastUpdated: p.updatedAt || p.updated_at || '',
-      image: p.image_url || p.image || '',
+      image: p.image_url || p.image || (p.images?.[0]) || '',
+      images: p.images || [],
+      mainAttachmentId: p.mainAttachmentId || p.main_attachment_id || null,
+      attachmentIds: p.attachmentIds || p.attachment_ids || [],
     }));
   }, [products, t]);
 
@@ -159,13 +197,7 @@ export const InventoryPage = () => {
       cardMedia: true,
       render: (row) => (
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-            {row.image ? (
-              <NextImage src={row.image} alt={row.name} width={48} height={48} className="w-full h-full object-cover" />
-            ) : (
-              <ImageIcon className="w-5 h-5 text-zinc-muted" />
-            )}
-          </div>
+          <ProductListImage product={row} />
           <div className="space-y-0.5">
             <p className="text-sm font-bold text-zinc-text">
               {row.name}
@@ -246,7 +278,7 @@ export const InventoryPage = () => {
     {
       label: t('common.edit') || 'Edit',
       icon: Edit,
-      onClick: (row) => router.push(`/inventory/${row.id}/edit`),
+      onClick: (row) => router.push(`/inventory/edit/${row.id}`),
     },
     {
       label: t('common.delete') || 'Delete',

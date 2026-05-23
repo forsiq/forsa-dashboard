@@ -28,6 +28,7 @@ import {
 } from '@core/components/Layout';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
+import { useFilterState } from '@core/hooks/useFilterState';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
@@ -38,15 +39,15 @@ export const ListingsListPage: React.FC = () => {
   const router = useRouter();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useFilterState('page', 1);
   const [limit] = useState(12);
   const [isClient, setIsClient] = useState(false);
-  const [conditionFilter, setConditionFilter] = useState<string>('all');
-  const [brandFilter, setBrandFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [conditionFilter, setConditionFilter] = useFilterState<string>('condition', 'all');
+  const [brandFilter, setBrandFilter] = useFilterState<string>('brand', 'all');
+  const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
+  const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
 
   useEffect(() => { setIsClient(true); }, []);
 
