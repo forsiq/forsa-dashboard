@@ -12,7 +12,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
   const { t } = useLanguage();
 
   return (
-    <AmberCard className="!p-6 h-full flex flex-col">
+    <AmberCard className="!p-6 flex flex-col">
       <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
            {t('dash.top_performing')}
