@@ -43,6 +43,9 @@ export interface JwtPayload {
   project_id?: number;
   role?: string;
   roles?: string[];
+  platform_role?: string;
+  business_role?: string;
+  collaborator_role?: string;
   userType?: string;
   exp?: number;
   iat?: number;
