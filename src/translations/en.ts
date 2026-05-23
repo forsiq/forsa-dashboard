@@ -779,6 +779,7 @@ export const en: Record<string, string> = {
   "category.bulk_activate_confirm": "Are you sure you want to activate",
   "category.bulk_deactivate_confirm": "Are you sure you want to deactivate",
   "category.items": "items",
+  "category.save_order": "Save Order",
 
   // Order statuses
   "orders.status.pending": "Pending",

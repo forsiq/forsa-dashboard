@@ -780,6 +780,7 @@ export const ar: Record<string, string> = {
   "category.bulk_activate_confirm": "هل أنت متأكد من تفعيل",
   "category.bulk_deactivate_confirm": "هل أنت متأكد من إيقاف",
   "category.items": "عناصر",
+  "category.save_order": "حفظ الترتيب",
 
   // Order statuses
   "orders.status.pending": "معلق",
