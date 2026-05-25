@@ -14,8 +14,9 @@ import { Gavel, CheckCircle, DollarSign, Users } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { cn } from '@core/lib/utils/cn';
-import { AmberCard } from '@core/components/AmberCard';
 import { ReportStatsCard } from '../components/ReportStatsCard';
+import { ReportPanelCard } from '../components/ReportPanelCard';
+import { hasChartValues } from '../utils/chartData';
 import { useGetAuctions, useGetAuctionStats } from '../../../features/auctions/api/auction-hooks';
 import type { Auction } from '../../../features/auctions/types/auction.types';
 
@@ -95,6 +96,9 @@ export function AuctionPerformancePage() {
     .sort((a: Auction, b: Auction) => (b.totalBids || 0) - (a.totalBids || 0))
     .slice(0, 10);
 
+  const hasStatusChartData = statusData.length > 0;
+  const hasBidActivityData = hasChartValues(bidActivityData, ['bids']);
+
   if (!isClient) return null;
 
   return (
@@ -135,9 +139,12 @@ export function AuctionPerformancePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Auctions by Status */}
-            <AmberCard title={t('report.auctions_by_status') || 'Auctions by Status'}>
-              <div className="h-[350px] w-full pt-6">
+            <ReportPanelCard
+              title={t('report.auctions_by_status') || 'Auctions by Status'}
+              isEmpty={!hasStatusChartData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={statusData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -165,11 +172,14 @@ export function AuctionPerformancePage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
 
-            {/* Bid Activity Over Time */}
-            <AmberCard title={t('report.bid_activity') || 'Bid Activity Over Time'}>
-              <div className="h-[350px] w-full pt-6">
+            <ReportPanelCard
+              title={t('report.bid_activity') || 'Bid Activity Over Time'}
+              isEmpty={!hasBidActivityData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bidActivityData}>
                     <defs>
@@ -211,11 +221,10 @@ export function AuctionPerformancePage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
           </div>
 
-          {/* Top Performing Auctions Table */}
-          <AmberCard title={t('report.top_auctions') || 'Top Performing Auctions'}>
+          <ReportPanelCard title={t('report.top_auctions') || 'Top Performing Auctions'}>
             <div className="overflow-x-auto">
               <table className="w-full text-start">
                 <thead>
@@ -280,7 +289,7 @@ export function AuctionPerformancePage() {
                 </tbody>
               </table>
             </div>
-          </AmberCard>
+          </ReportPanelCard>
         </>
       )}
     </div>

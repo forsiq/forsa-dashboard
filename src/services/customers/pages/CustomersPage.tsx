@@ -36,7 +36,7 @@ export function CustomersPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const [typeFilter, setTypeFilter] = useFilterState<TypeTab>('type', 'all');
-  const [debouncedSearch] = useDebounce(searchQuery, 300);
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
   const [page, setPage] = useFilterState('page', 1);

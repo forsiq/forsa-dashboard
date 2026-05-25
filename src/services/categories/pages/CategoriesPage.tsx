@@ -106,7 +106,7 @@ export function CategoriesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
-  const [debouncedSearch] = useDebounce(searchQuery, 300);
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [page, setPage] = useState(1);
   const limit = 50;
   const isClient = useIsClient();
@@ -116,7 +116,7 @@ export function CategoriesPage() {
   const [localCategories, setLocalCategories] = useState<Category[]>([]);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const canReorder =
-    statusFilter === 'all' && !debouncedSearch.trim();
+    statusFilter === 'all' && !(debouncedSearch ?? '').trim();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

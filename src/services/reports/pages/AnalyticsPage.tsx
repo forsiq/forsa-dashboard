@@ -1,28 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
-import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, DollarSign } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { cn } from '@core/lib/utils/cn';
-import { AmberCard } from '@core/components/AmberCard';
 import { useGetAnalytics } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
+import { ReportPanelCard } from '../components/ReportPanelCard';
+import { hasChartValues } from '../utils/chartData';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -36,44 +33,48 @@ export function AnalyticsPage() {
     setIsClient(true);
   }, []);
 
-  const summaryStats = [
-    { 
-      label: t('report.total_revenue'), 
-      value: analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : '--', 
-      change: analytics?.totalRevenueChange || '', 
-      icon: DollarSign, 
-      color: 'text-success' 
-    },
-    { 
-      label: t('report.active_users'), 
-      value: analytics?.activeUsers ? analytics.activeUsers.toLocaleString() : '--', 
-      change: analytics?.activeUsersChange || '', 
-      icon: Users, 
-      color: 'text-info' 
-    },
-    { 
-      label: t('report.avg_order'), 
-      value: analytics?.avgOrderValue ? formatCurrency(analytics.avgOrderValue) : '--', 
-      change: analytics?.avgOrderValueChange || '', 
-      icon: ShoppingCart, 
-      color: 'text-warning' 
-    },
-    { 
-      label: t('report.conversion_rate'), 
-      value: analytics?.conversionRate ? `${analytics.conversionRate}%` : '--', 
-      change: analytics?.conversionRateChange || '', 
-      icon: TrendingUp, 
-      color: 'text-brand' 
-    },
-  ];
+  const salesSeries = analytics?.sales ?? [];
+  const ordersSeries = analytics?.orders ?? [];
+  const hasSalesData = hasChartValues(salesSeries, ['value']);
+  const hasOrdersData = hasChartValues(ordersSeries, ['value']);
 
   const pieData: { name: string; value: number }[] = [];
+
+  const summaryStats = [
+    {
+      label: t('report.total_revenue'),
+      value: analytics?.totalRevenue != null ? formatCurrency(analytics.totalRevenue) : '--',
+      change: analytics?.totalRevenueChange || undefined,
+      icon: DollarSign,
+      color: 'text-success',
+    },
+    {
+      label: t('report.active_users'),
+      value: analytics?.activeUsers != null ? analytics.activeUsers.toLocaleString() : '--',
+      change: analytics?.activeUsersChange || undefined,
+      icon: Users,
+      color: 'text-info',
+    },
+    {
+      label: t('report.avg_order'),
+      value: analytics?.avgOrderValue != null ? formatCurrency(analytics.avgOrderValue) : '--',
+      change: analytics?.avgOrderValueChange || undefined,
+      icon: ShoppingCart,
+      color: 'text-warning',
+    },
+    {
+      label: t('report.conversion_rate'),
+      value: analytics?.conversionRate != null ? `${analytics.conversionRate}%` : '--',
+      change: analytics?.conversionRateChange || undefined,
+      icon: TrendingUp,
+      color: 'text-brand',
+    },
+  ];
 
   if (!isClient) return null;
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
       <div className="space-y-1 text-start">
         <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
           {t('report.analytics') || 'التحليلات'}
@@ -86,13 +87,14 @@ export function AnalyticsPage() {
       {isLoading ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-obsidian-card rounded-xl animate-pulse" />)}
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 bg-obsidian-card rounded-xl animate-pulse" />
+            ))}
           </div>
           <div className="h-96 bg-obsidian-card rounded-xl animate-pulse" />
         </div>
       ) : (
         <>
-          {/* Summary Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {summaryStats.map((stat, i) => (
               <ReportStatsCard
@@ -108,58 +110,77 @@ export function AnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Sales Performance */}
-            <AmberCard className="lg:col-span-2 overflow-hidden" title={t('report.sales_performance') || 'Sales Performance'}>
-              <div className="h-[350px] w-full pt-4">
+            <ReportPanelCard
+              title={t('report.sales_performance') || 'Sales Performance'}
+              className="lg:col-span-2 overflow-hidden"
+              isEmpty={!hasSalesData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={analytics?.sales || []}>
+                  <AreaChart data={salesSeries}>
                     <defs>
                       <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#3f3f46" 
+                    <XAxis
+                      dataKey="date"
+                      stroke="#3f3f46"
                       tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <YAxis 
-                      stroke="#3f3f46" 
+                    <YAxis
+                      stroke="#3f3f46"
                       tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                      contentStyle={{
+                        backgroundColor: '#18181b',
+                        border: '1px solid #27272a',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                      }}
                       itemStyle={{ fontSize: '12px', fontWeight: 700 }}
                     />
-                    <Area type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" name="Revenue" />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#22c55e"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#colorSales)"
+                      name="Revenue"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
 
-            {/* Distribution */}
-            <AmberCard title={t('report.inventory_dist') || 'Inventory Distribution'}>
+            <ReportPanelCard
+              title={t('report.inventory_dist') || 'Inventory Distribution'}
+              isEmpty={pieData.length === 0}
+              bodyMinHeight="min-h-[350px]"
+            >
               <div className="h-[350px] w-full flex flex-col items-center">
                 <ResponsiveContainer width="100%" height="80%">
                   <PieChart>
-                    <Pie
-                      data={pieData}
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.05)" strokeWidth={2} />
+                    <Pie data={pieData} innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                      {pieData.map((_entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                          stroke="rgba(255,255,255,0.05)"
+                          strokeWidth={2}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
                     />
                   </PieChart>
@@ -173,24 +194,27 @@ export function AnalyticsPage() {
                   ))}
                 </div>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
           </div>
 
-          {/* Orders History BarChart */}
-          <AmberCard title={t('report.orders_overview') || 'Orders Load Pattern'}>
-            <div className="h-[250px] w-full pt-4">
+          <ReportPanelCard
+            title={t('report.orders_overview') || 'Orders Load Pattern'}
+            isEmpty={!hasOrdersData}
+            bodyMinHeight="min-h-[250px]"
+          >
+            <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics?.orders || []}>
+                <BarChart data={ordersSeries}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="#3f3f46" 
+                  <XAxis
+                    dataKey="date"
+                    stroke="#3f3f46"
                     tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
-                    stroke="#3f3f46" 
+                  <YAxis
+                    stroke="#3f3f46"
                     tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
                     tickLine={false}
                     axisLine={false}
@@ -202,7 +226,7 @@ export function AnalyticsPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </AmberCard>
+          </ReportPanelCard>
         </>
       )}
     </div>

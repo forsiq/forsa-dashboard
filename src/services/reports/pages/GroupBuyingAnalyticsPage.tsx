@@ -15,8 +15,9 @@ import { ShoppingCart, CheckCircle, Percent, Users } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { cn } from '@core/lib/utils/cn';
-import { AmberCard } from '@core/components/AmberCard';
 import { ReportStatsCard } from '../components/ReportStatsCard';
+import { ReportPanelCard } from '../components/ReportPanelCard';
+import { hasChartValues } from '../utils/chartData';
 import { useGetGroupBuyings, useGetGroupBuyingStats } from '../../../features/sales/api/group-buying-hooks';
 import type { GroupBuying } from '../../../features/sales/types';
 
@@ -111,6 +112,9 @@ export function GroupBuyingAnalyticsPage() {
     [deals]
   );
 
+  const hasStatusChartData = hasChartValues(statusData, ['value']);
+  const hasPieData = pieData.length > 0;
+
   if (!isClient) return null;
 
   return (
@@ -151,9 +155,12 @@ export function GroupBuyingAnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Deals by Status */}
-            <AmberCard title={t('report.deals_by_status') || 'Deals by Status'}>
-              <div className="h-[350px] w-full pt-6">
+            <ReportPanelCard
+              title={t('report.deals_by_status') || 'Deals by Status'}
+              isEmpty={!hasStatusChartData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={statusData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -181,65 +188,53 @@ export function GroupBuyingAnalyticsPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
 
-            {/* Deal Completion Rate Pie Chart */}
-            <AmberCard title={t('report.deal_completion_rate') || 'Deal Completion Rate'}>
-              <div className="h-[350px] w-full flex flex-col items-center pt-4">
-                {pieData.length === 0 ? (
-                  <p className="text-sm text-zinc-muted font-bold py-12">
-                    {t('report.no_data') || 'No data available'}
-                  </p>
-                ) : (
-                  <>
-                    <ResponsiveContainer width="100%" height="80%">
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {pieData.map((_entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                              stroke="rgba(255,255,255,0.05)"
-                              strokeWidth={2}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#18181b',
-                            border: '1px solid #27272a',
-                            borderRadius: '12px',
-                          }}
+            <ReportPanelCard
+              title={t('report.deal_completion_rate') || 'Deal Completion Rate'}
+              isEmpty={!hasPieData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full flex flex-col items-center">
+                <ResponsiveContainer width="100%" height="80%">
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                      {pieData.map((_entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                          stroke="rgba(255,255,255,0.05)"
+                          strokeWidth={2}
                         />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="grid grid-cols-3 gap-4 w-full px-4">
-                      {pieData.map((d, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                          />
-                          <span className="text-[11px] font-black text-zinc-muted uppercase tracking-tight">
-                            {d.name} ({d.value})
-                          </span>
-                        </div>
                       ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#18181b',
+                        border: '1px solid #27272a',
+                        borderRadius: '12px',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-3 gap-4 w-full px-4">
+                  {pieData.map((d, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                      />
+                      <span className="text-[11px] font-black text-zinc-muted uppercase tracking-tight">
+                        {d.name} ({d.value})
+                      </span>
                     </div>
-                  </>
-                )}
+                  ))}
+                </div>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
           </div>
 
-          {/* Top Deals Table */}
-          <AmberCard title={t('report.top_deals') || 'Top Deals'}>
+          <ReportPanelCard title={t('report.top_deals') || 'Top Deals'}>
             <div className="overflow-x-auto">
               <table className="w-full text-start">
                 <thead>
@@ -312,7 +307,7 @@ export function GroupBuyingAnalyticsPage() {
                 </tbody>
               </table>
             </div>
-          </AmberCard>
+          </ReportPanelCard>
         </>
       )}
     </div>

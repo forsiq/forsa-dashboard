@@ -4,13 +4,12 @@ import { Download } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { cn } from '@core/lib/utils/cn';
-import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberExcelExport } from '@core/components/Data/AmberExcelExport';
 import { useGetSalesReport } from '../hooks';
 import { ReportStatsCard } from '../components/ReportStatsCard';
-
-const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+import { ReportPanelCard } from '../components/ReportPanelCard';
+import { hasChartValues } from '../utils/chartData';
 
 /**
  * SalesReportPage - Detailed sales report
@@ -24,32 +23,39 @@ export function SalesReportPage() {
     queryFn: () => import('../api/reports').then((m) => m.getSalesReport(timeframe)),
   });
 
+  const products = report?.products ?? [];
+  const hasProductChartData = hasChartValues(products, ['revenue', 'sales']);
+
   const kpis = [
-    { 
-      label: t('report.gross_sales'), 
-      value: report?.grossSales ? formatCurrency(report.grossSales) : formatCurrency(154200), 
-      change: report?.grossSalesChange || '+14%', 
-      color: 'text-brand' 
+    {
+      label: t('report.gross_sales'),
+      value: report != null ? formatCurrency(report.grossSales ?? 0) : '--',
+      change: report?.grossSalesChange || undefined,
+      color: 'text-brand',
     },
-    { 
-      label: t('report.net_profit'), 
-      value: report?.netProfit ? formatCurrency(report.netProfit) : formatCurrency(42500), 
-      change: report?.netProfitChange || '+8%', 
-      color: 'text-success' 
+    {
+      label: t('report.net_profit'),
+      value: report != null ? formatCurrency(report.netProfit ?? 0) : '--',
+      change: report?.netProfitChange || undefined,
+      color: 'text-success',
     },
-    { 
-      label: t('report.tax_collected'), 
-      value: report?.taxCollected ? formatCurrency(report.taxCollected) : formatCurrency(12430), 
-      change: report?.taxCollectedChange || '+12%', 
-      color: 'text-warning' 
+    {
+      label: t('report.tax_collected'),
+      value: report != null ? formatCurrency(report.taxCollected ?? 0) : '--',
+      change: report?.taxCollectedChange || undefined,
+      color: 'text-warning',
     },
-    { 
-      label: t('report.shipping'), 
-      value: report?.shipping ? formatCurrency(report.shipping) : formatCurrency(5200), 
-      change: report?.shippingChange || '+5%', 
-      color: 'text-info' 
+    {
+      label: t('report.shipping'),
+      value: report != null ? formatCurrency(report.shipping ?? 0) : '--',
+      change: report?.shippingChange || undefined,
+      color: 'text-info',
     },
   ];
+
+  const periodComparisonData = hasProductChartData
+    ? products.map((p) => ({ ...p, goal: (p.revenue ?? 0) * 0.85 }))
+    : [];
 
   return (
     <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
@@ -59,19 +65,18 @@ export function SalesReportPage() {
           <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">{t('report.sales_report') || 'تقرير المبيعات'}</h1>
           <p className="text-base text-zinc-secondary font-bold">{t('report.sales_subtitle') || 'تفصيل شامل للمبيعات والفئات والأرباح'}</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
-          {/* Timeframe Select */}
           <div className="flex items-center bg-obsidian-card border border-white/5 p-1 rounded-xl shadow-inner">
             {['day', 'week', 'month', 'year'].map((t_frame) => (
               <button
                 key={t_frame}
                 onClick={() => setTimeframe(t_frame)}
                 className={cn(
-                  "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all",
-                  timeframe === t_frame 
-                    ? "bg-brand text-black shadow-lg" 
-                    : "text-zinc-muted hover:text-zinc-text hover:bg-white/5"
+                  'px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all',
+                  timeframe === t_frame
+                    ? 'bg-brand text-black shadow-lg'
+                    : 'text-zinc-muted hover:text-zinc-text hover:bg-white/5'
                 )}
               >
                 {t(`report.timeframe.${t_frame}`)}
@@ -80,7 +85,7 @@ export function SalesReportPage() {
           </div>
 
           <AmberExcelExport
-            data={report?.products || []}
+            data={products}
             columns={[
               { key: 'name', label: t('common.name') || 'Name' },
               { key: 'sales', label: t('report.sales') || 'Sales' },
@@ -100,13 +105,14 @@ export function SalesReportPage() {
       {isLoading ? (
         <div className="space-y-6">
           <div className="grid grid-cols-4 gap-6">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-obsidian-card rounded-xl animate-pulse" />)}
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 bg-obsidian-card rounded-xl animate-pulse" />
+            ))}
           </div>
           <div className="h-96 bg-obsidian-card rounded-xl animate-pulse" />
         </div>
       ) : (
         <div className="space-y-8">
-          {/* KPI Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpis.map((kpi, i) => (
               <ReportStatsCard
@@ -121,29 +127,45 @@ export function SalesReportPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Products Performance */}
-            <AmberCard title={t('report.product_performance') || 'Product Revenue Contribution'}>
-              <div className="h-[350px] w-full pt-6">
+            <ReportPanelCard
+              title={t('report.product_performance') || 'Product Revenue Contribution'}
+              isEmpty={!hasProductChartData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={report?.products || []} layout="vertical" margin={{ left: 20 }}>
+                  <BarChart data={products} layout="vertical" margin={{ left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
                     <XAxis type="number" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" stroke="#71717a" tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 700 }} width={100} axisLine={false} tickLine={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      stroke="#71717a"
+                      tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 700 }}
+                      width={100}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
-                      formatter={(value: string | number | (string | number)[]) => formatCurrency(Array.isArray(value) ? value[0] : value)}
+                      formatter={(value: string | number | (string | number)[]) =>
+                        formatCurrency(Array.isArray(value) ? value[0] : value)
+                      }
                     />
                     <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={25} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
 
-            {/* Area Chart for Revenue Trends */}
-            <AmberCard title={t('report.period_comparison') || 'Revenue vs Goal'}>
-              <div className="h-[350px] w-full pt-6">
+            <ReportPanelCard
+              title={t('report.period_comparison') || 'Revenue vs Goal'}
+              isEmpty={!hasProductChartData}
+              bodyMinHeight="min-h-[350px]"
+            >
+              <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={report?.products?.map((p, i) => ({ ...p, goal: p.revenue * 0.85 })) || []}>
+                  <AreaChart data={periodComparisonData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="name" stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis stroke="#3f3f46" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -153,7 +175,7 @@ export function SalesReportPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </AmberCard>
+            </ReportPanelCard>
           </div>
         </div>
       )}
