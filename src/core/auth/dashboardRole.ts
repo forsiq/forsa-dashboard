@@ -2,6 +2,7 @@
  * Shared JWT → Forsa dashboard role resolution.
  * Used by proxy (edge/node), RoleGuard, and ForsaSidebar so route checks match sidebar visibility.
  */
+import Cookies from 'js-cookie';
 import type { JwtPayload, UserRole } from '@features/auth/types';
 
 export const DASHBOARD_ROLES: readonly UserRole[] = [
@@ -22,6 +23,9 @@ const ROLE_ALIASES: Record<string, UserRole> = {
   moderator: 'customer_support',
   support: 'customer_support',
   employee: 'customer_support',
+  customer: 'customer_support',
+  user: 'customer_support',
+  buyer: 'customer_support',
 };
 
 function resolveRoleToken(value: string | undefined): UserRole | null {
@@ -100,4 +104,32 @@ export function isDashboardRoleAllowed(
   dashboardRole: UserRole,
 ): boolean {
   return allowedRoles.includes(dashboardRole);
+}
+
+export interface RoleDebugInfo {
+  resolvedRole: UserRole;
+  rawClaims: {
+    role?: string;
+    roles?: string[];
+    platform_role?: string;
+    business_role?: string;
+    collaborator_role?: string;
+  };
+  tokenPresent: boolean;
+}
+
+export function getRoleDebugInfo(): RoleDebugInfo {
+  const token = typeof window !== 'undefined' ? Cookies.get('access') : undefined;
+  const payload = token ? decodeJwtPayload(token) : null;
+  return {
+    resolvedRole: extractDashboardRole(payload),
+    rawClaims: {
+      role: payload?.role,
+      roles: payload?.roles,
+      platform_role: payload?.platform_role,
+      business_role: payload?.business_role,
+      collaborator_role: payload?.collaborator_role,
+    },
+    tokenPresent: !!token,
+  };
 }

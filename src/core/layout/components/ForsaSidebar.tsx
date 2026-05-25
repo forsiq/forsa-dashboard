@@ -21,6 +21,7 @@ import { CHANGELOG_NEW_BADGE } from '@config/sidebar/applySidebarBadges';
 import { useAuth } from '@features/auth/hooks/useAuth';
 import type { UserRole } from '@features/auth/types';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
+import { getRoleDebugInfo } from '@core/auth/dashboardRole';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
@@ -519,6 +520,28 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
           });
           })()}
         </div>
+
+        {process.env.NODE_ENV === 'development' && !isCollapsed && (
+          <div className="px-4 py-2 mb-2 border border-dashed border-white/10 rounded-md mx-4">
+            {(() => {
+              const debug = getRoleDebugInfo();
+              return (
+                <div className="text-[10px] font-mono space-y-0.5">
+                  <div className="text-emerald-400 font-bold">Role: {debug.resolvedRole}</div>
+                  {debug.rawClaims.business_role && (
+                    <div className="text-zinc-muted">business_role: {debug.rawClaims.business_role}</div>
+                  )}
+                  {debug.rawClaims.role && (
+                    <div className="text-zinc-muted">role: {debug.rawClaims.role}</div>
+                  )}
+                  {!debug.tokenPresent && (
+                    <div className="text-red-400">No token found</div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {showExitButton && (
           <div className="p-4 mt-auto">
