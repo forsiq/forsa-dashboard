@@ -1,3 +1,25 @@
+- version: "1.5.3"
+  date: "2026-05-25"
+  title:
+    en: "Orders list & category fixes"
+    ar: "إصلاح قائمة الطلبات والفئات"
+  entries:
+    - description:
+        en: "Merchants and analysts can open Reports routes again; edge proxy no longer redirects them to the dashboard."
+        ar: "التاجر والمحلل يمكنهم فتح صفحات التقارير مجدداً؛ الـ proxy لم يعد يعيد توجيههم للوحة التحكم."
+      type: fixed
+      sidebarPath: /reports
+    - description:
+        en: "Fixed orders page showing empty list while stats displayed data (invalid sort query caused API 400/500)."
+        ar: "إصلاح صفحة الطلبات التي كانت تظهر فارغة رغم وجود أرقام في الإحصائيات (معاملات فرز غير صالحة كانت تسبب 400/500)."
+      type: fixed
+      sidebarPath: /orders
+    - description:
+        en: "Dragging categories on the list now saves sort order to the server immediately (bulk reorder API)."
+        ar: "سحب الفئات في القائمة يحفظ الترتيب على الخادم مباشرة (واجهة إعادة الترتيب الجماعية)."
+      type: fixed
+      sidebarPath: /categories
+
 - version: "1.5.2"
   date: "2026-05-20"
   title:

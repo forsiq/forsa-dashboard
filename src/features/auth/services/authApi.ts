@@ -6,6 +6,7 @@ import { AUTH_ERROR_CODES, AuthApiError } from '../constants/authErrors';
  * with hardcoded fallback to zv-auth-service on test.
  */
 import { AUTH_API_BASE } from '@config/api';
+import { setUser } from '@core/lib';
 
 /**
  * Build the full auth API URL by appending a path to the base.
@@ -152,6 +153,12 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     if (userResponse.ok) return userResponse.json();
     throw new Error('Profile fetch failed');
   }).then(userData => {
+    const id = userData.id != null ? String(userData.id) : 'session-id';
+    setUser({
+      id,
+      username: userData.username || credentials.username,
+      email: userData.email || '',
+    });
     console.log('[authApi] Background profile fetch succeeded:', userData.username);
   }).catch(err => {
     console.warn('[authApi] Background profile fetch failed:', err);

@@ -781,6 +781,8 @@ export const ar: Record<string, string> = {
   "category.bulk_deactivate_confirm": "هل أنت متأكد من إيقاف",
   "category.items": "عناصر",
   "category.save_order": "حفظ الترتيب",
+  "category.saving_order": "جاري حفظ الترتيب…",
+  "category.reorder_requires_full_list": "امسح البحث واختر «الكل» لإعادة ترتيب الفئات",
 
   // Order statuses
   "orders.status.pending": "معلق",
@@ -823,6 +825,8 @@ export const ar: Record<string, string> = {
   "orders.stat.revenue": "الإيرادات",
   "orders.stat.pending": "معلق",
   "orders.stat.active": "اليوم",
+  "orders.stat.this_month": "هذا الشهر",
+  "orders.error_loading": "حدث خطأ في تحميل الطلبات",
 
   // Order table
   "orders.table.id": "رقم الطلب",

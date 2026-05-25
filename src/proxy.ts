@@ -7,15 +7,26 @@ type RouteRoleConfig = {
 };
 
 const ADMIN_ONLY_ROLES = ['admin'];
-const MANAGER_PLUS_ROLES = ['admin', 'manager'];
+
+/** Must match ForsaSidebar ROLE_MAP for /reports (+ legacy JWT role `manager`). */
+const REPORTS_ACCESS_ROLES = [
+  'admin',
+  'manager',
+  'merchant',
+  'customer_support',
+  'product_analyst',
+];
+
+/** Matches ForsaSidebar: admin + product_analyst (+ legacy manager). */
+const LIVE_MONITOR_ACCESS_ROLES = ['admin', 'manager', 'product_analyst'];
 
 const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
   '/moderation': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/settlements': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/users': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/settings': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/live-monitor': { roles: MANAGER_PLUS_ROLES, redirectPath: '/dashboard' },
-  '/reports': { roles: MANAGER_PLUS_ROLES, redirectPath: '/dashboard' },
+  '/live-monitor': { roles: LIVE_MONITOR_ACCESS_ROLES, redirectPath: '/dashboard' },
+  '/reports': { roles: REPORTS_ACCESS_ROLES, redirectPath: '/dashboard' },
 };
 
 const parseJwtPayload = (token?: string): Record<string, unknown> | null => {

@@ -70,6 +70,14 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; me
   return { success: true, message: 'Category deleted successfully' };
 }
 
+/** Persist display order in one request (auction-service PATCH /categories/reorder). */
+export async function reorderCategories(ids: string[]): Promise<void> {
+  const client = categoryBaseApi.getInstance();
+  await client.patch('/categories/reorder', {
+    ids: ids.map((id) => Number(id)),
+  });
+}
+
 export const categoryKeys = {
   all: ['categories'] as const,
   lists: () => [...categoryKeys.all, 'list'] as const,

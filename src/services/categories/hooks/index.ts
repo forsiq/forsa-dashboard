@@ -72,6 +72,26 @@ export const useUpdate = (options?: any) => {
   });
 };
 
+export const useReorderCategories = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: (ids: string[]) => api.reorderCategories(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
+      toast.success('Category order saved');
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      toast.error(error?.message || 'Failed to save category order', 6000);
+      options?.onError?.(error);
+    },
+  });
+};
+
 export const useDelete = (options?: any) => {
   const queryClient = useQueryClient();
   const toast = useToast();

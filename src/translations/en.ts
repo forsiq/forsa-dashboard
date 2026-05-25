@@ -780,6 +780,8 @@ export const en: Record<string, string> = {
   "category.bulk_deactivate_confirm": "Are you sure you want to deactivate",
   "category.items": "items",
   "category.save_order": "Save Order",
+  "category.saving_order": "Saving order…",
+  "category.reorder_requires_full_list": "Clear search and select All to reorder categories",
 
   // Order statuses
   "orders.status.pending": "Pending",
@@ -822,6 +824,8 @@ export const en: Record<string, string> = {
   "orders.stat.revenue": "Revenue",
   "orders.stat.pending": "Pending",
   "orders.stat.active": "Today",
+  "orders.stat.this_month": "This month",
+  "orders.error_loading": "Failed to load orders",
 
   // Order table
   "orders.table.id": "Order #",

@@ -49,7 +49,14 @@ export const OrdersListPage = () => {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Fetch orders
-  const { data: ordersData, isPending: isLoadingOrders, isFetching, refetch } = useQuery({
+  const {
+    data: ordersData,
+    isPending: isLoadingOrders,
+    isFetching,
+    isError: ordersLoadError,
+    error: ordersError,
+    refetch,
+  } = useQuery({
     queryKey: orderKeys.list({ page, limit, status: statusFilter, search: debouncedSearch, sortBy, sortOrder }),
     queryFn: async () => {
       const apiStatus =
@@ -86,8 +93,10 @@ export const OrdersListPage = () => {
   });
 
   const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
-    const validKeys = ['createdAt', 'total', 'orderNumber'] as const;
-    const typedKey = validKeys.includes(key as any) ? (key as 'createdAt' | 'total' | 'orderNumber') : 'createdAt';
+    const validKeys = ['createdAt', 'total', 'orderNumber', 'date', 'status'] as const;
+    const typedKey = validKeys.includes(key as (typeof validKeys)[number])
+      ? (key as (typeof validKeys)[number])
+      : 'createdAt';
     setSortBy(typedKey);
     setSortOrder(direction);
     setPage(1);
@@ -290,7 +299,12 @@ export const OrdersListPage = () => {
         { label: t('orders.stat.total'), value: statsData?.total || 0, icon: Package, color: 'brand' },
         { label: t('orders.stat.revenue'), value: formatCurrency(statsData?.totalRevenue), icon: DollarSign, color: 'success' },
         { label: t('orders.stat.pending'), value: statsData?.pending || 0, icon: AlertCircle, color: 'warning' },
-        { label: t('orders.stat.active'), value: statsData?.todayOrders || 0, icon: TrendingUp, color: 'info' },
+        {
+          label: t('orders.stat.this_month') || t('orders.stat.active'),
+          value: statsData?.todayOrders || 0,
+          icon: TrendingUp,
+          color: 'info',
+        },
       ]}
       tabs={
         <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
@@ -319,6 +333,18 @@ export const OrdersListPage = () => {
       <div className="space-y-6">
         {isLoadingOrders ? (
           <ListPageSkeleton count={8} columns={4} showStats />
+        ) : ordersLoadError ? (
+          <div className="p-12 text-center space-y-4">
+            <p className="text-danger font-bold">
+              {t('orders.error_loading') || 'حدث خطأ في تحميل الطلبات'}
+            </p>
+            <p className="text-sm text-zinc-muted">
+              {(ordersError as Error)?.message || ''}
+            </p>
+            <AmberButton variant="outline" size="sm" onClick={() => refetch()} className="font-bold">
+              {t('common.retry') || 'إعادة المحاولة'}
+            </AmberButton>
+          </div>
         ) : orders.length === 0 ? (
           <EmptyState
             icon={Package}

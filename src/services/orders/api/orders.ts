@@ -66,8 +66,28 @@ const mapToOrder = (raw: any): Order => {
   };
 };
 
+/** Map UI sort keys to auction-service order list query (avoids 400/500 on list). */
+function normalizeOrderListFilters(filters: OrderFilters): OrderFilters {
+  const sortByMap: Record<string, string> = {
+    createdAt: 'createdAt',
+    date: 'createdAt',
+    orderNumber: 'createdAt',
+    total: 'finalPrice',
+    finalPrice: 'finalPrice',
+    status: 'status',
+    paidAt: 'paidAt',
+  };
+  const sortBy = filters.sortBy
+    ? sortByMap[filters.sortBy] ?? 'createdAt'
+    : undefined;
+  const sortOrder = filters.sortOrder
+    ? (String(filters.sortOrder).toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+    : undefined;
+  return { ...filters, sortBy: sortBy as OrderFilters['sortBy'], sortOrder: sortOrder as OrderFilters['sortOrder'] };
+}
+
 export async function getOrders(filters: OrderFilters = {} as any, signal?: AbortSignal): Promise<OrdersResponse> {
-  const response = await orderBaseApi.list(filters) as any;
+  const response = await orderBaseApi.list(normalizeOrderListFilters(filters)) as any;
   const orders = (response.data || []).map(mapToOrder);
   
   return {
@@ -97,8 +117,18 @@ export async function getOrderStats(): Promise<OrderStats> {
     cancelled: stats.cancelled || 0,
     totalRevenue: stats.totalRevenue || stats.total_revenue || 0,
     refunded: 0,
-    todayOrders: stats.todayOrders || stats.today_orders || 0,
-    todayRevenue: stats.todayRevenue || stats.today_revenue || 0,
+    todayOrders:
+      stats.todayOrders ||
+      stats.today_orders ||
+      stats.thisMonthOrders ||
+      stats.this_month_orders ||
+      0,
+    todayRevenue:
+      stats.todayRevenue ||
+      stats.today_revenue ||
+      stats.thisMonthRevenue ||
+      stats.this_month_revenue ||
+      0,
     averageOrderValue: stats.averageOrderValue || stats.average_order_value || 0,
   };
 }

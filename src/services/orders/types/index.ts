@@ -88,8 +88,8 @@ export interface OrderFilters {
   endDate?: string;
   page?: number;
   limit?: number;
-  sortBy?: 'createdAt' | 'total' | 'orderNumber';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: 'createdAt' | 'finalPrice' | 'status' | 'paidAt' | 'total' | 'orderNumber' | 'date';
+  sortOrder?: 'asc' | 'desc' | 'ASC' | 'DESC';
 }
 
 export interface OrdersResponse {

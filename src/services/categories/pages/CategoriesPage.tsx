@@ -13,7 +13,6 @@ import {
   Power,
   PowerOff,
   GripVertical,
-  Save,
   Loader2,
 } from 'lucide-react';
 import {
@@ -45,6 +44,7 @@ import {
   useGetCategoryStats,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
+  useReorderCategories,
 } from '../hooks';
 import type { Category } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
@@ -68,10 +68,11 @@ function arrayMove<T>(array: T[], from: number, to: number): T[] {
 
 interface SortableRowProps {
   id: string;
+  disabled?: boolean;
   children: React.ReactNode;
 }
 
-function SortableRow({ id, children }: SortableRowProps) {
+function SortableRow({ id, children, disabled = false }: SortableRowProps) {
   const {
     attributes,
     listeners,
@@ -79,7 +80,7 @@ function SortableRow({ id, children }: SortableRowProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id, disabled });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -111,10 +112,11 @@ export function CategoriesPage() {
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
-  // Drag & drop state
+  // Drag & drop state (reorder only when full list is visible — not search/filter subset)
   const [localCategories, setLocalCategories] = useState<Category[]>([]);
-  const [hasOrderChanges, setHasOrderChanges] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const canReorder =
+    statusFilter === 'all' && !debouncedSearch.trim();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -161,11 +163,11 @@ export function CategoriesPage() {
     return categories;
   }, [data?.categories, statusFilter, debouncedSearch, language]);
 
-  // Sync local categories when filtered data changes
+  // Sync local categories when server list changes (skip while saving drag order)
   useEffect(() => {
+    if (isSavingOrder) return;
     setLocalCategories(filteredCategories);
-    setHasOrderChanges(false);
-  }, [filteredCategories]);
+  }, [filteredCategories, isSavingOrder]);
 
   // Fetch stats
   const { data: stats, isPending: statsLoading } = useGetCategoryStats();
@@ -180,8 +182,8 @@ export function CategoriesPage() {
     },
   });
 
-  // Update mutation (no auto-refetch for reorder, we manage local state)
   const updateMutation = useUpdateCategoryMutation();
+  const reorderMutation = useReorderCategories();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -208,36 +210,30 @@ export function CategoriesPage() {
     });
   };
 
-  // Drag end handler
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    setLocalCategories((prev) => {
-      const oldIndex = prev.findIndex((c) => String(c.id) === String(active.id));
-      const newIndex = prev.findIndex((c) => String(c.id) === String(over.id));
-      return arrayMove(prev, oldIndex, newIndex);
-    });
-    setHasOrderChanges(true);
-  };
-
-  // Save order to backend
-  const saveOrder = async () => {
+  const persistCategoryOrder = async (ordered: Category[]) => {
     setIsSavingOrder(true);
     try {
-      for (let i = 0; i < localCategories.length; i++) {
-        await updateMutation.mutateAsync({
-          id: localCategories[i].id,
-          sortOrder: i + 1,
-        });
-      }
-      setHasOrderChanges(false);
-      refetch();
-    } catch (err) {
-      console.error('Failed to save order:', err);
+      await reorderMutation.mutateAsync(ordered.map((c) => String(c.id)));
+      await refetch();
+    } catch {
+      setLocalCategories(filteredCategories);
     } finally {
       setIsSavingOrder(false);
     }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (!canReorder) return;
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = localCategories.findIndex((c) => String(c.id) === String(active.id));
+    const newIndex = localCategories.findIndex((c) => String(c.id) === String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const nextOrder = arrayMove(localCategories, oldIndex, newIndex);
+    setLocalCategories(nextOrder);
+    void persistCategoryOrder(nextOrder);
   };
 
   const queryClient = useQueryClient();
@@ -295,19 +291,11 @@ export function CategoriesPage() {
       icon={LayoutGrid}
       headerActions={
         <div className="flex items-center gap-3">
-          {hasOrderChanges && (
-            <AmberButton
-              onClick={saveOrder}
-              disabled={isSavingOrder}
-              className="gap-2 px-6 h-11 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
-            >
-              {isSavingOrder ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {t('category.save_order') || 'حفظ الترتيب'}
-            </AmberButton>
+          {isSavingOrder && (
+            <span className="flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
+              <Loader2 className="w-4 h-4 animate-spin text-brand" />
+              {t('category.saving_order') || t('common.saving') || 'جاري الحفظ...'}
+            </span>
           )}
           <AmberButton
             className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
@@ -399,6 +387,12 @@ export function CategoriesPage() {
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
             >
+              {!canReorder && (
+                <p className="px-4 py-2 text-[10px] font-bold text-zinc-muted uppercase tracking-widest border-b border-white/5 bg-white/[0.02]">
+                  {t('category.reorder_requires_full_list') ||
+                    'امسح البحث واختر «الكل» لإعادة ترتيب الفئات'}
+                </p>
+              )}
               <SortableContext
                 items={localCategories.map((c) => c.id)}
                 strategy={verticalListSortingStrategy}
@@ -434,10 +428,17 @@ export function CategoriesPage() {
                           const Icon = IconComponent || LayoutGrid;
 
                           return (
-                            <SortableRow key={category.id} id={category.id}>
+                            <SortableRow key={category.id} id={category.id} disabled={!canReorder}>
                               {/* Drag handle cell - receives listeners from SortableRow */}
                               <td className="px-3 py-5">
-                                <div className="cursor-grab active:cursor-grabbing text-zinc-muted/30 hover:text-zinc-muted transition-colors">
+                                <div
+                                  className={cn(
+                                    'text-zinc-muted/30 transition-colors',
+                                    canReorder
+                                      ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
+                                      : 'cursor-not-allowed opacity-40',
+                                  )}
+                                >
                                   <GripVertical className="w-4 h-4" />
                                 </div>
                               </td>
