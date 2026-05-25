@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
 import {
   Users,
   Plus,
@@ -32,8 +31,7 @@ import {
   ListPageToolbarSearch,
 } from '@core/components/Layout';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
-import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
-import type { UserRole } from '@features/auth/types';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
@@ -61,11 +59,7 @@ export const GroupBuyingListPage: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const userRole = useMemo<UserRole>(() => {
-    if (typeof window === 'undefined') return 'admin';
-    return extractDashboardRoleFromToken(Cookies.get('access'));
-  }, []);
-  const isMerchant = userRole === 'merchant';
+  const { isMerchant } = useDashboardRole();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

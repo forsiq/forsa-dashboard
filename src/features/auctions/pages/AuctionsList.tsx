@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
 import {
   Gavel,
   Plus,
@@ -38,8 +37,7 @@ import {
   ListPageToolbar,
   ListPageToolbarSearch,
 } from '@core/components/Layout';
-import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
-import type { UserRole } from '@features/auth/types';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
   useGetAuctions,
   useGetAuctionStats,
@@ -101,11 +99,7 @@ export const AuctionsList: React.FC = () => {
     const { t, language } = useLanguage();
     const router = useRouter();
 
-    const userRole = useMemo<UserRole>(() => {
-      if (typeof window === 'undefined') return 'admin';
-      return extractDashboardRoleFromToken(Cookies.get('access'));
-    }, []);
-    const isMerchant = userRole === 'merchant';
+    const { isMerchant } = useDashboardRole();
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useFilterState('search', '');

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,8 +16,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
-import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
-import type { UserRole } from '@features/auth/types';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
@@ -106,12 +104,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
-  const userRole = useMemo<UserRole>(() => {
-    if (typeof window === 'undefined') return 'admin';
-    return extractDashboardRoleFromToken(Cookies.get('access'));
-  }, []);
-
-  const isMerchant = userRole === 'merchant';
+  const { isMerchant } = useDashboardRole();
 
   const maxStep = isMerchant
     ? WIZARD_STEP.MEDIA
