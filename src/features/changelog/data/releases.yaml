@@ -5,6 +5,11 @@
     ar: "إصلاح قائمة الطلبات والفئات"
   entries:
     - description:
+        en: "Orders list shows winner names or phone from flex-auth instead of always showing unassigned customer."
+        ar: "قائمة الطلبات تعرض اسم الفائز أو رقم الهاتف من flex-auth بدلاً من «عميل غير محدد» دائماً."
+      type: fixed
+      sidebarPath: /orders
+    - description:
         en: "Merchants and analysts can open Reports routes again; edge proxy no longer redirects them to the dashboard."
         ar: "التاجر والمحلل يمكنهم فتح صفحات التقارير مجدداً؛ الـ proxy لم يعد يعيد توجيههم للوحة التحكم."
       type: fixed

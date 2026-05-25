@@ -15,6 +15,10 @@ export function pickOrderWinnerName(raw: Record<string, unknown>): string {
     if (!trimmed || UNKNOWN_LITERALS.has(trimmed.toLowerCase())) continue;
     return trimmed;
   }
+
+  const phone = String(raw.winnerPhone ?? raw.winner_phone ?? '').trim();
+  if (phone) return phone;
+
   return '';
 }
 
