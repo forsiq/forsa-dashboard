@@ -18,6 +18,7 @@ export interface Order {
   customerId: string;
   customerName: string;
   customerEmail: string;
+  customerPhone: string;
   items: OrderItem[];
   subtotal: number;
   tax: number;
@@ -31,6 +32,8 @@ export interface Order {
   notes?: string;
   shippingAddress: Address;
   billingAddress: Address;
+  trackingNumber?: string;
+  deliveryProvider?: string;
   createdAt: string;
   updatedAt: string;
 }

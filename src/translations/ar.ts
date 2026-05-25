@@ -845,6 +845,9 @@ export const ar: Record<string, string> = {
   "orders.as_processing": "طلبات كقيد المعالجة",
   "orders.empty": "لا توجد طلبات",
   "orders.empty_description": "لا توجد طلبات تطابق معايير البحث.",
+  "orders.deliveryInfo": "معلومات التوصيل",
+  "orders.deliveryProvider": "شركة التوصيل",
+  "orders.trackingNumber": "رقم التتبع",
 
   // Auction category slugs — app override (see getLocalizedName fallback)
   "auction.category.computers": "أجهزة كمبيوتر",

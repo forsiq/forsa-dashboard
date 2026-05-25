@@ -1,27 +1,60 @@
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Trash2, Package, MapPin, CreditCard, User } from 'lucide-react';
-import { getOrder, deleteOrder, updateOrderStatus, orderKeys } from '../api/orders';
-import type { Order } from '../types';
+import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
+import { getOrder, updateOrderStatus, updateOrderPaymentStatus, orderKeys } from '../api/orders';
+import type { Order, OrderStatus } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
 import { formatPhone } from '@core/lib/utils/formatPhone';
-import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { useState } from 'react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { formatOrderCustomerName, orderStatusLabelKey } from '../utils/order-display';
+import { useToast } from '@core/contexts/ToastContext';
+import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
+import { useState, useMemo } from 'react';
+
+const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant: 'default' | 'danger' | 'success' }[]>> = {
+  pending: [
+    { status: 'confirmed', icon: Clock, variant: 'default' },
+    { status: 'cancelled', icon: XCircle, variant: 'danger' },
+  ],
+  confirmed: [
+    { status: 'paid', icon: CheckCircle, variant: 'default' },
+    { status: 'cancelled', icon: XCircle, variant: 'danger' },
+  ],
+  paid: [
+    { status: 'shipped', icon: Truck, variant: 'default' },
+    { status: 'cancelled', icon: XCircle, variant: 'danger' },
+  ],
+  shipped: [
+    { status: 'delivered', icon: CheckCircle, variant: 'success' },
+    { status: 'cancelled', icon: XCircle, variant: 'danger' },
+  ],
+  delivered: [],
+  cancelled: [],
+  refunded: [],
+  processing: [],
+};
+
+function hasAddressContent(addr: Order['shippingAddress']): boolean {
+  if (!addr) return false;
+  return !!(addr.street || addr.city || addr.state || addr.country || addr.fullName || addr.phone);
+}
 
 export const OrderDetailPage = () => {
   const router = useRouter();
   const [orderId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const queryClient = useQueryClient();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isClient = useIsClient();
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
+  const toast = useToast();
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    status: OrderStatus | null;
+  }>({ isOpen: false, status: null });
 
   const { data: order, isPending } = useQuery({
     queryKey: orderKeys.detail(orderId || ''),
@@ -29,21 +62,34 @@ export const OrderDetailPage = () => {
     enabled: !!orderId,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      router.push('/orders');
-    },
-  });
-
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Order['status'] }) =>
+    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
       updateOrderStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(t('orders.status_updated') || 'تم تحديث حالة الطلب');
+    },
+    onError: () => {
+      toast.error(t('orders.status_update_failed') || 'فشل تحديث حالة الطلب');
     },
   });
+
+  const paymentMutation = useMutation({
+    mutationFn: ({ id, isPaid }: { id: string; isPaid: boolean }) =>
+      updateOrderPaymentStatus(id, isPaid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(t('orders.status_updated') || 'تم تحديث حالة الدفع');
+    },
+    onError: () => {
+      toast.error(t('orders.status_update_failed') || 'فشل تحديث حالة الدفع');
+    },
+  });
+
+  const availableTransitions = useMemo(() => {
+    if (!order) return [];
+    return statusTransitions[order.status] ?? [];
+  }, [order]);
 
   if (!isClient || !paramReady || !orderId || isPending) {
     return <DetailPageSkeleton />;
@@ -53,7 +99,7 @@ export const OrderDetailPage = () => {
     return <div className="text-zinc-text">{t('orders.notFound')}</div>;
   }
 
-  const statusColors: Partial<Record<Order['status'], string>> = {
+  const statusColors: Partial<Record<OrderStatus, string>> = {
     pending: 'bg-yellow-500/20 text-yellow-400',
     confirmed: 'bg-blue-500/20 text-blue-400',
     paid: 'bg-cyan-500/20 text-cyan-400',
@@ -124,6 +170,12 @@ export const OrderDetailPage = () => {
               <div className="text-zinc-text font-medium">
                 {formatOrderCustomerName(order.customerName, t)}
               </div>
+              {order.customerPhone && (
+                <div className="text-zinc-muted text-xs mt-0.5 flex items-center gap-1" dir="ltr">
+                  <Phone size={10} />
+                  {formatPhone(order.customerPhone)}
+                </div>
+              )}
             </div>
           </div>
         </AmberCard>
@@ -135,7 +187,7 @@ export const OrderDetailPage = () => {
         <AmberCard className="p-6 lg:col-span-2">
           <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.orderItems')}</h2>
           <div className="space-y-4">
-            {order.items.map((item) => (
+            {order.items.length > 0 ? order.items.map((item) => (
               <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
                 <div className="flex-1">
                   <div className="text-zinc-text font-medium">{item.productName}</div>
@@ -148,7 +200,11 @@ export const OrderDetailPage = () => {
                   <div className="text-sm font-medium text-zinc-text">{formatCurrency(item.totalPrice ?? 0)}</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="py-8 text-center text-zinc-muted text-sm">
+                {t('orders.empty') || 'لا توجد عناصر'}
+              </div>
+            )}
           </div>
 
           {/* Totals */}
@@ -178,71 +234,137 @@ export const OrderDetailPage = () => {
           </div>
         </AmberCard>
 
-        {/* Addresses */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Shipping Address */}
-          <AmberCard className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="text-zinc-muted" size={18} />
-              <h2 className="text-lg font-semibold text-zinc-text">{t('orders.shippingAddress')}</h2>
-            </div>
-            <div className="space-y-1 text-sm">
-              <div className="text-zinc-text">{order.shippingAddress.fullName}</div>
-              <div className="text-zinc-muted" dir="ltr">{order.shippingAddress.phone ? formatPhone(order.shippingAddress.phone) : ''}</div>
-              <div className="text-zinc-muted">
-                {order.shippingAddress.street}
-                {order.shippingAddress.building && `, ${order.shippingAddress.building}`}
-                {order.shippingAddress.floor && `, Floor ${order.shippingAddress.floor}`}
-                {order.shippingAddress.apartment && `, Apt ${order.shippingAddress.apartment}`}
+          {/* Shipping Address - only show if there is content */}
+          {hasAddressContent(order.shippingAddress) && (
+            <AmberCard className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="text-zinc-muted" size={18} />
+                <h2 className="text-lg font-semibold text-zinc-text">{t('orders.shippingAddress')}</h2>
               </div>
-              <div className="text-zinc-muted">
-                {order.shippingAddress.city}, {order.shippingAddress.state}
+              <div className="space-y-1 text-sm">
+                {order.shippingAddress.fullName && (
+                  <div className="text-zinc-text">{order.shippingAddress.fullName}</div>
+                )}
+                {order.shippingAddress.phone && (
+                  <div className="text-zinc-muted" dir="ltr">{formatPhone(order.shippingAddress.phone)}</div>
+                )}
+                <div className="text-zinc-muted">
+                  {order.shippingAddress.street}
+                  {order.shippingAddress.building && `, ${order.shippingAddress.building}`}
+                  {order.shippingAddress.floor && `, Floor ${order.shippingAddress.floor}`}
+                  {order.shippingAddress.apartment && `, Apt ${order.shippingAddress.apartment}`}
+                </div>
+                <div className="text-zinc-muted">
+                  {order.shippingAddress.city}{order.shippingAddress.state ? `, ${order.shippingAddress.state}` : ''}
+                </div>
+                {order.shippingAddress.country && (
+                  <div className="text-zinc-muted">{order.shippingAddress.country}</div>
+                )}
+                {order.shippingAddress.postalCode && (
+                  <div className="text-zinc-muted">{order.shippingAddress.postalCode}</div>
+                )}
               </div>
-              <div className="text-zinc-muted">{order.shippingAddress.country}</div>
-              {order.shippingAddress.postalCode && (
-                <div className="text-zinc-muted">{order.shippingAddress.postalCode}</div>
-              )}
-            </div>
-          </AmberCard>
+            </AmberCard>
+          )}
+
+          {/* Delivery / Tracking Info */}
+          {(order.trackingNumber || order.deliveryProvider) && (
+            <AmberCard className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Truck className="text-zinc-muted" size={18} />
+                <h2 className="text-lg font-semibold text-zinc-text">{t('orders.deliveryInfo') || 'معلومات التوصيل'}</h2>
+              </div>
+              <div className="space-y-2 text-sm">
+                {order.deliveryProvider && (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-muted">{t('orders.deliveryProvider') || 'شركة التوصيل'}</span>
+                    <span className="text-zinc-text font-medium">{order.deliveryProvider}</span>
+                  </div>
+                )}
+                {order.trackingNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-muted">{t('orders.trackingNumber') || 'رقم التتبع'}</span>
+                    <span className="text-zinc-text font-mono font-medium">{order.trackingNumber}</span>
+                  </div>
+                )}
+              </div>
+            </AmberCard>
+          )}
 
           {/* Notes */}
           {order.notes && (
             <AmberCard className="p-6">
               <h2 className="text-lg font-semibold text-zinc-text mb-2">{t('orders.notes')}</h2>
-              <p className="text-zinc-muted text-sm">{order.notes}</p>
+              <p className="text-zinc-muted text-sm whitespace-pre-wrap">{order.notes}</p>
             </AmberCard>
           )}
 
-          {/* Status Actions */}
-          <AmberCard className="p-6">
-            <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.updateStatus')}</h2>
-            <div className="space-y-2">
-              {(['pending', 'confirmed', 'paid', 'shipped', 'delivered', 'cancelled'] as Order['status'][]).map((status) => (
-                <AmberButton
-                  key={status}
-                  variant={order.status === status ? 'primary' : 'secondary'}
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => statusMutation.mutate({ id: order.id, status })}
-                  disabled={statusMutation.isPending}
-                >
-                  {t(orderStatusLabelKey(status)) || status}
-                </AmberButton>
-              ))}
-            </div>
-          </AmberCard>
+          {/* Status Actions - only show allowed transitions */}
+          {availableTransitions.length > 0 && (
+            <AmberCard className="p-6">
+              <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.updateStatus')}</h2>
+              <div className="space-y-2">
+                {availableTransitions.map(({ status, icon: Icon, variant }) => {
+                  const isActive = order.status === status;
+                  const btnClass =
+                    variant === 'danger'
+                      ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+                      : variant === 'success'
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
+                        : 'bg-white/5 text-zinc-text border border-white/10 hover:bg-white/10';
+                  return (
+                    <AmberButton
+                      key={status}
+                      variant="secondary"
+                      size="sm"
+                      className={`w-full justify-start gap-2 ${btnClass}`}
+                      onClick={() => setConfirmState({ isOpen: true, status })}
+                      disabled={statusMutation.isPending}
+                    >
+                      <Icon size={14} />
+                      {t(orderStatusLabelKey(status)) || status}
+                    </AmberButton>
+                  );
+                })}
+              </div>
+            </AmberCard>
+          )}
+
+          {/* Mark as Paid - show when unpaid and status allows */}
+          {order.paymentStatus !== 'paid' && order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <AmberCard className="p-6">
+              <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.payment')}</h2>
+              <AmberButton
+                variant="primary"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => paymentMutation.mutate({ id: order.id, isPaid: true })}
+                disabled={paymentMutation.isPending}
+              >
+                <CheckCircle size={14} />
+                {t('orders.payment_status.paid') || 'Mark as Paid'}
+              </AmberButton>
+            </AmberCard>
+          )}
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Status Change Confirmation Modal */}
       <AmberConfirmModal
-        isOpen={showDeleteModal}
-        title={t('orders.deleteOrder')}
-        message={t('orders.deleteConfirm', { orderNumber: order.orderNumber })}
-        onConfirm={() => deleteMutation.mutate(order.id)}
-        onClose={() => setShowDeleteModal(false)}
-        variant="destructive"
-        isLoading={deleteMutation.isPending}
+        isOpen={confirmState.isOpen}
+        title={t('orders.updateStatus') || 'تحديث حالة الطلب'}
+        message={`${t('orders.status_change_confirm') || 'هل تريد تغيير حالة الطلب إلى'} "${confirmState.status ? t(orderStatusLabelKey(confirmState.status)) : ''}"?`}
+        onConfirm={() => {
+          if (confirmState.status) {
+            statusMutation.mutate({ id: order.id, status: confirmState.status });
+          }
+          setConfirmState({ isOpen: false, status: null });
+        }}
+        onClose={() => setConfirmState({ isOpen: false, status: null })}
+        variant="warning"
+        isLoading={statusMutation.isPending}
       />
     </div>
   );

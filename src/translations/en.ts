@@ -844,6 +844,9 @@ export const en: Record<string, string> = {
   "orders.as_processing": "orders as processing",
   "orders.empty": "No Orders",
   "orders.empty_description": "No orders found matching your criteria.",
+  "orders.deliveryInfo": "Delivery Info",
+  "orders.deliveryProvider": "Delivery Provider",
+  "orders.trackingNumber": "Tracking Number",
 
   // Auction category slugs (DataTable / charts when API returns English `name` only)
   "auction.category.computers": "Computers",

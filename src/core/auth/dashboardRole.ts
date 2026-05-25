@@ -1,0 +1,83 @@
+/**
+ * Shared JWT → Forsa dashboard role resolution.
+ * Used by proxy (edge/node), RoleGuard, and ForsaSidebar so route checks match sidebar visibility.
+ */
+import type { JwtPayload, UserRole } from '@features/auth/types';
+
+export const DASHBOARD_ROLES: readonly UserRole[] = [
+  'admin',
+  'merchant',
+  'customer_support',
+  'product_analyst',
+] as const;
+
+const ROLE_PRIORITY: UserRole[] = [...DASHBOARD_ROLES];
+
+/** Legacy / auth-service role strings → dashboard UserRole */
+const ROLE_ALIASES: Record<string, UserRole> = {
+  manager: 'product_analyst',
+  staff: 'customer_support',
+  seller: 'merchant',
+  vendor: 'merchant',
+};
+
+export function decodeJwtPayload(token: string): JwtPayload | null {
+  try {
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) return null;
+    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    const jsonPayload = atob(padded);
+    return JSON.parse(jsonPayload) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+function collectRoleCandidates(payload: JwtPayload): string[] {
+  const out: string[] = [];
+  const push = (v: unknown) => {
+    if (typeof v === 'string' && v.trim()) out.push(v.trim().toLowerCase());
+  };
+  push(payload.role);
+  if (Array.isArray(payload.roles)) {
+    for (const r of payload.roles) push(r);
+  }
+  push(payload.platform_role);
+  push(payload.business_role);
+  push(payload.collaborator_role);
+  return out;
+}
+
+/**
+ * Resolve the effective dashboard role from JWT claims (single source of truth).
+ */
+export function extractDashboardRole(payload: JwtPayload | null): UserRole {
+  if (!payload) return 'customer_support';
+
+  const candidates = collectRoleCandidates(payload);
+
+  for (const preferred of ROLE_PRIORITY) {
+    if (candidates.includes(preferred)) return preferred;
+  }
+
+  for (const c of candidates) {
+    const mapped = ROLE_ALIASES[c];
+    if (mapped) return mapped;
+  }
+
+  return 'customer_support';
+}
+
+export function extractDashboardRoleFromToken(token: string | undefined | null): UserRole {
+  if (!token) return 'customer_support';
+  return extractDashboardRole(decodeJwtPayload(token));
+}
+
+/** Whether a dashboard role is allowed for a protected route list. */
+export function isDashboardRoleAllowed(
+  allowedRoles: readonly string[],
+  dashboardRole: UserRole,
+): boolean {
+  return allowedRoles.includes(dashboardRole);
+}

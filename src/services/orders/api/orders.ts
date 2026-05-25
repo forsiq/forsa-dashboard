@@ -42,12 +42,15 @@ const mapToOrder = (raw: any): Order => {
       }))
     : [];
 
+  const winnerPhone = String(row.winnerPhone ?? row.winner_phone ?? '').trim();
+
   return {
   id: String(row.id ?? ''),
   orderNumber: `ORD-${row.id ?? ''}`,
   customerId: String(row.winnerId ?? row.winner_id ?? winnerName ?? ''),
   customerName: winnerName,
-  customerEmail: String(row.winnerPhone ?? row.winner_phone ?? ''),
+  customerEmail: '',
+  customerPhone: winnerPhone,
   items,
   subtotal: Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0),
   tax: Number(row.tax ?? 0),
@@ -59,6 +62,8 @@ const mapToOrder = (raw: any): Order => {
   paymentStatus: row.isPaid || row.is_paid ? 'paid' : 'pending',
   priority: 'medium' as const,
   notes: String(row.notes ?? ''),
+  trackingNumber: String(row.trackingNumber ?? row.tracking_number ?? ''),
+  deliveryProvider: String(row.deliveryProvider ?? row.delivery_provider ?? ''),
   shippingAddress: {} as any,
   billingAddress: {} as any,
   createdAt: String(row.createdAt ?? row.created_at ?? row.date ?? new Date().toISOString()),

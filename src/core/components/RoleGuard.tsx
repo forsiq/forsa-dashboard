@@ -4,49 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import { useToast } from '@core/contexts/ToastContext';
-import type { UserRole, JwtPayload } from '@features/auth/types';
+import type { UserRole } from '@features/auth/types';
+import {
+  decodeJwtPayload,
+  extractDashboardRole,
+} from '@core/auth/dashboardRole';
 
 interface RoleGuardProps {
   children: React.ReactNode;
   allowedRoles: UserRole[];
   fallback?: React.ReactNode;
-}
-
-function decodeJwtPayload(token: string): JwtPayload | null {
-  try {
-    const base64Url = token.split('.')[1];
-    if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(''),
-    );
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
-
-const VALID_ROLES: readonly UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'] as const;
-
-function extractRole(payload: JwtPayload): UserRole {
-  if (payload.role) {
-    const normalized = payload.role.toLowerCase();
-    if (VALID_ROLES.includes(normalized as UserRole)) {
-      return normalized as UserRole;
-    }
-  }
-  if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
-    const priority: UserRole[] = ['admin', 'merchant', 'customer_support', 'product_analyst'];
-    for (const p of priority) {
-      if (payload.roles.some(r => r.toLowerCase() === p)) {
-        return p;
-      }
-    }
-  }
-  return 'customer_support';
 }
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fallback }) => {
@@ -69,7 +36,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
       return;
     }
 
-    const role = payload ? extractRole(payload) : 'customer_support';
+    const role = extractDashboardRole(payload);
     const allowed = allowedRoles.includes(role);
     setIsAllowed(allowed);
     setChecking(false);
@@ -95,4 +62,4 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
   return <>{children}</>;
 };
 
-export { decodeJwtPayload, extractRole };
+export { decodeJwtPayload, extractDashboardRole as extractRole };
