@@ -1,4 +1,4 @@
-import type { ProductListing } from '@/types/services/listings.types';
+import type { ProductListing } from '../../../types/services/listings.types';
 
 export type Severity = 'warning' | 'info';
 

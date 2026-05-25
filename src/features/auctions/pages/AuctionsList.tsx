@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
+import Cookies from 'js-cookie';
 import {
   Gavel,
   Plus,
@@ -37,6 +38,8 @@ import {
   ListPageToolbar,
   ListPageToolbarSearch,
 } from '@core/components/Layout';
+import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import type { UserRole } from '@features/auth/types';
 import {
   useGetAuctions,
   useGetAuctionStats,
@@ -97,6 +100,12 @@ const CountdownCell = React.memo(({ endTime, t }: CountdownCellProps) => {
 export const AuctionsList: React.FC = () => {
     const { t, language } = useLanguage();
     const router = useRouter();
+
+    const userRole = useMemo<UserRole>(() => {
+      if (typeof window === 'undefined') return 'admin';
+      return extractDashboardRoleFromToken(Cookies.get('access'));
+    }, []);
+    const isMerchant = userRole === 'merchant';
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useFilterState('search', '');
@@ -276,6 +285,7 @@ export const AuctionsList: React.FC = () => {
           void router.push(`/auctions/${auction.id}`);
         },
       },
+      ...(isMerchant ? [] : [
       {
         label: t('common.edit') || 'Edit',
         icon: Edit,
@@ -339,6 +349,7 @@ export const AuctionsList: React.FC = () => {
           variant: 'danger',
         }),
       },
+      ] as Action<Auction>[]),
     ];
 
     return (
@@ -347,6 +358,7 @@ export const AuctionsList: React.FC = () => {
             description={t('auction.listings.subtitle')}
             icon={Gavel}
             headerActions={
+                isMerchant ? undefined : (
                 <AmberButton
                     className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
                     onClick={() => router.push('/listings/new')}
@@ -354,6 +366,7 @@ export const AuctionsList: React.FC = () => {
                     <Plus className="w-5 h-5" />
                     <span>{t('auction.create_auction')}</span>
                 </AmberButton>
+                )
             }
             stats={[
                 { label: t('auction.metrics.active_engines'), value: stats?.activeAuctions || 0, icon: Gavel, color: 'brand', description: t('auction.metrics.live_liquidations') },
@@ -427,8 +440,8 @@ export const AuctionsList: React.FC = () => {
                             data={auctions}
                             keyField="id"
                             rowActions={rowActions}
-                            selectable
-                            bulkActions={bulkActions}
+                            selectable={!isMerchant}
+                            bulkActions={isMerchant ? [] : bulkActions}
                             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
                             pagination
                             pageSize={limit}

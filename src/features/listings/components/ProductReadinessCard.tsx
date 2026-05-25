@@ -4,7 +4,7 @@ import { AlertTriangle, Info, CheckCircle, Edit, ShieldCheck } from 'lucide-reac
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
-import type { ProductListing } from '@/types/services/listings.types';
+import type { ProductListing } from '../../../types/services/listings.types';
 import {
   analyzeProductReadiness,
   getReadinessScore,

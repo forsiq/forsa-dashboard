@@ -98,7 +98,7 @@ const MerchantStats: React.FC<{ stats: ReturnType<typeof useDashboardStats>['dat
     },
     {
       id: 'my-active-auctions',
-      title: t('dash.merchant.my_auctions') || 'My Active Auctions',
+      title: t('dash.merchant.my_products_in_auctions') || 'My Products in Auctions',
       value: (quickCounts?.activeAuctions || 0).toString(),
       color: 'success',
     },

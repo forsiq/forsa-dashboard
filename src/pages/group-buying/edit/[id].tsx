@@ -3,7 +3,7 @@ import { GroupBuyingFormPage } from '../../../features/sales/pages/GroupBuyingFo
 
 export default function GroupBuyingEditPage() {
   return (
-    <RoleGuard allowedRoles={['admin', 'merchant']}>
+    <RoleGuard allowedRoles={['admin']}>
       <GroupBuyingFormPage />
     </RoleGuard>
   );

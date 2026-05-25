@@ -3,7 +3,7 @@ import { AuctionFormPage } from '@features/auctions/pages/AuctionFormPage';
 
 export default function EditAuctionPage() {
   return (
-    <RoleGuard allowedRoles={['admin', 'merchant']}>
+    <RoleGuard allowedRoles={['admin']}>
       <AuctionFormPage />
     </RoleGuard>
   );

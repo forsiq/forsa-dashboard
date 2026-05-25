@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import type { UserRole } from '@features/auth/types';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
@@ -103,7 +106,16 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
-  const maxStep = maxStepProp ?? (wizardMode === 'edit' ? WIZARD_STEP.MEDIA : WIZARD_TOTAL_STEPS);
+  const userRole = useMemo<UserRole>(() => {
+    if (typeof window === 'undefined') return 'admin';
+    return extractDashboardRoleFromToken(Cookies.get('access'));
+  }, []);
+
+  const isMerchant = userRole === 'merchant';
+
+  const maxStep = isMerchant
+    ? WIZARD_STEP.MEDIA
+    : maxStepProp ?? (wizardMode === 'edit' ? WIZARD_STEP.MEDIA : WIZARD_TOTAL_STEPS);
 
   const initialStep = useMemo(() => {
     if (queryStep && queryStep >= 1 && queryStep <= maxStep) return queryStep;
@@ -861,7 +873,32 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         >
           {t('listing.wizard.back')}
         </AmberButton>
-        {currentStep < WIZARD_STEP.PUBLISH || !showPublishSteps ? (
+        {currentStep === WIZARD_STEP.MEDIA && isMerchant ? (
+          <AmberButton
+            className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
+            disabled={isBusy}
+            onClick={() => {
+              if (!listingId) {
+                void handleNext();
+                return;
+              }
+              submitForReviewMutation.mutate(listingId, {
+                onSuccess: () => {
+                  setShowSubmitSuccess(false);
+                  router.push(`/listings/${listingId}`);
+                },
+              });
+            }}
+          >
+            {submitForReviewMutation.isPending ? (
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <SendHorizonal className="w-4 h-4" />
+            )}
+            {t('approval.actions.submit') || 'Submit for Review'}
+            <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+          </AmberButton>
+        ) : currentStep < WIZARD_STEP.PUBLISH || !showPublishSteps ? (
           <AmberButton
             className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
             disabled={isBusy}

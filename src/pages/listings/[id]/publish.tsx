@@ -1,5 +1,10 @@
+import { RoleGuard } from '@core/components/RoleGuard';
 import { ListingWizardPage } from '../../../features/listings/pages/ListingWizardPage';
 
 export default function PublishListingPage() {
-  return <ListingWizardPage mode="publish-only" />;
+  return (
+    <RoleGuard allowedRoles={['admin']}>
+      <ListingWizardPage mode="publish-only" />
+    </RoleGuard>
+  );
 }

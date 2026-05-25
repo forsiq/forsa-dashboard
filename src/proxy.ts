@@ -32,6 +32,11 @@ const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
   '/settings': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/live-monitor': { roles: LIVE_MONITOR_ACCESS_ROLES, redirectPath: '/dashboard' },
   '/reports': { roles: REPORTS_ACCESS_ROLES, redirectPath: '/dashboard' },
+  '/auctions/add': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/auctions/clone': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/auctions/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/group-buying/new': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/group-buying/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
 };
 
 const parseJwtExp = (token?: string): number | null => {

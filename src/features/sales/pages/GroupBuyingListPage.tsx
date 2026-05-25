@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 import {
   Users,
   Plus,
@@ -31,6 +32,8 @@ import {
   ListPageToolbarSearch,
 } from '@core/components/Layout';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import type { UserRole } from '@features/auth/types';
 import {
   useGetGroupBuyings,
   useGetGroupBuyingStats,
@@ -57,6 +60,12 @@ export const GroupBuyingListPage: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const userRole = useMemo<UserRole>(() => {
+    if (typeof window === 'undefined') return 'admin';
+    return extractDashboardRoleFromToken(Cookies.get('access'));
+  }, []);
+  const isMerchant = userRole === 'merchant';
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -240,6 +249,7 @@ export const GroupBuyingListPage: React.FC = () => {
       icon: Eye,
       onClick: (campaign) => router.push(`/group-buying/${campaign.id}`),
     },
+    ...(isMerchant ? [] : [
     {
       label: t('common.edit') || 'Edit',
       icon: Edit,
@@ -267,6 +277,7 @@ export const GroupBuyingListPage: React.FC = () => {
         variant: 'danger',
       }),
     },
+    ] as Action<GroupBuying>[]),
   ];
 
   if (!isClient) return null;
@@ -277,10 +288,12 @@ export const GroupBuyingListPage: React.FC = () => {
       description={t('groupBuying.subtitle') || 'Group buying campaigns management'}
       icon={Users}
       headerActions={
+        isMerchant ? undefined : (
         <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
           <Plus className="w-5 h-5" />
           <span>{t('groupBuying.create') || 'Create Campaign'}</span>
         </AmberButton>
+        )
       }
       stats={[
         { label: t('groupBuying.active_engines'), value: stats?.activeCampaigns || 0, icon: Zap, color: 'brand', description: t('groupBuying.live_distribution') || 'LIVE' },

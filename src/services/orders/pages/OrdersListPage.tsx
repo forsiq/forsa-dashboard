@@ -286,7 +286,7 @@ export const OrdersListPage = () => {
   ];
 
   if (!isClient) {
-    return <ListPageSkeleton count={6} columns={5} showStats />;
+    return <ListPageSkeleton count={6} columns={4} showStats />;
   }
 
   return (
