@@ -19,7 +19,19 @@ const ROLE_ALIASES: Record<string, UserRole> = {
   staff: 'customer_support',
   seller: 'merchant',
   vendor: 'merchant',
+  moderator: 'customer_support',
+  support: 'customer_support',
+  employee: 'customer_support',
 };
+
+function resolveRoleToken(value: string | undefined): UserRole | null {
+  if (!value?.trim()) return null;
+  const normalized = value.trim().toLowerCase();
+  if ((DASHBOARD_ROLES as readonly string[]).includes(normalized)) {
+    return normalized as UserRole;
+  }
+  return ROLE_ALIASES[normalized] ?? null;
+}
 
 export function decodeJwtPayload(token: string): JwtPayload | null {
   try {
@@ -54,6 +66,14 @@ function collectRoleCandidates(payload: JwtPayload): string[] {
  */
 export function extractDashboardRole(payload: JwtPayload | null): UserRole {
   if (!payload) return 'customer_support';
+
+  // Project collaborator business_role (zv-auth) — highest priority for Forsa merchants
+  const fromBusiness = resolveRoleToken(payload.business_role);
+  if (fromBusiness) return fromBusiness;
+
+  // Auth mirrors business_role into `role` when project context is present at login
+  const fromRoleClaim = resolveRoleToken(payload.role);
+  if (fromRoleClaim) return fromRoleClaim;
 
   const candidates = collectRoleCandidates(payload);
 

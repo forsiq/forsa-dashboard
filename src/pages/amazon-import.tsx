@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Package, TrendingUp, Loader2 } from 'lucide-react';
+import { RoleGuard } from '@core/components/RoleGuard';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard as Card } from '@core/components/AmberCard';
@@ -9,7 +10,7 @@ import { AmazonProductCard } from '@features/dashboard/components/AmazonProductC
 import { AmazonProductDetailModal } from '@features/dashboard/components/AmazonProductDetailModal';
 import { useAmazonSearch, useAmazonBestSellers } from '@services/amazon/hooks/useAmazonSearch';
 
-export default function AmazonImportPage() {
+function AmazonImportPageContent() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
   const [isClient, setIsClient] = useState(false);
@@ -190,5 +191,13 @@ export default function AmazonImportPage() {
         onClose={handleCloseModal}
       />
     </div>
+  );
+}
+
+export default function AmazonImportPage() {
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
+      <AmazonImportPageContent />
+    </RoleGuard>
   );
 }

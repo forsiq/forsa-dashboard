@@ -112,7 +112,8 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     },
     body: JSON.stringify({
       username: normalized.username,
-      password: normalized.password
+      password: normalized.password,
+      project_id: Number(getProjectIdValue()) || 11,
     })
   });
 

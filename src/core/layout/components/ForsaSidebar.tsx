@@ -11,7 +11,6 @@ import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'reac
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
-import Cookies from 'js-cookie';
 import { AmberLogo } from '@yousef2001/core-ui/components';
 import { useFeatureConfig, useLanguage, useNavigation } from '@yousef2001/core-ui/contexts';
 import type { MenuSection } from '@config/navigation';
@@ -21,7 +20,7 @@ import { prefetchRouteData } from '@core/query/prefetch';
 import { CHANGELOG_NEW_BADGE } from '@config/sidebar/applySidebarBadges';
 import { useAuth } from '@features/auth/hooks/useAuth';
 import type { UserRole } from '@features/auth/types';
-import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 
 const DEFAULT_PORTAL_PATHS = ['/portal', '/'];
 
@@ -62,9 +61,19 @@ const ROLE_MAP: Record<string, UserRole[]> = {
   '/amazon-import': ['admin', 'merchant'],
 };
 
-function decodeJwtRoleFromCookie(): UserRole {
-  if (typeof window === 'undefined') return 'customer_support';
-  return extractDashboardRoleFromToken(Cookies.get('access'));
+/** Longest matching ROLE_MAP prefix wins (e.g. /reports/customer-insights over /reports). */
+function isPathAllowedForRole(path: string, userRole: UserRole): boolean {
+  const base = getNavPathBase(path);
+  let matchedPrefix: string | null = null;
+  for (const prefix of Object.keys(ROLE_MAP)) {
+    if (base === prefix || base.startsWith(`${prefix}/`)) {
+      if (!matchedPrefix || prefix.length > matchedPrefix.length) {
+        matchedPrefix = prefix;
+      }
+    }
+  }
+  if (!matchedPrefix) return true;
+  return ROLE_MAP[matchedPrefix].includes(userRole);
 }
 
 // ── Per-section collapse state (unified mode) ─────────────────────────
@@ -243,7 +252,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
 
   const { isSectionCollapsed, toggleSection } = useSectionCollapseState();
 
-  const userRole = useMemo(() => decodeJwtRoleFromCookie(), []);
+  const { role: userRole } = useDashboardRole();
 
   useEffect(() => {
     const loadSidebar = async () => {
@@ -295,16 +304,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
       return {
         ...section,
         items: section.items.filter(item => {
-          // Role-based filtering
-          const base = getNavPathBase(item.path);
-          let roleAllowed = true;
-          for (const [prefix, allowedRoles] of Object.entries(ROLE_MAP)) {
-            if (base === prefix || base.startsWith(`${prefix}/`)) {
-              roleAllowed = allowedRoles.includes(userRole);
-              break;
-            }
-          }
-          if (!roleAllowed) return false;
+          if (!isPathAllowedForRole(item.path, userRole)) return false;
 
           // Feature flag filtering
           const feature = getFeatureForPath(item.path);

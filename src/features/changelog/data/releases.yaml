@@ -5,6 +5,10 @@
     ar: "إصلاح قائمة الطلبات والفئات"
   entries:
     - description:
+        en: "Merchant sidebar now shows Listings, Amazon Import, Inventory, and related items after login includes project context (business_role in JWT)."
+        ar: "قائمة التاجر تعرض المنتجات واستيراد أمازون والمخزون والعناصر المرتبطة بعد تضمين سياق المشروع عند تسجيل الدخول (business_role في JWT)."
+      type: fixed
+    - description:
         en: "Orders list shows winner names or phone from flex-auth instead of always showing unassigned customer."
         ar: "قائمة الطلبات تعرض اسم الفائز أو رقم الهاتف من flex-auth بدلاً من «عميل غير محدد» دائماً."
       type: fixed
