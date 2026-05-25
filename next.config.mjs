@@ -6,6 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/dist');
 const localCorePath = path.resolve(__dirname, 'src/core');
+const languageContextOverride = path.join(localCorePath, 'contexts/LanguageContext.tsx');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -37,6 +38,8 @@ const nextConfig = {
       // @core resolves: local src/core/ overrides take priority,
       // then falls back to core-ui package
       '@core': [localCorePath, corePkgPath],
+      // Force single LanguageContext instance (local override fixes hydration mismatch)
+      [path.join(corePkgPath, 'contexts/LanguageContext.js')]: languageContextOverride,
       // Safe StatusBadge / resolveStatusLabel override (undefined status from API)
       '@yousef2001/core-ui/dist/components/Data/StatusBadge': path.join(
         localCorePath,
@@ -89,12 +92,6 @@ export default withSentryConfig(nextConfig, {
 
   // Upload a larger set of source maps for prettier stack traces (increases build time)
   widenClientFileUpload: true,
-
-  // Uncomment to route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  // tunnelRoute: "/monitoring",
 
   webpack: {
     // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)

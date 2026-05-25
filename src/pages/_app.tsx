@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import type { AppProps } from 'next/app';
+import type { AppContext, AppProps } from 'next/app';
+import type { Language } from '@yousef2001/core-ui';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@core/query/queryClient';
 import { RouteProgressProvider, RouteProgressBar } from '@core/navigation';
@@ -22,12 +23,22 @@ import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';
 import '@styles/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps) {
+const LANGUAGE_COOKIE = 'zv_language';
+
+function languageFromCookie(value: string | undefined): Language {
+  if (value === 'ar' || value === 'ku' || value === 'en') return value;
+  return 'en';
+}
+
+type ForsaAppProps = AppProps & {
+  initialLanguage: Language;
+};
+
+function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
   const router = useRouter();
 
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
 
-  // Clear stuck modal layers when navigating to auth pages (logout uses Topbar clearAuthCookies)
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (url === '/login' || url.startsWith('/login?')) {
@@ -46,8 +57,11 @@ function MyApp({ Component, pageProps }: AppProps) {
           authRefreshPath: '/api/v1/auth/auth/token/refresh/',
         }}>
         <FeatureProvider configPath="/zvs.config.json">
-          <ToastProvider>
-            <LanguageProvider extraTranslations={appTranslations}>
+          <LanguageProvider
+            extraTranslations={appTranslations}
+            initialLanguage={initialLanguage}
+          >
+            <ToastProvider>
               <ThemeProvider>
                 <NavigationProvider>
                   <ProjectProvider>
@@ -74,13 +88,30 @@ function MyApp({ Component, pageProps }: AppProps) {
                   </ProjectProvider>
                 </NavigationProvider>
               </ThemeProvider>
-            </LanguageProvider>
-          </ToastProvider>
+            </ToastProvider>
+          </LanguageProvider>
         </FeatureProvider>
         </CoreUIProvider>
       </RouteProgressProvider>
     </QueryClientProvider>
   );
 }
+
+MyApp.getInitialProps = async (appContext: AppContext) => {
+  const pageCtx = appContext.ctx;
+  const parent = appContext.Component.getInitialProps
+    ? await appContext.Component.getInitialProps(pageCtx)
+    : {};
+
+  const reqWithCookies = pageCtx.req as
+    | (typeof pageCtx.req & { cookies?: Record<string, string> })
+    | undefined;
+  const cookieLang = reqWithCookies?.cookies?.[LANGUAGE_COOKIE];
+  const initialLanguage = languageFromCookie(
+    typeof cookieLang === 'string' ? cookieLang : undefined,
+  );
+
+  return { ...parent, initialLanguage };
+};
 
 export default MyApp;
