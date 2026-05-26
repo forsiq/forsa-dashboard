@@ -15,9 +15,9 @@ const DNS_CACHE_TTL = 60_000; // Re-resolve every 60s
 
 /** Rainforest rejects combining `url` with `amazon_domain`; domain comes from the URL host. */
 const DEFAULT_BESTSELLERS_URL: Record<string, string> = {
-  'amazon.sa': 'https://www.amazon.sa/-/en/gp/bestsellers/electronics/',
+  'amazon.sa': 'https://www.amazon.sa/gp/bestsellers/electronics/',
   'amazon.com': 'https://www.amazon.com/gp/bestsellers/electronics/',
-  'amazon.ae': 'https://www.amazon.ae/-/en/gp/bestsellers/electronics/',
+  'amazon.ae': 'https://www.amazon.ae/gp/bestsellers/electronics/',
 };
 
 function resolveIp(): Promise<string> {
@@ -39,6 +39,12 @@ function resolveIp(): Promise<string> {
   });
 }
 
+const DOMAIN_LANGUAGE_MAP: Record<string, string> = {
+  'amazon.sa': 'ar_SA',
+  'amazon.eg': 'ar_EG',
+  'amazon.ae': 'ar_AE',
+};
+
 function buildRainforestParams(
   pathSegments: string,
   queryParams: Record<string, string | string[] | undefined>
@@ -47,12 +53,19 @@ function buildRainforestParams(
     api_key: RAINFOREST_API_KEY || '',
   };
 
+  const lang = String(queryParams.language || '');
+  const domain = String(queryParams.amazon_domain || 'amazon.sa');
+
+  if (lang === 'ar') {
+    params.language = DOMAIN_LANGUAGE_MAP[domain] || 'ar_SA';
+  }
+
   const segments = pathSegments.split('/');
 
   if (segments[0] === 'products' && segments[1] === 'search') {
     params.type = 'search';
     params.search_term = String(queryParams.q || '');
-    params.amazon_domain = String(queryParams.amazon_domain || 'amazon.sa');
+    params.amazon_domain = domain;
     if (queryParams.num) {
       params.number_of_results = String(queryParams.num);
     }
@@ -61,7 +74,6 @@ function buildRainforestParams(
 
   if (segments[0] === 'products' && segments[1] === 'bestsellers') {
     params.type = 'bestsellers';
-    const domain = String(queryParams.amazon_domain || 'amazon.sa');
     const category = queryParams.category ? String(queryParams.category) : 'aps';
     if (category === 'aps' || category === '') {
       const url = DEFAULT_BESTSELLERS_URL[domain] || DEFAULT_BESTSELLERS_URL['amazon.sa'];
@@ -79,7 +91,7 @@ function buildRainforestParams(
   if (segments[0] === 'products' && segments[1]) {
     params.type = 'product';
     params.asin = segments[1];
-    params.amazon_domain = String(queryParams.amazon_domain || 'amazon.sa');
+    params.amazon_domain = domain;
     return params;
   }
 

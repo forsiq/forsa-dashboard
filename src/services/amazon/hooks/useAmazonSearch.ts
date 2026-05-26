@@ -1,13 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { amazonApi } from '../api/amazon-api';
 
+function getLanguageKey(): string {
+  if (typeof document === 'undefined') return 'en';
+  return document.cookie.includes('zv_language=ar') ? 'ar' : 'en';
+}
+
 const amazonKeys = {
   search: (query: string, domain?: string) =>
-    ['amazon', 'search', query, domain] as const,
+    ['amazon', 'search', query, domain, getLanguageKey()] as const,
   detail: (asin: string, domain?: string) =>
-    ['amazon', 'detail', asin, domain] as const,
+    ['amazon', 'detail', asin, domain, getLanguageKey()] as const,
   bestsellers: (category?: string, domain?: string) =>
-    ['amazon', 'bestsellers', category, domain] as const,
+    ['amazon', 'bestsellers', category, domain, getLanguageKey()] as const,
 };
 
 export function useAmazonSearch(

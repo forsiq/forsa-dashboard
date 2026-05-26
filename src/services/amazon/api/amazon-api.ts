@@ -6,6 +6,11 @@ const api = axios.create({
   baseURL: PROXY_BASE,
 });
 
+function getCurrentLanguage(): string {
+  if (typeof document === 'undefined') return 'en';
+  return document.cookie.includes('zv_language=ar') ? 'ar' : 'en';
+}
+
 export interface AmazonSearchResult {
   asin: string;
   title: string;
@@ -80,6 +85,7 @@ export const amazonApi = {
         q: query,
         num: options?.limit || 20,
         amazon_domain: options?.domain || 'amazon.sa',
+        language: getCurrentLanguage(),
       },
     });
     return response.data;
@@ -92,6 +98,7 @@ export const amazonApi = {
     const response = await api.get(`/products/${asin}`, {
       params: {
         amazon_domain: options?.domain || 'amazon.sa',
+        language: getCurrentLanguage(),
       },
     });
     return response.data;
@@ -105,6 +112,7 @@ export const amazonApi = {
         category: options?.category || 'aps',
         num: options?.limit || 20,
         amazon_domain: options?.domain || 'amazon.sa',
+        language: getCurrentLanguage(),
       },
     });
     return response.data;
