@@ -468,7 +468,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
                     t={t}
                   />
                 )}
-                {(!isUnified || !sectionCollapsed) &&
+                {(!isUnified || !sectionCollapsed || isSingleSectionInModule) &&
                   section.items.map(item => {
                   const Icon = resolveIcon(item.icon);
                   const isActive = activePath !== null && item.path === activePath;
