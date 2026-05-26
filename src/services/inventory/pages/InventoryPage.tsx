@@ -353,6 +353,8 @@ export const InventoryPage = () => {
                 bulkActions={bulkActions}
                 rowActions={rowActions}
                 showViewToggle
+                viewMode={isMobile ? 'grid' : 'table'}
+                gridCols={2}
                 onSortChange={handleSortChange}
                 sortBy={sortBy}
                 sortOrder={sortOrder}

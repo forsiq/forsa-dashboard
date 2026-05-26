@@ -5,6 +5,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { cn } from '@core/lib/utils/cn';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import { DollarSign, Clock, AlertTriangle, Bell, UserCheck, XCircle, Receipt } from 'lucide-react';
@@ -38,6 +39,7 @@ function timeSince(dateStr: string, t: (key: string) => string): string {
 
 export const SettlementDeskPage = () => {
   const { t, dir } = useLanguage();
+  const { isMobile } = useIsMobile();
   const isRTL = dir === 'rtl';
   const [activeTab, setActiveTab] = useState('');
   const [page, setPage] = useState(1);
@@ -271,6 +273,9 @@ export const SettlementDeskPage = () => {
               totalItems={total}
               currentPage={page}
               onPageChange={setPage}
+              showViewToggle
+              viewMode={isMobile ? 'grid' : 'table'}
+              gridCols={2}
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}

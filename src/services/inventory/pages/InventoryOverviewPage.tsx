@@ -24,6 +24,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { DataTable, Column } from '@core/components/Data/DataTable';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberProgress } from '@core/components/AmberProgress';
@@ -37,6 +38,7 @@ import { useList, useStats } from '../hooks';
 export const InventoryOverviewPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const isRTL = dir === 'rtl';
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -291,6 +293,9 @@ export const InventoryOverviewPage: React.FC = () => {
                pageSize={15}
                selectable
                onRowClick={(row) => router.push(`/inventory`)}
+               showViewToggle
+               viewMode={isMobile ? 'grid' : 'table'}
+               gridCols={2}
              />
           </div>
         </div>

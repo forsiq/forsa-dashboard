@@ -252,6 +252,9 @@ export const MyBidsPage: React.FC = () => {
             onRowClick={handleRowClick}
             pagination
             pageSize={10}
+            showViewToggle
+            viewMode={isMobile ? 'grid' : 'table'}
+            gridCols={2}
             onSortChange={handleSortChange}
             sortBy={sortBy}
             sortOrder={sortOrder}

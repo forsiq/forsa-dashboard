@@ -331,6 +331,8 @@ export const ListingsListPage: React.FC = () => {
               totalItems={issuesOnly === 'true' ? filteredListings.length : (pagination?.total || 0)}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
+              viewMode={isMobile ? 'grid' : 'table'}
+              gridCols={2}
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}

@@ -142,6 +142,9 @@ export const WatchlistPage: React.FC = () => {
             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
             pagination
             pageSize={10}
+            showViewToggle
+            viewMode={isMobile ? 'grid' : 'table'}
+            gridCols={2}
             onSortChange={handleSortChange}
             sortBy={sortBy}
             sortOrder={sortOrder}

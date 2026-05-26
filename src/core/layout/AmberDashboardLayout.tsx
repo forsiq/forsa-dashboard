@@ -114,7 +114,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
       <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
         <LayoutMobileHeader />
         <main className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="p-3 pb-20">{children}</div>
+          <div className="pb-20">{children}</div>
         </main>
         <BottomTabBar onMorePress={() => setIsNavSheetOpen(true)} />
         <NavigationSheet isOpen={isNavSheetOpen} onClose={() => setIsNavSheetOpen(false)} />

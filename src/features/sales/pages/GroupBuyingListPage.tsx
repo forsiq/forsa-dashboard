@@ -333,6 +333,8 @@ export const GroupBuyingListPage: React.FC = () => {
               totalItems={campaignsData?.total || campaigns.length}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
+              viewMode={isMobile ? 'grid' : 'table'}
+              gridCols={2}
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}
