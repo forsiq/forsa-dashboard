@@ -37,9 +37,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
   const hasSalesData = salesData.some((d: any) => (d.revenue || 0) > 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       {/* Sales Trend Chart */}
-      <AmberCard className="!p-6 h-[400px] flex flex-col">
+      <AmberCard className="!p-6 h-[300px] md:h-[350px] lg:h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
            <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.sales_trend')}
@@ -114,16 +114,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
       </AmberCard>
 
       {/* Category Distribution Chart */}
-      <AmberCard className="!p-6 h-[400px] flex flex-col">
+      <AmberCard className="!p-6 h-[300px] md:h-[350px] lg:h-[400px] flex flex-col">
         <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
            <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
              {t('dash.category_distribution')}
            </h3>
         </div>
-        <div className="flex-1 w-full flex items-center">
+        <div className="flex-1 w-full flex items-center flex-col lg:flex-row">
           {hasCategoryData ? (
             <>
-              <div className="flex-1 h-full">
+              <div className="w-full lg:flex-1 h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -153,7 +153,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ salesData, cat
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="w-2/5 space-y-3 pe-2">
+              <div className="w-full lg:w-2/5 space-y-3 pe-2">
                 {categoryData.map((entry: any, index: number) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />

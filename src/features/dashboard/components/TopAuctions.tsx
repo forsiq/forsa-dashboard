@@ -26,10 +26,10 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
           </div>
         ) : (
           products.map((item, index) => (
-            <div key={item.id} className="group relative flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-brand/30 transition-all duration-300">
+            <div key={item.id} className="group relative flex items-center justify-between p-3 md:p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-brand/30 transition-all duration-300">
                <div className="flex items-center gap-4">
                  {/* Rank Badge */}
-                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black tabular-nums shrink-0"
+                 <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-xs font-black tabular-nums shrink-0"
                    style={{
                      background: index === 0 ? 'var(--color-brand)' : index === 1 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
                      color: index === 0 ? '#000' : 'var(--color-zinc-muted)',
@@ -38,14 +38,14 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                     {index + 1}
                  </div>
                  <div className="min-w-0">
-                   <p className="text-sm font-bold text-zinc-text tracking-tight truncate max-w-[200px]">{item.name}</p>
+                   <p className="text-sm font-bold text-zinc-text tracking-tight truncate max-w-[140px] md:max-w-[200px]">{item.name}</p>
                    <p className="text-[11px] font-semibold text-zinc-muted mt-0.5">
                      {item.category || t('common.uncategorized')}
                    </p>
                  </div>
                </div>
                
-               <div className="flex items-center gap-5">
+               <div className="flex items-center gap-3 md:gap-5 flex-wrap">
                  {/* Revenue */}
                  <div className="text-end">
                    <p className="text-[11px] font-semibold text-zinc-muted mb-0.5">{t('dash.revenue')}</p>

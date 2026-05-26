@@ -5,7 +5,7 @@ import { API_BASE_URL, getApiOrigin } from '@config/api';
 
 /* getApiOrigin imported from @config/api */
 
-const PROJECT_API_URL = `${getApiOrigin()}/api/v1`;
+const PROJECT_API_URL = `${getApiOrigin().replace('/forsa', '')}/api/v1`;
 
 const sharedClient = createClient(PROJECT_API_URL);
 

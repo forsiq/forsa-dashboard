@@ -2,18 +2,22 @@ import React, { useMemo } from 'react';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { StatsCard } from '@core/core/dashboard/StatsCard';
 import { ActivityFeed } from '@core/core/dashboard/ActivityFeed';
-import { QuickActions } from '@core/core/dashboard/QuickActions';
+import { QuickActions } from '../components/QuickActions';
 import { DashboardCharts } from '../components/DashboardCharts';
 import { TopAuctions } from '../components/TopAuctions';
 import { CriticalNodes } from '../components/CriticalNodes';
 import { RoleDashboardStats } from '../components/RoleDashboardStats';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import { AlertTriangle, RefreshCw, Plus, Gavel, Users, BarChart2, ShoppingBag, Tag, Package } from 'lucide-react';
 import type { QuickAction } from '@core/core/dashboard/types';
+import type { UserRole } from '@features/auth/types';
 
+type RoleFilteredAction = QuickAction & { allowedRoles?: UserRole[] };
 
 export const DashboardHomePage = () => {
   const { t } = useLanguage();
+  const { role } = useDashboardRole();
   const { 
     stats, 
     activities, 
@@ -26,57 +30,66 @@ export const DashboardHomePage = () => {
     refetch
   } = useDashboardData();
 
-  // Build quick actions with live counts
-  const quickActionItems: QuickAction[] = useMemo(() => [
-    {
-      id: 'new-auction',
-      label: t('auction.create_auction') || 'New Auction',
-      icon: <Plus className="w-4 h-4" />,
-      path: '/auctions/add',
-      color: 'brand' as const,
-    },
-    {
-      id: 'auctions',
-      label: t('sidebar.auctions') || 'Auctions',
-      icon: <Gavel className="w-4 h-4" />,
-      path: '/auctions',
-      color: 'warning' as const,
-      count: quickCounts?.totalAuctions,
-      isActive: (quickCounts?.activeAuctions ?? 0) > 0,
-    },
-    {
-      id: 'new-deal',
-      label: t('dash.total_items') || 'New Deal',
-      icon: <ShoppingBag className="w-4 h-4" />,
-      path: '/group-buying/new',
-      color: 'success' as const,
-    },
-    {
-      id: 'group-deals',
-      label: t('sidebar.groupBuying') || 'Group Deals',
-      icon: <Users className="w-4 h-4" />,
-      path: '/group-buying',
-      color: 'info' as const,
-      count: quickCounts?.activeDeals,
-      isActive: (quickCounts?.activeDeals ?? 0) > 0,
-    },
-    {
-      id: 'orders',
-      label: t('sidebar.orders_section') || 'Orders',
-      icon: <Package className="w-4 h-4" />,
-      path: '/orders',
-      color: 'warning' as const,
-      count: quickCounts?.pendingOrders,
-      isActive: (quickCounts?.pendingOrders ?? 0) > 0,
-    },
-    {
-      id: 'categories',
-      label: t('sidebar.categories') || 'Categories',
-      icon: <Tag className="w-4 h-4" />,
-      path: '/categories',
-      color: 'brand' as const,
-    },
-  ], [t, quickCounts]);
+  // Build quick actions with live counts, filtered by role
+  const quickActionItems = useMemo(() => {
+    const allActions: RoleFilteredAction[] = [
+      {
+        id: 'new-auction',
+        label: t('auction.create_auction') || 'New Auction',
+        icon: <Plus className="w-4 h-4" />,
+        path: '/auctions/add',
+        color: 'brand' as const,
+        allowedRoles: ['admin', 'merchant'],
+      },
+      {
+        id: 'auctions',
+        label: t('sidebar.auctions') || 'Auctions',
+        icon: <Gavel className="w-4 h-4" />,
+        path: '/auctions',
+        color: 'warning' as const,
+        count: quickCounts?.totalAuctions,
+        isActive: (quickCounts?.activeAuctions ?? 0) > 0,
+        allowedRoles: ['admin', 'merchant', 'product_analyst'],
+      },
+      {
+        id: 'new-deal',
+        label: t('dash.total_items') || 'New Deal',
+        icon: <ShoppingBag className="w-4 h-4" />,
+        path: '/group-buying/new',
+        color: 'success' as const,
+        allowedRoles: ['admin'],
+      },
+      {
+        id: 'group-deals',
+        label: t('sidebar.groupBuying') || 'Group Deals',
+        icon: <Users className="w-4 h-4" />,
+        path: '/group-buying',
+        color: 'info' as const,
+        count: quickCounts?.activeDeals,
+        isActive: (quickCounts?.activeDeals ?? 0) > 0,
+        allowedRoles: ['admin', 'product_analyst'],
+      },
+      {
+        id: 'orders',
+        label: t('sidebar.orders_section') || 'Orders',
+        icon: <Package className="w-4 h-4" />,
+        path: '/orders',
+        color: 'warning' as const,
+        count: quickCounts?.pendingOrders,
+        isActive: (quickCounts?.pendingOrders ?? 0) > 0,
+        allowedRoles: ['admin', 'merchant', 'customer_support'],
+      },
+      {
+        id: 'categories',
+        label: t('sidebar.categories') || 'Categories',
+        icon: <Tag className="w-4 h-4" />,
+        path: '/categories',
+        color: 'brand' as const,
+        allowedRoles: ['admin', 'merchant'],
+      },
+    ];
+    return allActions.filter(a => !a.allowedRoles || a.allowedRoles.includes(role));
+  }, [t, quickCounts, role]);
 
   if (isLoading) {
     return (
@@ -104,10 +117,10 @@ export const DashboardHomePage = () => {
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+    <div className="space-y-8 p-4 md:p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
           {t('dash.title')}
         </h1>
         <p className="text-base text-zinc-secondary font-bold uppercase tracking-tight">
@@ -125,7 +138,7 @@ export const DashboardHomePage = () => {
       <DashboardCharts salesData={salesChart || []} categoryData={categoryData || []} />
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-6">
           <TopAuctions products={topProducts || []} />
           <ActivityFeed activities={activities} />

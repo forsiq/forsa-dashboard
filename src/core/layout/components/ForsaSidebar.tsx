@@ -315,6 +315,13 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
     })
     .filter(section => section.isModuleHeader || section.items.length > 0);
 
+  // Remove module headers whose modules have no visible sections
+  const finalSections = filteredSections.filter(section => {
+    if (!section.isModuleHeader) return true;
+    const mid = section.moduleId || '';
+    return filteredSections.some(s => !s.isModuleHeader && s.moduleId === mid);
+  });
+
   if (isPortal) {
     return null;
   }
@@ -337,7 +344,7 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
     return null;
   }
 
-  const allPaths = filteredSections
+  const allPaths = finalSections
     .filter(s => !s.isModuleHeader)
     .flatMap(s => s.items.map(i => i.path));
   const activePath =
@@ -417,12 +424,12 @@ export const ForsaSidebar: React.FC<ForsaSidebarProps> = ({
           {/* Precompute section counts per module to avoid O(n^2) per-section lookups */}
           {(() => {
             const moduleSectionCounts: Record<string, number> = {};
-            for (const s of filteredSections) {
+            for (const s of finalSections) {
               if (!s.isModuleHeader && s.moduleId) {
                 moduleSectionCounts[s.moduleId] = (moduleSectionCounts[s.moduleId] || 0) + 1;
               }
             }
-            return filteredSections.map((section, idx) => {
+            return finalSections.map((section, idx) => {
             // ── Module Header (unified mode) ──
             if (section.isModuleHeader) {
               const mid = section.moduleId || '';

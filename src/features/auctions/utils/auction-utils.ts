@@ -84,7 +84,7 @@ const API_ORIGIN = getApiOrigin();
  * Project service base URL for attachment operations.
  * The project service is mounted at root /api/v1 (not under /forsa/).
  */
-const PROJECT_API_URL = `${API_ORIGIN}/api/v1`;
+const PROJECT_API_URL = `${API_ORIGIN.replace('/forsa', '')}/api/v1`;
 
 /**
  * Get an axios instance with auth interceptors (token refresh on 401).

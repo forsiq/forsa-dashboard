@@ -68,7 +68,7 @@ export const ListingImage: React.FC<ListingImageProps> = ({
   if (hasError || !imageUrl) {
     return (
       <div className={`flex items-center justify-center bg-obsidian-panel/50 ${className}`}>
-        <Package className={fallbackClassName?.includes('w-') ? fallbackClassName : 'w-8 h-8 text-zinc-muted/20'} />
+        <Package className="w-12 h-12 text-zinc-muted/20" />
       </div>
     );
   }

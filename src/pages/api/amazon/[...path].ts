@@ -1,7 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import https from 'https';
+import dns from 'dns';
 
 const RAINFOREST_API_BASE = 'https://api.rainforestapi.com/request';
 const RAINFOREST_API_KEY = process.env.RAINFOREST_API_KEY;
+const RAINFOREST_HOST = 'api.rainforestapi.com';
+
+const RAINFOREST_TIMEOUT = 120_000;
+
+/** Cached DNS lookup result to avoid repeated slow lookups */
+let cachedIp: string | null = null;
+let cachedAt = 0;
+const DNS_CACHE_TTL = 60_000; // Re-resolve every 60s
 
 /** Rainforest rejects combining `url` with `amazon_domain`; domain comes from the URL host. */
 const DEFAULT_BESTSELLERS_URL: Record<string, string> = {
@@ -9,6 +19,25 @@ const DEFAULT_BESTSELLERS_URL: Record<string, string> = {
   'amazon.com': 'https://www.amazon.com/gp/bestsellers/electronics/',
   'amazon.ae': 'https://www.amazon.ae/-/en/gp/bestsellers/electronics/',
 };
+
+function resolveIp(): Promise<string> {
+  const now = Date.now();
+  if (cachedIp && now - cachedAt < DNS_CACHE_TTL) {
+    return Promise.resolve(cachedIp);
+  }
+
+  return new Promise((resolve, reject) => {
+    dns.resolve4(RAINFOREST_HOST, (err, addresses) => {
+      if (err) {
+        if (cachedIp) return resolve(cachedIp);
+        return reject(err);
+      }
+      cachedIp = addresses[0];
+      cachedAt = now;
+      resolve(cachedIp!);
+    });
+  });
+}
 
 function buildRainforestParams(
   pathSegments: string,
@@ -20,7 +49,6 @@ function buildRainforestParams(
 
   const segments = pathSegments.split('/');
 
-  // /products/search?q=...&num=...&amazon_domain=...
   if (segments[0] === 'products' && segments[1] === 'search') {
     params.type = 'search';
     params.search_term = String(queryParams.q || '');
@@ -31,12 +59,10 @@ function buildRainforestParams(
     return params;
   }
 
-  // /products/bestsellers?category=...&num=...&amazon_domain=...
   if (segments[0] === 'products' && segments[1] === 'bestsellers') {
     params.type = 'bestsellers';
     const domain = String(queryParams.amazon_domain || 'amazon.sa');
     const category = queryParams.category ? String(queryParams.category) : 'aps';
-    // `aps` / homepage-style category_id often returns an empty bestsellers list on regional stores.
     if (category === 'aps' || category === '') {
       const url = DEFAULT_BESTSELLERS_URL[domain] || DEFAULT_BESTSELLERS_URL['amazon.sa'];
       params.url = url;
@@ -50,7 +76,6 @@ function buildRainforestParams(
     return params;
   }
 
-  // /products/{asin}?amazon_domain=...
   if (segments[0] === 'products' && segments[1]) {
     params.type = 'product';
     params.asin = segments[1];
@@ -59,6 +84,58 @@ function buildRainforestParams(
   }
 
   return params;
+}
+
+function httpsGet(url: string, ip: string): Promise<{ status: number; data: any }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Request timeout after ${RAINFOREST_TIMEOUT / 1000}s`));
+    }, RAINFOREST_TIMEOUT);
+
+    const parsedUrl = new URL(url);
+    const pathWithQuery = parsedUrl.pathname + parsedUrl.search;
+
+    const req = https.request(
+      {
+        hostname: ip,
+        port: 443,
+        path: pathWithQuery,
+        method: 'GET',
+        headers: {
+          'Host': RAINFOREST_HOST,
+          'Content-Type': 'application/json',
+        },
+        timeout: RAINFOREST_TIMEOUT,
+        servername: RAINFOREST_HOST,
+      },
+      (response) => {
+        let body = '';
+        response.on('data', (chunk) => (body += chunk));
+        response.on('end', () => {
+          clearTimeout(timer);
+          try {
+            const data = JSON.parse(body);
+            resolve({ status: response.statusCode || 500, data });
+          } catch {
+            reject(new Error('Invalid JSON response from Rainforest API'));
+          }
+        });
+      }
+    );
+
+    req.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+
+    req.on('timeout', () => {
+      clearTimeout(timer);
+      req.destroy();
+      reject(new Error(`Connection timeout after ${RAINFOREST_TIMEOUT / 1000}s`));
+    });
+
+    req.end();
+  });
 }
 
 export default async function handler(
@@ -84,22 +161,16 @@ export default async function handler(
   });
 
   try {
-    console.log(`[Amazon Proxy] ${rainforestParams.type}: ${url.toString().replace(RAINFOREST_API_KEY, '***')}`);
+    const ip = await resolveIp();
+    console.log(`[Amazon Proxy] ${rainforestParams.type} → ${ip}: ${url.toString().replace(RAINFOREST_API_KEY, '***')}`);
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const { status, data } = await httpsGet(url.toString(), ip);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error(`[Amazon Proxy] Rainforest API error: ${response.status}`, data);
-      return res.status(response.status).json({
+    if (status >= 400) {
+      console.error(`[Amazon Proxy] Rainforest API error: ${status}`, data);
+      return res.status(status).json({
         error: 'Rainforest API error',
-        message: data.error || `HTTP ${response.status}`,
+        message: data.error || data.message || `HTTP ${status}`,
         details: data,
       });
     }
