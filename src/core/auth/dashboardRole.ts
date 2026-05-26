@@ -26,6 +26,7 @@ const ROLE_ALIASES: Record<string, UserRole> = {
   customer: 'customer_support',
   user: 'customer_support',
   buyer: 'customer_support',
+  developer: 'admin',
 };
 
 function resolveRoleToken(value: string | undefined): UserRole | null {

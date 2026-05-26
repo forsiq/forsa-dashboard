@@ -923,6 +923,7 @@ export const en: Record<string, string> = {
   "dash.admin.pending_count": "0",
   "dash.admin.active_auctions": "Active Auctions",
   "dash.merchant.my_products": "My Products",
+  "dash.merchant.my_products_in_auctions": "My Products in Auctions",
   "dash.merchant.my_auctions": "My Active Auctions",
   "dash.merchant.my_revenue": "My Revenue",
   "dash.merchant.pending_submissions": "Pending Submissions",

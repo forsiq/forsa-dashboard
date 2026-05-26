@@ -66,9 +66,8 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
   }, [normalizedAuction]);
 
   const hasDirectUrl = useMemo(() => {
-    return Boolean(normalizedAuction.imageUrl) ||
-      normalizeImageUrlList(normalizedAuction.images).length > 0;
-  }, [normalizedAuction.imageUrl, normalizedAuction.images]);
+    return isValidImageUrl(directUrl || '');
+  }, [directUrl]);
 
   const { data: attachmentUrlMap } = useAttachmentUrls(
     !hasDirectUrl && firstAttachmentId ? [firstAttachmentId] : []
@@ -94,7 +93,7 @@ export const AuctionImage: React.FC<AuctionImageProps> = ({
   if (hasError || !imageUrl) {
     return (
       <div className={`flex items-center justify-center bg-obsidian-panel/50 ${className}`}>
-        <Gavel className="w-16 h-16 text-zinc-muted/20" />
+        <Gavel className="w-8 h-8 text-zinc-muted/20" />
       </div>
     );
   }

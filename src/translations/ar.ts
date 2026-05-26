@@ -924,6 +924,7 @@ export const ar: Record<string, string> = {
   "dash.admin.pending_count": "0",
   "dash.admin.active_auctions": "مزادات نشطة",
   "dash.merchant.my_products": "منتجاتي",
+  "dash.merchant.my_products_in_auctions": "منتجاتي في المزادات",
   "dash.merchant.my_auctions": "مزاداتي النشطة",
   "dash.merchant.my_revenue": "إيراداتي",
   "dash.merchant.pending_submissions": "طلبات قيد المراجعة",

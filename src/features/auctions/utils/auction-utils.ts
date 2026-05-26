@@ -18,6 +18,7 @@ import { API_BASE_URL, getApiOrigin } from '@config/api';
 
 const ALLOWED_IMAGE_HOSTNAMES = [
   'file.zonevast.com',
+  'file1.zonevast.com',
   'test.zonevast.com',
   'api.zonevast.com',
   'localhost',
@@ -26,6 +27,7 @@ const ALLOWED_IMAGE_HOSTNAMES = [
 function isAllowedImageHostname(hostname: string): boolean {
   if (ALLOWED_IMAGE_HOSTNAMES.includes(hostname)) return true;
   if (hostname.endsWith('.amazonaws.com')) return true;
+  if (hostname.endsWith('.cloudfront.net')) return true;
   return false;
 }
 
