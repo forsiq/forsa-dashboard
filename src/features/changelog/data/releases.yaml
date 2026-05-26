@@ -1,3 +1,20 @@
+- version: "1.5.4"
+  date: "2026-05-26"
+  title:
+    en: "Listing media & readiness"
+    ar: "وسائط المنتجات والجاهزية"
+  entries:
+    - description:
+        en: "Fixed listing detail media gallery display and image resolution from attachments."
+        ar: "إصلاح عرض معرض وسائط تفاصيل المنتج وحل الصور من المرفقات."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Product list shows readiness warnings with a filter for incomplete products."
+        ar: "قائمة المنتجات تعرض تحذيرات الجاهزية مع فلتر للمنتجات غير المكتملة."
+      type: improved
+      sidebarPath: /listings
+
 - version: "1.5.3"
   date: "2026-05-25"
   title:

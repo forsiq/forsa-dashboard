@@ -433,6 +433,9 @@ export const ar: Record<string, string> = {
   "listing.stats.with_auction": "لديها مزادات",
   "listing.stats.with_deal": "لديها صفقات",
   "listing.stats.orphan": "غير منشورة",
+  "listing.stats.with_issues": "بها مشاكل",
+  "listing.filter.issues_only": "منتجات ناقصة فقط",
+  "listing.readiness.issues_tooltip": "مشاكل الجاهزية",
 
   // Listing detail
   "listing.detail.product_info": "تفاصيل المنتج",

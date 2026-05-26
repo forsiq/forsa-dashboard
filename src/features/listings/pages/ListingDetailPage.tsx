@@ -29,12 +29,16 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing, useSubmitListingForReview } from '../api/listing-hooks';
 import type { ProductListing } from '../../../types/services/listings.types';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
-import { ListingImage } from '../components/ListingImage';
 import { ProductReadinessCard } from '../components/ProductReadinessCard';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
-import { parseAttachmentIds } from '@features/auctions/utils/auction-utils';
+import { AmberImageGallery } from '@core/components/AmberImageGallery';
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
+import {
+  getListingAttachmentIds,
+  getListingImageGalleryUrls,
+} from '../utils/listing-media';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { useIsClient } from '@core/hooks/useIsClient';
@@ -154,19 +158,24 @@ export const ListingDetailPage: React.FC = () => {
     return null;
   }, [auctions, deals]);
 
-  const attachmentCount = useMemo(() => {
-    if (!listing) return 0;
-    const raw = listing as ProductListing & {
-      attachment_ids?: number[] | string;
-      main_attachment_id?: number;
-      image_url?: string;
-    };
-    const ids = parseAttachmentIds(raw.attachmentIds ?? raw.attachment_ids);
-    if (ids.length > 0) return ids.length;
-    if (raw.mainAttachmentId || raw.main_attachment_id) return 1;
-    if (raw.imageUrl || raw.image_url) return 1;
-    return listing.images?.length || 0;
-  }, [listing]);
+  const directImageUrls = useMemo(
+    () => (listing ? getListingImageGalleryUrls(listing) : []),
+    [listing],
+  );
+  const attachmentIds = useMemo(
+    () => (listing ? getListingAttachmentIds(listing) : []),
+    [listing],
+  );
+  const { data: attachmentUrlMap, isPending: imagesResolving } = useAttachmentUrls(
+    directImageUrls.length === 0 ? attachmentIds : [],
+  );
+  const allImages = useMemo(() => {
+    if (directImageUrls.length > 0) return directImageUrls;
+    if (!attachmentUrlMap || attachmentIds.length === 0) return [];
+    return attachmentIds
+      .map((id) => attachmentUrlMap.get(id))
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+  }, [directImageUrls, attachmentUrlMap, attachmentIds]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
 
@@ -279,17 +288,19 @@ export const ListingDetailPage: React.FC = () => {
               </div>
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.media')}</h3>
             </div>
-            {attachmentCount > 0 ? (
-              <div className="space-y-2">
-                <ListingImage listing={listing} className="aspect-square rounded-lg overflow-hidden border border-white/5" />
-                {attachmentCount > 1 && (
-                  <p className="text-[11px] text-zinc-muted font-bold text-center">
-                    {attachmentCount} {t('listing.detail.media') || 'photos'}
-                  </p>
-                )}
+            {imagesResolving && attachmentIds.length > 0 && directImageUrls.length === 0 ? (
+              <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
+                <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
               </div>
+            ) : allImages.length > 0 ? (
+              <AmberImageGallery
+                images={allImages}
+                alt={listing.title}
+                height="h-[280px] lg:h-[360px]"
+                className="rounded-lg border border-white/5"
+              />
             ) : (
-              <div className="aspect-square bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
+              <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
                 <Package className="w-10 h-10 text-zinc-muted/30" />
               </div>
             )}

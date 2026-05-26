@@ -9,6 +9,7 @@ import {
   Gavel,
   Users,
   Zap,
+  AlertTriangle,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -33,6 +34,8 @@ import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
 import { ListingImage } from '../components/ListingImage';
+import { ListingReadinessBadge } from '../components/ListingReadinessBadge';
+import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 
 export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
@@ -48,6 +51,7 @@ export const ListingsListPage: React.FC = () => {
   const [brandFilter, setBrandFilter] = useFilterState<string>('brand', 'all');
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
+  const [issuesOnly, setIssuesOnly] = useFilterState<string>('issuesOnly', 'false');
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -73,6 +77,11 @@ export const ListingsListPage: React.FC = () => {
   const listings = listingsData?.data || [];
   const pagination = listingsData?.pagination;
 
+  const filteredListings = useMemo(() => {
+    if (issuesOnly !== 'true') return listings;
+    return listings.filter((l) => analyzeProductReadiness(l).length > 0);
+  }, [listings, issuesOnly]);
+
   // Compute stats from listings — prefer API aggregate counts when available
   const stats = useMemo(() => {
     const all = pagination?.total || listings.length;
@@ -81,6 +90,7 @@ export const ListingsListPage: React.FC = () => {
       withAuction: listingsData?.stats?.withAuction ?? (listings.filter(l => l._auctionCount && l._auctionCount > 0).length || 0),
       withDeal: listingsData?.stats?.withDeal ?? (listings.filter(l => l._dealCount && l._dealCount > 0).length || 0),
       orphan: listingsData?.stats?.orphan ?? (listings.filter(l => !l._auctionCount && !l._dealCount).length || 0),
+      withIssues: listings.filter((l) => analyzeProductReadiness(l).length > 0).length,
     };
   }, [listings, pagination, listingsData?.stats]);
 
@@ -99,8 +109,9 @@ export const ListingsListPage: React.FC = () => {
     let count = 0;
     if (conditionFilter !== 'all') count += 1;
     if (brandFilter !== 'all') count += 1;
+    if (issuesOnly === 'true') count += 1;
     return count;
-  }, [conditionFilter, brandFilter]);
+  }, [conditionFilter, brandFilter, issuesOnly]);
 
   // Table columns
   const columns: Column<ProductListing>[] = [
@@ -113,8 +124,11 @@ export const ListingsListPage: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
             <ListingImage listing={listing} className="w-full h-full object-cover" fallbackClassName="w-5 h-5 text-zinc-muted/40" />
           </div>
-          <div className="min-w-0">
-            <DataTableEntityTitle text={listing.title} />
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <DataTableEntityTitle text={listing.title} />
+              <ListingReadinessBadge listing={listing} />
+            </div>
             <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {listing.sku || listing.brand || '—'}
             </p>
@@ -255,6 +269,13 @@ export const ListingsListPage: React.FC = () => {
           color: 'warning',
           description: t('listing.stats.orphan') || 'Draft',
         },
+        {
+          label: t('listing.stats.with_issues') || 'With Issues',
+          value: stats.withIssues,
+          icon: AlertTriangle,
+          color: 'warning',
+          description: t('listing.readiness.title') || 'Product Readiness',
+        },
       ]}
       toolbar={
         <ListPageToolbar
@@ -274,7 +295,7 @@ export const ListingsListPage: React.FC = () => {
       <div className="space-y-6">
         {isPending ? (
           <ListPageSkeleton count={6} columns={3} />
-        ) : listings.length === 0 ? (
+        ) : filteredListings.length === 0 ? (
           <EmptyState
             icon={Package}
             title={t('listing.empty.title') || 'No Listings'}
@@ -286,14 +307,14 @@ export const ListingsListPage: React.FC = () => {
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
             <DataTable
               columns={columns}
-              data={listings}
+              data={filteredListings}
               keyField="id"
               rowActions={rowActions}
               onRowClick={(row) => router.push(`/listings/${row.id}`)}
               pagination
               pageSize={limit}
               currentPage={page}
-              totalItems={pagination?.total || 0}
+              totalItems={issuesOnly === 'true' ? filteredListings.length : (pagination?.total || 0)}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
               onSortChange={handleSortChange}
@@ -344,6 +365,27 @@ export const ListingsListPage: React.FC = () => {
             </div>
           )}
 
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+              {t('listing.filter.issues_only') || 'Issues only'}
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setIssuesOnly(issuesOnly === 'true' ? 'false' : 'true');
+                setPage(1);
+              }}
+              className={cn(
+                'w-full px-3 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border text-start',
+                issuesOnly === 'true'
+                  ? 'bg-warning/15 text-warning border-warning/30'
+                  : 'bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10',
+              )}
+            >
+              {t('listing.filter.issues_only') || 'Show products with readiness issues'}
+            </button>
+          </div>
+
           {brands.length > 0 && (
             <div className="space-y-3">
               <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.table.brand')}</label>
@@ -377,6 +419,27 @@ export const ListingsListPage: React.FC = () => {
             </div>
           )}
 
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+              {t('listing.readiness.title') || 'Product Readiness'}
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setIssuesOnly(issuesOnly === 'true' ? 'false' : 'true');
+                setPage(1);
+              }}
+              className={cn(
+                'w-full px-3 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border text-start',
+                issuesOnly === 'true'
+                  ? 'bg-warning/10 text-warning border-warning/20'
+                  : 'bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10',
+              )}
+            >
+              {t('listing.filter.issues_only') || 'Show only products with issues'}
+            </button>
+          </div>
+
           <div className="pt-8 space-y-3">
             <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95 transition-all" onClick={() => setIsFilterOpen(false)}>
               {t('common.apply') || 'Apply'}
@@ -388,6 +451,7 @@ export const ListingsListPage: React.FC = () => {
                 setSearchQuery('');
                 setConditionFilter('all');
                 setBrandFilter('all');
+                setIssuesOnly('false');
                 setPage(1);
                 setIsFilterOpen(false);
               }}

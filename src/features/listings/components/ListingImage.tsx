@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Package } from 'lucide-react';
+import { cn } from '@core/lib/utils/cn';
 import {
   normalizeImageUrlList,
   parseAttachmentIds,
@@ -102,8 +103,8 @@ export const ListingImage: React.FC<ListingImageProps> = ({
 
   if (hasError || !imageUrl) {
     return (
-      <div className={`flex items-center justify-center bg-obsidian-panel/50 ${className}`}>
-        <Package className="w-12 h-12 text-zinc-muted/20" />
+      <div className={cn('flex items-center justify-center bg-obsidian-panel/50', className)}>
+        <Package className={cn('w-12 h-12 text-zinc-muted/20', fallbackClassName)} />
       </div>
     );
   }
@@ -122,7 +123,7 @@ export const ListingImage: React.FC<ListingImageProps> = ({
   }
 
   return (
-    <div className={`relative ${fallbackClassName}`}>
+    <div className={cn('relative', className)}>
       <Image
         src={imageUrl}
         alt={alt}

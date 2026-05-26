@@ -435,6 +435,9 @@ export const en: Record<string, string> = {
   "listing.stats.with_auction": "With Auctions",
   "listing.stats.with_deal": "With Deals",
   "listing.stats.orphan": "Not Deployed",
+  "listing.stats.with_issues": "With Issues",
+  "listing.filter.issues_only": "Issues only",
+  "listing.readiness.issues_tooltip": "Readiness issues",
 
   // Listing detail
   "listing.detail.product_info": "Product Details",

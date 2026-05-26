@@ -60,11 +60,12 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
 
   useEffect(() => {
     const saved = getLanguage();
-    if (saved && saved !== language) {
+    const serverLang = normalizeLanguage(initialLanguage);
+    if (saved && saved !== serverLang) {
       setLanguageState(saved);
     }
     setMounted(true);
-  }, []);
+  }, [initialLanguage]);
 
   useEffect(() => {
     if (!mounted) return;

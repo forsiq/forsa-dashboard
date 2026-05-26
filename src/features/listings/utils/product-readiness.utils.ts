@@ -1,3 +1,4 @@
+import { parseAttachmentIds } from '@features/auctions/utils/auction-utils';
 import type { ProductListing } from '../../../types/services/listings.types';
 
 export type Severity = 'warning' | 'info';
@@ -21,7 +22,14 @@ const CHECKS: {
     severity: 'warning',
     messageEn: 'No images uploaded — add at least one photo',
     messageAr: 'لم يتم رفع صور — أضف صورة واحدة على الأقل',
-    test: (l) => !l.attachmentIds?.length && !l.images?.length,
+    test: (l) => {
+      const raw = l as ProductListing & { attachment_ids?: number[]; image_url?: string };
+      const hasAtt = parseAttachmentIds(raw.attachmentIds ?? raw.attachment_ids).length > 0;
+      const hasMain = !!(raw.mainAttachmentId || (raw as { main_attachment_id?: number }).main_attachment_id);
+      const hasUrl = !!(raw.imageUrl || raw.image_url);
+      const hasImages = (raw.images?.length ?? 0) > 0;
+      return !hasAtt && !hasMain && !hasUrl && !hasImages;
+    },
   },
   {
     field: 'description',
