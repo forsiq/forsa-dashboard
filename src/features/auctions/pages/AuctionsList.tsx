@@ -14,12 +14,14 @@ import {
   Play,
   Pause,
   RotateCcw,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useCountdown } from '@core/hooks/useCountdown';
 import { useFilterState } from '@core/hooks/useFilterState';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { EmptyState } from '@core/components/EmptyState';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
@@ -56,6 +58,8 @@ import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
 import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../components/AuctionImage';
+import { MobileAuctionGrid } from '../components/MobileAuctionGrid';
+import { BottomSheet } from '@core/components/Mobile/BottomSheet';
 import type { AuctionStatus, Auction, AuctionFilters } from '../types/auction.types';
 
 type TabValue = 'all' | AuctionStatus;
@@ -98,8 +102,9 @@ const CountdownCell = React.memo(({ endTime, t }: CountdownCellProps) => {
  * AuctionsList - Auction Management with DataTable and Status Tabs
  */
 export const AuctionsList: React.FC = () => {
-    const { t, language } = useLanguage();
+    const { t, language, dir } = useLanguage();
     const router = useRouter();
+    const { isMobile } = useIsMobile();
 
     const { isMerchant } = useDashboardRole();
 
@@ -359,19 +364,235 @@ export const AuctionsList: React.FC = () => {
       ] as Action<Auction>[]),
     ];
 
+    // Mobile stats for compact 2x2 grid
+    const mobileStats = useMemo(() => ([
+      { label: t('auction.metrics.active_engines'), value: String(stats?.activeAuctions || 0), icon: Gavel, color: 'text-brand' },
+      { label: t('auction.metrics.bid_velocity'), value: String(stats?.totalBids || 0), icon: TrendingUp, color: 'text-emerald-400' },
+      { label: t('auction.metrics.projected_revenue'), value: formatCurrency(stats?.totalRevenue), icon: DollarSign, color: 'text-blue-400' },
+      { label: t('auction.critical_termination'), value: String(stats?.scheduledAuctions || 0), icon: Clock, color: 'text-amber-400' },
+    ]), [stats, t]);
+
+    // Mobile view
+    if (isMobile) {
+      return (
+        <div className="min-h-screen bg-obsidian-outer pb-20" dir={dir}>
+          {/* Mobile Header */}
+          <div className="sticky top-0 z-30 bg-obsidian-outer/95 backdrop-blur-md border-b border-white/5">
+            <div className="px-4 pt-4 pb-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                    <Gavel className="w-4 h-4 text-brand" />
+                  </div>
+                  <h1 className="text-lg font-black text-zinc-text tracking-tight">
+                    {t('auction.listings.title')}
+                  </h1>
+                </div>
+                {!isMerchant && (
+                  <AmberButton
+                    className="h-9 bg-brand text-black font-black rounded-xl border-none active:scale-95 px-4 text-xs"
+                    onClick={() => router.push('/listings/new')}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </AmberButton>
+                )}
+              </div>
+
+              {/* Search */}
+              <AmberInput
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                placeholder={t('auction.listings.search')}
+                className="h-9 bg-obsidian-card border-white/5 text-sm"
+              />
+            </div>
+
+            {/* Scrollable Tabs */}
+            <div className="flex items-center gap-1 px-4 pb-3 overflow-x-auto scrollbar-hide">
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.key;
+                const count = getTabCount(tab);
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => handleTabChange(tab.key)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors whitespace-nowrap border shrink-0",
+                      isActive
+                        ? "bg-brand text-black border-brand"
+                        : "bg-obsidian-card text-zinc-muted border-white/5"
+                    )}
+                  >
+                    {t(tab.labelKey)}
+                    {count > 0 && (
+                      <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black tabular-nums bg-black/10">
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Compact Stats 2x2 */}
+          {stats && (
+            <div className="grid grid-cols-2 gap-2 p-4">
+              {mobileStats.map((stat) => (
+                <div key={stat.label} className="bg-obsidian-card rounded-xl border border-white/5 p-3 space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <stat.icon className={cn("w-3 h-3", stat.color)} />
+                    <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest truncate">{stat.label}</span>
+                  </div>
+                  <p className={cn("text-sm font-black tabular-nums", stat.color)}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Filter button (floating) */}
+          {activeFilterCount > 0 && (
+            <div className="px-4 pb-2">
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-[10px] font-black text-brand uppercase tracking-widest"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                {activeFilterCount} {t('common.filters') || 'filters'}
+              </button>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="px-4 space-y-4">
+            {isPending ? (
+              <div className="grid grid-cols-2 gap-2.5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="aspect-[4/3] bg-obsidian-card rounded-xl animate-pulse border border-white/5" />
+                ))}
+              </div>
+            ) : auctions.length === 0 ? (
+              <EmptyState
+                icon={Gavel}
+                title={t('auction.inventory.depleted') || 'No Auctions'}
+                description={t('auction.inventory.no_identifiers')}
+                actionLabel={t('auction.action.deploy_listing') || 'Create Auction'}
+                onAction={() => router.push('/listings/new')}
+              />
+            ) : (
+              <>
+                {isFetching && <FetchingOverlay />}
+                <MobileAuctionGrid
+                  auctions={auctions}
+                  onAuctionClick={(auction) => router.push(`/auctions/${auction.id}`)}
+                />
+                {/* Mobile Pagination */}
+                {(auctionsData?.total || 0) > limit && (
+                  <div className="flex items-center justify-center gap-2 pt-4">
+                    <AmberButton
+                      variant="secondary"
+                      className="h-9 px-4 text-xs font-bold border border-white/5"
+                      disabled={page <= 1}
+                      onClick={() => setPage(page - 1)}
+                    >
+                      {t('common.previous') || 'Prev'}
+                    </AmberButton>
+                    <span className="text-xs font-bold text-zinc-muted tabular-nums">
+                      {page} / {Math.ceil((auctionsData?.total || 0) / limit)}
+                    </span>
+                    <AmberButton
+                      variant="secondary"
+                      className="h-9 px-4 text-xs font-bold border border-white/5"
+                      disabled={page >= Math.ceil((auctionsData?.total || 0) / limit)}
+                      onClick={() => setPage(page + 1)}
+                    >
+                      {t('common.next') || 'Next'}
+                    </AmberButton>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Mobile Filter BottomSheet */}
+          <BottomSheet
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            title={t('auction.config.operational_title')}
+          >
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('auction.listings.filter_category') || 'Category'}</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCategoryIdFilter('all')}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
+                      categoryIdFilter === 'all'
+                        ? "bg-brand text-black border-brand"
+                        : "bg-obsidian-panel text-zinc-muted border-white/5"
+                    )}
+                  >
+                    {t('common.all') || 'All'}
+                  </button>
+                  {(categoriesData?.categories || []).map((cat: any) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setCategoryIdFilter(cat.id); setPage(1); }}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border",
+                        categoryIdFilter === cat.id
+                          ? "bg-brand text-black border-brand"
+                          : "bg-obsidian-panel text-zinc-muted border-white/5"
+                      )}
+                    >
+                      {getLocalizedName(cat, language)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <AmberButton className="w-full h-11 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95" onClick={() => setIsFilterOpen(false)}>
+                  {t('auction.config.reconfigure_matrix')}
+                </AmberButton>
+                <AmberButton
+                  variant="secondary"
+                  className="w-full h-11 font-black uppercase tracking-widest border border-white/5"
+                  onClick={() => {
+                    setActiveTab('all');
+                    setCategoryIdFilter('all');
+                    setSearchQuery('');
+                    setPage(1);
+                    setIsFilterOpen(false);
+                  }}
+                >
+                  {t('common.reset')}
+                </AmberButton>
+              </div>
+            </div>
+          </BottomSheet>
+
+          <ConfirmModal />
+        </div>
+      );
+    }
+
+    // Desktop view
     return (
         <AdminListPageShell
             title={t('auction.listings.title')}
             description={t('auction.listings.subtitle')}
             icon={Gavel}
+            className="p-3 md:p-6 space-y-4 md:space-y-8"
             headerActions={
                 isMerchant ? undefined : (
                 <AmberButton
-                    className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+                    className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8"
                     onClick={() => router.push('/listings/new')}
                 >
                     <Plus className="w-5 h-5" />
-                    <span>{t('auction.create_auction')}</span>
+                    <span className="hidden md:inline">{t('auction.create_auction')}</span>
                 </AmberButton>
                 )
             }

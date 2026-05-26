@@ -23,6 +23,8 @@ import { useFileUpload } from '@core/hooks/useFileUpload';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
 import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
+import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
+import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import type { CreateListingInput } from '../../../types/services/listings.types';
 import type { FormFieldConfig } from '@core/services/types';
 
@@ -229,7 +231,7 @@ export const ListingFormPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
+    <div className="space-y-4 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
       {/* Submission Error Banner */}
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -327,7 +329,7 @@ export const ListingFormPage: React.FC = () => {
       </FormSection>
 
       {/* Specs & Sources */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <ListingSpecsEditor
           specs={formData.specs || []}
           onChange={(specs) => setFormData((p) => ({ ...p, specs }))}
@@ -338,7 +340,7 @@ export const ListingFormPage: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Product Info Section */}
         <div className="lg:col-span-2">
           <FormSection
@@ -370,7 +372,7 @@ export const ListingFormPage: React.FC = () => {
         </div>
 
         {/* Actions Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           {/* Info Note */}
           <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-4">
             <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0">
@@ -387,7 +389,7 @@ export const ListingFormPage: React.FC = () => {
           {/* Submit Actions */}
           <div className="space-y-3">
             <AmberButton
-              className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
+              className="w-full h-12 md:h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
               disabled={isSubmitting}
               onClick={() => {
                 const form = document.querySelector('form');
@@ -401,7 +403,7 @@ export const ListingFormPage: React.FC = () => {
             </AmberButton>
             <AmberButton
               variant="secondary"
-              className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
+              className="w-full h-10 md:h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
               onClick={() => router.push('/listings')}
             >
               {t('listing.form.cancel')}

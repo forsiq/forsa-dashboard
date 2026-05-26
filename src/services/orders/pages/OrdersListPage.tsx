@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { getOrders, getOrderStats, updateOrderStatus, orderKeys } from '../api/orders';
 import type { Order, OrderFilters, OrderStatus, OrderStats } from '../types';
 import {
@@ -38,6 +39,7 @@ export const OrdersListPage = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const isClient = useIsClient();
+  const { isMobile } = useIsMobile();
 
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const [statusFilter, setStatusFilter] = useFilterState<StatusTab>('status', 'all');
@@ -294,6 +296,7 @@ export const OrdersListPage = () => {
       title={t('orders.title') || 'الطلبات'}
       description={t('orders.subtitle') || 'إدارة وتتبع جميع طلبات العملاء'}
       icon={Package}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       statsLoading={statsLoading}
       stats={[
         { label: t('orders.stat.total'), value: statsData?.total || 0, icon: Package, color: 'brand' },

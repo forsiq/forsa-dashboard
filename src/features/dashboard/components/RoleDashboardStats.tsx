@@ -72,7 +72,7 @@ const AdminStats: React.FC<{ stats: ReturnType<typeof useDashboardStats>['data']
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((stat) => (
         <StatsCard key={stat.id} stat={stat} />
       ))}
@@ -117,7 +117,7 @@ const MerchantStats: React.FC<{ stats: ReturnType<typeof useDashboardStats>['dat
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((stat) => (
         <StatsCard key={stat.id} stat={stat} />
       ))}
@@ -162,7 +162,7 @@ const CustomerSupportStats: React.FC<{ stats: ReturnType<typeof useDashboardStat
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((stat) => (
         <StatsCard key={stat.id} stat={stat} />
       ))}
@@ -207,7 +207,7 @@ const ProductAnalystStats: React.FC<{ stats: ReturnType<typeof useDashboardStats
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((stat) => (
         <StatsCard key={stat.id} stat={stat} />
       ))}

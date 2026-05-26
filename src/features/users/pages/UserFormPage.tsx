@@ -166,7 +166,7 @@ export function UserFormPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-col gap-4 p-3 md:p-4 pt-0">
       {/* Page Header */}
       <PageHeader
         title={isEdit ? t('user.edit') : t('user.add')}
@@ -176,7 +176,7 @@ export function UserFormPage() {
       />
 
       <form onSubmit={handleSubmit}>
-        <AmberCard className="p-6">
+        <AmberCard className="p-3 md:p-6">
           <div className="space-y-6">
             {/* Username */}
             <div>

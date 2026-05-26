@@ -54,7 +54,7 @@ function SuggestionCard({
 
   const statusConfig: Record<
     string,
-    { variant: 'warning' | 'success' | 'danger'; icon: React.ReactNode }
+    { variant: 'warning' | 'success' | 'failed'; icon: React.ReactNode }
   > = {
     pending: {
       variant: 'warning',
@@ -65,7 +65,7 @@ function SuggestionCard({
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
     rejected: {
-      variant: 'danger',
+      variant: 'failed',
       icon: <XCircle className="w-3.5 h-3.5" />,
     },
   };

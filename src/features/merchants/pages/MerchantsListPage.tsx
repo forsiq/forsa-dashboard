@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import {
   AdminListPageShell,
   ListPageToolbar,
@@ -37,6 +38,7 @@ function merchantStatusVariant(status: string): 'success' | 'error' | 'inactive'
 export function MerchantsListPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
 
   const [searchInput, setSearchInput] = useFilterState('search', '');
   const [statusFilter, setStatusFilter] = useFilterState<string>('status', 'all');
@@ -67,6 +69,7 @@ export function MerchantsListPage() {
       title={t('merchant.title') || 'Merchants'}
       description={t('merchant.list.subtitle') || 'Manage merchant accounts and view their activity'}
       icon={Store}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       stats={[
         {
           label: t('merchant.stats.total') || 'Total Merchants',

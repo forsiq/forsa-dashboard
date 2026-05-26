@@ -17,6 +17,7 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
@@ -53,6 +54,7 @@ import type { GroupBuying } from '../types';
 export const GroupBuyingListPage: React.FC = () => {
   const { t, language } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -281,11 +283,12 @@ export const GroupBuyingListPage: React.FC = () => {
       title={t('groupBuying.title') || 'CAMPAIGNS'}
       description={t('groupBuying.subtitle') || 'Group buying campaigns management'}
       icon={Users}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
         isMerchant ? undefined : (
-        <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8" onClick={() => router.push('/group-buying/new')}>
+        <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8" onClick={() => router.push('/group-buying/new')}>
           <Plus className="w-5 h-5" />
-          <span>{t('groupBuying.create') || 'Create Campaign'}</span>
+          <span className="hidden md:inline">{t('groupBuying.create') || 'Create Campaign'}</span>
         </AmberButton>
         )
       }

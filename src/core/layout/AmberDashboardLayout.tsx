@@ -14,6 +14,10 @@ import type { MenuSection } from '@config/navigation';
 import { ForsaSidebar } from './components/ForsaSidebar';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 import { useTopbarUser } from '@core/hooks/useTopbarUser';
+import { useIsMobile } from '@core/hooks/useIsMobile';
+import { LayoutMobileHeader } from '@core/components/Mobile/LayoutMobileHeader';
+import { BottomTabBar } from '@core/components/Mobile/BottomTabBar';
+import { NavigationSheet } from '@core/components/Mobile/NavigationSheet';
 
 const SIDEBAR_COLLAPSED_KEY = 'forsa-sidebar-collapsed';
 const sidebarCollapseListeners = new Set<() => void>();
@@ -58,10 +62,12 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   appLabel,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNavSheetOpen, setIsNavSheetOpen] = useState(false);
   const isCollapsed = useSidebarCollapsedFromStorage();
   const { language, setLanguage, dir, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
 
   const handleToggleCollapse = useCallback(() => {
     const next = !readCollapsedFromStorage();
@@ -102,6 +108,21 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isSidebarOpen, closeSidebar]);
 
+  // ── Mobile layout ────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
+        <LayoutMobileHeader />
+        <main className="flex-1 overflow-y-auto scroll-smooth">
+          <div className="p-3 pb-20">{children}</div>
+        </main>
+        <BottomTabBar onMorePress={() => setIsNavSheetOpen(true)} />
+        <NavigationSheet isOpen={isNavSheetOpen} onClose={() => setIsNavSheetOpen(false)} />
+      </div>
+    );
+  }
+
+  // ── Desktop layout ───────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
       <AmberTopbar

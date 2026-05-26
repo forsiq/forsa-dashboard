@@ -8,6 +8,12 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="description" content="ZoneVast Auction Management Platform" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#FFC000" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Forsa" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </Head>
       <body className="antialiased bg-obsidian-outer text-zinc-text selection:bg-brand/30 selection:text-brand" suppressHydrationWarning>
         <Main />

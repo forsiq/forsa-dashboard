@@ -79,7 +79,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
     if (!isClient) return null;
 
     return (
-        <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
+        <div className="space-y-4 md:space-y-8 p-3 md:p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
             {/* Mission Critical Header */}
             <div className={cn(
                 "flex flex-col lg:flex-row lg:items-start justify-between gap-6 text-start"
@@ -90,7 +90,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                             <ClipboardCheck className="w-6 h-6" />
                         </div>
                         <div>
-                            <h1 className="text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
+                            <h1 className="text-2xl md:text-4xl font-black text-zinc-text tracking-tighter leading-none uppercase">
                                 {t('sales.dealEvaluation')}
                             </h1>
                             <p className="text-base text-zinc-muted font-bold tracking-tight uppercase mt-1">
@@ -152,7 +152,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                     </div>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
                     {reviewQueue.map((campaign) => {
                         const minProgress = Math.min((campaign.currentParticipants / campaign.minParticipants) * 100, 100);
                         const maxProgress = (campaign.currentParticipants / campaign.maxParticipants) * 100;
@@ -161,7 +161,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                         return (
                             <Card 
                                 key={campaign.id} 
-                                className="!p-8 border-border bg-obsidian-card overflow-hidden group hover:border-emerald-500/40 transition-all duration-700 shadow-2xl relative rounded-[2rem]"
+                                className="!p-4 md:!p-8 border-border bg-obsidian-card overflow-hidden group hover:border-emerald-500/40 transition-all duration-700 shadow-2xl relative rounded-2xl md:rounded-[2rem]"
                             >
                                 {/* Strategic Overlays */}
                                 <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -170,12 +170,12 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                     </button>
                                 </div>
 
-                                <div className="space-y-8">
+                                <div className="space-y-4 md:space-y-8">
                                     {/* Campaign Identification */}
                                     <div className="flex items-start justify-between">
                                         <div className="space-y-1">
                                             <span className="text-[11px] font-black text-brand uppercase tracking-[0.3em] leading-none">{campaign.category?.name || t('sales.assetProtocol')}</span>
-                                            <h3 className="text-xl font-black text-zinc-text uppercase tracking-tighter leading-tight mt-2 group-hover:text-white transition-colors truncate max-w-[200px]">
+                                            <h3 className="text-base md:text-xl font-black text-zinc-text uppercase tracking-tighter leading-tight mt-2 group-hover:text-white transition-colors truncate max-w-[200px]">
                                                 {campaign.title}
                                             </h3>
                                         </div>
@@ -187,7 +187,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                     </div>
 
                                     {/* Evaluation Telemetry */}
-                                    <div className="space-y-6">
+                                    <div className="space-y-4 md:space-y-6">
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('sales.activationThreshold')}</span>
@@ -228,10 +228,10 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                     <div className="h-px bg-white/[0.05]" />
 
                                     {/* Operational Actions */}
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 md:gap-3">
                                         <AmberButton 
                                             className={cn(
-                                                "flex-1 h-12 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-xl",
+                                                "flex-1 h-10 md:h-12 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-xl",
                                                 isUnlocked ? "bg-emerald-500 hover:bg-emerald-400 text-white" : "bg-obsidian-outer border border-border text-zinc-muted cursor-not-allowed"
                                             )}
                                             onClick={() => isUnlocked && router.push(`/group-buying/${campaign.id}`)}
@@ -241,7 +241,7 @@ export const GroupBuyingReviewPage: React.FC = () => {
                                         </AmberButton>
                                         <AmberButton 
                                             variant="secondary" 
-                                            className="h-12 w-12 p-0 rounded-2xl border-white/5 bg-obsidian-outer hover:bg-white/10 active:scale-95 transition-all text-zinc-muted hover:text-white"
+                                            className="h-10 md:h-12 w-10 md:w-12 p-0 rounded-xl md:rounded-2xl border-white/5 bg-obsidian-outer hover:bg-white/10 active:scale-95 transition-all text-zinc-muted hover:text-white"
                                             onClick={() => router.push(`/group-buying/${campaign.id}/edit`)}
                                         >
                                             <Edit className="w-4 h-4" />
@@ -260,9 +260,9 @@ export const GroupBuyingReviewPage: React.FC = () => {
             )}
 
             {/* Queue Logistics Meta */}
-            <div className="mt-12 p-10 bg-obsidian-card/40 rounded-[3rem] border border-border/40 backdrop-blur-xl relative overflow-hidden group">
+            <div className="mt-8 md:mt-12 p-4 md:p-10 bg-obsidian-card/40 rounded-2xl md:rounded-[3rem] border border-border/40 backdrop-blur-xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-brand/10 transition-colors" />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-12 relative z-10">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3 text-brand">
                             <Zap className="w-5 h-5" />

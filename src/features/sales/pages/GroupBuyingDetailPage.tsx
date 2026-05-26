@@ -133,7 +133,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
   return (
     <>
-      <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
+      <div className="max-w-[1600px] mx-auto p-3 md:p-6 space-y-4 md:space-y-6 animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
@@ -227,7 +227,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <AmberImageGallery
             images={campaignImages}
             alt={campaign.title}
-            height="h-[300px] lg:h-[460px]"
+            height="h-[220px] md:h-[300px] lg:h-[460px]"
             overlay={
               <>
                 <div className="absolute top-4 start-4 flex items-center gap-2">
@@ -247,8 +247,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
           />
 
           {/* Progress Section */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                   <Target className="w-4 h-4" />
@@ -314,8 +314,8 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
 
           {/* Participants List */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
@@ -383,7 +383,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
         <div className="space-y-6">
 
           {/* Join Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5 relative overflow-hidden">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden">
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
@@ -467,12 +467,12 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
 
           {/* Info Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
-              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
-                <Package className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-3 md:space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
+                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                    <Package className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
             </div>
 
             <div className="space-y-3.5">

@@ -111,7 +111,7 @@ export const AuctionFormPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
+    <div className="space-y-4 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
       {/* Submission Error Banner */}
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -132,9 +132,9 @@ export const AuctionFormPage: React.FC = () => {
         onSubmit={handleSubmit}
       />
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Primary Data Cluster */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-4 md:space-y-8">
           <AuctionCoreFields
             formData={formData}
             errors={errors}
@@ -163,7 +163,7 @@ export const AuctionFormPage: React.FC = () => {
         </div>
 
         {/* Temporal & Visual Logistics */}
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           <AuctionImageSection
             imageUpload={imageUpload}
             isUploading={isUploading}
@@ -197,7 +197,7 @@ export const AuctionFormPage: React.FC = () => {
           {/* Deployment Control Surface */}
           <div className="space-y-3">
             <AmberButton
-              className="w-full h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
+              className="w-full h-12 md:h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
               disabled={updateMutation.isPending || createMutation.isPending || isUploading}
               onClick={handleSubmit}
             >

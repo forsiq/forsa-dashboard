@@ -12,6 +12,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberButton } from '@core/components/AmberButton';
 import { cn } from '@core/lib/utils/cn';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import {
   AdminListPageShell,
   ListPageToolbar,
@@ -31,6 +32,7 @@ export function UsersListPage() {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const toast = useToast();
+  const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -258,6 +260,7 @@ export function UsersListPage() {
       description={t('user.subtitle')}
       icon={User}
       statsLoading={isLoadingStats}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       stats={[
         { label: t('user.stats.total'), value: stats?.total || 0, icon: User, color: 'info' },
         { label: t('user.stats.active'), value: stats?.active || 0, icon: UserCheck, color: 'success' },
@@ -265,9 +268,9 @@ export function UsersListPage() {
         { label: t('user.stats.admins'), value: stats?.admins || 0, icon: Shield, color: 'primary' },
       ]}
       headerActions={
-        <AmberButton variant="primary" onClick={() => router.push('/users/new')} className="gap-2 h-11 bg-brand text-black font-black rounded-xl px-6">
+        <AmberButton variant="primary" onClick={() => router.push('/users/new')} className="gap-2 h-11 bg-brand text-black font-black rounded-xl px-4 md:px-6">
           <Plus className="h-4 w-4" />
-          {t('user.add')}
+          <span className="hidden md:inline">{t('user.add')}</span>
         </AmberButton>
       }
       toolbar={

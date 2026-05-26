@@ -11,6 +11,7 @@ import {
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
@@ -26,6 +27,7 @@ import type { Auction } from '../types/auction.types';
 export const WatchlistPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'title');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'asc');
@@ -121,6 +123,7 @@ export const WatchlistPage: React.FC = () => {
       icon={Heart}
       iconClassName="fill-danger"
       iconTileClassName="bg-danger/10 text-danger border-danger/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
     >
       {isLoading ? (
         <ListPageSkeleton count={5} columns={3} />

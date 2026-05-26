@@ -21,6 +21,7 @@ import {
   FileText,
   ExternalLink,
   SendHorizonal,
+  MoreVertical,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -40,6 +41,8 @@ import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useCountdown } from '@core/hooks/useCountdown';
+import { useIsMobile } from '@core/hooks/useIsMobile';
+import { BottomSheet } from '@core/components/Mobile/BottomSheet';
 
 interface AuctionCountdownDisplayProps {
   endTime: string;
@@ -63,6 +66,8 @@ export const AuctionDetails: React.FC = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
+  const { isMobile } = useIsMobile();
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
 
   const [auctionId, paramReady] = useRouteParam('id', { parse: 'number', safe: true });
   const { data: auction, isPending: auctionLoading } = useGetAuction(auctionId ?? 0, paramReady && !!auctionId);
@@ -183,7 +188,7 @@ export const AuctionDetails: React.FC = () => {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>
+    <div className="max-w-[1600px] mx-auto p-3 md:p-6 space-y-4 md:space-y-6 animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
       <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex min-w-0 w-full flex-1 items-center gap-4">
@@ -288,19 +293,30 @@ export const AuctionDetails: React.FC = () => {
           >
             <Share2 className="w-4 h-4" />
           </button>
-          <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5" onClick={() => {
-            if (!isSafePathResourceId(auction.id)) return;
-            void router.push(`/auctions/clone/${auction.id}`);
-          }}>
-              <Copy className="w-3.5 h-3.5" />
-              {t('auction.detail.clone') || 'Clone'}
-          </AmberButton>
-          <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => {
-            if (!isSafePathResourceId(auction.id)) return;
-            void router.push(`/auctions/edit/${auction.id}`);
-          }}>
-              {t('common.edit') || 'Edit'}
-          </AmberButton>
+          {isMobile ? (
+            <button
+              className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all"
+              onClick={() => setIsActionsOpen(true)}
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          ) : (
+            <>
+              <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5" onClick={() => {
+                if (!isSafePathResourceId(auction.id)) return;
+                void router.push(`/auctions/clone/${auction.id}`);
+              }}>
+                  <Copy className="w-3.5 h-3.5" />
+                  {t('auction.detail.clone') || 'Clone'}
+              </AmberButton>
+              <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => {
+                if (!isSafePathResourceId(auction.id)) return;
+                void router.push(`/auctions/edit/${auction.id}`);
+              }}>
+                  {t('common.edit') || 'Edit'}
+              </AmberButton>
+            </>
+          )}
         </div>
       </div>
 
@@ -321,7 +337,7 @@ export const AuctionDetails: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6", isMobile && "pb-24")}>
         {/* Left Column - Image + Bids */}
         <div className="lg:col-span-2 space-y-6">
 
@@ -329,7 +345,7 @@ export const AuctionDetails: React.FC = () => {
           <AmberImageGallery
             images={allImages}
             alt={auction.title}
-            height="h-[300px] lg:h-[460px]"
+            height="h-[220px] md:h-[300px] lg:h-[460px]"
             overlay={
               <>
                 <div className="absolute top-4 start-4 flex items-center gap-2">
@@ -347,8 +363,8 @@ export const AuctionDetails: React.FC = () => {
           />
 
           {/* Bid History */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
@@ -417,9 +433,9 @@ export const AuctionDetails: React.FC = () => {
 
           {/* Specifications */}
           {auction.specs && auction.specs.length > 0 && (
-            <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
-              <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
+                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                   <FileText className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.specifications') || 'Specifications'}</h3>
@@ -440,8 +456,8 @@ export const AuctionDetails: React.FC = () => {
 
           {/* Sources & References */}
           {auction.sources && auction.sources.length > 0 && (
-            <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
-              <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
                 <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
                   <ExternalLink className="w-4 h-4" />
                 </div>
@@ -483,7 +499,7 @@ export const AuctionDetails: React.FC = () => {
         <div className="space-y-6">
 
           {/* Bidding Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5 relative overflow-hidden">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden">
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
@@ -508,7 +524,7 @@ export const AuctionDetails: React.FC = () => {
                 <label className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
                 <span className="text-[11px] font-semibold text-zinc-muted tracking-wider">Min: {formatCurrency(nextMinBid)}</span>
               </div>
-              <div className="relative group">
+              <div className="relative group" id="mobile-bid-input">
                 <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
                 <AmberInput
                   type="number"
@@ -541,11 +557,8 @@ export const AuctionDetails: React.FC = () => {
           </div>
 
           {/* Info Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
-              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
-                <Gavel className="w-4 h-4" />
-              </div>
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-3 md:space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
               <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.infrastructure_logistics') || 'Details'}</h3>
             </div>
 
@@ -588,6 +601,105 @@ export const AuctionDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Bid Bar */}
+      {isMobile && auction.status === 'active' && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-obsidian-card border-t border-white/5 p-3 flex items-center gap-3 safe-area-bottom">
+          <div className="flex-1">
+            <p className="text-[10px] text-zinc-muted font-black uppercase tracking-widest">
+              {currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}
+            </p>
+            <p className="text-lg font-black text-brand tabular-nums">{formatCurrency(currentBid || startPrice)}</p>
+          </div>
+          <AmberButton
+            className="h-11 px-6 bg-brand text-black font-black uppercase tracking-wider rounded-xl active:scale-95 border-none"
+            onClick={() => {
+              document.getElementById('mobile-bid-input')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            {t('auction.detail.authorize_bid') || 'Place Bid'}
+          </AmberButton>
+        </div>
+      )}
+
+      {/* Mobile Actions BottomSheet */}
+      <BottomSheet
+        isOpen={isActionsOpen}
+        onClose={() => setIsActionsOpen(false)}
+        title={t('common.actions') || 'Actions'}
+      >
+        <div className="space-y-2 pb-4">
+          <button
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
+            onClick={() => {
+              setIsActionsOpen(false);
+              if (!isSafePathResourceId(auction.id)) return;
+              void router.push(`/auctions/edit/${auction.id}`);
+            }}
+          >
+            <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+              <FileText className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-bold text-zinc-text">{t('common.edit') || 'Edit'}</span>
+          </button>
+
+          <button
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
+            onClick={() => {
+              setIsActionsOpen(false);
+              if (!isSafePathResourceId(auction.id)) return;
+              void router.push(`/auctions/clone/${auction.id}`);
+            }}
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <Copy className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-bold text-zinc-text">{t('auction.detail.clone') || 'Clone'}</span>
+          </button>
+
+          {!['ended', 'sold', 'cancelled'].includes(auction?.status) && (
+            <button
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-danger/5 hover:border-danger/20 transition-all"
+              onClick={() => {
+                setIsActionsOpen(false);
+                openConfirm({
+                  title: t('auction.lifecycle.cancel_title') || 'Cancel Auction',
+                  message: t('auction.lifecycle.cancel_confirm') || 'Are you sure?',
+                  onConfirm: () => cancelAuction.mutate(auction.id),
+                  variant: 'danger',
+                });
+              }}
+            >
+              <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center text-danger">
+                <AlertCircle className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-bold text-danger">{t('auction.lifecycle.cancel') || 'Cancel'}</span>
+            </button>
+          )}
+
+          {canSubmitForReview && (
+            <button
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
+              onClick={() => {
+                setIsActionsOpen(false);
+                openConfirm({
+                  title: t('approval.actions.submit') || 'Submit for Review',
+                  message: t('approval.messages.submit_confirm') || 'Are you sure?',
+                  onConfirm: () => submitForReviewMutation.mutate(auction.id),
+                  variant: 'info',
+                });
+              }}
+              disabled={submitForReviewMutation.isPending}
+            >
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                <SendHorizonal className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-bold text-zinc-text">{t('approval.actions.submit') || 'Submit for Review'}</span>
+            </button>
+          )}
+        </div>
+      </BottomSheet>
+
       <ConfirmModal />
     </div>
   );

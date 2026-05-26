@@ -504,7 +504,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         : t('listing.wizard.title_edit');
 
   return (
-    <div className="space-y-8 p-6 max-w-[1200px] mx-auto animate-in fade-in duration-700" dir={dir}>
+    <div className="space-y-4 md:space-y-8 p-3 md:p-6 max-w-[1200px] mx-auto animate-in fade-in duration-700" dir={dir}>
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
@@ -570,7 +570,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             <ChevronLeft className={cn('w-5 h-5', isRTL && 'rotate-180')} />
           </AmberButton>
           <div>
-            <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
+            <h1 className="text-xl md:text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {pageTitle}
             </h1>
             {existingListing?.title && (
@@ -666,7 +666,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">
             {t('listing.deploy.choose')}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <button
               type="button"
               onClick={() => {
@@ -674,7 +674,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 setFieldErrors({});
               }}
               className={cn(
-                'p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
+                'p-4 md:p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
                 deployChannel === 'auction' ? 'border-brand/30' : 'border-white/5 hover:border-brand/20',
               )}
             >
@@ -689,7 +689,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 setFieldErrors({});
               }}
               className={cn(
-                'p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
+                'p-4 md:p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
                 deployChannel === 'group_buy' ? 'border-info/30' : 'border-white/5 hover:border-info/20',
               )}
             >

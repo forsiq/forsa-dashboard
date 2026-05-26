@@ -69,7 +69,7 @@ export function UserDetailPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-col gap-4 p-3 md:p-4 pt-0">
       {/* Page Header */}
       <PageHeader
         title={user?.fullName || t('user.detail')}
@@ -96,16 +96,16 @@ export function UserDetailPage() {
       ) : user ? (
         <>
           {/* User Info Card */}
-          <AmberCard className="p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-zinc-text">
+          <AmberCard className="p-3 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-3">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-lg md:text-2xl font-bold text-zinc-text">
                     {user.fullName.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-zinc-text">{user.fullName}</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-zinc-text">{user.fullName}</h2>
                   <p className="text-sm text-zinc-muted">@{user.userName}</p>
                 </div>
               </div>
@@ -171,8 +171,8 @@ export function UserDetailPage() {
           </AmberCard>
 
           {/* Timestamps Card */}
-          <AmberCard className="p-6">
-            <h3 className="text-lg font-semibold text-zinc-text mb-4">{t('user.timestamps')}</h3>
+          <AmberCard className="p-3 md:p-6">
+            <h3 className="text-base md:text-lg font-semibold text-zinc-text mb-3 md:mb-4">{t('user.timestamps')}</h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-zinc-muted" />

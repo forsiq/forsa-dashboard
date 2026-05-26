@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { CardGridSkeleton } from '@core/components/Loading/AmberCardSkeleton';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
@@ -41,6 +42,7 @@ import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
@@ -232,18 +234,19 @@ export const ListingsListPage: React.FC = () => {
       title={t('listing.title')}
       description={t('listing.description')}
       icon={Package}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
         <div className="flex flex-wrap items-center gap-3">
           <AmberButton
             variant="outline"
-            className="gap-2 h-11 border-border text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover px-6"
+            className="gap-2 h-11 border-border text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover px-4 md:px-6"
             onClick={() => router.push('/amazon-import')}
           >
             <ShoppingBag className="w-5 h-5" />
-            <span>{t('listing.import_amazon')}</span>
+            <span className="hidden md:inline">{t('listing.import_amazon')}</span>
           </AmberButton>
           <AmberButton
-            className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+            className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8"
             onClick={() => router.push('/listings/new')}
           >
             <Plus className="w-5 h-5" />

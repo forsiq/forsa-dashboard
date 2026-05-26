@@ -280,7 +280,7 @@ export const GroupBuyingFormPage: React.FC = () => {
       : 0;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700" dir={dir}>
+    <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700" dir={dir}>
       {/* Submission Error Banner */}
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -329,10 +329,10 @@ export const GroupBuyingFormPage: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Coverage Logic Stack */}
-        <div className="lg:col-span-2 space-y-8">
-            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl relative overflow-hidden group">
+        <div className="lg:col-span-2 space-y-4 md:space-y-8">
+            <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-2xl relative overflow-hidden group">
                 {/* Visual Identity Marker */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 group-focus-within:bg-brand/10 transition-all duration-1000" />
                 
@@ -396,8 +396,8 @@ export const GroupBuyingFormPage: React.FC = () => {
             </Card>
 
             {/* Threshold & Participation Metrics */}
-            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-8">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+            <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-2xl space-y-6 md:space-y-8">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
                     <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                       <Users className="w-5 h-5" />
                    </div>
@@ -456,13 +456,13 @@ export const GroupBuyingFormPage: React.FC = () => {
         </div>
 
         {/* Temporal & Fiscal Logistics */}
-        <div className="space-y-8">
-            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
-                   <div className="w-11 h-11 rounded-xl bg-info/10 flex items-center justify-center text-info border border-info/20 shadow-inner">
-                      <ImageIcon className="w-5 h-5" />
-                   </div>
-                   <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.campaign_imagery')}</h3>
+        <div className="space-y-4 md:space-y-8">
+            <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-2xl space-y-4 md:space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+                        <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('groupBuying.form.campaign_imagery')}</h3>
                 </div>
                 <AmberImageUpload
                   value={imageUpload.previewUrls}
@@ -487,8 +487,8 @@ export const GroupBuyingFormPage: React.FC = () => {
             </Card>
 
             {/* Value Logic Matrix */}
-            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-7 h-fit">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+            <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-2xl space-y-5 md:space-y-7 h-fit">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
                    <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-inner">
                       <Calculator className="w-5 h-5" />
                    </div>
@@ -524,8 +524,8 @@ export const GroupBuyingFormPage: React.FC = () => {
             </Card>
 
             {/* Deployment Spectrum Control */}
-            <Card className="!p-8 bg-obsidian-card border-border shadow-2xl space-y-7 h-fit">
-                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+            <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-2xl space-y-5 md:space-y-7 h-fit">
+                <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
                    <div className="w-11 h-11 rounded-xl bg-warning/10 flex items-center justify-center text-warning border border-warning/20 shadow-inner">
                       <Clock className="w-5 h-5" />
                    </div>
@@ -562,7 +562,7 @@ export const GroupBuyingFormPage: React.FC = () => {
             {/* Strategy Control Node */}
             <div className="space-y-4">
                 <AmberButton 
-                    className="w-full h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-[0_15px_50px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm group"
+                    className="w-full h-12 md:h-16 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.3em] rounded-2xl shadow-[0_15px_50px_rgba(245,196,81,0.15)] active:scale-95 transition-all text-sm group"
                     onClick={handleSubmit}
                     disabled={createMutation.isPending || updateMutation.isPending || isUploading}
                 >
@@ -571,7 +571,7 @@ export const GroupBuyingFormPage: React.FC = () => {
                 
                 <AmberButton 
                     variant="secondary" 
-                    className="w-full h-14 bg-obsidian-card font-black uppercase tracking-widest rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
+                    className="w-full h-10 md:h-14 bg-obsidian-card font-black uppercase tracking-widest rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
                     onClick={() => router.push('/group-buying')}
                 >
                     {t('common.cancel')}

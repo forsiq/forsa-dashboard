@@ -202,7 +202,7 @@ export const ListingDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
+    <div className="space-y-4 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" dir={dir}>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -288,11 +288,11 @@ export const ListingDetailPage: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Images Column */}
-        <div className="lg:col-span-1 space-y-8">
+        <div className="lg:col-span-1 space-y-4 md:space-y-8">
           {/* Media Card */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
+          <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-xl space-y-4 md:space-y-6">
             <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
               <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
                 <ImageIcon className="w-5 h-5" />
@@ -307,7 +307,7 @@ export const ListingDetailPage: React.FC = () => {
               <AmberImageGallery
                 images={allImages}
                 alt={listing.title}
-                height="h-[280px] lg:h-[360px]"
+                height="h-[220px] md:h-[280px] lg:h-[360px]"
                 className="rounded-lg border border-white/5"
               />
             ) : (
@@ -344,10 +344,10 @@ export const ListingDetailPage: React.FC = () => {
         </div>
 
         {/* Details Column */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-4 md:space-y-8">
           {/* Product Info Card */}
-          <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-xl space-y-6 md:space-y-8">
+            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
               <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
                 <Package className="w-5 h-5" />
               </div>
@@ -383,7 +383,7 @@ export const ListingDetailPage: React.FC = () => {
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
                 {t('auction.detail.specifications')}
               </h3>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <dl className="grid grid-cols-2 gap-4">
                 {listing.specs.map((spec, idx) => (
                   <div key={idx} className="space-y-1">
                     <dt className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{spec.label}</dt>

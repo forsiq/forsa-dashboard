@@ -5,6 +5,7 @@ import { Gavel, TrendingUp, Trophy, AlertTriangle, Clock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
@@ -61,6 +62,7 @@ const DISPLAY_STATUS_LABEL: Record<BidDisplayStatus, { key: string; fallback: st
 export const MyBidsPage: React.FC = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useFilterState<BidTab>('tab', 'all');
   const [selectedBid, setSelectedBid] = useState<BidRow | null>(null);
@@ -198,6 +200,7 @@ export const MyBidsPage: React.FC = () => {
       title={t('auction.my_bids') || 'My Bids'}
       description={t('auction.bidding_history') || 'Track your bidding activity'}
       icon={TrendingUp}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       tabs={
       !isLoading && bids.length > 0 ? (
         <div className="flex items-center gap-2 overflow-x-auto pb-1">

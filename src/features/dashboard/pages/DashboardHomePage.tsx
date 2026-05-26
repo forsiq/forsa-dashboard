@@ -9,6 +9,7 @@ import { CriticalNodes } from '../components/CriticalNodes';
 import { RoleDashboardStats } from '../components/RoleDashboardStats';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AlertTriangle, RefreshCw, Plus, Gavel, Users, BarChart2, ShoppingBag, Tag, Package } from 'lucide-react';
 import type { QuickAction } from '@core/core/dashboard/types';
 import type { UserRole } from '@features/auth/types';
@@ -18,6 +19,7 @@ type RoleFilteredAction = QuickAction & { allowedRoles?: UserRole[] };
 export const DashboardHomePage = () => {
   const { t } = useLanguage();
   const { role } = useDashboardRole();
+  const { isMobile } = useIsMobile();
   const { 
     stats, 
     activities, 
@@ -117,10 +119,10 @@ export const DashboardHomePage = () => {
   }
 
   return (
-    <div className="space-y-8 p-4 md:p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+    <div className={`space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-700 ${isMobile ? 'p-3' : 'p-4 md:p-6'}`}>
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-zinc-text tracking-tight leading-none uppercase">
+        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-3xl lg:text-4xl'} font-black text-zinc-text tracking-tight leading-none uppercase`}>
           {t('dash.title')}
         </h1>
         <p className="text-base text-zinc-secondary font-bold uppercase tracking-tight">
@@ -138,7 +140,7 @@ export const DashboardHomePage = () => {
       <DashboardCharts salesData={salesChart || []} categoryData={categoryData || []} />
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
         <div className="lg:col-span-2 space-y-6">
           <TopAuctions products={topProducts || []} />
           <ActivityFeed activities={activities} />

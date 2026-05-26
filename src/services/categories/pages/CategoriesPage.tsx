@@ -37,6 +37,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
@@ -257,6 +258,7 @@ function TreeRow({ node, level, language, onEdit, onToggleStatus, onDelete, open
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -458,19 +460,20 @@ export function CategoriesPage() {
       title={t('category.title') || 'الفئات'}
       description={t('category.subtitle') || 'عرض وإدارة جميع فئات المنتجات في الكتالوج'}
       icon={LayoutGrid}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
         <div className="flex items-center gap-3">
           {isSavingOrder && (
-            <span className="flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
+            <span className="hidden md:flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
               <Loader2 className="w-4 h-4 animate-spin text-brand" />
               {t('category.saving_order') || t('common.saving') || 'جاري الحفظ...'}
             </span>
           )}
           <AmberButton
-            className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
+            className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
             onClick={() => router.push('/categories/new')}
           >
-            <span>{t('category.add_new') || 'إضافة فئة جديدة'}</span>
+            <span className="hidden md:inline">{t('category.add_new') || 'إضافة فئة جديدة'}</span>
             <Plus className="w-5 h-5" />
           </AmberButton>
         </div>
@@ -483,7 +486,7 @@ export function CategoriesPage() {
         { label: t('category.main') || 'Main Categories', value: stats?.withParent ?? 0, icon: Layers, color: 'info' },
       ]}
       tabs={
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 overflow-x-auto scrollbar-hide">
           {/* Page Tabs */}
           <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
             {PAGE_TABS.map((tab) => {
@@ -511,7 +514,7 @@ export function CategoriesPage() {
 
           {/* View Mode Toggle (only in categories tab) */}
           {pageTab === 'categories' && (
-            <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
+            <div className="hidden md:flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
               <button
                 onClick={() => setViewMode('list')}
                 className={cn(

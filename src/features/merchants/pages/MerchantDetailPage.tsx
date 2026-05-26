@@ -129,12 +129,12 @@ export function MerchantDetailPage() {
     >
       <div className="space-y-6">
       {/* Merchant Info Card */}
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-3 md:p-5 space-y-3 md:space-y-4">
         <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
           {t('merchant.detail.info') || 'Merchant Information'}
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Phone */}
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">

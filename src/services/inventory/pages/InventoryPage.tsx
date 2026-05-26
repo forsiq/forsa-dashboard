@@ -9,6 +9,7 @@ import { AmberDropdown } from '@core/components/AmberDropdown';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import {
   Package,
   AlertCircle,
@@ -80,6 +81,7 @@ export const InventoryPage = () => {
   const { t, dir } = useLanguage();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isMobile } = useIsMobile();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -295,9 +297,10 @@ export const InventoryPage = () => {
       title={t('inventory.overview')}
       description={t('inventory.overview_subtitle')}
       icon={Package}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
         <div className="flex flex-wrap gap-3">
-          <AmberButton className="gap-2 px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory')}>
+          <AmberButton className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory')}>
               <span>{t('inventory.add_item')}</span>
               <Plus className="w-5 h-5" />
           </AmberButton>
@@ -322,7 +325,7 @@ export const InventoryPage = () => {
         />
       }
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Main Table Area */}
         <div className="lg:col-span-2 space-y-4">
           {isLoading ? (

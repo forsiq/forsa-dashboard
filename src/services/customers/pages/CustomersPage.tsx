@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Plus, Search, Mail, Phone, Building2, User, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 import { AmberButton } from '@core/components/AmberButton';
 import { StatsGrid } from '@core/components/Layout/StatsGrid';
@@ -34,6 +35,7 @@ type TypeTab = 'all' | 'individual' | 'business';
 export function CustomersPage() {
   const { t, dir } = useLanguage();
   const router = useRouter();
+  const { isMobile } = useIsMobile();
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const [typeFilter, setTypeFilter] = useFilterState<TypeTab>('type', 'all');
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -224,10 +226,11 @@ export function CustomersPage() {
       title={t('customer.title') || 'العملاء'}
       description={t('customer.subtitle') || 'إدارة وتتبع حسابات العملاء'}
       icon={User}
+      className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
-        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/customers/new')}>
+        <AmberButton className="gap-2 px-4 md:px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/customers/new')}>
           <Plus className="w-5 h-5" />
-          <span>{t('customer.add_new') || 'Initialize Customer'}</span>
+          <span className="hidden md:inline">{t('customer.add_new') || 'Initialize Customer'}</span>
         </AmberButton>
       }
       stats={stats ? [
