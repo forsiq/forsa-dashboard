@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Gavel, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { useRouter } from 'next/router';
@@ -47,10 +49,15 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = original;
+    };
   }, [isOpen, onClose]);
 
-  if (!bid) return null;
+  if (!bid || typeof window === 'undefined') return null;
 
   const statusConfig = STATUS_CONFIG[bid.displayStatus] || STATUS_CONFIG.active;
   const isAuctionEnded = bid.auctionStatus === 'ended' || bid.auctionStatus === 'sold';
@@ -61,10 +68,10 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
     router.push(`/auctions/${bid.auctionId}`);
   };
 
-  return (
+  return ReactDOM.createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-end justify-center">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center" role="dialog" aria-modal="true">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -101,9 +108,9 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
             <div className="px-6 pb-8 pt-2 space-y-5">
               {/* Header - Auction info */}
               <div className={cn('flex items-center gap-4', dir === 'rtl' && 'flex-row-reverse')}>
-                <div className="w-14 h-14 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="relative w-14 h-14 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0 overflow-hidden">
                   {bid.auctionImage ? (
-                    <img src={bid.auctionImage} alt="" className="w-full h-full object-cover rounded-xl" />
+                    <Image src={bid.auctionImage} alt="" fill className="object-cover rounded-xl" sizes="56px" />
                   ) : (
                     <Gavel className="w-6 h-6 text-brand" />
                   )}
@@ -207,6 +214,7 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

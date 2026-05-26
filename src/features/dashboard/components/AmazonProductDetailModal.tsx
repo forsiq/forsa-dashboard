@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import Image from 'next/image';
 import {
   X,
   Star,
@@ -43,7 +45,14 @@ export function AmazonProductDetailModal({
 
   const product = data?.product;
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, [isOpen]);
+
+  if (!isOpen || typeof window === 'undefined') return null;
 
   const getAllImages = () => {
     const images: string[] = [];
@@ -124,8 +133,8 @@ export function AmazonProductDetailModal({
 
   const allImages = getAllImages();
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -173,10 +182,12 @@ export function AmazonProductDetailModal({
               <div className="relative aspect-square rounded-xl overflow-hidden bg-obsidian-outer">
                 {allImages.length > 0 ? (
                   <>
-                    <img
+                    <Image
                       src={allImages[currentImageIndex]}
                       alt={product.title || 'Product'}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 600px"
                     />
                     {allImages.length > 1 && (
                       <>
@@ -220,13 +231,13 @@ export function AmazonProductDetailModal({
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
                       className={cn(
-                        'shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all',
+                        'relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all',
                         index === currentImageIndex
                           ? 'border-brand'
                           : 'border-white/5 hover:border-white/10'
                       )}
                     >
-                      <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      <Image src={img} alt={`Thumbnail ${index + 1}`} fill className="object-cover" sizes="64px" />
                     </button>
                   ))}
                 </div>
@@ -362,6 +373,7 @@ export function AmazonProductDetailModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

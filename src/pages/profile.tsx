@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import {
   User,
   Mail,
@@ -236,12 +237,14 @@ export default function ProfilePage() {
             {/* Avatar */}
             <div className="flex justify-center">
               <div className="relative group">
-                <div className="w-28 h-28 rounded-2xl bg-brand/10 border-2 border-brand/20 flex items-center justify-center overflow-hidden">
+                <div className="relative w-28 h-28 rounded-2xl bg-brand/10 border-2 border-brand/20 flex items-center justify-center overflow-hidden">
                   {profile?.avatar ? (
-                    <img
+                    <Image
                       src={profile.avatar}
                       alt={profile.username}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="112px"
                     />
                   ) : (
                     <User className="w-14 h-14 text-brand/40" />

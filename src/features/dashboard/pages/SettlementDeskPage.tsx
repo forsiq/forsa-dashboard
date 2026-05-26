@@ -98,15 +98,7 @@ export const SettlementDeskPage = () => {
               alt=""
               className="w-10 h-10"
               fallbackClassName="w-full h-full"
-            >
-              {(url) => (
-                <img
-                  src={url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </AuctionImage>
+            />
           </div>
           <div>
             <p className="text-sm font-bold text-zinc-text line-clamp-1 max-w-[200px]">

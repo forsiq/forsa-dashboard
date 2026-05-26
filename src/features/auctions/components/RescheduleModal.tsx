@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { motion } from 'framer-motion';
 import { Clock, Calendar, X, Loader2, Plus } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -59,6 +60,9 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
     if (isOpen) {
       setNewEndTime('');
       setMode('quick');
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = original; };
     }
   }, [isOpen]);
 
@@ -96,12 +100,12 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
     );
   };
 
-  if (!isOpen || !auction) {
+  if (!isOpen || !auction || typeof window === 'undefined') {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center" role="dialog" aria-modal="true">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -210,6 +214,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { Gavel, TrendingUp, Trophy, AlertTriangle, Clock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -128,9 +129,9 @@ export const MyBidsPage: React.FC = () => {
       cardTitle: true,
       render: (bid) => (
         <div className="flex min-w-0 items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="relative w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center shrink-0 overflow-hidden">
             {bid.auctionImage ? (
-              <img src={bid.auctionImage} alt="" className="w-full h-full object-cover rounded-lg" />
+              <Image src={bid.auctionImage} alt="" fill className="object-cover rounded-lg" sizes="36px" />
             ) : (
               <Gavel className="w-4 h-4 text-brand" />
             )}

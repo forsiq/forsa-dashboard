@@ -18,8 +18,8 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'file.zonevast.com' },
       { protocol: 'https', hostname: 'file1.zonevast.com' },
-      { protocol: 'https', hostname: 'file1.zonevast.com' },
       { protocol: 'https', hostname: '**.amazonaws.com' },
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
       { protocol: 'https', hostname: 'test.zonevast.com' },
       { protocol: 'https', hostname: 'api.zonevast.com' },
       { protocol: 'http', hostname: 'localhost' },

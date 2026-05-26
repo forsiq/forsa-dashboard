@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import {
   useModerationActivity,
   useModerationActivityStats,
@@ -128,15 +129,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
             alt={auction.title}
             className="w-16 h-16"
             fallbackClassName="w-full h-full"
-          >
-            {(url) => (
-              <img
-                src={url}
-                alt={auction.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            )}
-          </AuctionImage>
+          />
         </div>
 
         {/* Info */}
@@ -330,8 +323,8 @@ function BidModerationSection() {
       </div>
 
       {/* Confirmation Dialog */}
-      {confirmAction && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      {confirmAction && typeof window !== 'undefined' && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true">
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center">
@@ -374,7 +367,8 @@ function BidModerationSection() {
               </AmberButton>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

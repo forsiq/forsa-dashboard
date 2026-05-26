@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberAvatar } from '@core/components/AmberAvatar';
@@ -249,11 +250,13 @@ export function CustomerDetailPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {bid.auctionImage ? (
-                              <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
-                                <img
+                              <div className="relative w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
+                                <Image
                                   src={bid.auctionImage}
                                   alt=""
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  className="object-cover"
+                                  sizes="36px"
                                 />
                               </div>
                             ) : (

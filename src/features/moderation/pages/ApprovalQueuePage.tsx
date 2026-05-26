@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
+import Image from 'next/image';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AdminListPageShell } from '@core/components/Layout';
 import { AmberButton } from '@core/components/AmberButton';
@@ -210,8 +212,8 @@ function ApprovalQueuePage() {
       )}
 
       {/* Reason Modal */}
-      {reasonModal.open && reasonModal.item && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      {reasonModal.open && reasonModal.item && typeof window !== 'undefined' && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
               <div className={cn(
@@ -275,7 +277,8 @@ function ApprovalQueuePage() {
               </AmberButton>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </AdminListPageShell>
   );
@@ -304,9 +307,9 @@ function PendingItemCard({
     <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-5 hover:border-[var(--color-brand)]/30 transition-all duration-200 group">
       <div className="flex items-start gap-4">
         {/* Image / Icon */}
-        <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)] flex items-center justify-center">
+        <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-[var(--color-obsidian-outer)] flex items-center justify-center">
           {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+            <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="56px" />
           ) : (
             type === 'listing'
               ? <Package className="w-6 h-6 text-zinc-muted" />

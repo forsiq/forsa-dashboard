@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Star, Check, Play } from 'lucide-react';
 import { cn } from '@core/lib/utils/cn';
 import type { AmazonSearchResult } from '@services/amazon/api/amazon-api';
@@ -37,11 +38,12 @@ export function AmazonProductCard({ product, onClick }: AmazonProductCardProps) 
       {/* Image */}
       <div className="relative aspect-square bg-obsidian-outer overflow-hidden">
         {imageUrl ? (
-          <img
+          <Image
             src={imageUrl}
             alt={product.title || 'Product'}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 50vw, 250px"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
