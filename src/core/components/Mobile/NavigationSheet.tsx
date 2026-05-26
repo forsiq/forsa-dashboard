@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,8 +16,11 @@ import {
   LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useFeatureConfig } from '@yousef2001/core-ui/contexts';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { isPathAllowedForRole } from '@core/auth/navRoleAccess';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
+import { useTopbarUser } from '@core/hooks/useTopbarUser';
 import { useAuth } from '@features/auth/hooks/useAuth';
 import { cn } from '@core/lib/utils/cn';
 
@@ -27,21 +30,37 @@ interface NavigationSheetProps {
 }
 
 const NAV_ITEMS = [
-  { icon: Heart, labelKey: 'mobile.nav.watchlist', path: '/watchlist' },
-  { icon: TrendingUp, labelKey: 'mobile.nav.my_bids', path: '/my-bids' },
-  { icon: Package, labelKey: 'mobile.nav.inventory', path: '/inventory' },
-  { icon: Users, labelKey: 'mobile.nav.customers', path: '/customers' },
-  { icon: Tag, labelKey: 'mobile.nav.categories', path: '/categories' },
-  { icon: BarChart2, labelKey: 'mobile.nav.reports', path: '/reports' },
-  { icon: Settings, labelKey: 'mobile.nav.settings', path: '/settings' },
+  { icon: Heart, labelKey: 'mobile.nav.watchlist', path: '/watchlist', feature: 'auctions' },
+  { icon: TrendingUp, labelKey: 'mobile.nav.my_bids', path: '/my-bids', feature: 'bidding' },
+  { icon: Package, labelKey: 'mobile.nav.inventory', path: '/inventory', feature: 'inventory' },
+  { icon: Users, labelKey: 'mobile.nav.customers', path: '/customers', feature: 'customers' },
+  { icon: Tag, labelKey: 'mobile.nav.categories', path: '/categories', feature: 'categories' },
+  { icon: BarChart2, labelKey: 'mobile.nav.reports', path: '/reports', feature: 'reports' },
+  { icon: Settings, labelKey: 'mobile.nav.settings', path: '/settings', feature: 'settings' },
   { icon: HelpCircle, labelKey: 'mobile.nav.help', path: '/help' },
 ];
 
 export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
   const { t, dir } = useLanguage();
-  const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
+  const { role } = useDashboardRole();
+  const topbarUser = useTopbarUser();
+  const { isFeatureEnabled } = useFeatureConfig();
   const isRTL = dir === 'rtl';
+
+  const visibleNavItems = useMemo(
+    () =>
+      NAV_ITEMS.filter((item) => {
+        if (!isPathAllowedForRole(item.path, role)) return false;
+        if (item.feature && !isFeatureEnabled(item.feature)) return false;
+        return true;
+      }),
+    [role, isFeatureEnabled],
+  );
+
+  const displayName = topbarUser?.name || 'User';
+  const initials = topbarUser?.initials || displayName.slice(0, 2).toUpperCase() || 'U';
+  const roleLabel = t(`roles.${role}`) || t('mobile.nav.merchant') || 'Merchant';
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -105,15 +124,11 @@ export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
                 )}
               >
                 <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand font-black text-sm">
-                  {(user as any)?.username?.[0] || 'U'}
+                  {initials}
                 </div>
                 <div className={cn('flex-1 min-w-0', isRTL ? 'text-right' : 'text-left')}>
-                  <p className="text-sm font-bold text-zinc-text truncate">
-                    {(user as any)?.username || 'User'}
-                  </p>
-                  <p className="text-[10px] text-zinc-muted uppercase tracking-widest">
-                    {t('mobile.nav.merchant') || 'Merchant'}
-                  </p>
+                  <p className="text-sm font-bold text-zinc-text truncate">{displayName}</p>
+                  <p className="text-[10px] text-zinc-muted uppercase tracking-widest">{roleLabel}</p>
                 </div>
               </div>
 
@@ -121,7 +136,7 @@ export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
 
               {/* Nav Items */}
               <div className="space-y-1">
-                {NAV_ITEMS.map((item) => (
+                {visibleNavItems.map((item) => (
                   <Link
                     key={item.path}
                     href={item.path}

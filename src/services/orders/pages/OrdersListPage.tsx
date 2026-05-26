@@ -277,6 +277,69 @@ export const OrdersListPage = () => {
     router.push(`/orders/${order.id}`);
   };
 
+  const getStatusVariant = useCallback((status: OrderStatus) => {
+    if (status === 'delivered') return 'success' as const;
+    if (status === 'shipped') return 'info' as const;
+    if (status === 'confirmed' || status === 'paid' || status === 'processing') return 'warning' as const;
+    if (status === 'cancelled') return 'failed' as const;
+    return 'pending' as const;
+  }, []);
+
+  const formatOrderDate = useCallback(
+    (order: Order) => {
+      const dateStr = (order as { date?: string }).date || order.createdAt;
+      if (!dateStr) return '—';
+      const date = new Date(dateStr);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    },
+    [dir],
+  );
+
+  const renderOrderCard = useCallback(
+    (order: Order) => (
+      <div
+        key={order.id}
+        className="group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden hover:border-white/10 hover:shadow-md cursor-pointer active:scale-[0.98]"
+        onClick={() => handleRowClick(order)}
+      >
+        <div className="p-3 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-[11px] font-black text-brand uppercase tracking-wider truncate">
+              #{order.orderNumber}
+            </span>
+            <StatusBadge
+              status={order.status}
+              labelKey={orderStatusLabelKey(order.status)}
+              variant={getStatusVariant(order.status)}
+              showDot
+              size="sm"
+              className="shrink-0 font-black"
+            />
+          </div>
+
+          <p className="text-sm font-bold text-zinc-text truncate leading-tight">
+            {formatOrderCustomerName(order.customerName, t)}
+          </p>
+
+          <div className="pt-2 border-t border-white/5 space-y-1">
+            <p className="text-base font-black text-zinc-text tabular-nums leading-none">
+              {formatCurrency(order.total || 0)}
+            </p>
+            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest">
+              {formatOrderDate(order)}
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+    [formatOrderDate, getStatusVariant, t],
+  );
+
   const orders = ordersData?.data || [];
 
   const STATUS_TABS: { key: StatusTab; labelKey: string }[] = [
@@ -354,6 +417,34 @@ export const OrdersListPage = () => {
             title={t('orders.empty') || 'No Orders'}
             description={t('orders.empty_description') || 'No orders found matching your criteria.'}
           />
+        ) : isMobile ? (
+          <div className="relative space-y-4">
+            {isFetching && <FetchingOverlay />}
+            <div className="grid grid-cols-2 gap-3">
+              {orders.map((order) => renderOrderCard(order))}
+            </div>
+            {(ordersData?.total || 0) > limit && (
+              <div className="flex items-center justify-center gap-3 pt-4">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page <= 1}
+                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                >
+                  {t('common.prev') || 'Prev'}
+                </button>
+                <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
+                  {page} / {Math.ceil((ordersData?.total || 0) / limit)}
+                </span>
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= Math.ceil((ordersData?.total || 0) / limit)}
+                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                >
+                  {t('common.next') || 'Next'}
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
             {isFetching && <FetchingOverlay />}
@@ -370,8 +461,7 @@ export const OrdersListPage = () => {
               totalItems={ordersData?.total || 0}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
-              viewMode={isMobile ? 'grid' : 'table'}
-              gridCols={2}
+              viewMode="table"
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}

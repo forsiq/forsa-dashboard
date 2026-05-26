@@ -227,8 +227,6 @@ export const ListingsListPage: React.FC = () => {
     },
   ];
 
-  if (!isClient) return null;
-
   const renderListingCard = React.useCallback(
     (listing: ProductListing) => (
       <div
@@ -299,6 +297,8 @@ export const ListingsListPage: React.FC = () => {
     ),
     [router],
   );
+
+  if (!isClient) return null;
 
   return (
     <AdminListPageShell
