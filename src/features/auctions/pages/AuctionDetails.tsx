@@ -112,7 +112,39 @@ export const AuctionDetails: React.FC = () => {
       .filter((url): url is string => url != null);
   })();
 
+  const currentBid = auction ? Number(auction.currentBid) || 0 : 0;
+  const startPrice = auction ? Number(auction.startPrice) || 0 : 0;
+  const bidIncrement = auction ? Number(auction.bidIncrement) || 0 : 0;
+  const nextMinBid = (currentBid || startPrice) + bidIncrement;
+  const isEndingSoon = auction
+    ? new Date(auction.endTime).getTime() - Date.now() < 1000 * 60 * 30
+    : false;
+
+  const detailRows = useMemo(() => {
+    if (!auction) return [];
+
+    const rows = [
+      { icon: DollarSign, label: currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price'), value: formatCurrency(currentBid || startPrice) },
+      { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
+      { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
+      { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
+      { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
+      { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
+    ];
+
+    if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
+      rows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
+    }
+
+    if (auction.createdAt) {
+      rows.push({ icon: History, label: t('auction.detail.created_at') || 'Created At', value: new Date(auction.createdAt).toLocaleString() });
+    }
+
+    return rows;
+  }, [auction, t, currentBid, startPrice, bidIncrement]);
+
   const handlePlaceBid = async () => {
+    if (!auctionId || !auction) return;
     const amount = parseFloat(bidAmount);
     const minBid = currentBid || startPrice;
     if (amount && amount > minBid) {
@@ -143,33 +175,6 @@ export const AuctionDetails: React.FC = () => {
       </Card>
     );
   }
-
-  const currentBid = Number(auction.currentBid) || 0;
-  const startPrice = Number(auction.startPrice) || 0;
-  const bidIncrement = Number(auction.bidIncrement) || 0;
-  const nextMinBid = (currentBid || startPrice) + bidIncrement;
-  const isEndingSoon = new Date(auction.endTime).getTime() - Date.now() < 1000 * 60 * 30;
-
-  const detailRows = useMemo(() => {
-    const rows = [
-      { icon: DollarSign, label: currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price'), value: formatCurrency(currentBid || startPrice) },
-      { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
-      { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
-      { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
-      { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
-      { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
-    ];
-
-    if (auction.reservePrice != null && Number(auction.reservePrice) > 0) {
-      rows.push({ icon: ShieldCheck, label: t('auction.detail.reserve_price') || 'Reserve Price', value: formatCurrency(auction.reservePrice) });
-    }
-
-    if (auction.createdAt) {
-      rows.push({ icon: History, label: t('auction.detail.created_at') || 'Created At', value: new Date(auction.createdAt).toLocaleString() });
-    }
-
-    return rows;
-  }, [auction, t, currentBid, startPrice, bidIncrement]);
 
   return (
     <div className="max-w-[1600px] mx-auto p-6 space-y-6 animate-in fade-in duration-700" dir={dir}>

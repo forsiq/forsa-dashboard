@@ -9,8 +9,14 @@ import {
 import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import type { ProductListing } from '../../../types/services/listings.types';
 
+type ListingImageSource = Pick<ProductListing, 'imageUrl' | 'images' | 'mainAttachmentId' | 'attachmentIds'> & {
+  image_url?: string | null;
+  main_attachment_id?: number | null;
+  attachment_ids?: string | string[] | number[] | null;
+};
+
 interface ListingImageProps {
-  listing: Pick<ProductListing, 'imageUrl' | 'images' | 'mainAttachmentId' | 'attachmentIds'>;
+  listing: ListingImageSource;
   alt?: string;
   className?: string;
   fallbackClassName?: string;
@@ -30,20 +36,38 @@ export const ListingImage: React.FC<ListingImageProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
 
+  const normalized = useMemo(
+    () => ({
+      imageUrl: listing.imageUrl ?? listing.image_url ?? null,
+      images: listing.images,
+      mainAttachmentId: listing.mainAttachmentId ?? listing.main_attachment_id ?? null,
+      attachmentIds: listing.attachmentIds ?? listing.attachment_ids ?? null,
+    }),
+    [
+      listing.imageUrl,
+      listing.image_url,
+      listing.images,
+      listing.mainAttachmentId,
+      listing.main_attachment_id,
+      listing.attachmentIds,
+      listing.attachment_ids,
+    ],
+  );
+
   const directUrl = useMemo(() => {
-    const direct = listing.imageUrl;
+    const direct = normalized.imageUrl;
     if (direct && isValidImageUrl(direct)) return direct;
-    const fromImages = normalizeImageUrlList(listing.images).find(
+    const fromImages = normalizeImageUrlList(normalized.images).find(
       (u): u is string => typeof u === 'string' && isValidImageUrl(u),
     );
     return fromImages || null;
-  }, [listing.imageUrl, listing.images]);
+  }, [normalized.imageUrl, normalized.images]);
 
   const firstAttachmentId = useMemo(() => {
-    if (listing.mainAttachmentId) return listing.mainAttachmentId;
-    const ids = parseAttachmentIds(listing.attachmentIds);
+    if (normalized.mainAttachmentId) return normalized.mainAttachmentId;
+    const ids = parseAttachmentIds(normalized.attachmentIds);
     return ids[0] || null;
-  }, [listing.mainAttachmentId, listing.attachmentIds]);
+  }, [normalized.mainAttachmentId, normalized.attachmentIds]);
 
   const { data: attachmentUrlMap } = useAttachmentUrls(
     !directUrl && firstAttachmentId ? [firstAttachmentId] : []
@@ -60,6 +84,17 @@ export const ListingImage: React.FC<ListingImageProps> = ({
 
     return null;
   }, [hasError, directUrl, firstAttachmentId, attachmentUrlMap]);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ListingImage]', {
+      directUrl,
+      firstAttachmentId,
+      hasAttachmentMap: !!attachmentUrlMap,
+      resolvedUrl: firstAttachmentId && attachmentUrlMap ? attachmentUrlMap.get(firstAttachmentId) : undefined,
+      finalImageUrl: imageUrl,
+      raw: { imageUrl: listing.imageUrl, image_url: listing.image_url, attachmentIds: listing.attachmentIds, attachment_ids: listing.attachment_ids },
+    });
+  }
 
   if (children && imageUrl) {
     return <>{children(imageUrl)}</>;

@@ -110,12 +110,18 @@ export function parseAttachmentIds(
   if (!attachmentIds) return [];
 
   if (Array.isArray(attachmentIds)) {
-    return attachmentIds.map(id => typeof id === 'string' ? parseInt(id, 10) : id);
+    return attachmentIds
+      .map(id => (typeof id === 'string' ? parseInt(id, 10) : id))
+      .filter((id): id is number => !isNaN(id) && id > 0);
   }
 
   try {
     const parsed = JSON.parse(attachmentIds);
-    return Array.isArray(parsed) ? parsed.map((id: any) => parseInt(id, 10)) : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .map((id: any) => parseInt(id, 10))
+          .filter((id: number): id is number => !isNaN(id) && id > 0)
+      : [];
   } catch {
     return [];
   }
@@ -202,7 +208,7 @@ export function getAuctionAttachmentIds(auction: {
  * via CloudFront. This function returns a /download/ proxy URL as fallback.
  */
 export async function fetchAttachmentUrl(attachmentId: number): Promise<string | null> {
-  return `${API_ORIGIN}/api/v1/project/attachment/${attachmentId}/download/`;
+  return `${PROJECT_API_URL}/attachment/${attachmentId}/`;
 }
 
 /**
@@ -246,7 +252,7 @@ export async function uploadAttachmentAndGetId(
   };
 
   try {
-    const presignedResponse = await client.post('/project/attachment/presigned-url/', {
+    const presignedResponse = await client.post('/attachment/presigned-url/', {
       file_name: file.name,
       file_size: file.size,
       content_type: file.type || 'application/octet-stream',
@@ -324,7 +330,7 @@ export async function uploadAttachmentAndGetId(
   // Step 3: Confirm upload
   // ---------------------------------------------------------------
   try {
-    await client.post('/project/attachment/confirm-upload/', {
+    await client.post('/attachment/confirm-upload/', {
       attachment_id: presignedData.attachment_id,
       file_hash: fileHash,
     });

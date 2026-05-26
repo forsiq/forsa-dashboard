@@ -27,12 +27,14 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetListing, useGetListingAuctions, useGetListingDeals, useDeleteListing, useSubmitListingForReview } from '../api/listing-hooks';
+import type { ProductListing } from '../../../types/services/listings.types';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { ListingImage } from '../components/ListingImage';
 import { ProductReadinessCard } from '../components/ProductReadinessCard';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
+import { parseAttachmentIds } from '@features/auctions/utils/auction-utils';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { useIsClient } from '@core/hooks/useIsClient';
@@ -154,7 +156,16 @@ export const ListingDetailPage: React.FC = () => {
 
   const attachmentCount = useMemo(() => {
     if (!listing) return 0;
-    return listing.attachmentIds?.length || listing.images?.length || 0;
+    const raw = listing as ProductListing & {
+      attachment_ids?: number[] | string;
+      main_attachment_id?: number;
+      image_url?: string;
+    };
+    const ids = parseAttachmentIds(raw.attachmentIds ?? raw.attachment_ids);
+    if (ids.length > 0) return ids.length;
+    if (raw.mainAttachmentId || raw.main_attachment_id) return 1;
+    if (raw.imageUrl || raw.image_url) return 1;
+    return listing.images?.length || 0;
   }, [listing]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
@@ -271,9 +282,9 @@ export const ListingDetailPage: React.FC = () => {
             {attachmentCount > 0 ? (
               <div className="space-y-2">
                 <ListingImage listing={listing} className="aspect-square rounded-lg overflow-hidden border border-white/5" />
-                {listing.attachmentIds?.length > 1 && (
+                {attachmentCount > 1 && (
                   <p className="text-[11px] text-zinc-muted font-bold text-center">
-                    {listing.attachmentIds.length} {t('listing.detail.media') || 'photos'}
+                    {attachmentCount} {t('listing.detail.media') || 'photos'}
                   </p>
                 )}
               </div>

@@ -1,13 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@core/services/ApiClientFactory';
+import Axios from 'axios';
 
 import { getProjectServiceBaseUrl } from '../../lib/api-config';
 
-const PROJECT_API_URL = getProjectServiceBaseUrl();
-
-const sharedClient = createClient(PROJECT_API_URL);
-
 const CLOUDFRONT_FILES_DOMAIN = 'file.zonevast.com';
+
+let _client: ReturnType<typeof createClient> | null = null;
+
+function getClient() {
+  if (!_client) {
+    _client = createClient(getProjectServiceBaseUrl());
+  }
+  return _client;
+}
 
 function normalizeResolvedFileUrl(fileUrl: string): string {
   try {
@@ -43,7 +49,7 @@ const attachmentKeys = {
 
 async function fetchIndividualAttachmentUrl(id: number): Promise<BatchAttachmentResult | null> {
   try {
-    const response = await sharedClient.get(`/project/attachment/${id}/`);
+    const response = await getClient().get(`/attachment/${id}/`);
     return response.data?.data || response.data || null;
   } catch {
     return null;
@@ -55,9 +61,11 @@ async function fetchAttachmentUrlsWithFallback(ids: number[]): Promise<Map<numbe
 
   if (ids.length === 0) return urlMap;
 
+  const client = getClient();
+
   // Try batch endpoint first
   try {
-    const response = await sharedClient.post('/project/attachment/batch/', {
+    const response = await client.post('/attachment/batch/', {
       attachment_ids: ids,
     });
 
@@ -72,8 +80,10 @@ async function fetchAttachmentUrlsWithFallback(ids: number[]): Promise<Map<numbe
       }
     }
     return urlMap;
-  } catch {
-    // Batch endpoint failed — fall back to individual fetches
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[useAttachmentUrls] Batch failed, falling back to individual:', err);
+    }
   }
 
   // Fallback: fetch attachments individually (up to 10 concurrent)
@@ -96,7 +106,7 @@ async function fetchAttachmentUrlsWithFallback(ids: number[]): Promise<Map<numbe
 }
 
 export function useAttachmentUrls(ids: number[]) {
-  const uniqueIds = ids.filter((id, index, arr) => id > 0 && arr.indexOf(id) === index);
+  const uniqueIds = ids.filter((id, index, arr) => !isNaN(id) && id > 0 && arr.indexOf(id) === index);
   const sortedKey = [...uniqueIds].sort((a, b) => a - b);
 
   return useQuery({
@@ -108,4 +118,4 @@ export function useAttachmentUrls(ids: number[]) {
   });
 }
 
-export { normalizeResolvedFileUrl, sharedClient as attachmentApiClient };
+export { normalizeResolvedFileUrl, getClient as attachmentApiClient };
