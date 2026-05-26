@@ -247,6 +247,16 @@ export const ar: Record<string, string> = {
   "auction.config.state_protocol": "الحالة",
   "auction.config.protocol_identifier_search": "بحث بالمعـرّف أو العنوان",
 
+  // Watchlist
+  "auction.watchlist": "قائمة المراقبة",
+  "auction.watchlist.add": "إضافة إلى قائمة المراقبة",
+  "auction.watchlist.remove": "إزالة من قائمة المراقبة",
+  "auction.watchlist.added": "تمت الإضافة إلى قائمة المراقبة",
+  "auction.watchlist.removed": "تمت الإزالة من قائمة المراقبة",
+  "auction.watchlist.update_failed": "تعذّر تحديث قائمة المراقبة",
+  "auction.no_watched": "لا مزادات في قائمة المراقبة",
+  "auction.no_watched_desc": "لم تُضف أي مزادات إلى قائمة المراقبة بعد.",
+
   // Auction Detail
   "auction.detail.current_bid": "المزايدة الحالية",
   "auction.detail.start_price": "سعر البداية",
@@ -407,6 +417,7 @@ export const ar: Record<string, string> = {
   "listing.title": "قائمة المنتجات",
   "listing.description": "إدارة كتالوج المنتجات الخاصة بك لنشرها في المزادات أو الصفقات",
   "listing.add_product": "إضافة منتج",
+  "listing.import_amazon": "استيراد من أمازون",
   "listing.created_success": "تم إضافة المنتج بنجاح!",
   "listing.create": "إضافة منتج",
   "listing.edit": "تعديل المنتج",

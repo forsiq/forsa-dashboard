@@ -1,3 +1,15 @@
+- version: "1.5.5"
+  date: "2026-05-26"
+  title:
+    en: "Amazon import on listings"
+    ar: "استيراد أمازون من المنتجات"
+  entries:
+    - description:
+        en: "Amazon import moved from the sidebar to an Import from Amazon button on the product listings page."
+        ar: "نُقل استيراد أمازون من القائمة الجانبية إلى زر استيراد من أمازون في صفحة قائمة المنتجات."
+      type: changed
+      sidebarPath: /listings
+
 - version: "1.5.4"
   date: "2026-05-26"
   title:

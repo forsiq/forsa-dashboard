@@ -171,11 +171,22 @@ export const ListingDetailPage: React.FC = () => {
   );
   const allImages = useMemo(() => {
     if (directImageUrls.length > 0) return directImageUrls;
-    if (!attachmentUrlMap || attachmentIds.length === 0) return [];
-    return attachmentIds
+    if (attachmentIds.length === 0) return [];
+    if (!attachmentUrlMap) return [];
+    const resolved = attachmentIds
       .map((id) => attachmentUrlMap.get(id))
       .filter((url): url is string => typeof url === 'string' && url.length > 0);
-  }, [directImageUrls, attachmentUrlMap, attachmentIds]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ListingDetailPage] image resolution', {
+        directImageUrls,
+        attachmentIds,
+        batchResolved: Object.fromEntries(attachmentUrlMap),
+        finalImages: resolved,
+        raw: { imageUrl: listing?.imageUrl, images: listing?.images },
+      });
+    }
+    return resolved;
+  }, [directImageUrls, attachmentUrlMap, attachmentIds, listing]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
 

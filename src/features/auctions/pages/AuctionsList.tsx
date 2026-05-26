@@ -14,7 +14,6 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Heart,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -47,10 +46,11 @@ import {
   useStartAuction,
   usePauseAuction,
   useResumeAuction,
-  useToggleWatch,
+  useWatchedAuctions,
   auctionKeys,
 } from '../api';
 import { auctionApi } from '../api/auction-api';
+import { WatchlistToggleButton } from '../components/WatchlistToggleButton';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useList as useCategories } from '@services/categories/hooks';
@@ -132,7 +132,11 @@ export const AuctionsList: React.FC = () => {
     const startAuction = useStartAuction();
     const pauseAuction = usePauseAuction();
     const resumeAuction = useResumeAuction();
-    const toggleWatch = useToggleWatch();
+    const { data: watchedAuctions } = useWatchedAuctions();
+    const watchedIdSet = useMemo(
+      () => new Set((watchedAuctions ?? []).map((a) => a.id)),
+      [watchedAuctions],
+    );
     const { openConfirm, ConfirmModal } = useConfirmModal();
     const queryClient = useQueryClient();
     const toast = useToast();
@@ -216,17 +220,12 @@ export const AuctionsList: React.FC = () => {
           <div className="flex min-w-0 items-center gap-4">
             <div className="relative w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
               <AuctionImage auction={auction} alt={auction.title} fallbackClassName="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWatch.mutate({ auctionId: auction.id, isLiked: false });
-                }}
-                className="absolute top-0.5 end-0.5 p-1 rounded-full bg-black/40 hover:bg-black/60 text-zinc-muted hover:text-red-400 transition-all"
-                title="Add to watchlist"
-              >
-                <Heart className="w-3 h-3" />
-              </button>
+              <WatchlistToggleButton
+                auctionId={auction.id}
+                isWatched={auction.isWatched === true || watchedIdSet.has(auction.id)}
+                variant="thumbnail"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
             <div className="min-w-0">
               <DataTableEntityTitle text={auction.title} />

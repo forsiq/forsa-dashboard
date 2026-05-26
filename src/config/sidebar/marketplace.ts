@@ -10,7 +10,6 @@ export const sidebarSections: MenuSection[] = [
     items: [
       { path: '/listings', label: 'sidebar.listings', icon: 'Package' },
       { path: '/categories', label: 'sidebar.categories', icon: 'FolderTree' },
-      { path: '/amazon-import', label: 'sidebar.amazon_import', icon: 'ShoppingBag' },
     ],
   },
   {

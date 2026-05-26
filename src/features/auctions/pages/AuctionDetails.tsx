@@ -6,7 +6,6 @@ import {
   DollarSign,
   ArrowLeft,
   Share2,
-  Heart,
   TrendingUp,
   ShieldCheck,
   AlertCircle,
@@ -30,7 +29,8 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useSubmitAuctionForReview, useToggleWatch } from '../api';
+import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useSubmitAuctionForReview, useWatchedAuctions } from '../api';
+import { WatchlistToggleButton } from '../components/WatchlistToggleButton';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
 import { AmberImageGallery } from '@core/components/AmberImageGallery';
@@ -71,7 +71,7 @@ export const AuctionDetails: React.FC = () => {
   const placeBid = usePlaceBid();
   const cancelAuction = useCancelAuction();
   const submitForReviewMutation = useSubmitAuctionForReview();
-  const toggleWatch = useToggleWatch();
+  const { data: watchedAuctions } = useWatchedAuctions();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   // Approval status helpers
@@ -142,6 +142,12 @@ export const AuctionDetails: React.FC = () => {
 
     return rows;
   }, [auction, t, currentBid, startPrice, bidIncrement]);
+
+  const isWatched = useMemo(() => {
+    if (!auction) return false;
+    if (auction.isWatched) return true;
+    return watchedAuctions?.some((a) => a.id === auction.id) ?? false;
+  }, [auction, watchedAuctions]);
 
   const handlePlaceBid = async () => {
     if (!auctionId || !auction) return;
@@ -252,15 +258,11 @@ export const AuctionDetails: React.FC = () => {
             </AmberButton>
           ) : null}
 
-          <button 
-            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-red-400 hover:border-red-400/30 transition-all"
-            onClick={() => {
-              toggleWatch.mutate({ auctionId: auction.id, isLiked: false });
-            }}
-            title="Add to watchlist"
-          >
-            <Heart className="w-4 h-4" />
-          </button>
+          <WatchlistToggleButton
+            auctionId={auction.id}
+            isWatched={isWatched}
+            variant="toolbar"
+          />
           <button 
             className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all"
             onClick={async () => {

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import {
   Package,
   Plus,
+  ShoppingBag,
   Eye,
   Edit,
   Trash2,
@@ -232,13 +233,23 @@ export const ListingsListPage: React.FC = () => {
       description={t('listing.description')}
       icon={Package}
       headerActions={
-        <AmberButton
-          className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
-          onClick={() => router.push('/listings/new')}
-        >
-          <Plus className="w-5 h-5" />
-          <span>{t('listing.add_product') || t('listing.create')}</span>
-        </AmberButton>
+        <div className="flex flex-wrap items-center gap-3">
+          <AmberButton
+            variant="outline"
+            className="gap-2 h-11 border-border text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-obsidian-hover px-6"
+            onClick={() => router.push('/amazon-import')}
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span>{t('listing.import_amazon')}</span>
+          </AmberButton>
+          <AmberButton
+            className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-8"
+            onClick={() => router.push('/listings/new')}
+          >
+            <Plus className="w-5 h-5" />
+            <span>{t('listing.add_product') || t('listing.create')}</span>
+          </AmberButton>
+        </div>
       }
       stats={[
         {

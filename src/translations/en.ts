@@ -249,6 +249,16 @@ export const en: Record<string, string> = {
   "auction.config.state_protocol": "Status",
   "auction.config.protocol_identifier_search": "Search by ID or Title",
 
+  // Watchlist
+  "auction.watchlist": "Watchlist",
+  "auction.watchlist.add": "Add to watchlist",
+  "auction.watchlist.remove": "Remove from watchlist",
+  "auction.watchlist.added": "Added to watchlist",
+  "auction.watchlist.removed": "Removed from watchlist",
+  "auction.watchlist.update_failed": "Failed to update watchlist",
+  "auction.no_watched": "No Watched Auctions",
+  "auction.no_watched_desc": "You haven't added any auctions to your watchlist yet.",
+
   // Auction Detail
   "auction.detail.current_bid": "Current Bid",
   "auction.detail.start_price": "Start Price",
@@ -409,6 +419,7 @@ export const en: Record<string, string> = {
   "listing.title": "Product Listings",
   "listing.description": "Manage your product catalog for auction and deal deployment",
   "listing.add_product": "Add Product",
+  "listing.import_amazon": "Import from Amazon",
   "listing.created_success": "Product added successfully!",
   "listing.create": "New Listing",
   "listing.edit": "Edit Listing",

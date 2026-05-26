@@ -303,24 +303,71 @@ export function usePlaceBid() {
 }
 
 /**
- * Toggle watch status
+ * Toggle watch status (optimistic update on detail + watched caches)
  */
 export function useToggleWatch() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
-    mutationFn: ({ auctionId, isLiked }: { auctionId: number, isLiked: boolean }) => 
+    mutationFn: ({ auctionId, isLiked }: { auctionId: number; isLiked: boolean }) =>
       auctionApi.toggleWatch(auctionId, isLiked),
+    onMutate: async ({ auctionId, isLiked }) => {
+      const nextWatched = !isLiked;
+
+      await queryClient.cancelQueries({ queryKey: auctionKeys.detail(auctionId) });
+      await queryClient.cancelQueries({ queryKey: auctionKeys.watched() });
+
+      const previousDetail = queryClient.getQueryData<Auction>(auctionKeys.detail(auctionId));
+      const previousWatched = queryClient.getQueryData<Auction[]>(auctionKeys.watched());
+
+      if (previousDetail) {
+        queryClient.setQueryData<Auction>(auctionKeys.detail(auctionId), {
+          ...previousDetail,
+          isWatched: nextWatched,
+        });
+      }
+
+      if (previousWatched) {
+        if (nextWatched && previousDetail && !previousWatched.some((a) => a.id === auctionId)) {
+          queryClient.setQueryData<Auction[]>(auctionKeys.watched(), [
+            ...previousWatched,
+            { ...previousDetail, isWatched: true },
+          ]);
+        } else if (!nextWatched) {
+          queryClient.setQueryData<Auction[]>(
+            auctionKeys.watched(),
+            previousWatched.filter((a) => a.id !== auctionId),
+          );
+        }
+      }
+
+      return { previousDetail, previousWatched };
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(variables.auctionId) });
       queryClient.invalidateQueries({ queryKey: auctionKeys.watched() });
-      toast.success(variables.isLiked ? 'Removed from watchlist' : 'Added to watchlist');
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
+      toast.success(
+        variables.isLiked
+          ? t('auction.watchlist.removed')
+          : t('auction.watchlist.added'),
+      );
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to update watchlist: ${detail}`, 8000);
+    onError: (error: unknown, variables, context) => {
+      if (context?.previousDetail) {
+        queryClient.setQueryData(auctionKeys.detail(variables.auctionId), context.previousDetail);
+      }
+      if (context?.previousWatched) {
+        queryClient.setQueryData(auctionKeys.watched(), context.previousWatched);
+      }
+      const detail = mapApiError(error) || (error as Error)?.message || 'Unknown error';
+      toast.error(
+        `${t('auction.watchlist.update_failed')}: ${detail}`,
+        8000,
+      );
     },
   });
 }
