@@ -163,16 +163,19 @@ export function useCategoryChildren(parentId: string | number | null, enabled = 
 // Suggestion hooks
 export function useSuggestCategory(options?: any) {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: (input: SuggestCategoryInput) => api.suggestCategory(input),
-    onSuccess: () => {
+    ...options,
+    onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.suggestions() });
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.mySuggestions() });
-      import('@core/lib/notifications').then(({ toast }) => {
-        toast.success('Category suggestion submitted for review');
-      });
+      toast.success('Category suggestion submitted for review');
+      if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
-    ...options,
+    onError: (error: any) => {
+      toast.error(`Failed to submit suggestion: ${error?.message || 'Unknown error'}`, 6000);
+    },
   });
 }
 

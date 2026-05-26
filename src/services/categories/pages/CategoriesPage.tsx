@@ -836,7 +836,6 @@ export function CategoriesPage() {
               </SortableContext>
             </DndContext>
           </div>
-        )
         )}
       </div>
 
