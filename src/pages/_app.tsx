@@ -21,6 +21,8 @@ import { PageTransition } from '@core/components/PageTransition';
 import { ForsaDashboardLayout } from '../layout/ForsaDashboardLayout';
 import { useRouter } from 'next/router';
 import { appTranslations } from '../translations';
+import { resolveCookieDomain } from '../lib/api-config';
+import { migrateAuthCookiesToSharedDomain } from '../lib/auth-cookies';
 import '@styles/globals.css';
 
 const LANGUAGE_COOKIE = 'zv_language';
@@ -40,6 +42,10 @@ function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
 
   useEffect(() => {
+    migrateAuthCookiesToSharedDomain(resolveCookieDomain());
+  }, []);
+
+  useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (url === '/login' || url.startsWith('/login?')) {
         clearViewportBlockers();
@@ -53,8 +59,11 @@ function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
     <QueryClientProvider client={queryClient}>
       <RouteProgressProvider>
         <CoreUIProvider config={{
-          apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+          apiBaseUrl:
+            process.env.NEXT_PUBLIC_API_BASE_URL ||
+            'https://test.zonevast.com/forsa/api/v1',
           authRefreshPath: '/api/v1/auth/auth/token/refresh/',
+          cookieDomain: resolveCookieDomain(),
         }}>
         <FeatureProvider configPath="/zvs.config.json">
           <LanguageProvider

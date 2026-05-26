@@ -4,5 +4,9 @@ export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || '';
 export const WS_API_URL = process.env.NEXT_PUBLIC_WS_API_URL || '';
 
 export function getApiOrigin(): string {
-  return API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch {
+    return 'https://test.zonevast.com';
+  }
 }

@@ -3,14 +3,11 @@ import { useRouter } from 'next/router';
 import * as authApi from '../services/authApi';
 import { LoginCredentials, RegisterData, OTPData } from '../types';
 import { AUTH_ERROR_CODES, isAuthApiError } from '../constants/authErrors';
-import {
-  setAccessTokenWithExpiry,
-  setRefreshTokenWithExpiry,
-  setUser,
-  getUser,
-  clearAuthCookies,
-  isAuthenticated as checkAuthenticated
-} from '@core/lib';
+import { getUser, isAuthenticated as checkAuthenticated } from '@core/lib';
+import { useCoreUIConfig } from '@core/contexts/CoreUIConfigContext';
+import { stopProactiveTokenRefresh } from '@core/services/ApiClientFactory';
+import { resolveCookieDomain } from '../../../lib/api-config';
+import { clearAllAuthCookies, persistAuthSession } from '../../../lib/auth-cookies';
 
 interface AuthResponse {
   access: string;
@@ -20,6 +17,8 @@ interface AuthResponse {
 
 export const useAuth = () => {
   const router = useRouter();
+  const { cookieDomain: configCookieDomain } = useCoreUIConfig();
+  const cookieDomain = configCookieDomain ?? resolveCookieDomain();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUserState] = useState<{ id: string; username: string; email?: string } | null>(null);
@@ -42,11 +41,9 @@ export const useAuth = () => {
   }, [router.query.from]);
 
   const handleAuthSuccess = useCallback((response: AuthResponse) => {
-    setAccessTokenWithExpiry(response.access);
-    setRefreshTokenWithExpiry(response.refresh);
-    setUser(response.user);
+    persistAuthSession(response.access, response.refresh, response.user, cookieDomain);
     setUserState(response.user);
-  }, []);
+  }, [cookieDomain]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -111,7 +108,8 @@ export const useAuth = () => {
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      clearAuthCookies();
+      stopProactiveTokenRefresh();
+      clearAllAuthCookies(cookieDomain);
 
       setUserState(null);
       router.push('/login');

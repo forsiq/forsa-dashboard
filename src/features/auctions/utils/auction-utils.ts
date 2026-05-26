@@ -14,7 +14,8 @@
 import axios from 'axios';
 import { createClient } from '@core/services/ApiClientFactory';
 
-import { API_BASE_URL, getApiOrigin } from '@config/api';
+import { getApiOrigin } from '@config/api';
+import { getProjectServiceBaseUrl } from '../../../lib/api-config';
 
 const ALLOWED_IMAGE_HOSTNAMES = [
   'file.zonevast.com',
@@ -79,12 +80,7 @@ export function filterImageUrls(urls: unknown): string[] {
 /* getApiOrigin imported from @config/api */
 
 const API_ORIGIN = getApiOrigin();
-
-/**
- * Project service base URL for attachment operations.
- * The project service is mounted at root /api/v1 (not under /forsa/).
- */
-const PROJECT_API_URL = `${API_ORIGIN.replace('/forsa', '')}/api/v1`;
+const PROJECT_API_URL = getProjectServiceBaseUrl();
 
 /**
  * Get an axios instance with auth interceptors (token refresh on 401).

@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@core/services/ApiClientFactory';
 
-import { API_BASE_URL, getApiOrigin } from '@config/api';
+import { getProjectServiceBaseUrl } from '../../lib/api-config';
 
-/* getApiOrigin imported from @config/api */
-
-const PROJECT_API_URL = `${getApiOrigin().replace('/forsa', '')}/api/v1`;
+const PROJECT_API_URL = getProjectServiceBaseUrl();
 
 const sharedClient = createClient(PROJECT_API_URL);
 
