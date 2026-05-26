@@ -436,6 +436,7 @@ export const ar: Record<string, string> = {
   "listing.table.sku": "رمز المنتج",
   "listing.table.auction_count": "المزادات",
   "listing.table.deal_count": "الصفقات",
+  "listing.table.approval_status": "حالة المراجعة",
   "listing.table.actions": "الإجراءات",
   "listing.table.no_listings": "لا توجد منتجات",
 

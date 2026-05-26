@@ -39,6 +39,16 @@ import { ListingImage } from '../components/ListingImage';
 import { ListingReadinessBadge } from '../components/ListingReadinessBadge';
 import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 
+type ApprovalStatusKey = NonNullable<ProductListing['approvalStatus']>;
+
+const APPROVAL_STATUS_VARIANT: Record<ApprovalStatusKey, 'inactive' | 'warning' | 'success' | 'failed'> = {
+  draft: 'inactive',
+  pending_review: 'warning',
+  approved: 'success',
+  rejected: 'failed',
+  changes_requested: 'warning',
+};
+
 export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
   const router = useRouter();
@@ -116,6 +126,31 @@ export const ListingsListPage: React.FC = () => {
     return count;
   }, [conditionFilter, brandFilter, issuesOnly]);
 
+  const approvalStatusLabel = useMemo<Record<ApprovalStatusKey, string>>(
+    () => ({
+      draft: t('approval.status.draft') || 'Draft',
+      pending_review: t('approval.status.pending_review') || 'Pending Review',
+      approved: t('approval.status.approved') || 'Approved',
+      rejected: t('approval.status.rejected') || 'Rejected',
+      changes_requested: t('approval.status.changes_requested') || 'Changes Requested',
+    }),
+    [t],
+  );
+
+  const renderApprovalBadge = React.useCallback(
+    (listing: ProductListing) => {
+      const status = (listing.approvalStatus || 'draft') as ApprovalStatusKey;
+      return (
+        <StatusBadge
+          status={approvalStatusLabel[status] || status}
+          variant={APPROVAL_STATUS_VARIANT[status] || 'inactive'}
+          size="sm"
+        />
+      );
+    },
+    [approvalStatusLabel],
+  );
+
   // Table columns
   const columns: Column<ProductListing>[] = [
     {
@@ -166,6 +201,13 @@ export const ListingsListPage: React.FC = () => {
           <span className="text-xs text-zinc-muted">—</span>
         )
       ),
+      align: 'center',
+    },
+    {
+      key: 'approvalStatus',
+      label: t('listing.table.approval_status') || 'Review Status',
+      cardBadge: true,
+      render: (listing) => renderApprovalBadge(listing),
       align: 'center',
     },
     {
@@ -272,6 +314,11 @@ export const ListingsListPage: React.FC = () => {
             {listing.sku || listing.brand || '—'}
           </p>
 
+          {/* Approval status (mobile card footer) */}
+          <div className="flex items-center">
+            {renderApprovalBadge(listing)}
+          </div>
+
           {/* Stats Row */}
           <div className="flex items-center gap-3 pt-1.5 border-t border-white/5">
             <div className="flex items-center gap-1">
@@ -295,7 +342,7 @@ export const ListingsListPage: React.FC = () => {
         </div>
       </div>
     ),
-    [router],
+    [router, renderApprovalBadge],
   );
 
   if (!isClient) return null;

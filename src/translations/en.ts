@@ -438,6 +438,7 @@ export const en: Record<string, string> = {
   "listing.table.sku": "SKU",
   "listing.table.auction_count": "Auctions",
   "listing.table.deal_count": "Deals",
+  "listing.table.approval_status": "Review Status",
   "listing.table.actions": "Actions",
   "listing.table.no_listings": "No listings found",
 
