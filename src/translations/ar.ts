@@ -542,6 +542,13 @@ export const ar: Record<string, string> = {
   "listing.deploy.deploy": "نشر",
   "listing.deploy.toast_auction_failed": "تعذر نشر المزاد: {reason}",
   "listing.deploy.error_reason_unknown": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+  "listing.deploy.error_not_approved": "يجب الموافقة على المنتج قبل نشره كمزاد أو صفقة.",
+  "listing.deploy.requires_approval_title": "الموافقة مطلوبة قبل النشر",
+  "listing.deploy.blocked_draft": "يجب إرسال المنتج للمراجعة ثم الموافقة عليه قبل النشر.",
+  "listing.deploy.blocked_pending": "المنتج بانتظار المراجعة. وافق عليه من قائمة الإشراف ثم حاول النشر مرة أخرى.",
+  "listing.deploy.blocked_rejected": "تم رفض المنتج. عدّل البيانات وأعد الإرسال للمراجعة قبل النشر.",
+  "listing.deploy.blocked_changes": "مطلوب تعديلات على المنتج. عدّل البيانات وأعد الإرسال للمراجعة قبل النشر.",
+  "listing.deploy.open_moderation": "فتح قائمة الموافقة",
   "listing.deploy.toast_group_buy_failed": "تعذر نشر الصفقة الجماعية: {reason}",
   "listing.deploy.hint.start_price":
     "أقل مبلغ يبدأ منه المزاد (د.ع). أول مزايدة يجب أن تكون بهذا السعر أو أعلى.",

@@ -544,6 +544,13 @@ export const en: Record<string, string> = {
   "listing.deploy.deploy": "Deploy",
   "listing.deploy.toast_auction_failed": "Could not deploy auction: {reason}",
   "listing.deploy.error_reason_unknown": "Something went wrong. Please try again.",
+  "listing.deploy.error_not_approved": "The product must be approved before deploying.",
+  "listing.deploy.requires_approval_title": "Approval required before deploy",
+  "listing.deploy.blocked_draft": "Submit the product for review and get it approved before deploying.",
+  "listing.deploy.blocked_pending": "This product is pending review. Approve it from the moderation queue, then deploy.",
+  "listing.deploy.blocked_rejected": "This product was rejected. Edit and resubmit for review before deploying.",
+  "listing.deploy.blocked_changes": "Changes were requested. Edit and resubmit for review before deploying.",
+  "listing.deploy.open_moderation": "Go to Approval Queue",
   "listing.deploy.toast_group_buy_failed": "Could not deploy group deal: {reason}",
   "listing.deploy.hint.start_price":
     "The first bid must be at least this amount (IQD). The auction opens at this starting value.",

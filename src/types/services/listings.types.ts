@@ -40,6 +40,8 @@ export interface ProductListing {
   projectId?: number;
   _auctionCount?: number;
   _dealCount?: number;
+  approvalStatus?: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'changes_requested';
+  rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;

@@ -81,7 +81,6 @@ function filterSources(sources: ListingSource[]): ListingSource[] {
   return sources.filter((s) => s.label.trim() || s.url.trim());
 }
 
-
 export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   mode: modeProp,
   maxStep: maxStepProp,
@@ -346,6 +345,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
   const handlePublish = async () => {
     if (!listingId || !deployChannel) return;
+
     setSubmitError(null);
     setFieldErrors({});
 
@@ -495,7 +495,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
   const listingCoverUrl = existingListing ?? null;
   const showPublishSteps = maxStep > WIZARD_STEP.MEDIA;
-
   const pageTitle =
     wizardMode === 'create'
       ? t('listing.wizard.title_create')
