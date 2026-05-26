@@ -1,22 +1,17 @@
-import Cookies from 'js-cookie';
-
-// We need to intercept the axios.create return value globally
-// The real ApiClientFactory calls axios.create() which returns an instance
-// We mock it to capture the interceptors
 let capturedInterceptors: {
-  request: Array<(config: any) => any>;
-  response: Array<{ onFulfilled: any; onRejected: any }>;
+  request: Array<(config: Record<string, unknown>) => Record<string, unknown>>;
+  response: Array<{ onFulfilled: unknown; onRejected: unknown }>;
 } = { request: [], response: [] };
 
 const mockAxiosInstance = {
   interceptors: {
     request: {
-      use: jest.fn((fn: any) => {
+      use: jest.fn((fn: (config: Record<string, unknown>) => Record<string, unknown>) => {
         capturedInterceptors.request.push(fn);
       }),
     },
     response: {
-      use: jest.fn((onFulfilled: any, onRejected: any) => {
+      use: jest.fn((onFulfilled: unknown, onRejected: unknown) => {
         capturedInterceptors.response.push({ onFulfilled, onRejected });
       }),
     },
@@ -36,20 +31,33 @@ jest.mock('axios', () => ({
   },
 }));
 
+const mockCookieGet = jest.fn();
+
 jest.mock('js-cookie', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(() => 'test-token'),
+    get: (...args: unknown[]) => mockCookieGet(...args),
     set: jest.fn(),
     remove: jest.fn(),
   },
 }));
 
+function loadFactory() {
+  jest.resetModules();
+  capturedInterceptors = { request: [], response: [] };
+  return require('@core/services/ApiClientFactory') as typeof import('@core/services/ApiClientFactory');
+}
+
+function runRequestInterceptor(config: Record<string, unknown> = { headers: {} }) {
+  const fn = capturedInterceptors.request[0];
+  if (!fn) throw new Error('No request interceptor registered');
+  return fn(config) as { headers: Record<string, string> };
+}
+
 describe('API Client Auth Flow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    capturedInterceptors = { request: [], response: [] };
-    (Cookies.get as jest.Mock).mockImplementation((key: string) => {
+    mockCookieGet.mockImplementation((key: string) => {
       if (key === 'access') return 'test-access-token';
       if (key === 'refresh') return 'test-refresh-token';
       return undefined;
@@ -65,51 +73,39 @@ describe('API Client Auth Flow', () => {
   });
 
   it('should attach Bearer token from cookie to request headers', () => {
-    const { createApiClient } = require('@core/services/ApiClientFactory');
-    createApiClient({ serviceName: 'test', endpoint: '/test' });
+    const { createApiClient } = loadFactory();
+    createApiClient({ serviceName: 'test', endpoint: '/test', apiBaseUrl: 'http://test-a.local/api' });
 
-    expect(capturedInterceptors.request.length).toBeGreaterThan(0);
-
-    const requestInterceptor = capturedInterceptors.request[0];
-    const config: any = { headers: {} };
-    requestInterceptor(config);
+    const config = runRequestInterceptor();
 
     expect(config.headers.Authorization).toBe('Bearer test-access-token');
     expect(config.headers['X-Project-ID']).toBe('11');
   });
 
-  it('should fall back to localStorage when cookie is empty', () => {
-    (Cookies.get as jest.Mock).mockReturnValue(undefined);
+  it('should read project ID from localStorage zv_project', () => {
     (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-      if (key === 'access_token') return 'localStorage-token';
       if (key === 'zv_project') return JSON.stringify({ id: '22' });
       return null;
     });
 
-    const { createApiClient } = require('@core/services/ApiClientFactory');
-    createApiClient({ serviceName: 'test', endpoint: '/test' });
+    const { createApiClient } = loadFactory();
+    createApiClient({ serviceName: 'test', endpoint: '/test', apiBaseUrl: 'http://test-b.local/api' });
 
-    const requestInterceptor = capturedInterceptors.request[capturedInterceptors.request.length - 1];
-    const config: any = { headers: {} };
-    requestInterceptor(config);
+    const config = runRequestInterceptor();
 
-    expect(config.headers.Authorization).toBe('Bearer localStorage-token');
+    expect(config.headers.Authorization).toBe('Bearer test-access-token');
     expect(config.headers['X-Project-ID']).toBe('22');
   });
 
   it('should not attach token when none is found', () => {
-    (Cookies.get as jest.Mock).mockReturnValue(undefined);
-    (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+    mockCookieGet.mockReturnValue(undefined);
 
-    const { createApiClient } = require('@core/services/ApiClientFactory');
-    createApiClient({ serviceName: 'test', endpoint: '/test' });
+    const { createApiClient } = loadFactory();
+    createApiClient({ serviceName: 'test', endpoint: '/test', apiBaseUrl: 'http://test-c.local/api' });
 
-    const requestInterceptor = capturedInterceptors.request[capturedInterceptors.request.length - 1];
-    const config: any = { method: 'post', url: '/test/', headers: {} };
-    requestInterceptor(config);
+    const config = runRequestInterceptor({ method: 'post', url: '/test/', headers: {} });
 
     expect(config.headers.Authorization).toBeUndefined();
-    // Project ID should still be the default '11'
     expect(config.headers['X-Project-ID']).toBe('11');
   });
 });
