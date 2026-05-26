@@ -4,6 +4,7 @@ import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { FormSection } from '@core/components/FormSection';
+import { CategoryPicker } from '@services/categories/components/CategoryPicker';
 import type { FormData } from '../hooks/useAuctionFormState';
 
 interface AuctionCoreFieldsProps {
@@ -42,14 +43,12 @@ export const AuctionCoreFields: React.FC<AuctionCoreFieldsProps> = ({
             />
           </div>
           <div className="w-full">
-            <AmberDropdown
-              label={t('auction.form.tactical_category')}
-              options={[
-                { label: t('auction.form.manual_select') || 'Select Category...', value: '' },
-                ...categoryOptions,
-              ]}
-              value={String(formData.categoryId || '')}
-              onChange={(val) => onChange('categoryId', val ? Number(val) : undefined)}
+            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-2 block">
+              {t('auction.form.tactical_category') || 'Category'}
+            </label>
+            <CategoryPicker
+              value={formData.categoryId}
+              onChange={(id) => onChange('categoryId', id || undefined)}
             />
             {errors.categoryId ? (
               <p className="text-[13px] text-danger font-medium mt-1.5 px-1">{errors.categoryId}</p>

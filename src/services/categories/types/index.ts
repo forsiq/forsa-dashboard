@@ -49,6 +49,10 @@ export interface Category {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string | null;
+  // Hierarchical fields
+  parentId?: number | null;
+  level?: number;
+  children?: Category[];
   // Computed fields for frontend display
   productCount?: number;
   // Legacy compat - mapped from translations in frontend
@@ -117,6 +121,9 @@ export interface CreateCategoryInput {
   isActive?: boolean;
   // Arabic name stored in translations
   nameAr?: string;
+  // Hierarchical fields
+  parentId?: number | null;
+  level?: number;
 }
 
 export interface UpdateCategoryInput {
@@ -128,6 +135,9 @@ export interface UpdateCategoryInput {
   sortOrder?: number;
   isActive?: boolean;
   nameAr?: string;
+  // Hierarchical fields
+  parentId?: number | null;
+  level?: number;
 }
 
 export interface CategoryFilters {
@@ -153,6 +163,39 @@ export interface CategoryStats {
   inactive: number;
   withParent: number;
   withoutParent: number;
+}
+
+export interface CategoryTreeNode extends Category {
+  children: CategoryTreeNode[];
+}
+
+export interface CategoryTreeResponse {
+  tree: CategoryTreeNode[];
+}
+
+export interface CategorySuggestion {
+  id: string;
+  name: string;
+  nameAr?: string;
+  description?: string;
+  parentId?: number | null;
+  status: 'pending' | 'approved' | 'rejected';
+  suggestedBy: string;
+  rejectionReason?: string;
+  createdCategoryId?: number;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
+export interface SuggestCategoryInput {
+  name: string;
+  description?: string;
+  parentId?: number | null;
+}
+
+export interface ReviewSuggestionInput {
+  status: 'approved' | 'rejected';
+  rejectionReason?: string;
 }
 
 // --- API Error Types ---

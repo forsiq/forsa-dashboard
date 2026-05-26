@@ -13,6 +13,8 @@ import { AmberDropdown } from '@core/components/AmberDropdown';
 import { IconPicker } from '@core/components/IconPicker';
 import { useFormUX } from '@core/hooks/useFormUX';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
+import { getLocalizedName } from '../types';
+import { useMainCategories } from '../hooks';
 
 // --- Validation Schema ---
 // Must match auction-service CreateCategoryDto / UpdateCategoryDto
@@ -25,6 +27,7 @@ const categorySchema = z.object({
   icon: z.string().optional(),
   sortOrder: z.number().optional(),
   isActive: z.boolean().optional(),
+  parentId: z.string().optional(),
 });
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
@@ -46,10 +49,29 @@ export function CategoryForm({
   isLoading = false,
   parentCategories = [],
 }: CategoryFormProps) {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Fetch main categories for parent dropdown
+  const { data: mainCategories } = useMainCategories();
+
+  const parentOptions = React.useMemo(() => {
+    const cats = mainCategories || [];
+    return [
+      { label: t('category.no_parent') || 'None (Main Category)', value: '' },
+      ...cats
+        .filter((c: Category) => {
+          if (initialData) return String(c.id) !== String(initialData.id);
+          return true;
+        })
+        .map((c: Category) => ({
+          label: getLocalizedName(c, language),
+          value: String(c.id),
+        })),
+    ];
+  }, [mainCategories, language, initialData]);
 
   useEffect(() => {
     setIsClient(true);
@@ -72,6 +94,7 @@ export function CategoryForm({
           icon: initialData.icon || '',
           sortOrder: initialData.sortOrder ?? 0,
           isActive: initialData.isActive ?? true,
+          parentId: initialData.parentId ? String(initialData.parentId) : '',
         }
       : {
           name: '',
@@ -81,6 +104,7 @@ export function CategoryForm({
           icon: '',
           sortOrder: 0,
           isActive: true,
+          parentId: '',
         },
   });
 
@@ -98,6 +122,7 @@ export function CategoryForm({
       icon: initialData.icon || '',
       sortOrder: initialData.sortOrder ?? 0,
       isActive: initialData.isActive ?? true,
+      parentId: initialData.parentId ? String(initialData.parentId) : '',
     } : {
       name: '',
       nameAr: '',
@@ -106,6 +131,7 @@ export function CategoryForm({
       icon: '',
       sortOrder: 0,
       isActive: true,
+      parentId: '',
     },
     isSubmitting: isSubmitting || isLoading,
   });
@@ -125,6 +151,9 @@ export function CategoryForm({
     try {
       setErrors({});
       // Build payload matching backend CreateCategoryDto exactly
+      const watchedParentId = watch('parentId');
+      const level = watchedParentId ? 1 : 0;
+
       const payload: any = {
         name: data.name,
         slug: data.slug || undefined,
@@ -132,6 +161,8 @@ export function CategoryForm({
         icon: data.icon || undefined,
         sortOrder: data.sortOrder ?? 0,
         isActive: data.isActive ?? true,
+        parentId: watchedParentId ? Number(watchedParentId) : null,
+        level,
       };
 
       if (initialData) {
@@ -208,6 +239,15 @@ export function CategoryForm({
             ]}
             value={watch('isActive') ? 'active' : 'inactive'}
             onChange={val => setValue('isActive', val === 'active')}
+          />
+
+          {/* Parent Category */}
+          <AmberDropdown
+            label={t('category.parent') || 'Parent Category'}
+            options={parentOptions}
+            value={watch('parentId') || ''}
+            onChange={val => setValue('parentId', val)}
+            placeholder={t('category.select_parent') || 'Select parent category...'}
           />
 
           {/* Sort Order */}

@@ -17,6 +17,8 @@ export interface Category {
   description?: string;
   parentId?: string | null;
   parent?: Category;
+  level?: number;
+  children?: Category[];
   status: 'active' | 'inactive';
   order?: number;
   image?: string;
@@ -94,7 +96,7 @@ export const categoryEntityMeta = {
   sortableFields: ['name', 'order', 'createdAt', 'productCount'] as const,
 
   // Fields that can be used for filtering
-  filterableFields: ['search', 'status', 'parentId'] as const,
+  filterableFields: ['search', 'status', 'parentId', 'level'] as const,
 
   // Fields that are required for creation
   requiredFields: ['name'] as const,

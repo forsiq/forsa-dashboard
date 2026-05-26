@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { useToast } from '@core/contexts/ToastContext';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
-import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse } from '../types';
+import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse, SuggestCategoryInput, ReviewSuggestionInput } from '../types';
 
 const categoryService = createCrudService<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   name: 'categories',
@@ -136,3 +136,70 @@ export const useGetCategoryStats = useStats;
 export const useCreateCategoryMutation = useCreate;
 export const useUpdateCategoryMutation = useUpdate;
 export const useDeleteCategoryMutation = useDelete;
+
+// Tree & Hierarchy hooks
+export function useCategoryTree() {
+  return useQuery({
+    queryKey: api.categoryKeys.tree(),
+    queryFn: ({ signal }) => api.getCategoryTree(signal),
+  });
+}
+
+export function useMainCategories() {
+  return useQuery({
+    queryKey: api.categoryKeys.mainCategories(),
+    queryFn: ({ signal }) => api.getMainCategories(signal),
+  });
+}
+
+export function useCategoryChildren(parentId: string | number | null, enabled = true) {
+  return useQuery({
+    queryKey: api.categoryKeys.children(parentId!),
+    queryFn: ({ signal }) => api.getCategoryChildren(parentId!, signal),
+    enabled: !!parentId && enabled,
+  });
+}
+
+// Suggestion hooks
+export function useSuggestCategory(options?: any) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: SuggestCategoryInput) => api.suggestCategory(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.suggestions() });
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.mySuggestions() });
+      import('@core/lib/notifications').then(({ toast }) => {
+        toast.success('Category suggestion submitted for review');
+      });
+    },
+    ...options,
+  });
+}
+
+export function useCategorySuggestions(status?: string) {
+  return useQuery({
+    queryKey: [...api.categoryKeys.suggestions(), status],
+    queryFn: ({ signal }) => api.getCategorySuggestions(status, signal),
+  });
+}
+
+export function useReviewSuggestion(options?: any) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: ReviewSuggestionInput }) =>
+      api.reviewSuggestion(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.suggestions() });
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: api.categoryKeys.tree() });
+    },
+    ...options,
+  });
+}
+
+export function useMySuggestions() {
+  return useQuery({
+    queryKey: api.categoryKeys.mySuggestions(),
+    queryFn: ({ signal }) => api.getMySuggestions(signal),
+  });
+}

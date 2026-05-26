@@ -14,6 +14,10 @@ import {
   PowerOff,
   GripVertical,
   Loader2,
+  ChevronDown,
+  ChevronRight,
+  ListTree,
+  MessageSquare,
 } from 'lucide-react';
 import {
   DndContext,
@@ -45,8 +49,9 @@ import {
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
   useReorderCategories,
+  useCategoryTree,
 } from '../hooks';
-import type { Category } from '../types';
+import type { Category, CategoryTreeNode } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
 import { useIsClient } from '@core/hooks/useIsClient';
 import {
@@ -56,8 +61,11 @@ import {
 } from '@core/components/Layout';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
+import { SuggestionReview } from '../components/SuggestionReview';
 
 type StatusTab = 'all' | 'active' | 'inactive';
+type ViewMode = 'list' | 'tree';
+type PageTab = 'categories' | 'suggestions';
 
 function arrayMove<T>(array: T[], from: number, to: number): T[] {
   const newArray = array.slice();
@@ -101,16 +109,172 @@ function SortableRow({ id, children, disabled = false }: SortableRowProps) {
   );
 }
 
+// --- Tree View Components ---
+
+interface TreeRowProps {
+  node: CategoryTreeNode;
+  level: number;
+  language: string;
+  onEdit: (category: Category) => void;
+  onToggleStatus: (category: Category) => void;
+  onDelete: (id: string) => void;
+  openConfirm: any;
+  t: (key: string) => string;
+}
+
+function TreeRow({ node, level, language, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = node.children && node.children.length > 0;
+  const IconComponent = node.icon ? getIconByName(node.icon) : null;
+  const Icon = IconComponent || LayoutGrid;
+
+  return (
+    <>
+      <tr className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
+        {/* Expand toggle */}
+        <td className="px-3 py-5">
+          {hasChildren ? (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="p-1 rounded hover:bg-white/10 transition-colors text-zinc-muted"
+            >
+              {expanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </button>
+          ) : (
+            <div className="w-6" />
+          )}
+        </td>
+        {/* Name */}
+        <td className="px-6 py-5" style={{ paddingLeft: level > 0 ? `${24 + level * 32}px` : undefined }}>
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
+              <Icon className="w-4 h-4 text-zinc-muted" />
+            </div>
+            <span className={cn(
+              'text-sm tracking-tight',
+              level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
+            )}>
+              {getLocalizedName(node, language)}
+            </span>
+            {hasChildren && (
+              <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full">
+                {node.children!.length}
+              </span>
+            )}
+          </div>
+        </td>
+        {/* Slug */}
+        <td className="px-6 py-5">
+          <span className="text-sm text-zinc-text font-medium uppercase tracking-tight">
+            {node.slug || '-'}
+          </span>
+        </td>
+        {/* Product Count */}
+        <td className="px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight text-center">
+          {node.productCount || 0}
+        </td>
+        {/* Status */}
+        <td className="px-6 py-5 text-center">
+          <StatusBadge
+            status={
+              node.isActive
+                ? t('category.active') || 'Active'
+                : t('category.inactive') || 'Inactive'
+            }
+            variant={node.isActive ? 'success' : 'inactive'}
+            size="sm"
+          />
+        </td>
+        {/* Actions */}
+        <td className="px-6 py-5">
+          <div className="flex items-center justify-center gap-1">
+            <button
+              onClick={() => onEdit(node)}
+              className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
+              title={t('common.edit') || 'Edit'}
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onToggleStatus(node)}
+              className={cn(
+                'p-2 rounded-lg transition-all',
+                node.isActive
+                  ? 'text-zinc-muted hover:text-warning hover:bg-warning/10'
+                  : 'text-zinc-muted hover:text-success hover:bg-success/10',
+              )}
+              title={
+                node.isActive
+                  ? t('category.deactivate') || 'Deactivate'
+                  : t('category.activate') || 'Activate'
+              }
+            >
+              {node.isActive ? (
+                <PowerOff className="w-4 h-4" />
+              ) : (
+                <Power className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              onClick={() => {
+                openConfirm({
+                  title: t('category.delete') || 'Delete Category',
+                  message: `${t('category.delete_confirm') || 'Are you sure?'}\n\n"${getLocalizedName(node, language)}"`,
+                  variant: 'destructive',
+                  onConfirm: () => onDelete(node.id),
+                });
+              }}
+              className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
+              title={t('common.delete') || 'Delete'}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+      {/* Render children */}
+      {expanded && hasChildren && node.children!.map((child) => (
+        <TreeRow
+          key={child.id}
+          node={child}
+          level={level + 1}
+          language={language}
+          onEdit={onEdit}
+          onToggleStatus={onToggleStatus}
+          onDelete={onDelete}
+          openConfirm={openConfirm}
+          t={t}
+        />
+      ))}
+    </>
+  );
+}
+
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [pageTab, setPageTab] = useState<PageTab>('categories');
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [page, setPage] = useState(1);
   const limit = 50;
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
+
+  // Tree view data
+  const {
+    data: treeData,
+    isPending: treeLoading,
+    isFetching: treeFetching,
+    error: treeError,
+    refetch: refetchTree,
+  } = useCategoryTree();
 
   // Drag & drop state (reorder only when full list is visible — not search/filter subset)
   const [localCategories, setLocalCategories] = useState<Category[]>([]);
@@ -282,6 +446,11 @@ export function CategoriesPage() {
     { key: 'inactive', labelKey: 'status.inactive' },
   ];
 
+  const PAGE_TABS: { key: PageTab; labelKey: string; icon: any }[] = [
+    { key: 'categories', labelKey: 'category.title', icon: LayoutGrid },
+    { key: 'suggestions', labelKey: 'category.suggestions', icon: MessageSquare },
+  ];
+
   if (!isClient) return null;
 
   return (
@@ -314,24 +483,84 @@ export function CategoriesPage() {
         { label: t('category.main') || 'Main Categories', value: stats?.withParent ?? 0, icon: Layers, color: 'info' },
       ]}
       tabs={
-        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setStatusFilter(tab.key);
-                setPage(1);
-              }}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
-                statusFilter === tab.key
-                  ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                  : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
-              )}
-            >
-              {t(tab.labelKey)}
-            </button>
-          ))}
+        <div className="flex items-center gap-4">
+          {/* Page Tabs */}
+          <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+            {PAGE_TABS.map((tab) => {
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setPageTab(tab.key);
+                    setPage(1);
+                  }}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
+                    pageTab === tab.key
+                      ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                      : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+                  )}
+                >
+                  <TabIcon className="w-3.5 h-3.5" />
+                  {t(tab.labelKey)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* View Mode Toggle (only in categories tab) */}
+          {pageTab === 'categories' && (
+            <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
+                  viewMode === 'list'
+                    ? 'bg-white/10 text-zinc-text shadow-sm'
+                    : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                {t('category.view_list') || 'List'}
+              </button>
+              <button
+                onClick={() => setViewMode('tree')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
+                  viewMode === 'tree'
+                    ? 'bg-white/10 text-zinc-text shadow-sm'
+                    : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+                )}
+              >
+                <ListTree className="w-3.5 h-3.5" />
+                {t('category.view_tree') || 'Tree'}
+              </button>
+            </div>
+          )}
+
+          {/* Status Tabs (only in list view) */}
+          {pageTab === 'categories' && viewMode === 'list' && (
+            <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+              {STATUS_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setStatusFilter(tab.key);
+                    setPage(1);
+                  }}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
+                    statusFilter === tab.key
+                      ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                      : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+                  )}
+                >
+                  {t(tab.labelKey)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       }
       toolbar={
@@ -350,7 +579,83 @@ export function CategoriesPage() {
       }
     >
       <div className="space-y-6">
-        {isPending ? (
+        {/* Suggestions Tab */}
+        {pageTab === 'suggestions' ? (
+          <SuggestionReview />
+        ) : viewMode === 'tree' ? (
+          /* Tree View */
+          treeLoading ? (
+            <ListPageSkeleton count={6} columns={4} showStats />
+          ) : treeError ? (
+            <div className="p-12 text-center">
+              <p className="text-danger font-bold">
+                {t('category.error_loading') || 'Error loading categories'}
+              </p>
+              <AmberButton
+                variant="outline"
+                size="sm"
+                onClick={() => refetchTree()}
+                className="mt-6 font-bold"
+              >
+                {t('common.retry') || 'Retry'}
+              </AmberButton>
+            </div>
+          ) : !treeData?.tree?.length ? (
+            <EmptyState
+              icon={LayoutGrid}
+              title={t('category.empty') || 'No Categories'}
+              description={t('category.empty_description') || 'No categories found.'}
+              actionLabel={t('category.add_new') || 'Add Category'}
+              onAction={() => router.push('/categories/new')}
+            />
+          ) : (
+            <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+              {treeFetching && <FetchingOverlay />}
+              <div className="flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm">
+                <div className="flex-1 min-h-[200px] overflow-x-auto">
+                  <table className="w-full text-start border-collapse min-w-[800px]">
+                    <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+                      <tr>
+                        <th className="px-3 py-5 w-10" />
+                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
+                          {t('category.name') || 'Name'}
+                        </th>
+                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
+                          {t('category.slug') || 'Slug'}
+                        </th>
+                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                          {t('category.products_count') || 'Products'}
+                        </th>
+                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                          {t('category.status') || 'Status'}
+                        </th>
+                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                          {t('common.actions') || 'Actions'}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.03]">
+                      {treeData.tree.map((node) => (
+                        <TreeRow
+                          key={node.id}
+                          node={node}
+                          level={0}
+                          language={language}
+                          onEdit={handleEdit}
+                          onToggleStatus={handleToggleStatus}
+                          onDelete={handleDelete}
+                          openConfirm={openConfirm}
+                          t={t}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )
+        ) : isPending ? (
+          /* List View (existing) */
           <ListPageSkeleton count={8} columns={4} showStats />
         ) : error ? (
           <div className="p-12 text-center">
@@ -531,6 +836,7 @@ export function CategoriesPage() {
               </SortableContext>
             </DndContext>
           </div>
+        )
         )}
       </div>
 

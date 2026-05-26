@@ -22,10 +22,7 @@ import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
-import { useList as useCategories } from '../../../services/categories/hooks';
-import { getLocalizedName } from '../../../services/categories/types';
-import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
-import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
+import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
 import type { CreateListingInput } from '../../../types/services/listings.types';
 import type { FormFieldConfig } from '@core/services/types';
 
@@ -53,13 +50,6 @@ export const ListingFormPage: React.FC = () => {
   useEffect(() => { setIsClient(true); }, []);
 
   const { data: existingListing, isLoading } = useGetListing(Number(id), isEdit);
-  const { data: categoriesData } = useCategories({ limit: 100 });
-  const categoryOptions = useMemo(() =>
-    (categoriesData as any)?.categories?.map((c: any) => ({
-      label: getLocalizedName(c, language) || c.name || c.slug,
-      value: String(c.id),
-    })) || []
-  , [categoriesData, language]);
 
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();
@@ -152,13 +142,6 @@ export const ListingFormPage: React.FC = () => {
       placeholder: t('listing.form.description_placeholder') || 'Describe your product',
     },
     {
-      name: 'categoryId',
-      label: t('listing.form.category') || 'Category',
-      type: 'select',
-      placeholder: t('common.select') || 'Select...',
-      options: categoryOptions,
-    },
-    {
       name: 'brand',
       label: t('listing.form.brand') || 'Brand',
       type: 'text',
@@ -199,7 +182,7 @@ export const ListingFormPage: React.FC = () => {
       type: 'text',
       placeholder: t('listing.form.sku_placeholder') || 'SKU number',
     },
-  ], [t, categoryOptions]);
+  ], [t]);
 
   const handleFormChange = (data: Record<string, unknown>, field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -363,6 +346,17 @@ export const ListingFormPage: React.FC = () => {
             iconBgColor="brand"
             title={t('listing.form.section.product_info') || 'Product Information'}
           >
+            {/* Category Picker */}
+            <div className="mb-8">
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-2 block">
+                {t('listing.form.category') || 'Category'}
+              </label>
+              <CategoryPicker
+                value={formData.categoryId}
+                onChange={(id) => setFormData((prev) => ({ ...prev, categoryId: id || undefined }))}
+              />
+            </div>
+
             <FormBuilder
               fields={formFields}
               initialValues={formData as Record<string, unknown>}

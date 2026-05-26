@@ -6,7 +6,11 @@ import type {
   UpdateCategoryInput, 
   CategoryFilters, 
   CategoryStats,
-  CategoriesResponse 
+  CategoriesResponse,
+  CategoryTreeResponse,
+  CategorySuggestion,
+  SuggestCategoryInput,
+  ReviewSuggestionInput
 } from '../types';
 
 /**
@@ -78,6 +82,49 @@ export async function reorderCategories(ids: string[]): Promise<void> {
   });
 }
 
+export async function getCategoryTree(signal?: AbortSignal): Promise<CategoryTreeResponse> {
+  const client = categoryBaseApi.getInstance();
+  const response = await client.get('/categories/tree', { signal });
+  return { tree: response.data?.data || [] };
+}
+
+export async function getMainCategories(signal?: AbortSignal): Promise<Category[]> {
+  const client = categoryBaseApi.getInstance();
+  const response = await client.get('/categories/main', { signal });
+  return response.data?.data || [];
+}
+
+export async function getCategoryChildren(parentId: string | number, signal?: AbortSignal): Promise<Category[]> {
+  const client = categoryBaseApi.getInstance();
+  const response = await client.get(`/categories/${parentId}/children`, { signal });
+  return response.data?.data || [];
+}
+
+export async function suggestCategory(input: SuggestCategoryInput): Promise<CategorySuggestion> {
+  const client = categoryBaseApi.getInstance();
+  const response = await client.post('/categories/suggest', input);
+  return response.data?.data;
+}
+
+export async function getCategorySuggestions(status?: string, signal?: AbortSignal): Promise<CategorySuggestion[]> {
+  const client = categoryBaseApi.getInstance();
+  const params: any = {};
+  if (status) params.status = status;
+  const response = await client.get('/categories/suggestions', { params, signal });
+  return response.data?.data || [];
+}
+
+export async function reviewSuggestion(id: string, input: ReviewSuggestionInput): Promise<void> {
+  const client = categoryBaseApi.getInstance();
+  await client.patch(`/categories/suggestions/${id}/review`, input);
+}
+
+export async function getMySuggestions(signal?: AbortSignal): Promise<CategorySuggestion[]> {
+  const client = categoryBaseApi.getInstance();
+  const response = await client.get('/categories/suggestions/mine', { signal });
+  return response.data?.data || [];
+}
+
 export const categoryKeys = {
   all: ['categories'] as const,
   lists: () => [...categoryKeys.all, 'list'] as const,
@@ -85,5 +132,10 @@ export const categoryKeys = {
   details: () => [...categoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...categoryKeys.details(), id] as const,
   stats: () => [...categoryKeys.all, 'stats'] as const,
+  tree: () => [...categoryKeys.all, 'tree'] as const,
+  mainCategories: () => [...categoryKeys.all, 'main'] as const,
+  children: (parentId: string | number) => [...categoryKeys.all, 'children', parentId] as const,
+  suggestions: () => [...categoryKeys.all, 'suggestions'] as const,
+  mySuggestions: () => [...categoryKeys.all, 'my-suggestions'] as const,
 };
 

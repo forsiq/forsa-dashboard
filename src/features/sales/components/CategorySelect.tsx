@@ -1,14 +1,12 @@
 /**
  * Category Select Component
  *
- * Dropdown for selecting categories in group buying form
+ * Hierarchical category picker for group buying form.
+ * Wraps CategoryPicker to maintain backward-compatible string API.
  */
 
-import { useGetCategories } from '@services/categories/hooks';
-import { AmberDropdown } from '@core/components/AmberDropdown';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import type { CategoriesResponse } from '@services/categories/types';
-import { getLocalizedName } from '@services/categories/types';
+import { CategoryPicker } from '@services/categories/components/CategoryPicker';
 
 interface CategorySelectProps {
   value?: string;
@@ -21,32 +19,19 @@ export function CategorySelect({
   onChange,
   disabled = false,
 }: CategorySelectProps) {
-  const { t, language } = useLanguage();
-
-  // Fetch categories
-  const { data: categoriesData, isLoading } = useGetCategories({
-    isActive: true,
-    limit: 100,
-  });
-
-  // Access categories from GraphQL response
-  const categories = (categoriesData as CategoriesResponse)?.categories || [];
-
-  // Map categories to dropdown options
-  const options = categories.map((cat) => ({
-    value: cat.id,
-    label: getLocalizedName(cat, language),
-  }));
+  const { t } = useLanguage();
 
   return (
-    <AmberDropdown
-      label={t('groupBuying.category')}
-      options={options}
-      value={value}
-      onChange={onChange}
-      placeholder={isLoading ? t('common.loading') || 'Loading...' : t('groupBuying.select_category')}
-      className={disabled ? 'opacity-50 pointer-events-none' : ''}
-    />
+    <div className={disabled ? 'opacity-50 pointer-events-none' : ''}>
+      <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-2 block">
+        {t('groupBuying.category') || 'Category'}
+      </label>
+      <CategoryPicker
+        value={value ? Number(value) : undefined}
+        onChange={(id) => onChange(String(id))}
+        showSuggest={false}
+      />
+    </div>
   );
 }
 
