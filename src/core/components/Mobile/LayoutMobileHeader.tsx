@@ -12,16 +12,17 @@ export function LayoutMobileHeader() {
 
   const routeTitles: Record<string, string> = {
     '/dashboard': t('dash.title') || 'Dashboard',
-    '/auctions': t('sidebar.auctions') || 'Auctions',
-    '/orders': t('sidebar.orders_section') || 'Orders',
-    '/watchlist': t('sidebar.watchlist') || 'Watchlist',
-    '/my-bids': t('sidebar.my_bids') || 'My Bids',
-    '/inventory': t('sidebar.inventory') || 'Inventory',
-    '/customers': t('sidebar.customers') || 'Customers',
-    '/categories': t('sidebar.categories') || 'Categories',
-    '/reports': t('sidebar.reports') || 'Reports',
-    '/settings': t('sidebar.settings') || 'Settings',
-    '/group-buying': t('sidebar.groupBuying') || 'Group Buying',
+    '/auctions': t('mobile.nav.channels') || 'Channels',
+    '/orders': t('mobile.nav.orders') || 'Orders',
+    '/watchlist': t('mobile.nav.watchlist') || 'Watchlist',
+    '/my-bids': t('mobile.nav.my_bids') || 'My Bids',
+    '/inventory': t('mobile.nav.inventory') || 'Inventory',
+    '/customers': t('mobile.nav.customers') || 'Customers',
+    '/categories': t('mobile.nav.categories') || 'Categories',
+    '/reports': t('mobile.nav.reports') || 'Reports',
+    '/settings': t('mobile.nav.settings') || 'Settings',
+    '/group-buying': t('mobile.nav.channels') || 'Channels',
+    '/listings': t('mobile.nav.products') || 'Products',
     '/portal': t('sidebar.portal') || 'Portal',
   };
 

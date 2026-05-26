@@ -1332,6 +1332,8 @@ export const ar: Record<string, string> = {
   // Mobile navigation
   "mobile.nav.home": "الرئيسية",
   "mobile.nav.auctions": "المزادات",
+  "mobile.nav.products": "المنتجات",
+  "mobile.nav.channels": "القنوات",
   "mobile.nav.orders": "الطلبات",
   "mobile.nav.watchlist": "المفضلة",
   "mobile.nav.more": "المزيد",

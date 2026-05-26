@@ -1331,6 +1331,8 @@ export const en: Record<string, string> = {
   // Mobile navigation
   "mobile.nav.home": "Home",
   "mobile.nav.auctions": "Auctions",
+  "mobile.nav.products": "Products",
+  "mobile.nav.channels": "Channels",
   "mobile.nav.orders": "Orders",
   "mobile.nav.watchlist": "Watchlist",
   "mobile.nav.more": "More",

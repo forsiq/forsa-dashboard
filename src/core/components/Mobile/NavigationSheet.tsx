@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  ShoppingBag,
+  Heart,
   Package,
   Users,
   Tag,
@@ -27,12 +27,12 @@ interface NavigationSheetProps {
 }
 
 const NAV_ITEMS = [
-  { icon: ShoppingBag, labelKey: 'mobile.nav.group_buying', path: '/group-buying' },
+  { icon: Heart, labelKey: 'mobile.nav.watchlist', path: '/watchlist' },
+  { icon: TrendingUp, labelKey: 'mobile.nav.my_bids', path: '/my-bids' },
   { icon: Package, labelKey: 'mobile.nav.inventory', path: '/inventory' },
   { icon: Users, labelKey: 'mobile.nav.customers', path: '/customers' },
   { icon: Tag, labelKey: 'mobile.nav.categories', path: '/categories' },
   { icon: BarChart2, labelKey: 'mobile.nav.reports', path: '/reports' },
-  { icon: TrendingUp, labelKey: 'mobile.nav.my_bids', path: '/my-bids' },
   { icon: Settings, labelKey: 'mobile.nav.settings', path: '/settings' },
   { icon: HelpCircle, labelKey: 'mobile.nav.help', path: '/help' },
 ];

@@ -229,6 +229,77 @@ export const ListingsListPage: React.FC = () => {
 
   if (!isClient) return null;
 
+  const renderListingCard = React.useCallback(
+    (listing: ProductListing) => (
+      <div
+        key={listing.id}
+        className="group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden hover:border-white/10 hover:shadow-md cursor-pointer active:scale-[0.98]"
+        onClick={() => router.push(`/listings/${listing.id}`)}
+      >
+        {/* Image Section */}
+        <div className="relative h-36 bg-obsidian-outer/50 overflow-hidden">
+          <ListingImage
+            listing={listing}
+            className="w-full h-full"
+            fallbackClassName="w-10 h-10 text-zinc-muted/30"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-obsidian-card)] via-transparent to-transparent opacity-80" />
+
+          {/* Condition Badge */}
+          {listing.condition && (
+            <div className="absolute top-2 start-2">
+              <StatusBadge
+                status={listing.condition}
+                variant={listing.condition === 'new' ? 'success' : listing.condition === 'used' ? 'warning' : 'info'}
+                size="sm"
+              />
+            </div>
+          )}
+
+          {/* Readiness Badge */}
+          <div className="absolute top-2 end-2">
+            <ListingReadinessBadge listing={listing} />
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="p-3 space-y-2">
+          {/* Title */}
+          <h3 className="text-sm font-bold text-zinc-text truncate leading-tight">
+            {listing.title}
+          </h3>
+
+          {/* SKU / Brand */}
+          <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest truncate">
+            {listing.sku || listing.brand || '—'}
+          </p>
+
+          {/* Stats Row */}
+          <div className="flex items-center gap-3 pt-1.5 border-t border-white/5">
+            <div className="flex items-center gap-1">
+              <Gavel className="w-3 h-3 text-brand" />
+              <span className="text-[11px] font-black text-zinc-text tabular-nums">
+                {listing._auctionCount || 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="w-3 h-3 text-info" />
+              <span className="text-[11px] font-black text-zinc-text tabular-nums">
+                {listing._dealCount || 0}
+              </span>
+            </div>
+            {listing.brand && (
+              <span className="text-[10px] font-bold text-zinc-muted truncate ms-auto">
+                {listing.brand}{listing.model ? ` ${listing.model}` : ''}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    ),
+    [router],
+  );
+
   return (
     <AdminListPageShell
       title={t('listing.title')}
@@ -317,6 +388,33 @@ export const ListingsListPage: React.FC = () => {
             actionLabel={t('listing.add_product') || t('listing.empty.create') || 'Add Product'}
             onAction={() => router.push('/listings/new')}
           />
+        ) : isMobile ? (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              {filteredListings.map((listing) => renderListingCard(listing))}
+            </div>
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 pt-4">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page <= 1}
+                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                >
+                  {t('common.prev') || 'Prev'}
+                </button>
+                <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
+                  {page} / {pagination.totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
+                  disabled={page >= pagination.totalPages}
+                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                >
+                  {t('common.next') || 'Next'}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
             <DataTable
@@ -331,8 +429,7 @@ export const ListingsListPage: React.FC = () => {
               totalItems={issuesOnly === 'true' ? filteredListings.length : (pagination?.total || 0)}
               onPageChange={(newPage) => setPage(newPage)}
               showViewToggle
-              viewMode={isMobile ? 'grid' : 'table'}
-              gridCols={2}
+              viewMode="table"
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}

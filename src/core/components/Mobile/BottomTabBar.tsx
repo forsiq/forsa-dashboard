@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Home, Gavel, Package, Heart, Menu } from 'lucide-react';
+import { Home, ShoppingBag, Layers, ShoppingCart, Menu } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
 interface TabItem {
@@ -11,6 +11,7 @@ interface TabItem {
   label: string;
   path: string;
   isMore?: boolean;
+  isActive?: (pathname: string) => boolean;
 }
 
 export interface BottomTabBarProps {
@@ -24,26 +25,34 @@ export function BottomTabBar({ onMorePress }: BottomTabBarProps) {
   const tabs: TabItem[] = useMemo(
     () => [
       { icon: Home, label: t('mobile.nav.home') || 'Home', path: '/dashboard' },
-      { icon: Gavel, label: t('mobile.nav.auctions') || 'Auctions', path: '/auctions' },
-      { icon: Package, label: t('mobile.nav.orders') || 'Orders', path: '/orders' },
-      { icon: Heart, label: t('mobile.nav.watchlist') || 'Watchlist', path: '/watchlist' },
+      { icon: ShoppingBag, label: t('mobile.nav.products') || 'Products', path: '/listings' },
+      {
+        icon: Layers,
+        label: t('mobile.nav.channels') || 'Channels',
+        path: '/auctions',
+        isActive: (pathname) =>
+          pathname === '/auctions' ||
+          pathname.startsWith('/auctions/') ||
+          pathname === '/group-buying' ||
+          pathname.startsWith('/group-buying/'),
+      },
+      { icon: ShoppingCart, label: t('mobile.nav.orders') || 'Orders', path: '/orders' },
       { icon: Menu, label: t('mobile.nav.more') || 'More', path: '', isMore: true },
     ],
     [t],
   );
-
-  const isActive = (path: string) => {
-    if (!path) return false;
-    return router.pathname === path || router.pathname.startsWith(path + '/');
-  };
 
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-50 h-16 bg-obsidian-card border-t border-white/5 flex items-stretch"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      {tabs.map((tab) => {
-        const active = tab.isMore ? false : isActive(tab.path);
+      {tabs.map((tab, index) => {
+        const active = tab.isMore
+          ? false
+          : tab.isActive
+            ? tab.isActive(router.pathname)
+            : router.pathname === tab.path || router.pathname.startsWith(tab.path + '/');
         const Icon = tab.icon;
 
         if (tab.isMore) {
@@ -63,7 +72,7 @@ export function BottomTabBar({ onMorePress }: BottomTabBarProps) {
 
         return (
           <Link
-            key={tab.path}
+            key={tab.path + index}
             href={tab.path}
             className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors"
           >
