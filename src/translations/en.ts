@@ -414,6 +414,7 @@ export const en: Record<string, string> = {
   "sidebar.customers_section": "Customers",
   "sidebar.all_orders": "All orders",
   "sidebar.pending_orders": "Pending orders",
+  "sidebar.portal": "Portal",
 
   // Listing labels
   "listing.title": "Product Listings",
@@ -1061,6 +1062,9 @@ export const en: Record<string, string> = {
 
   // User Page
   "user.filter_description": "Filter and search users",
+  "user.role.merchant": "Merchant",
+  "user.role.customer_support": "Customer Support",
+  "user.role.product_analyst": "Product Analyst",
 
   // Profile Page
   "profile.title": "Profile",

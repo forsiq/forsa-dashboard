@@ -412,6 +412,7 @@ export const ar: Record<string, string> = {
   "sidebar.customers_section": "العملاء",
   "sidebar.all_orders": "كل الطلبات",
   "sidebar.pending_orders": "طلبات معلقة",
+  "sidebar.portal": "البوابة",
 
   // Listing labels
   "listing.title": "قائمة المنتجات",
@@ -1062,6 +1063,9 @@ export const ar: Record<string, string> = {
 
   // صفحة المستخدمين
   "user.filter_description": "تصفية والبحث في المستخدمين",
+  "user.role.merchant": "تاجر",
+  "user.role.customer_support": "خدمة العملاء",
+  "user.role.product_analyst": "محلل المنتجات",
 
   // صفحة الملف الشخصي
   "profile.title": "الملف الشخصي",
