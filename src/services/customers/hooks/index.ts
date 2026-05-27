@@ -1,7 +1,6 @@
 /** Customers Hooks - Using CrudServiceFactory + custom hooks */
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
+import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
+import { useMutationContext } from '@core/hooks/useMutationContext';
 import * as api from '../api/customers';
 import type { Customer, CreateCustomerInput, UpdateCustomerInput, CustomerFilters, CustomersResponse } from '../types';
 
@@ -40,26 +39,21 @@ export const useGetCustomerBids = (id: string, page = 1, limit = 20) => {
 };
 
 export const useCreateCustomer = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: CreateCustomerInput) => api.createCustomer(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
       toast.success(t('toast.customer.created'));
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.customer.create_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.customer.create_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
 
 export const useUpdateCustomer = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: UpdateCustomerInput) => api.updateCustomer(input),
     onSuccess: (data) => {
@@ -67,17 +61,14 @@ export const useUpdateCustomer = () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
       toast.success(t('toast.customer.updated'));
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.customer.update_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.customer.update_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
 
 export const useDeleteCustomer = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t } = useMutationContext();
   return useMutation({
     mutationFn: (id: string) => api.deleteCustomer(id),
     onMutate: async (id) => {
@@ -109,9 +100,7 @@ export const useDeleteCustomer = () => {
 };
 
 export const useUpdateCustomerStatus = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Customer['status'] }) =>
       api.updateCustomerStatus(id, status),
@@ -120,9 +109,8 @@ export const useUpdateCustomerStatus = () => {
       queryClient.invalidateQueries({ queryKey: api.customerKeys.all });
       toast.success(t('toast.customer.status_updated'));
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.customer.status_update_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.customer.status_update_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
@@ -133,7 +121,3 @@ export const prefetchCustomer = async (queryClient: any, id: string) => {
     queryFn: () => api.getCustomer(id),
   });
 };
-
-export const useCreateCustomerMutation = useCreateCustomer;
-export const useUpdateCustomerMutation = useUpdateCustomer;
-export const useDeleteCustomerMutation = useDeleteCustomer;

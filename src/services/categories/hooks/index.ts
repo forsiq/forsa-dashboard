@@ -1,7 +1,6 @@
 /** Categories Hooks - Using CrudServiceFactory + custom list hook */
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
+import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
+import { useMutationContext } from '@core/hooks/useMutationContext';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse, SuggestCategoryInput, ReviewSuggestionInput } from '../types';
@@ -13,7 +12,6 @@ const categoryService = createCrudService<Category, CreateCategoryInput, UpdateC
 
 export const categoryKeys = api.categoryKeys;
 
-// Use custom list hook to preserve CategoriesResponse shape
 export const useList = (filters: CategoryFilters = {} as any) => {
   return useQuery<CategoriesResponse>({
     queryKey: api.categoryKeys.list(filters),
@@ -39,9 +37,7 @@ export const useStats = () => {
 };
 
 export const useCreate = (options?: any) => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
     ...options,
@@ -50,17 +46,14 @@ export const useCreate = (options?: any) => {
       toast.success(t('toast.category.created'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.category.create_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.category.create_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
 
 export const useUpdate = (options?: any) => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
     ...options,
@@ -70,9 +63,8 @@ export const useUpdate = (options?: any) => {
       toast.success(t('toast.category.updated'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.category.update_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.category.update_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
@@ -81,9 +73,7 @@ export const useReorderCategories = (options?: {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t } = useMutationContext();
   return useMutation({
     mutationFn: (ids: string[]) => api.reorderCategories(ids),
     onSuccess: () => {
@@ -99,9 +89,7 @@ export const useReorderCategories = (options?: {
 };
 
 export const useDelete = (options?: any) => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t } = useMutationContext();
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
     onMutate: async (id) => {
@@ -117,7 +105,7 @@ export const useDelete = (options?: any) => {
       });
       return { previousData };
     },
-    onError: (_err: any, _id: any, context: any) => {
+    onError: (_err: unknown, _id: any, context: any) => {
       if (context?.previousData) {
         context.previousData.forEach(([key, data]: [any, any]) => {
           queryClient.setQueryData(key, data);
@@ -136,7 +124,6 @@ export const useDelete = (options?: any) => {
   });
 };
 
-// Aliases for existing code
 export const useGetCategories = useList;
 export const useGetCategory = useById;
 export const useGetCategoryStats = useStats;
@@ -144,7 +131,6 @@ export const useCreateCategoryMutation = useCreate;
 export const useUpdateCategoryMutation = useUpdate;
 export const useDeleteCategoryMutation = useDelete;
 
-// Tree & Hierarchy hooks
 export function useCategoryTree() {
   return useQuery({
     queryKey: api.categoryKeys.tree(),
@@ -167,11 +153,8 @@ export function useCategoryChildren(parentId: string | number | null, enabled = 
   });
 }
 
-// Suggestion hooks
 export function useSuggestCategory(options?: any) {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: SuggestCategoryInput) => api.suggestCategory(input),
     ...options,
@@ -181,9 +164,8 @@ export function useSuggestCategory(options?: any) {
       toast.success(t('toast.category.suggestion_submitted'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.category.suggestion_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.category.suggestion_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 }
@@ -196,7 +178,7 @@ export function useCategorySuggestions(status?: string) {
 }
 
 export function useReviewSuggestion(options?: any) {
-  const queryClient = useQueryClient();
+  const { queryClient } = useMutationContext();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReviewSuggestionInput }) =>
       api.reviewSuggestion(id, input),

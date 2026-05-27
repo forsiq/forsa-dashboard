@@ -1,8 +1,6 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
+import { useQuery, useMutation, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
 import { useErrorHandler } from '@core/hooks';
-import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
+import { useMutationContext } from '@core/hooks/useMutationContext';
 import { listingApi } from './listing-api';
 import type {
   ProductListing,
@@ -10,8 +8,6 @@ import type {
   CreateListingInput,
   UpdateListingInput,
   ListingFilters,
-  DeployAuctionInput,
-  DeployGroupBuyInput,
 } from '../../../types/services/listings.types';
 
 const listingKeys = {
@@ -73,10 +69,7 @@ export function useGetListingDeals(id: number, enabled = true) {
 }
 
 export function useCreateListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (input: CreateListingInput) => listingApi.create(input),
@@ -84,18 +77,14 @@ export function useCreateListing() {
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
       toast.success(t('toast.listing.created'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.listing.create_failed', { detail }), 8000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.listing.create_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useUpdateListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateListingInput }) =>
@@ -105,18 +94,14 @@ export function useUpdateListing() {
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
       toast.success(t('toast.listing.updated'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.listing.update_failed', { detail }), 8000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.listing.update_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useDeleteListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number) => listingApi.delete(id),
@@ -136,14 +121,13 @@ export function useDeleteListing() {
       });
       return { previousData };
     },
-    onError: (error: any, _id, context) => {
+    onError: (error: unknown, _id, context) => {
       if (context?.previousData) {
         context.previousData.forEach(([key, data]) => {
           queryClient.setQueryData(key, data);
         });
       }
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.listing.delete_failed', { detail }), 8000);
+      toast.error(t('toast.listing.delete_failed', { detail: getErrorDetail(error) }), 8000);
     },
     onSuccess: async (_void, id) => {
       queryClient.removeQueries({ queryKey: listingKeys.detail(id) });
@@ -165,10 +149,7 @@ export function useDeleteListing() {
 }
 
 export function useDeployAsAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, mapApiError } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, any> }) =>
@@ -189,10 +170,7 @@ export function useDeployAsAuction() {
 }
 
 export function useDeployAsGroupBuy() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, mapApiError } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, any> }) =>
@@ -212,10 +190,7 @@ export function useDeployAsGroupBuy() {
 }
 
 export function useSubmitListingForReview() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number) => listingApi.submitForReview(id),
@@ -225,8 +200,7 @@ export function useSubmitListingForReview() {
       toast.success(t('approval.messages.submitted'));
     },
     onError: (error: unknown) => {
-      const detail = mapApiError(error) || (error as any)?.message || t('toast.unknown_error');
-      toast.error(detail, 8000);
+      toast.error(getErrorDetail(error), 8000);
     },
   });
 }

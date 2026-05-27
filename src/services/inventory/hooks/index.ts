@@ -1,7 +1,6 @@
 /** Inventory Hooks - Using CrudServiceFactory + custom hooks */
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
+import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
+import { useMutationContext } from '@core/hooks/useMutationContext';
 import * as api from '../api/products';
 import type { ProductFilters, ProductsResponse } from '../types';
 
@@ -32,26 +31,21 @@ export const useStats = () => {
 };
 
 export const useCreate = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: any) => api.createProduct(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
       toast.success(t('toast.inventory.created'));
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.inventory.create_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.inventory.create_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
 
 export const useUpdate = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
   return useMutation({
     mutationFn: (input: any) => api.updateProduct(input),
     onSuccess: (data) => {
@@ -59,17 +53,14 @@ export const useUpdate = () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
       toast.success(t('toast.inventory.updated'));
     },
-    onError: (error: any) => {
-      const detail = error?.message || t('toast.unknown_error');
-      toast.error(t('toast.inventory.update_failed', { detail }), 6000);
+    onError: (error: unknown) => {
+      toast.error(t('toast.inventory.update_failed', { detail: getErrorDetail(error) }), 6000);
     },
   });
 };
 
 export const useDelete = () => {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
+  const { queryClient, toast, t } = useMutationContext();
   return useMutation({
     mutationFn: (id: string) => api.deleteProduct(id),
     onMutate: async (id) => {
@@ -99,10 +90,3 @@ export const useDelete = () => {
     },
   });
 };
-
-export const useGetProducts = useList;
-export const useGetProduct = useById;
-export const useGetInventoryStats = useStats;
-export const useCreateProduct = useCreate;
-export const useUpdateProduct = useUpdate;
-export const useDeleteProduct = useDelete;

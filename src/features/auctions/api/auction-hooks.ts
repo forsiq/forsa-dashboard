@@ -5,10 +5,9 @@
 
 import { useQuery, useMutation, useQueryClient, type UseQueryResult, keepPreviousData } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
 import { useErrorHandler } from '@core/hooks';
-import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
+import { useMutationContext } from '@core/hooks/useMutationContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import Cookies from 'js-cookie';
 import { auctionApi, bidApi, liveMonitorApi, settlementApi, moderationApi } from './auction-api';
 import type {
@@ -189,10 +188,7 @@ export function useGetMyBids(page = 1, limit = 20) {
  * Create a new auction
  */
 export function useCreateAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (input: AuctionCreateInput) => auctionApi.create(input),
@@ -202,8 +198,7 @@ export function useCreateAuction() {
       toast.success(t('toast.auction.created'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.create_failed', { detail }), 8000);
+      toast.error(t('toast.auction.create_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
@@ -212,10 +207,7 @@ export function useCreateAuction() {
  * Update an existing auction
  */
 export function useUpdateAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (input: AuctionUpdateInput) => auctionApi.update(Number(input.id), input),
@@ -226,8 +218,7 @@ export function useUpdateAuction() {
       toast.success(t('toast.auction.updated'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.update_failed', { detail }), 8000);
+      toast.error(t('toast.auction.update_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
@@ -236,10 +227,7 @@ export function useUpdateAuction() {
  * Delete an auction
  */
 export function useDeleteAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number) => auctionApi.delete(id),
@@ -262,8 +250,7 @@ export function useDeleteAuction() {
           queryClient.setQueryData(key, data);
         });
       }
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.delete_failed', { detail }), 8000);
+      toast.error(t('toast.auction.delete_failed', { detail: getErrorDetail(error) }), 8000);
     },
     onSuccess: async (_data, id) => {
       queryClient.removeQueries({ queryKey: auctionKeys.detail(id) });
@@ -286,10 +273,7 @@ export function useDeleteAuction() {
  * Place a bid
  */
 export function usePlaceBid() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (input: BidCreateInput & { auctionId: number }) => 
@@ -300,8 +284,7 @@ export function usePlaceBid() {
       toast.success(t('toast.auction.bid_placed'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.bid_failed', { detail }), 8000);
+      toast.error(t('toast.auction.bid_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
@@ -310,10 +293,7 @@ export function usePlaceBid() {
  * Toggle watch status (optimistic update on detail + watched caches)
  */
 export function useToggleWatch() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ auctionId, isLiked }: { auctionId: number; isLiked: boolean }) =>
@@ -367,9 +347,8 @@ export function useToggleWatch() {
       if (context?.previousWatched) {
         queryClient.setQueryData(auctionKeys.watched(), context.previousWatched);
       }
-      const detail = mapApiError(error) || (error as Error)?.message || t('toast.unknown_error');
       toast.error(
-        `${t('auction.watchlist.update_failed')}: ${detail}`,
+        `${t('auction.watchlist.update_failed')}: ${getErrorDetail(error)}`,
         8000,
       );
     },
@@ -423,10 +402,7 @@ function createLifecycleHook(
   errorKey: string,
 ) {
   return function useLifecycleAction() {
-    const queryClient = useQueryClient();
-    const toast = useToast();
-    const mapApiError = useMapApiValidationError();
-    const { t } = useLanguage();
+    const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
     return useMutation({
       mutationFn: (id: number | string) => action(id),
@@ -436,9 +412,8 @@ function createLifecycleHook(
         queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
         toast.success(t(successKey));
       },
-      onError: (error: any) => {
-        const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-        toast.error(`${t(errorKey)}: ${detail}`, 8000);
+      onError: (error: unknown) => {
+        toast.error(`${t(errorKey)}: ${getErrorDetail(error)}`, 8000);
       },
     });
   };
@@ -517,10 +492,7 @@ export function useTickerHistory(limit = 100) {
 }
 
 export function useExtendAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, minutes }: { id: number | string; minutes?: number }) =>
@@ -533,17 +505,13 @@ export function useExtendAuction() {
       toast.success(t('toast.auction.extended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.extend_failed', { detail }), 8000);
+      toast.error(t('toast.auction.extend_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useRescheduleAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, endTime }: { id: number | string; endTime: string }) =>
@@ -557,8 +525,7 @@ export function useRescheduleAuction() {
       toast.success(t('toast.auction.rescheduled'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.reschedule_failed', { detail }), 8000);
+      toast.error(t('toast.auction.reschedule_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
@@ -581,10 +548,7 @@ export function useSettlements(filters?: { status?: string; page?: number; limit
 }
 
 export function useUpdatePaymentStatus() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, paymentStatus }: { id: number | string; paymentStatus: string }) =>
@@ -594,16 +558,13 @@ export function useUpdatePaymentStatus() {
       toast.success(t('toast.auction.payment_updated'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.payment_update_failed', { detail }), 8000);
+      toast.error(t('toast.auction.payment_update_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useNudgeWinner() {
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.nudgeWinner(id),
@@ -615,16 +576,13 @@ export function useNudgeWinner() {
       }
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.nudge_failed', { detail }), 8000);
+      toast.error(t('toast.auction.nudge_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useOfferToUnderbidder() {
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.offerToUnderbidder(id),
@@ -636,8 +594,7 @@ export function useOfferToUnderbidder() {
       }
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.offer_failed', { detail }), 8000);
+      toast.error(t('toast.auction.offer_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
@@ -708,10 +665,7 @@ export function useAllBids(filters?: {
 }
 
 export function useVoidBid() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (bidId: number | string) => moderationApi.voidBid(bidId),
@@ -722,17 +676,13 @@ export function useVoidBid() {
       toast.success(t('toast.auction.bid_voided'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.bid_void_failed', { detail }), 8000);
+      toast.error(t('toast.auction.bid_void_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useSuspendUser() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.suspendUser(userId),
@@ -741,16 +691,13 @@ export function useSuspendUser() {
       toast.success(t('toast.auction.user_suspended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.suspend_failed', { detail }), 8000);
+      toast.error(t('toast.auction.suspend_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useUnsuspendUser() {
-  const toast = useToast();
-  const mapApiError = useMapApiValidationError();
-  const { t } = useLanguage();
+  const { toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.unsuspendUser(userId),
@@ -758,17 +705,13 @@ export function useUnsuspendUser() {
       toast.success(t('toast.auction.user_unsuspended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(t('toast.auction.unsuspend_failed', { detail }), 8000);
+      toast.error(t('toast.auction.unsuspend_failed', { detail: getErrorDetail(error) }), 8000);
     },
   });
 }
 
 export function useSubmitAuctionForReview() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number | string) => auctionApi.submitForReview(id),
@@ -778,8 +721,7 @@ export function useSubmitAuctionForReview() {
       toast.success(t('approval.messages.submitted'));
     },
     onError: (error: unknown) => {
-      const detail = mapApiError(error) || (error as any)?.message || t('toast.unknown_error');
-      toast.error(detail, 8000);
+      toast.error(getErrorDetail(error), 8000);
     },
   });
 }

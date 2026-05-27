@@ -1,8 +1,6 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { useToast } from '@core/contexts/ToastContext';
-import { useLanguage } from '@core/contexts/LanguageContext';
+import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
 import { useErrorHandler } from '@core/hooks';
-import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
+import { useMutationContext } from '@core/hooks/useMutationContext';
 import { moderationService } from '../services/moderationService';
 import type { PendingResponse } from '../services/moderationService';
 
@@ -25,10 +23,7 @@ export function usePendingItems() {
 }
 
 export function useApproveListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number | string) => moderationService.approveListing(id),
@@ -36,18 +31,14 @@ export function useApproveListing() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('approval.messages.approved'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(`${t('toast.moderation.listing_approve_failed')}: ${detail}`, 8000);
+    onError: (error: unknown) => {
+      toast.error(`${t('toast.moderation.listing_approve_failed')}: ${getErrorDetail(error)}`, 8000);
     },
   });
 }
 
 export function useRejectListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
@@ -56,18 +47,14 @@ export function useRejectListing() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('approval.messages.rejected'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(`${t('toast.moderation.listing_reject_failed')}: ${detail}`, 8000);
+    onError: (error: unknown) => {
+      toast.error(`${t('toast.moderation.listing_reject_failed')}: ${getErrorDetail(error)}`, 8000);
     },
   });
 }
 
 export function useRequestChangesListing() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
@@ -76,18 +63,14 @@ export function useRequestChangesListing() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('approval.messages.changes_requested'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(`${t('toast.moderation.listing_changes_failed')}: ${detail}`, 8000);
+    onError: (error: unknown) => {
+      toast.error(`${t('toast.moderation.listing_changes_failed')}: ${getErrorDetail(error)}`, 8000);
     },
   });
 }
 
 export function useApproveAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: (id: number | string) => moderationService.approveAuction(id),
@@ -95,8 +78,8 @@ export function useApproveAuction() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('approval.messages.approved'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+    onError: (error: unknown) => {
+      const detail = getErrorDetail(error);
       const friendly = detail.includes('already approved')
         ? t('moderation.approval.error_already_approved')
         : detail;
@@ -106,10 +89,7 @@ export function useApproveAuction() {
 }
 
 export function useRejectAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
@@ -118,18 +98,14 @@ export function useRejectAuction() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('toast.moderation.auction_rejected'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(`${t('toast.moderation.auction_reject_failed')}: ${detail}`, 8000);
+    onError: (error: unknown) => {
+      toast.error(`${t('toast.moderation.auction_reject_failed')}: ${getErrorDetail(error)}`, 8000);
     },
   });
 }
 
 export function useRequestChangesAuction() {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useLanguage();
-  const mapApiError = useMapApiValidationError();
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
@@ -138,9 +114,8 @@ export function useRequestChangesAuction() {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
       toast.success(t('toast.moderation.auction_changes_requested'));
     },
-    onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
-      toast.error(`${t('toast.moderation.auction_changes_failed')}: ${detail}`, 8000);
+    onError: (error: unknown) => {
+      toast.error(`${t('toast.moderation.auction_changes_failed')}: ${getErrorDetail(error)}`, 8000);
     },
   });
 }
