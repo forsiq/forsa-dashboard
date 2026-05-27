@@ -20,7 +20,6 @@ import {
   Copy,
   FileText,
   ExternalLink,
-  SendHorizonal,
   MoreVertical,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -30,7 +29,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useSubmitAuctionForReview, useWatchedAuctions } from '../api';
+import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useWatchedAuctions } from '../api';
 import { WatchlistToggleButton } from '../components/WatchlistToggleButton';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
@@ -75,30 +74,8 @@ export const AuctionDetails: React.FC = () => {
   const bids = bidsResponse?.data || [];
   const placeBid = usePlaceBid();
   const cancelAuction = useCancelAuction();
-  const submitForReviewMutation = useSubmitAuctionForReview();
   const { data: watchedAuctions } = useWatchedAuctions();
   const { openConfirm, ConfirmModal } = useConfirmModal();
-
-  // Approval status helpers
-  const approvalStatus = (auction as any)?.approvalStatus || 'draft';
-  const rejectionReason = (auction as any)?.rejectionReason || '';
-  const canSubmitForReview = ['draft', 'rejected', 'changes_requested'].includes(approvalStatus);
-
-  const approvalStatusLabel: Record<string, string> = {
-    draft: t('approval.status.draft') || 'Draft',
-    pending_review: t('approval.status.pending_review') || 'Pending Review',
-    approved: t('approval.status.approved') || 'Approved',
-    rejected: t('approval.status.rejected') || 'Rejected',
-    changes_requested: t('approval.status.changes_requested') || 'Changes Requested',
-  };
-
-  const approvalStatusVariant: Record<string, 'inactive' | 'warning' | 'success' | 'failed'> = {
-    draft: 'inactive',
-    pending_review: 'warning',
-    approved: 'success',
-    rejected: 'failed',
-    changes_requested: 'warning',
-  };
 
   const [bidAmount, setBidAmount] = useState<string>('');
 
@@ -207,11 +184,6 @@ export const AuctionDetails: React.FC = () => {
                 variant={auction.status === 'active' ? 'success' : auction.status === 'ended' ? 'failed' : 'warning'}
                 size="sm"
               />
-              <StatusBadge
-                status={approvalStatusLabel[approvalStatus] || approvalStatus}
-                variant={approvalStatusVariant[approvalStatus] || 'inactive'}
-                size="sm"
-              />
               <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">#{auction.id}</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words lg:truncate">
@@ -226,27 +198,6 @@ export const AuctionDetails: React.FC = () => {
             'lg:ms-auto lg:w-auto lg:shrink-0 lg:flex-nowrap',
           )}
         >
-          {/* Submit for Review */}
-          {canSubmitForReview && (
-            <AmberButton
-              className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
-              disabled={submitForReviewMutation.isPending}
-              onClick={() => openConfirm({
-                title: t('approval.actions.submit') || 'Submit for Review',
-                message: t('approval.messages.submit_confirm') || 'Are you sure you want to submit this auction for review?',
-                onConfirm: () => submitForReviewMutation.mutate(auction.id),
-                variant: 'info',
-              })}
-            >
-              {submitForReviewMutation.isPending ? (
-                <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <SendHorizonal className="w-3.5 h-3.5" />
-              )}
-              {t('approval.actions.submit') || 'Submit for Review'}
-            </AmberButton>
-          )}
-
           {/* Lifecycle Buttons — Cancel only */}
           {!['ended', 'sold', 'cancelled'].includes(auction?.status) ? (
             <AmberButton
@@ -319,23 +270,6 @@ export const AuctionDetails: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Rejection / Changes Requested Reason */}
-      {(approvalStatus === 'rejected' || approvalStatus === 'changes_requested') && rejectionReason && (
-        <div className="p-5 rounded-2xl bg-danger/10 border border-danger/20 flex items-start gap-4">
-          <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-4 h-4 text-danger" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-black text-danger uppercase">
-              {approvalStatus === 'rejected'
-                ? (t('moderation.rejection_reason') || 'Rejection Reason')
-                : (t('approval.status.changes_requested') || 'Changes Requested')}
-            </p>
-            <p className="text-sm text-zinc-text font-medium">{rejectionReason}</p>
-          </div>
-        </div>
-      )}
 
       <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6", isMobile && "pb-24")}>
         {/* Left Column - Image + Bids */}
@@ -674,27 +608,6 @@ export const AuctionDetails: React.FC = () => {
                 <AlertCircle className="w-4 h-4" />
               </div>
               <span className="text-sm font-bold text-danger">{t('auction.lifecycle.cancel') || 'Cancel'}</span>
-            </button>
-          )}
-
-          {canSubmitForReview && (
-            <button
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
-              onClick={() => {
-                setIsActionsOpen(false);
-                openConfirm({
-                  title: t('approval.actions.submit') || 'Submit for Review',
-                  message: t('approval.messages.submit_confirm') || 'Are you sure?',
-                  onConfirm: () => submitForReviewMutation.mutate(auction.id),
-                  variant: 'info',
-                });
-              }}
-              disabled={submitForReviewMutation.isPending}
-            >
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                <SendHorizonal className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-bold text-zinc-text">{t('approval.actions.submit') || 'Submit for Review'}</span>
             </button>
           )}
         </div>
