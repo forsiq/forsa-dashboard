@@ -234,9 +234,13 @@ export const ar: Record<string, string> = {
   "auction.status.cancelled": "ملغي",
   "auction.status.draft": "مسودة",
   "auction.status.scheduled": "مجدول",
+  "auction.status.live": "مباشر",
+  "auction.bids": "مزايدات",
   "status.نشط": "نشط",
 
   "common.error_occurred": "حدث خطأ",
+  "common.prev": "السابق",
+  "common.next": "التالي",
   "common.manufacturer": "الشركة المصنّعة",
   "common.origin": "بلد المنشأ",
   "common.warranty": "الضمان",

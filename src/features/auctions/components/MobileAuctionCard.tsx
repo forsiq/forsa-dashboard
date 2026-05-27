@@ -30,9 +30,19 @@ export const MobileAuctionCard: React.FC<MobileAuctionCardProps> = ({ auction, o
   const countdownLabel = useCountdown(auction.endTime);
   const isLive = auction.status === 'active';
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={cn(
         'w-full text-start bg-obsidian-card rounded-xl border border-white/5 overflow-hidden',
         'hover:border-white/10 transition-all active:scale-[0.98]',
@@ -105,6 +115,6 @@ export const MobileAuctionCard: React.FC<MobileAuctionCardProps> = ({ auction, o
           )}
         </div>
       </div>
-    </button>
+    </div>
   );
 };
