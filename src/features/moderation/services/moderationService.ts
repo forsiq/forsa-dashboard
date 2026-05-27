@@ -23,11 +23,35 @@ export interface PendingResponse {
   auctions: PendingItem[];
 }
 
+function mapPendingItem(raw: Record<string, unknown>): PendingItem {
+  return {
+    id: Number(raw.id),
+    title: String(raw.title ?? ''),
+    merchantName: String(raw.merchantName ?? raw.sellerName ?? '—'),
+    merchantId: String(raw.sellerId ?? raw.merchantId ?? ''),
+    submittedAt: String(raw.submittedAt ?? raw.createdAt ?? new Date().toISOString()),
+    category: String(raw.categoryName ?? '—'),
+    imageUrl: (raw.imageUrl as string | null | undefined) ?? null,
+    status: String(raw.approvalStatus ?? raw.status ?? 'unknown'),
+  };
+}
+
+function filterPendingReview(items: PendingItem[]): PendingItem[] {
+  return items.filter((item) => item.status === 'pending_review');
+}
+
 export const moderationService = {
   getPending: async (): Promise<PendingResponse> => {
     const client = baseClient.getInstance();
     const response = await client.get('/moderation/pending');
-    return response.data.data || response.data;
+    const payload = response.data.data || response.data;
+    const listings = filterPendingReview(
+      (payload.listings ?? []).map((item: Record<string, unknown>) => mapPendingItem(item)),
+    );
+    const auctions = filterPendingReview(
+      (payload.auctions ?? []).map((item: Record<string, unknown>) => mapPendingItem(item)),
+    );
+    return { listings, auctions };
   },
 
   approveListing: async (id: number | string): Promise<void> => {

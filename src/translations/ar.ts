@@ -1174,6 +1174,8 @@ export const ar: Record<string, string> = {
   "moderation.approval.reject": "رفض",
   "moderation.approval.request_changes": "طلب تعديلات",
   "moderation.approval.approve": "موافقة",
+  "moderation.approval.error_approve_auction": "فشلت الموافقة على المزاد",
+  "moderation.approval.error_already_approved": "هذا العنصر تمت الموافقة عليه مسبقاً",
 
   // إدارة التجار
   "merchant.title": "التجار",

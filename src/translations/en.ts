@@ -1173,6 +1173,8 @@ export const en: Record<string, string> = {
   "moderation.approval.reject": "Reject",
   "moderation.approval.request_changes": "Request Changes",
   "moderation.approval.approve": "Approve",
+  "moderation.approval.error_approve_auction": "Failed to approve auction",
+  "moderation.approval.error_already_approved": "This item is already approved",
 
   // Merchant Management
   "merchant.title": "Merchants",

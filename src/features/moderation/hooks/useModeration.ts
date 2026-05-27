@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { useErrorHandler } from '@core/hooks';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { moderationService } from '../services/moderationService';
@@ -82,17 +83,21 @@ export function useRequestChangesListing() {
 export function useApproveAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number | string) => moderationService.approveAuction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Auction approved successfully');
+      toast.success(t('approval.messages.approved') || 'Auction approved successfully');
     },
     onError: (error: any) => {
       const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to approve auction: ${detail}`, 8000);
+      const friendly = detail.includes('already approved')
+        ? (t('moderation.approval.error_already_approved') || 'This item is already approved')
+        : detail;
+      toast.error(`${t('moderation.approval.error_approve_auction') || 'Failed to approve auction'}: ${friendly}`, 8000);
     },
   });
 }
