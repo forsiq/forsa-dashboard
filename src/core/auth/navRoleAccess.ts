@@ -18,7 +18,8 @@ export const NAV_ROLE_MAP: Record<string, UserRole[]> = {
   '/reports/customer-insights': ['admin', 'customer_support'],
   '/reports/auction-performance': ['admin', 'merchant', 'product_analyst'],
   '/watchlist': ['admin', 'merchant'],
-  '/my-bids': ['admin'],
+  /** Consumer/bidder page — not shown in merchant dashboard nav */
+  '/my-bids': [],
   '/amazon-import': ['admin', 'merchant'],
 };
 

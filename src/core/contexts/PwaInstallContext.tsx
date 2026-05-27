@@ -3,7 +3,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useIsMobile } from '@core/hooks/useIsMobile';
 import { usePwaInstall, type UsePwaInstallResult } from '@core/hooks/usePwaInstall';
-import { InstallPromptSheet } from '@core/components/Mobile/InstallPromptSheet';
 
 interface PwaInstallContextValue extends UsePwaInstallResult {
   isSheetOpen: boolean;
@@ -37,14 +36,6 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
   return (
     <PwaInstallContext.Provider value={value}>
       {children}
-      <InstallPromptSheet
-        isOpen={isSheetOpen}
-        onClose={closeInstallSheet}
-        platform={installState.platform}
-        onInstall={installState.install}
-        isInstalling={installState.isInstalling}
-        isInstalled={installState.isInstalled}
-      />
     </PwaInstallContext.Provider>
   );
 }

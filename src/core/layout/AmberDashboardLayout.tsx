@@ -19,6 +19,8 @@ import { LayoutMobileHeader } from '@core/components/Mobile/LayoutMobileHeader';
 import { BottomTabBar } from '@core/components/Mobile/BottomTabBar';
 import { NavigationSheet } from '@core/components/Mobile/NavigationSheet';
 import { InstallPromptBannerGate } from '@core/components/Mobile/InstallPromptBannerGate';
+import { usePwaInstallContext } from '@core/contexts/PwaInstallContext';
+import { InstallPromptSheet } from '@core/components/Mobile/InstallPromptSheet';
 
 const SIDEBAR_COLLAPSED_KEY = 'forsa-sidebar-collapsed';
 const sidebarCollapseListeners = new Set<() => void>();
@@ -87,6 +89,9 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
   const closeNavSheet = useCallback(() => setIsNavSheetOpen(false), []);
 
+  // PWA install sheet state from context
+  const { isSheetOpen: isInstallSheetOpen, closeInstallSheet, platform, install: pwaInstall, isInstalling, isInstalled } = usePwaInstallContext();
+
   // Prevent a stuck mobile overlay after navigation or desktop resize.
   useEffect(() => {
     closeSidebar();
@@ -120,6 +125,17 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
     <NavigationSheet isOpen={isMobile && isNavSheetOpen} onClose={closeNavSheet} />
   );
 
+  const installSheet = (
+    <InstallPromptSheet
+      isOpen={isInstallSheetOpen}
+      onClose={closeInstallSheet}
+      platform={platform}
+      onInstall={pwaInstall}
+      isInstalling={isInstalling}
+      isInstalled={isInstalled}
+    />
+  );
+
   // ── Mobile layout ────────────────────────────────────────────────────
   if (isMobile) {
     return (
@@ -133,6 +149,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
           <BottomTabBar onMorePress={() => setIsNavSheetOpen(true)} />
         </div>
         {navSheet}
+        {installSheet}
       </>
     );
   }
@@ -186,6 +203,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
       </div>
     </div>
     {navSheet}
+    {installSheet}
     </>
   );
 };
