@@ -27,17 +27,18 @@ export function usePendingItems() {
 export function useApproveListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (id: number | string) => moderationService.approveListing(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Listing approved successfully');
+      toast.success(t('approval.messages.approved'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to approve listing: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(`${t('toast.moderation.listing_approve_failed')}: ${detail}`, 8000);
     },
   });
 }
@@ -45,6 +46,7 @@ export function useApproveListing() {
 export function useRejectListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -52,11 +54,11 @@ export function useRejectListing() {
       moderationService.rejectListing(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Listing rejected');
+      toast.success(t('approval.messages.rejected'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to reject listing: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(`${t('toast.moderation.listing_reject_failed')}: ${detail}`, 8000);
     },
   });
 }
@@ -64,6 +66,7 @@ export function useRejectListing() {
 export function useRequestChangesListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -71,11 +74,11 @@ export function useRequestChangesListing() {
       moderationService.requestChangesListing(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Changes requested for listing');
+      toast.success(t('approval.messages.changes_requested'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to request changes: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(`${t('toast.moderation.listing_changes_failed')}: ${detail}`, 8000);
     },
   });
 }
@@ -90,14 +93,14 @@ export function useApproveAuction() {
     mutationFn: (id: number | string) => moderationService.approveAuction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success(t('approval.messages.approved') || 'Auction approved successfully');
+      toast.success(t('approval.messages.approved'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
       const friendly = detail.includes('already approved')
-        ? (t('moderation.approval.error_already_approved') || 'This item is already approved')
+        ? t('moderation.approval.error_already_approved')
         : detail;
-      toast.error(`${t('moderation.approval.error_approve_auction') || 'Failed to approve auction'}: ${friendly}`, 8000);
+      toast.error(`${t('moderation.approval.error_approve_auction')}: ${friendly}`, 8000);
     },
   });
 }
@@ -105,6 +108,7 @@ export function useApproveAuction() {
 export function useRejectAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -112,11 +116,11 @@ export function useRejectAuction() {
       moderationService.rejectAuction(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Auction rejected');
+      toast.success(t('toast.moderation.auction_rejected'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to reject auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(`${t('toast.moderation.auction_reject_failed')}: ${detail}`, 8000);
     },
   });
 }
@@ -124,6 +128,7 @@ export function useRejectAuction() {
 export function useRequestChangesAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -131,11 +136,11 @@ export function useRequestChangesAuction() {
       moderationService.requestChangesAuction(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
-      toast.success('Changes requested for auction');
+      toast.success(t('toast.moderation.auction_changes_requested'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to request changes: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(`${t('toast.moderation.auction_changes_failed')}: ${detail}`, 8000);
     },
   });
 }

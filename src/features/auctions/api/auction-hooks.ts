@@ -192,17 +192,18 @@ export function useCreateAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (input: AuctionCreateInput) => auctionApi.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
-      toast.success('Auction created successfully');
+      toast.success(t('toast.auction.created'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to create auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.create_failed', { detail }), 8000);
     },
   });
 }
@@ -214,6 +215,7 @@ export function useUpdateAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (input: AuctionUpdateInput) => auctionApi.update(Number(input.id), input),
@@ -221,11 +223,11 @@ export function useUpdateAuction() {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
-      toast.success('Auction updated successfully');
+      toast.success(t('toast.auction.updated'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to update auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.update_failed', { detail }), 8000);
     },
   });
 }
@@ -237,6 +239,7 @@ export function useDeleteAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (id: number) => auctionApi.delete(id),
@@ -259,8 +262,8 @@ export function useDeleteAuction() {
           queryClient.setQueryData(key, data);
         });
       }
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to delete auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.delete_failed', { detail }), 8000);
     },
     onSuccess: async (_data, id) => {
       queryClient.removeQueries({ queryKey: auctionKeys.detail(id) });
@@ -274,7 +277,7 @@ export function useDeleteAuction() {
       });
       await queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       await queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
-      toast.success('Auction deleted successfully');
+      toast.success(t('toast.auction.deleted'));
     },
   });
 }
@@ -286,6 +289,7 @@ export function usePlaceBid() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (input: BidCreateInput & { auctionId: number }) => 
@@ -293,11 +297,11 @@ export function usePlaceBid() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(variables.auctionId) });
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'bids', variables.auctionId] });
-      toast.success('Bid placed successfully');
+      toast.success(t('toast.auction.bid_placed'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to place bid: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.bid_failed', { detail }), 8000);
     },
   });
 }
@@ -363,7 +367,7 @@ export function useToggleWatch() {
       if (context?.previousWatched) {
         queryClient.setQueryData(auctionKeys.watched(), context.previousWatched);
       }
-      const detail = mapApiError(error) || (error as Error)?.message || 'Unknown error';
+      const detail = mapApiError(error) || (error as Error)?.message || t('toast.unknown_error');
       toast.error(
         `${t('auction.watchlist.update_failed')}: ${detail}`,
         8000,
@@ -415,13 +419,14 @@ export function useWatchedAuctions() {
 
 function createLifecycleHook(
   action: (id: number | string) => Promise<Auction>,
-  successMessage: string,
-  errorMessage: string,
+  successKey: string,
+  errorKey: string,
 ) {
   return function useLifecycleAction() {
     const queryClient = useQueryClient();
     const toast = useToast();
     const mapApiError = useMapApiValidationError();
+    const { t } = useLanguage();
 
     return useMutation({
       mutationFn: (id: number | string) => action(id),
@@ -429,11 +434,11 @@ function createLifecycleHook(
         queryClient.invalidateQueries({ queryKey: auctionKeys.detail(data.id) });
         queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
         queryClient.invalidateQueries({ queryKey: auctionKeys.stats() });
-        toast.success(successMessage);
+        toast.success(t(successKey));
       },
       onError: (error: any) => {
-        const detail = mapApiError(error) || error?.message || 'Unknown error';
-        toast.error(`${errorMessage}: ${detail}`, 8000);
+        const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+        toast.error(`${t(errorKey)}: ${detail}`, 8000);
       },
     });
   };
@@ -441,32 +446,32 @@ function createLifecycleHook(
 
 export const useStartAuction = createLifecycleHook(
   auctionApi.start.bind(auctionApi),
-  'Auction started successfully',
-  'Failed to start auction',
+  'toast.auction.started',
+  'toast.auction.start_failed',
 );
 
 export const usePauseAuction = createLifecycleHook(
   auctionApi.pause.bind(auctionApi),
-  'Auction paused successfully',
-  'Failed to pause auction',
+  'toast.auction.paused',
+  'toast.auction.pause_failed',
 );
 
 export const useResumeAuction = createLifecycleHook(
   auctionApi.resume.bind(auctionApi),
-  'Auction resumed successfully',
-  'Failed to resume auction',
+  'toast.auction.resumed',
+  'toast.auction.resume_failed',
 );
 
 export const useEndAuction = createLifecycleHook(
   auctionApi.end.bind(auctionApi),
-  'Auction ended successfully',
-  'Failed to end auction',
+  'toast.auction.ended',
+  'toast.auction.end_failed',
 );
 
 export const useCancelAuction = createLifecycleHook(
   auctionApi.cancel.bind(auctionApi),
-  'Auction cancelled successfully',
-  'Failed to cancel auction',
+  'toast.auction.cancelled',
+  'toast.auction.cancel_failed',
 );
 
 // ============================================================================
@@ -515,6 +520,7 @@ export function useExtendAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: ({ id, minutes }: { id: number | string; minutes?: number }) =>
@@ -524,11 +530,11 @@ export function useExtendAuction() {
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'] });
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'] });
-      toast.success('Auction extended successfully');
+      toast.success(t('toast.auction.extended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to extend auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.extend_failed', { detail }), 8000);
     },
   });
 }
@@ -537,6 +543,7 @@ export function useRescheduleAuction() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: ({ id, endTime }: { id: number | string; endTime: string }) =>
@@ -547,11 +554,11 @@ export function useRescheduleAuction() {
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'critical'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'live-stats'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: auctionKeys.stats(), refetchType: 'all' });
-      toast.success('Auction rescheduled successfully');
+      toast.success(t('toast.auction.rescheduled'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to reschedule auction: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.reschedule_failed', { detail }), 8000);
     },
   });
 }
@@ -577,17 +584,18 @@ export function useUpdatePaymentStatus() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: ({ id, paymentStatus }: { id: number | string; paymentStatus: string }) =>
       settlementApi.updatePaymentStatus(id, paymentStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'settlements'] });
-      toast.success('Payment status updated');
+      toast.success(t('toast.auction.payment_updated'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to update payment status: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.payment_update_failed', { detail }), 8000);
     },
   });
 }
@@ -595,19 +603,20 @@ export function useUpdatePaymentStatus() {
 export function useNudgeWinner() {
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.nudgeWinner(id),
     onSuccess: (data) => {
       if (data.sent) {
-        toast.success('Push notification sent to winner');
+        toast.success(t('toast.auction.nudge_sent'));
       } else {
-        toast.warning('Winner has no registered device');
+        toast.warning(t('toast.auction.nudge_no_device'));
       }
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to nudge winner: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.nudge_failed', { detail }), 8000);
     },
   });
 }
@@ -615,19 +624,20 @@ export function useNudgeWinner() {
 export function useOfferToUnderbidder() {
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (id: number | string) => settlementApi.offerToUnderbidder(id),
     onSuccess: (data) => {
       if (data.sent) {
-        toast.success('Offer sent to underbidder');
+        toast.success(t('toast.auction.offer_sent'));
       } else {
-        toast.warning('Underbidder has no registered device');
+        toast.warning(t('toast.auction.offer_no_device'));
       }
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to offer to underbidder: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.offer_failed', { detail }), 8000);
     },
   });
 }
@@ -701,6 +711,7 @@ export function useVoidBid() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (bidId: number | string) => moderationApi.voidBid(bidId),
@@ -708,11 +719,11 @@ export function useVoidBid() {
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'moderation-bids'] });
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'settlements'] });
-      toast.success('Bid voided successfully');
+      toast.success(t('toast.auction.bid_voided'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to void bid: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.bid_void_failed', { detail }), 8000);
     },
   });
 }
@@ -721,16 +732,17 @@ export function useSuspendUser() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.suspendUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'moderation-bids'] });
-      toast.success('User suspended successfully');
+      toast.success(t('toast.auction.user_suspended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to suspend user: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.suspend_failed', { detail }), 8000);
     },
   });
 }
@@ -738,15 +750,16 @@ export function useSuspendUser() {
 export function useUnsuspendUser() {
   const toast = useToast();
   const mapApiError = useMapApiValidationError();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: (userId: string) => moderationApi.unsuspendUser(userId),
     onSuccess: () => {
-      toast.success('User unsuspended successfully');
+      toast.success(t('toast.auction.user_unsuspended'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to unsuspend user: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.auction.unsuspend_failed', { detail }), 8000);
     },
   });
 }
@@ -762,10 +775,10 @@ export function useSubmitAuctionForReview() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() });
-      toast.success(t('approval.messages.submitted') || 'Auction submitted for review');
+      toast.success(t('approval.messages.submitted'));
     },
     onError: (error: unknown) => {
-      const detail = mapApiError(error) || (error as any)?.message || 'Unknown error';
+      const detail = mapApiError(error) || (error as any)?.message || t('toast.unknown_error');
       toast.error(detail, 8000);
     },
   });

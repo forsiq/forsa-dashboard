@@ -1,6 +1,7 @@
 /** Categories Hooks - Using CrudServiceFactory + custom list hook */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse, SuggestCategoryInput, ReviewSuggestionInput } from '../types';
@@ -40,16 +41,18 @@ export const useStats = () => {
 export const useCreate = (options?: any) => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (input: CreateCategoryInput) => api.createCategory(input),
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
-      toast.success('Category created successfully');
+      toast.success(t('toast.category.created'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: any) => {
-      toast.error(`Failed to create category: ${error?.message || 'Unknown error'}`, 6000);
+      const detail = error?.message || t('toast.unknown_error');
+      toast.error(t('toast.category.create_failed', { detail }), 6000);
     },
   });
 };
@@ -57,17 +60,19 @@ export const useCreate = (options?: any) => {
 export const useUpdate = (options?: any) => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (input: UpdateCategoryInput) => api.updateCategory(input),
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
-      toast.success('Category updated successfully');
+      toast.success(t('toast.category.updated'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: any) => {
-      toast.error(`Failed to update category: ${error?.message || 'Unknown error'}`, 6000);
+      const detail = error?.message || t('toast.unknown_error');
+      toast.error(t('toast.category.update_failed', { detail }), 6000);
     },
   });
 };
@@ -78,15 +83,16 @@ export const useReorderCategories = (options?: {
 }) => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (ids: string[]) => api.reorderCategories(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
-      toast.success('Category order saved');
+      toast.success(t('toast.category.order_saved'));
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
-      toast.error(error?.message || 'Failed to save category order', 6000);
+      toast.error(error?.message || t('toast.category.order_save_failed'), 6000);
       options?.onError?.(error);
     },
   });
@@ -95,6 +101,7 @@ export const useReorderCategories = (options?: {
 export const useDelete = (options?: any) => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (id: string) => api.deleteCategory(id),
     onMutate: async (id) => {
@@ -117,13 +124,13 @@ export const useDelete = (options?: any) => {
         });
       }
       if (!options?.onError) {
-        toast.error(`Failed to delete category`, 6000);
+        toast.error(t('toast.category.delete_failed'), 6000);
       }
     },
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.all });
-      toast.success('Category deleted successfully');
+      toast.success(t('toast.category.deleted'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
   });
@@ -164,17 +171,19 @@ export function useCategoryChildren(parentId: string | number | null, enabled = 
 export function useSuggestCategory(options?: any) {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (input: SuggestCategoryInput) => api.suggestCategory(input),
     ...options,
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.suggestions() });
       queryClient.invalidateQueries({ queryKey: api.categoryKeys.mySuggestions() });
-      toast.success('Category suggestion submitted for review');
+      toast.success(t('toast.category.suggestion_submitted'));
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: any) => {
-      toast.error(`Failed to submit suggestion: ${error?.message || 'Unknown error'}`, 6000);
+      const detail = error?.message || t('toast.unknown_error');
+      toast.error(t('toast.category.suggestion_failed', { detail }), 6000);
     },
   });
 }

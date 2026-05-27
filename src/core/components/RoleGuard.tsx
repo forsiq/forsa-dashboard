@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import type { UserRole } from '@features/auth/types';
 import {
   decodeJwtPayload,
@@ -19,6 +20,7 @@ interface RoleGuardProps {
 export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fallback }) => {
   const router = useRouter();
   const { warning } = useToast();
+  const { t } = useLanguage();
   const [isAllowed, setIsAllowed] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -42,10 +44,10 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
     setChecking(false);
 
     if (!allowed) {
-      warning('Access denied. Insufficient permissions.');
+      warning(t('toast.access_denied'));
       void router.replace('/dashboard');
     }
-  }, [allowedRoles, router, warning]);
+  }, [allowedRoles, router, warning, t]);
 
   if (checking) {
     return (

@@ -1,3 +1,16 @@
+/** Merchant / trader: product + media only (no channel / publish). */
+export const MERCHANT_WIZARD_STEP_IDS = ['product', 'media'] as const;
+
+export const MERCHANT_WIZARD_STEP = {
+  PRODUCT: 1,
+  MEDIA: 2,
+} as const;
+
+export const MERCHANT_STEP_LABEL_KEYS = [
+  'listing.wizard.step.product',
+  'listing.wizard.step.media',
+] as const;
+
 /** Desktop: full wizard with a dedicated details step. */
 export const DESKTOP_WIZARD_STEP_IDS = [
   'product',
@@ -51,7 +64,8 @@ export const MOBILE_STEP_LABEL_KEYS = [
 
 export type WizardStepMap =
   | typeof DESKTOP_WIZARD_STEP
-  | typeof MOBILE_WIZARD_STEP;
+  | typeof MOBILE_WIZARD_STEP
+  | typeof MERCHANT_WIZARD_STEP;
 
 export interface WizardLayout {
   isMobile: boolean;
@@ -61,7 +75,25 @@ export interface WizardLayout {
   stepLabelKeys: readonly string[];
 }
 
-export function getWizardLayout(isMobile: boolean): WizardLayout {
+export interface WizardLayoutOptions {
+  /** Trader / merchant: only product + media (steps 1–2). */
+  merchant?: boolean;
+}
+
+export function getWizardLayout(
+  isMobile: boolean,
+  options?: WizardLayoutOptions,
+): WizardLayout {
+  if (options?.merchant) {
+    return {
+      isMobile,
+      step: MERCHANT_WIZARD_STEP,
+      totalSteps: MERCHANT_WIZARD_STEP_IDS.length,
+      stepIds: MERCHANT_WIZARD_STEP_IDS,
+      stepLabelKeys: MERCHANT_STEP_LABEL_KEYS,
+    };
+  }
+
   if (isMobile) {
     return {
       isMobile: true,
@@ -91,8 +123,9 @@ export function normalizeWizardStepFromQuery(
   queryStep: number | undefined,
   maxStep: number,
   isMobile: boolean,
+  options?: WizardLayoutOptions,
 ): number {
-  const layout = getWizardLayout(isMobile);
+  const layout = getWizardLayout(isMobile, options);
   if (!queryStep || queryStep < 1) return layout.step.PRODUCT;
   const capped = Math.min(queryStep, layout.totalSteps);
   return Math.max(layout.step.PRODUCT, Math.min(maxStep, capped));
@@ -102,12 +135,13 @@ export function remapWizardStep(
   currentStep: number,
   fromMobile: boolean,
   toMobile: boolean,
+  options?: WizardLayoutOptions,
 ): number {
   if (fromMobile === toMobile) {
-    return Math.min(currentStep, getWizardLayout(toMobile).totalSteps);
+    return Math.min(currentStep, getWizardLayout(toMobile, options).totalSteps);
   }
-  const from = getWizardLayout(fromMobile);
-  const to = getWizardLayout(toMobile);
+  const from = getWizardLayout(fromMobile, options);
+  const to = getWizardLayout(toMobile, options);
   const stepId = from.stepIds[currentStep - 1];
   if (!stepId) return to.step.PRODUCT;
   const targetIndex = to.stepIds.indexOf(stepId);

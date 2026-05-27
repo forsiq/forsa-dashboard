@@ -1,6 +1,7 @@
 /** Inventory Hooks - Using CrudServiceFactory + custom hooks */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useToast } from '@core/contexts/ToastContext';
+import { useLanguage } from '@core/contexts/LanguageContext';
 import * as api from '../api/products';
 import type { ProductFilters, ProductsResponse } from '../types';
 
@@ -33,14 +34,16 @@ export const useStats = () => {
 export const useCreate = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (input: any) => api.createProduct(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
-      toast.success('Product created successfully');
+      toast.success(t('toast.inventory.created'));
     },
     onError: (error: any) => {
-      toast.error(`Failed to create product: ${error?.message || 'Unknown error'}`, 6000);
+      const detail = error?.message || t('toast.unknown_error');
+      toast.error(t('toast.inventory.create_failed', { detail }), 6000);
     },
   });
 };
@@ -48,15 +51,17 @@ export const useCreate = () => {
 export const useUpdate = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (input: any) => api.updateProduct(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.detail(String(data.id)) });
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
-      toast.success('Product updated successfully');
+      toast.success(t('toast.inventory.updated'));
     },
     onError: (error: any) => {
-      toast.error(`Failed to update product: ${error?.message || 'Unknown error'}`, 6000);
+      const detail = error?.message || t('toast.unknown_error');
+      toast.error(t('toast.inventory.update_failed', { detail }), 6000);
     },
   });
 };
@@ -64,6 +69,7 @@ export const useUpdate = () => {
 export const useDelete = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: (id: string) => api.deleteProduct(id),
     onMutate: async (id) => {
@@ -85,16 +91,15 @@ export const useDelete = () => {
           queryClient.setQueryData(key, data);
         });
       }
-      toast.error('Failed to delete product', 6000);
+      toast.error(t('toast.inventory.delete_failed'), 6000);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: api.inventoryKeys.all });
-      toast.success('Product deleted successfully');
+      toast.success(t('toast.inventory.deleted'));
     },
   });
 };
 
-// Aliases for existing code
 export const useGetProducts = useList;
 export const useGetProduct = useById;
 export const useGetInventoryStats = useStats;

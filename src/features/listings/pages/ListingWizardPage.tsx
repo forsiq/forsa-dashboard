@@ -59,6 +59,7 @@ import {
   normalizeWizardStepFromQuery,
   remapWizardStep,
   DESKTOP_WIZARD_STEP,
+  MOBILE_WIZARD_STEP,
 } from '../utils/listing-wizard.utils';
 import {
   createWizardBasicStepSchema,
@@ -109,24 +110,33 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
-  const { isMerchant } = useDashboardRole();
+  const { isMerchant, isAdmin } = useDashboardRole();
   const { isMobile } = useIsMobile();
-  const wizardLayout = useMemo(() => getWizardLayout(isMobile), [isMobile]);
+  const wizardLayout = useMemo(
+    () => getWizardLayout(isMobile, { merchant: isMerchant }),
+    [isMobile, isMerchant],
+  );
   const step = wizardLayout.step;
+  const fullLayoutStep = useMemo(
+    () => (isMobile ? MOBILE_WIZARD_STEP : DESKTOP_WIZARD_STEP),
+    [isMobile],
+  );
   const prevIsMobileRef = useRef<boolean | null>(null);
 
   const maxStep = isMerchant
-    ? step.MEDIA
+    ? wizardLayout.totalSteps
     : maxStepProp ?? (wizardMode === 'edit' ? step.MEDIA : wizardLayout.totalSteps);
 
   const initialStep = useMemo(() => {
     if (queryStep) {
-      const normalized = normalizeWizardStepFromQuery(queryStep, maxStep, isMobile);
+      const normalized = normalizeWizardStepFromQuery(queryStep, maxStep, isMobile, {
+        merchant: isMerchant,
+      });
       if (normalized >= 1 && normalized <= maxStep) return normalized;
     }
-    if (wizardMode === 'publish-only') return step.CHANNEL;
+    if (wizardMode === 'publish-only') return fullLayoutStep.CHANNEL;
     return step.PRODUCT;
-  }, [queryStep, wizardMode, maxStep, isMobile, step.CHANNEL, step.PRODUCT]);
+  }, [queryStep, wizardMode, maxStep, isMobile, isMerchant, fullLayoutStep.CHANNEL, step.PRODUCT]);
 
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [listingId, setListingId] = useState<number | undefined>(routeId);
@@ -214,11 +224,25 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     }
     if (prevIsMobileRef.current === isMobile) return;
     setCurrentStep((prev) => {
-      const remapped = remapWizardStep(prev, prevIsMobileRef.current!, isMobile);
+      const remapped = remapWizardStep(prev, prevIsMobileRef.current!, isMobile, {
+        merchant: isMerchant,
+      });
       return Math.max(step.PRODUCT, Math.min(maxStep, remapped));
     });
     prevIsMobileRef.current = isMobile;
-  }, [isMobile, maxStep, step.PRODUCT]);
+  }, [isMobile, maxStep, step.PRODUCT, isMerchant]);
+
+  useEffect(() => {
+    if (!router.isReady || !isMerchant || wizardMode !== 'create') return;
+    const overStep = queryStep != null && queryStep > maxStep;
+    const hasDeployType = queryType === 'auction' || queryType === 'group-buy';
+    if (!overStep && !hasDeployType) return;
+    router.replace(
+      { pathname: '/listings/new', query: { step: String(Math.min(queryStep ?? maxStep, maxStep)) } },
+      undefined,
+      { shallow: true },
+    );
+  }, [router.isReady, isMerchant, wizardMode, queryStep, queryType, maxStep, router]);
 
   useEffect(() => {
     if (existingListing) {
@@ -262,11 +286,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             ? `/listings/${listingId}/edit`
             : '/listings/new';
       const query: Record<string, string> = { step: String(step) };
-      if (deployChannel === 'auction') query.type = 'auction';
-      if (deployChannel === 'group_buy') query.type = 'group-buy';
+      if (!isMerchant) {
+        if (deployChannel === 'auction') query.type = 'auction';
+        if (deployChannel === 'group_buy') query.type = 'group-buy';
+      }
       router.replace({ pathname: base, query }, undefined, { shallow: true });
     },
-    [router, wizardMode, listingId, deployChannel],
+    [router, wizardMode, listingId, deployChannel, isMerchant],
   );
 
   const goToStep = (step: number) => {
@@ -363,7 +389,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     try {
       if (currentStep === step.PRODUCT) {
         if (!validateProductStep()) return;
-        if (isMobile) {
+        if (isMerchant || isMobile) {
           const id = await saveCatalog();
           setListingId(id);
           goToStep(step.MEDIA);
@@ -373,7 +399,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         return;
       }
 
-      if (!isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS) {
+      if (!isMerchant && !isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS) {
         const id = await saveCatalog();
         setListingId(id);
         goToStep(step.MEDIA);
@@ -382,7 +408,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
       if (currentStep === step.MEDIA) {
         let id = listingId;
-        if (isMobile) {
+        if (isMerchant || isMobile) {
           id = await saveCatalog();
           setListingId(id);
         }
@@ -391,20 +417,20 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           return;
         }
         await saveMedia(id);
-        if (maxStep <= step.MEDIA) {
+        if (isMerchant || maxStep <= step.MEDIA) {
           setShowSubmitSuccess(true);
           return;
         }
-        goToStep(step.CHANNEL);
+        goToStep(fullLayoutStep.CHANNEL);
         return;
       }
 
-      if (currentStep === step.CHANNEL) {
+      if (!isMerchant && currentStep === fullLayoutStep.CHANNEL) {
         if (!deployChannel) {
           setSubmitError(t('listing.wizard.channel_required') || 'Select a sales channel');
           return;
         }
-        goToStep(step.PUBLISH);
+        goToStep(fullLayoutStep.PUBLISH);
         return;
       }
     } catch (err: unknown) {
@@ -591,7 +617,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   }
 
   const listingCoverUrl = existingListing ?? null;
-  const showPublishSteps = maxStep > step.MEDIA;
+  const showPublishSteps = isAdmin && maxStep > step.MEDIA;
   const pageTitle =
     wizardMode === 'create'
       ? t('listing.wizard.title_create')
@@ -679,7 +705,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       <ListingWizardStepIndicator
         currentStep={currentStep}
         maxStep={maxStep}
-        minStep={wizardMode === 'publish-only' ? step.CHANNEL : 1}
+        minStep={wizardMode === 'publish-only' ? fullLayoutStep.CHANNEL : 1}
         stepLabelKeys={wizardLayout.stepLabelKeys}
       />
 
@@ -748,7 +774,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {!isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS && (
+      {!isMerchant && !isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS && (
         <div className="space-y-8">
           <ListingSpecsEditor
             specs={catalog.specs}
@@ -789,7 +815,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             </p>
           </FormSection>
 
-          {isMobile && (
+          {(isMobile || isMerchant) && (
             <>
               <button
                 type="button"
@@ -827,7 +853,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {currentStep === step.CHANNEL && showPublishSteps && (
+      {currentStep === fullLayoutStep.CHANNEL && showPublishSteps && (
         <div className="space-y-4">
           <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">
             {t('listing.deploy.choose')}
@@ -867,7 +893,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {currentStep === step.PUBLISH && showPublishSteps && deployChannel === 'auction' && (
+      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'auction' && (
         <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('listing.deploy.auction_settings')}>
           <div className="space-y-6">
             <AmberInput
@@ -985,7 +1011,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </FormSection>
       )}
 
-      {currentStep === step.PUBLISH && showPublishSteps && deployChannel === 'group_buy' && (
+      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'group_buy' && (
         <FormSection icon={<Users className="w-5 h-5" />} iconBgColor="info" title={t('listing.deploy.group_buy_settings')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AmberInput
@@ -1039,7 +1065,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </FormSection>
       )}
 
-      {currentStep === step.PUBLISH && showPublishSteps && (
+      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && (
         <FormSection icon={<Rocket className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.publish')}>
           <div className="space-y-6 text-sm">
             {listingCoverUrl && (
@@ -1120,7 +1146,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             {t('approval.actions.submit') || 'Submit for Review'}
             <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
           </AmberButton>
-        ) : currentStep < step.PUBLISH || !showPublishSteps ? (
+        ) : currentStep < fullLayoutStep.PUBLISH || !showPublishSteps ? (
           <AmberButton
             className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
             disabled={isBusy}

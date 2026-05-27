@@ -75,17 +75,18 @@ export function useGetListingDeals(id: number, enabled = true) {
 export function useCreateListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
     mutationFn: (input: CreateListingInput) => listingApi.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      toast.success('Listing created successfully');
+      toast.success(t('toast.listing.created'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to create listing: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.listing.create_failed', { detail }), 8000);
     },
   });
 }
@@ -93,6 +94,7 @@ export function useCreateListing() {
 export function useUpdateListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -101,11 +103,11 @@ export function useUpdateListing() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      toast.success('Listing updated successfully');
+      toast.success(t('toast.listing.updated'));
     },
     onError: (error: any) => {
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to update listing: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.listing.update_failed', { detail }), 8000);
     },
   });
 }
@@ -113,6 +115,7 @@ export function useUpdateListing() {
 export function useDeleteListing() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useLanguage();
   const mapApiError = useMapApiValidationError();
 
   return useMutation({
@@ -139,8 +142,8 @@ export function useDeleteListing() {
           queryClient.setQueryData(key, data);
         });
       }
-      const detail = mapApiError(error) || error?.message || 'Unknown error';
-      toast.error(`Failed to delete listing: ${detail}`, 8000);
+      const detail = mapApiError(error) || error?.message || t('toast.unknown_error');
+      toast.error(t('toast.listing.delete_failed', { detail }), 8000);
     },
     onSuccess: async (_void, id) => {
       queryClient.removeQueries({ queryKey: listingKeys.detail(id) });
@@ -156,7 +159,7 @@ export function useDeleteListing() {
         };
       });
       await queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      toast.success('Listing deleted successfully');
+      toast.success(t('toast.listing.deleted'));
     },
   });
 }
@@ -173,9 +176,8 @@ export function useDeployAsAuction() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.auctions(variables.id) });
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(variables.id) });
-      // Invalidate auctions list so new auction appears
       queryClient.invalidateQueries({ queryKey: ['auctions'] });
-      toast.success('Auction deployed from listing');
+      toast.success(t('toast.listing.deploy_auction'));
     },
     onError: (error: unknown) => {
       const mapped = mapApiError(error, { firstOnly: true });
@@ -198,7 +200,7 @@ export function useDeployAsGroupBuy() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.deals(variables.id) });
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(variables.id) });
-      toast.success('Group deal deployed from listing');
+      toast.success(t('toast.listing.deploy_group_buy'));
     },
     onError: (error: unknown) => {
       const mapped = mapApiError(error, { firstOnly: true });
@@ -220,10 +222,10 @@ export function useSubmitListingForReview() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      toast.success(t('approval.messages.submitted') || 'Product submitted for review');
+      toast.success(t('approval.messages.submitted'));
     },
     onError: (error: unknown) => {
-      const detail = mapApiError(error) || (error as any)?.message || 'Unknown error';
+      const detail = mapApiError(error) || (error as any)?.message || t('toast.unknown_error');
       toast.error(detail, 8000);
     },
   });
