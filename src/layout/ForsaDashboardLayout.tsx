@@ -16,6 +16,7 @@ import { useSidebarBadges } from '@core/hooks/useSidebarBadges';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 import { useChangelog } from '@features/changelog/hooks/useChangelog';
 import { useNavigation } from '@yousef2001/core-ui/contexts';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import type { MenuSection } from '@config/navigation';
 
 /** Pre-resolve all string icons to Lucide components */
@@ -56,11 +57,12 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
   const { sidebarView } = useNavigation();
   const { isNewFeature } = useChangelog();
   const { mode } = useSidebarMode();
+  const { role } = useDashboardRole();
 
   const menuSections = useMemo<MenuSection[]>(() => {
     if (!router.isReady) {
       if (mode === 'unified') {
-        return resolveSections(getUnifiedSidebarSections(badges, isNewFeature));
+        return resolveSections(getUnifiedSidebarSections(badges, isNewFeature, role));
       }
       return moduleSidebars[sidebarView as SidebarModuleView] || moduleSidebars.dashboard;
     }
@@ -69,7 +71,7 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
     if (p === '/portal' || p === '/') return [];
 
     if (mode === 'unified') {
-      return resolveSections(getUnifiedSidebarSections(badges, isNewFeature));
+      return resolveSections(getUnifiedSidebarSections(badges, isNewFeature, role));
     }
 
     const urlView = getViewForPath(p);
@@ -77,7 +79,7 @@ export function ForsaDashboardLayout({ children }: { children: React.ReactNode }
     const baseSections = moduleSidebars[activeView] || moduleSidebars.dashboard;
 
     return applySidebarBadges(activeView, baseSections, badges, isNewFeature);
-  }, [router.isReady, router.pathname, badges, sidebarView, isNewFeature, mode]);
+  }, [router.isReady, router.pathname, badges, sidebarView, isNewFeature, mode, role]);
 
   return (
     <AmberDashboardLayout menuSections={menuSections} appLabel="Forsa">

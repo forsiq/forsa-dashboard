@@ -4,6 +4,7 @@
  */
 
 import type { MenuSection } from '@config/navigation';
+import type { UserRole } from '@features/auth/types';
 import { sidebarSections as dashboardSections } from './dashboard';
 import { sidebarSections as marketplaceSections } from './marketplace';
 import { sidebarSections as salesSections } from './sales';
@@ -20,6 +21,8 @@ interface ModuleDefinition {
   icon: string;
   color: string;
   sections: MenuSection[];
+  /** Which dashboard roles can see this module. Undefined = all roles. */
+  allowedRoles?: UserRole[];
 }
 
 const MODULE_ORDER: ModuleDefinition[] = [
@@ -29,6 +32,7 @@ const MODULE_ORDER: ModuleDefinition[] = [
     icon: 'LayoutDashboard',
     color: 'from-purple-500 to-purple-600',
     sections: dashboardSections,
+    allowedRoles: ['admin', 'product_analyst', 'customer_support'],
   },
   {
     id: 'marketplace',
@@ -36,6 +40,7 @@ const MODULE_ORDER: ModuleDefinition[] = [
     icon: 'ShoppingBag',
     color: 'from-blue-500 to-blue-600',
     sections: marketplaceSections,
+    allowedRoles: ['admin', 'merchant'],
   },
   {
     id: 'sales',
@@ -43,6 +48,7 @@ const MODULE_ORDER: ModuleDefinition[] = [
     icon: 'ShoppingCart',
     color: 'from-amber-500 to-amber-600',
     sections: salesSections,
+    allowedRoles: ['admin', 'merchant', 'customer_support'],
   },
   {
     id: 'reports',
@@ -50,6 +56,7 @@ const MODULE_ORDER: ModuleDefinition[] = [
     icon: 'BarChart3',
     color: 'from-emerald-500 to-emerald-600',
     sections: reportsSections,
+    allowedRoles: ['admin', 'merchant', 'product_analyst', 'customer_support'],
   },
 ];
 
@@ -61,12 +68,15 @@ export interface UnifiedModuleHeader extends MenuSection {
 }
 
 export function getUnifiedSidebarSections(
-  badges?: SidebarBadgeCounts,
-  isNewFeature?: (path: string) => boolean,
+  badges: SidebarBadgeCounts | undefined,
+  isNewFeature: ((path: string) => boolean) | undefined,
+  role?: UserRole,
 ): MenuSection[] {
   const result: MenuSection[] = [];
 
   for (const mod of MODULE_ORDER) {
+    if (mod.allowedRoles && role && !mod.allowedRoles.includes(role)) continue;
+
     const header: UnifiedModuleHeader = {
       title: mod.title,
       items: [],
