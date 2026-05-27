@@ -9,9 +9,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/dist');
 const localCorePath = path.resolve(__dirname, 'src/core');
 
-const revision =
-  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() ||
-  Date.now().toString();
+const isCI = !!process.env.CI;
+const revision = isCI
+  ? spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() || Date.now().toString()
+  : Date.now().toString();
 
 const withSerwist = withSerwistInit({
   swSrc: "src/sw.ts",
