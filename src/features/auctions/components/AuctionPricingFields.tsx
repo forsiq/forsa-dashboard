@@ -1,9 +1,9 @@
 import React from 'react';
 import { TrendingUp, Gavel, History, Info } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { AmberInput } from '@core/components/AmberInput';
 import { FormSection } from '@core/components/FormSection';
 import { IqdSymbol } from '@core/components/IqdSymbol';
+import { IqdPriceInput } from '@core/components/IqdPriceInput';
 
 interface AuctionPricingFieldsProps {
   startPrice: number | undefined;
@@ -12,6 +12,10 @@ interface AuctionPricingFieldsProps {
   errors: Record<string, string>;
   onChange: (field: string, value: any) => void;
 }
+
+const START_PRICE_PRESETS = [100_000, 250_000, 500_000, 1_000_000, 5_000_000];
+const BID_INCREMENT_PRESETS = [1_000, 5_000, 10_000, 25_000, 50_000];
+const RESERVE_PRICE_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
 
 export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
   startPrice,
@@ -25,27 +29,30 @@ export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
   return (
     <FormSection icon={<IqdSymbol className="text-sm" />} iconBgColor="success" title={t('auction.form.section.pricing')}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <AmberInput
+        <IqdPriceInput
           label={t('auction.form.fields.start_price')}
-          type="number"
-          value={startPrice}
-          onChange={(e) => onChange('startPrice', Number(e.target.value))}
+          value={startPrice ?? 0}
+          onChange={(v) => onChange('startPrice', v)}
+          denomination="thousand"
+          presets={START_PRICE_PRESETS}
           icon={<TrendingUp className="w-4 h-4" />}
           error={errors.startPrice}
         />
-        <AmberInput
+        <IqdPriceInput
           label={t('auction.form.fields.bid_increment')}
-          type="number"
-          value={bidIncrement}
-          onChange={(e) => onChange('bidIncrement', Number(e.target.value))}
+          value={bidIncrement ?? 0}
+          onChange={(v) => onChange('bidIncrement', v)}
+          denomination="unit"
+          presets={BID_INCREMENT_PRESETS}
           icon={<Gavel className="w-4 h-4" />}
           error={errors.bidIncrement}
         />
-        <AmberInput
+        <IqdPriceInput
           label={t('auction.form.fields.reserve_price') || 'Reserve Price'}
-          type="number"
-          value={reservePrice || ''}
-          onChange={(e) => onChange('reservePrice', Number(e.target.value))}
+          value={reservePrice ?? 0}
+          onChange={(v) => onChange('reservePrice', v || undefined)}
+          denomination="thousand"
+          presets={RESERVE_PRICE_PRESETS}
           icon={<History className="w-4 h-4" />}
           error={errors.reservePrice}
         />

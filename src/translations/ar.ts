@@ -1505,4 +1505,10 @@ export const ar: Record<string, string> = {
   "toast.order.status_update_failed": "تعذر تحديث الحالة: {detail}",
   "toast.order.payment_updated": "تم تحديث حالة الدفع",
   "toast.order.payment_update_failed": "تعذر تحديث الدفع: {detail}",
+
+  // IQD Price Input
+  "iqd.unit": "د.ع",
+  "iqd.thousand": "ألف",
+  "iqd.million": "مليون",
+  "iqd.preview_equals": "= {amount}",
 };

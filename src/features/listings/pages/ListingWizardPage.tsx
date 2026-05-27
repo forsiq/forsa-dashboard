@@ -28,6 +28,7 @@ import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
 import { IqdSymbol } from '@core/components/IqdSymbol';
+import { IqdPriceInput } from '@core/components/IqdPriceInput';
 import { EmptyState } from '@core/components/EmptyState';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { useFileUpload } from '@core/hooks/useFileUpload';
@@ -1004,18 +1005,19 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'auction' && (
         <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('listing.deploy.auction_settings')}>
           <div className="space-y-6">
-            <AmberInput
+            <IqdPriceInput
               label={t('listing.deploy.start_price')}
-              type="number"
               value={auctionPricing.startPrice}
-              onChange={(e) => {
+              onChange={(v) => {
                 setFieldErrors((p) => {
                   const n = { ...p };
                   delete n.startPrice;
                   return n;
                 });
-                setAuctionPricing((prev) => ({ ...prev, startPrice: Number(e.target.value) }));
+                setAuctionPricing((prev) => ({ ...prev, startPrice: v }));
               }}
+              denomination="thousand"
+              presets={[100_000, 250_000, 500_000, 1_000_000, 5_000_000]}
               icon={<IqdSymbol />}
               error={fieldErrors.startPrice}
               rightElement={<FieldHelpHint text={t('listing.deploy.hint.start_price')} />}
@@ -1044,34 +1046,36 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
                 {showAdvancedPricing && (
                   <div className="space-y-6 pt-2 border-t border-white/5">
-                    <AmberInput
+                    <IqdPriceInput
                       label={t('listing.deploy.auction_original_price')}
-                      type="number"
-                      value={auctionPricing.originalPrice}
-                      onChange={(e) => {
+                      value={auctionPricing.originalPrice ? Number(auctionPricing.originalPrice) : 0}
+                      onChange={(v) => {
                         setFieldErrors((p) => {
                           const n = { ...p };
                           delete n.originalPrice;
                           return n;
                         });
-                        setAuctionPricing((prev) => ({ ...prev, originalPrice: e.target.value }));
+                        setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
                       }}
+                      denomination="thousand"
+                      presets={[500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000]}
                       icon={<IqdSymbol />}
                       error={fieldErrors.originalPrice}
                       rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
                     />
-                    <AmberInput
+                    <IqdPriceInput
                       label={t('listing.deploy.bid_increment')}
-                      type="number"
                       value={auctionPricing.bidIncrement}
-                      onChange={(e) => {
+                      onChange={(v) => {
                         setFieldErrors((p) => {
                           const n = { ...p };
                           delete n.bidIncrement;
                           return n;
                         });
-                        setAuctionPricing((prev) => ({ ...prev, bidIncrement: Number(e.target.value) }));
+                        setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
                       }}
+                      denomination="unit"
+                      presets={[1_000, 5_000, 10_000, 25_000, 50_000]}
                       icon={<Gavel className="w-4 h-4" />}
                       error={fieldErrors.bidIncrement}
                       rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
@@ -1081,34 +1085,36 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               </>
             ) : (
               <>
-                <AmberInput
+                <IqdPriceInput
                   label={t('listing.deploy.auction_original_price')}
-                  type="number"
-                  value={auctionPricing.originalPrice}
-                  onChange={(e) => {
+                  value={auctionPricing.originalPrice ? Number(auctionPricing.originalPrice) : 0}
+                  onChange={(v) => {
                     setFieldErrors((p) => {
                       const n = { ...p };
                       delete n.originalPrice;
                       return n;
                     });
-                    setAuctionPricing((prev) => ({ ...prev, originalPrice: e.target.value }));
+                    setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
                   }}
+                  denomination="thousand"
+                  presets={[500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000]}
                   icon={<IqdSymbol />}
                   error={fieldErrors.originalPrice}
                   rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
                 />
-                <AmberInput
+                <IqdPriceInput
                   label={t('listing.deploy.bid_increment')}
-                  type="number"
                   value={auctionPricing.bidIncrement}
-                  onChange={(e) => {
+                  onChange={(v) => {
                     setFieldErrors((p) => {
                       const n = { ...p };
                       delete n.bidIncrement;
                       return n;
                     });
-                    setAuctionPricing((prev) => ({ ...prev, bidIncrement: Number(e.target.value) }));
+                    setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
                   }}
+                  denomination="unit"
+                  presets={[1_000, 5_000, 10_000, 25_000, 50_000]}
                   icon={<Gavel className="w-4 h-4" />}
                   error={fieldErrors.bidIncrement}
                   rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
@@ -1122,33 +1128,35 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'group_buy' && (
         <FormSection icon={<Users className="w-5 h-5" />} iconBgColor="info" title={t('listing.deploy.group_buy_settings')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AmberInput
+            <IqdPriceInput
               label={t('listing.deploy.original_price')}
-              type="number"
               value={groupBuyPricing.originalPrice}
-              onChange={(e) => {
+              onChange={(v) => {
                 setFieldErrors((p) => {
                   const n = { ...p };
                   delete n.originalPrice;
                   return n;
                 });
-                setGroupBuyPricing((p) => ({ ...p, originalPrice: Number(e.target.value) }));
+                setGroupBuyPricing((p) => ({ ...p, originalPrice: v }));
               }}
+              denomination="thousand"
+              presets={[100_000, 250_000, 500_000, 1_000_000, 5_000_000]}
               icon={<IqdSymbol />}
               error={fieldErrors.originalPrice}
             />
-            <AmberInput
+            <IqdPriceInput
               label={t('listing.deploy.deal_price')}
-              type="number"
               value={groupBuyPricing.dealPrice}
-              onChange={(e) => {
+              onChange={(v) => {
                 setFieldErrors((p) => {
                   const n = { ...p };
                   delete n.dealPrice;
                   return n;
                 });
-                setGroupBuyPricing((p) => ({ ...p, dealPrice: Number(e.target.value) }));
+                setGroupBuyPricing((p) => ({ ...p, dealPrice: v }));
               }}
+              denomination="thousand"
+              presets={[50_000, 100_000, 250_000, 500_000, 1_000_000]}
               error={fieldErrors.dealPrice}
             />
             <AmberInput

@@ -17,7 +17,8 @@ import {
   Gavel,
   User,
   Tag,
-  Copy,
+  Package,
+  Rocket,
   FileText,
   ExternalLink,
   MoreVertical,
@@ -28,6 +29,7 @@ import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { IqdPriceInput } from '@core/components/IqdPriceInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useWatchedAuctions } from '../api';
 import { WatchlistToggleButton } from '../components/WatchlistToggleButton';
@@ -77,7 +79,7 @@ export const AuctionDetails: React.FC = () => {
   const { data: watchedAuctions } = useWatchedAuctions();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
-  const [bidAmount, setBidAmount] = useState<string>('');
+  const [bidAmount, setBidAmount] = useState<number>(0);
 
   // Resolve attachment IDs to CloudFront URLs
   const directImageUrls = auction ? getAuctionImageUrls(auction) : [];
@@ -133,12 +135,12 @@ export const AuctionDetails: React.FC = () => {
 
   const handlePlaceBid = async () => {
     if (!auctionId || !auction) return;
-    const amount = parseFloat(bidAmount);
+    const amount = bidAmount;
     const minBid = currentBid || startPrice;
     if (amount && amount > minBid) {
       try {
         await placeBid.mutateAsync({ auctionId, amount });
-        setBidAmount('');
+        setBidAmount(0);
       } catch (err) {
         console.error('Bid failed:', err);
       }
@@ -253,13 +255,24 @@ export const AuctionDetails: React.FC = () => {
             </button>
           ) : (
             <>
-              <AmberButton className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5" onClick={() => {
-                if (!isSafePathResourceId(auction.id)) return;
-                void router.push(`/auctions/clone/${auction.id}`);
-              }}>
-                  <Copy className="w-3.5 h-3.5" />
-                  {t('auction.detail.clone') || 'Clone'}
-              </AmberButton>
+              {auction.listingId && (
+                <AmberButton
+                  className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5"
+                  onClick={() => void router.push(`/listings/${auction.listingId}`)}
+                >
+                  <Package className="w-3.5 h-3.5" />
+                  {t('auction.detail.view_product') || 'View Product'}
+                </AmberButton>
+              )}
+              {auction.listingId && ['ended', 'cancelled', 'sold'].includes(auction.status) && (
+                <AmberButton
+                  className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-emerald-400 hover:border-emerald-400/30 active:scale-95 transition-all text-xs gap-1.5"
+                  onClick={() => void router.push(`/listings/${auction.listingId}/publish?type=auction`)}
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  {t('auction.detail.republish') || 'Republish'}
+                </AmberButton>
+              )}
               <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => {
                 if (!isSafePathResourceId(auction.id)) return;
                 void router.push(`/auctions/edit/${auction.id}`);
@@ -458,21 +471,17 @@ export const AuctionDetails: React.FC = () => {
                 <label className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.base_progression') || 'Your Bid'}</label>
                 <span className="text-[11px] font-semibold text-zinc-muted tracking-wider">Min: {formatCurrency(nextMinBid)}</span>
               </div>
-              <div className="relative group" id="mobile-bid-input">
-                <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted group-focus-within:text-brand transition-colors" />
-                <AmberInput
-                  type="number"
-                  placeholder={`${nextMinBid.toLocaleString()}+`}
-                  className="h-11 bg-obsidian-outer border-white/5 ps-9 pe-4 text-base font-bold tabular-nums placeholder:text-zinc-muted/30"
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  disabled={auction.status !== 'active' || placeBid.isPending}
-                />
-              </div>
+              <IqdPriceInput
+                value={bidAmount}
+                onChange={setBidAmount}
+                denomination="thousand"
+                placeholder={`${nextMinBid.toLocaleString()}+`}
+                disabled={auction.status !== 'active' || placeBid.isPending}
+              />
 
               <AmberButton
                 className="w-full h-11 bg-brand hover:bg-brand text-black font-bold uppercase tracking-wider rounded-xl active:scale-95 transition-all text-xs"
-                disabled={auction.status !== 'active' || placeBid.isPending || !bidAmount || parseFloat(bidAmount) < nextMinBid}
+                disabled={auction.status !== 'active' || placeBid.isPending || !bidAmount || bidAmount < nextMinBid}
                 onClick={handlePlaceBid}
               >
                 {placeBid.isPending ? (
@@ -577,19 +586,35 @@ export const AuctionDetails: React.FC = () => {
             <span className="text-sm font-bold text-zinc-text">{t('common.edit') || 'Edit'}</span>
           </button>
 
-          <button
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
-            onClick={() => {
-              setIsActionsOpen(false);
-              if (!isSafePathResourceId(auction.id)) return;
-              void router.push(`/auctions/clone/${auction.id}`);
-            }}
-          >
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-              <Copy className="w-4 h-4" />
-            </div>
-            <span className="text-sm font-bold text-zinc-text">{t('auction.detail.clone') || 'Clone'}</span>
-          </button>
+          {auction.listingId && (
+            <button
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-brand/5 hover:border-brand/20 transition-all"
+              onClick={() => {
+                setIsActionsOpen(false);
+                void router.push(`/listings/${auction.listingId}`);
+              }}
+            >
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
+                <Package className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-bold text-zinc-text">{t('auction.detail.view_product') || 'View Product'}</span>
+            </button>
+          )}
+
+          {auction.listingId && ['ended', 'cancelled', 'sold'].includes(auction.status) && (
+            <button
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-obsidian-panel/30 border border-white/5 hover:bg-emerald-500/5 hover:border-emerald-400/20 transition-all"
+              onClick={() => {
+                setIsActionsOpen(false);
+                void router.push(`/listings/${auction.listingId}/publish?type=auction`);
+              }}
+            >
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                <Rocket className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-bold text-zinc-text">{t('auction.detail.republish') || 'Republish'}</span>
+            </button>
+          )}
 
           {!['ended', 'sold', 'cancelled'].includes(auction?.status) && (
             <button

@@ -45,6 +45,7 @@ export interface Auction {
   canBid?: boolean;
   winnerId?: number;
   winnerName?: string;
+  listingId?: number;
 }
 
 export interface Spec {

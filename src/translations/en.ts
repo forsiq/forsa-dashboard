@@ -1504,4 +1504,10 @@ export const en: Record<string, string> = {
   "toast.order.status_update_failed": "Failed to update status: {detail}",
   "toast.order.payment_updated": "Payment status updated",
   "toast.order.payment_update_failed": "Failed to update payment: {detail}",
+
+  // IQD Price Input
+  "iqd.unit": "IQD",
+  "iqd.thousand": "K",
+  "iqd.million": "M",
+  "iqd.preview_equals": "= {amount}",
 };
