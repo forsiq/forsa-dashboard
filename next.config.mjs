@@ -1,12 +1,24 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { withSentryConfig } from '@sentry/nextjs';
+import withSerwistInit from "@serwist/next";
+import { spawnSync } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/dist');
 const localCorePath = path.resolve(__dirname, 'src/core');
 const languageContextOverride = path.join(localCorePath, 'contexts/LanguageContext.tsx');
+
+const revision =
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() ||
+  Date.now().toString();
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/sw.ts",
+  swDest: "public/sw.js",
+  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -78,7 +90,8 @@ const nextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSerwist(
+  withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -108,4 +121,5 @@ export default withSentryConfig(nextConfig, {
       removeDebugLogging: true,
     },
   },
-});
+}),
+);

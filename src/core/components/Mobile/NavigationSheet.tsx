@@ -14,9 +14,13 @@ import {
   HelpCircle,
   LogOut,
   Smartphone,
+  Sun,
+  Moon,
+  Languages,
+  ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFeatureConfig } from '@yousef2001/core-ui/contexts';
+import { useFeatureConfig, useTheme } from '@yousef2001/core-ui/contexts';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { isPathAllowedForRole } from '@core/auth/navRoleAccess';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
@@ -47,12 +51,13 @@ const NAV_ITEMS = [
 ];
 
 export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
-  const { t, dir } = useLanguage();
+  const { t, dir, language, setLanguage } = useLanguage();
   const { openInstallSheet, canInstall } = usePwaInstallContext();
   const { logout } = useAuth();
   const { role } = useDashboardRole();
   const topbarUser = useTopbarUser();
   const { isFeatureEnabled } = useFeatureConfig();
+  const { theme, toggleTheme } = useTheme();
   const isRTL = dir === 'rtl';
   const { shouldRender, isOpen: isSheetOpen } = useOverlayPortal(isOpen, onClose);
 
@@ -112,9 +117,12 @@ export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
         </button>
 
         <div className="px-6 pb-8 pt-2 space-y-4">
-          <div
+          {/* Profile — clickable to /profile */}
+          <Link
+            href="/profile"
+            onClick={onClose}
             className={cn(
-              'flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer',
+              'flex items-center gap-3 p-3 rounded-xl bg-obsidian-outer hover:bg-white/5 transition-colors',
               isRTL && 'flex-row-reverse',
             )}
           >
@@ -125,7 +133,8 @@ export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
               <p className="text-sm font-bold text-zinc-text truncate">{displayName}</p>
               <p className="text-[10px] text-zinc-muted uppercase tracking-widest">{roleLabel}</p>
             </div>
-          </div>
+            <ChevronRight className={cn('w-4 h-4 text-zinc-muted', isRTL && 'rotate-180')} />
+          </Link>
 
           <div className="h-px bg-white/5" />
 
@@ -178,6 +187,63 @@ export function NavigationSheet({ isOpen, onClose }: NavigationSheetProps) {
               </button>
             </>
           )}
+
+          <div className="h-px bg-white/5" />
+
+          {/* Preferences */}
+          <div className="space-y-1">
+            {/* Language toggle */}
+            <div
+              className={cn(
+                'flex items-center gap-3 px-3 py-3 rounded-xl',
+                isRTL && 'flex-row-reverse',
+              )}
+            >
+              <Languages className="w-5 h-5 text-zinc-muted shrink-0" />
+              <span className={cn('flex-1 text-sm font-bold text-zinc-text', isRTL && 'text-right')}>
+                {t('mobile.controls.language')}
+              </span>
+              <div className="flex gap-1">
+                {(['en', 'ar'] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setLanguage(lang)}
+                    className={cn(
+                      'px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-colors',
+                      language === lang
+                        ? 'bg-brand text-brand-text'
+                        : 'bg-white/5 text-zinc-muted hover:text-zinc-text hover:bg-white/10',
+                    )}
+                  >
+                    {lang === 'en' ? 'EN' : 'AR'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Theme toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors hover:bg-white/5',
+                isRTL && 'flex-row-reverse',
+              )}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-zinc-muted shrink-0" />
+              ) : (
+                <Moon className="w-5 h-5 text-zinc-muted shrink-0" />
+              )}
+              <span className={cn('flex-1 text-sm font-bold text-zinc-text text-left', isRTL && 'text-right')}>
+                {t('mobile.controls.theme')}
+              </span>
+              <span className="text-xs font-bold text-zinc-muted uppercase tracking-wider">
+                {theme === 'dark' ? t('mobile.controls.dark') : t('mobile.controls.light')}
+              </span>
+            </button>
+          </div>
 
           <div className="h-px bg-white/5" />
 

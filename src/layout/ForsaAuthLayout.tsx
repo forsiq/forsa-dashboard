@@ -2,6 +2,7 @@ import React from 'react';
 import { AmberLogo } from '@core/components/AmberLogo';
 import { AmberSettingsToolbar } from '@core/components/AmberSettingsToolbar';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { motion } from 'framer-motion';
 
 interface ForsaAuthLayoutProps {
@@ -12,6 +13,7 @@ interface ForsaAuthLayoutProps {
 
 export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, title, subtitle }) => {
   const { t, dir } = useLanguage();
+  const { isMobile } = useIsMobile();
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-obsidian-outer selection:bg-brand/30 selection:text-white" dir={dir}>
@@ -21,7 +23,11 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
       {/* Top Bar */}
       <div className="flex items-center justify-between p-4 md:p-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-obsidian-card border border-border shadow-sm">
+          <div className={`p-2 rounded-xl shadow-sm ${
+            isMobile
+              ? 'bg-transparent'
+              : 'bg-obsidian-card border border-border'
+          }`}>
             <AmberLogo className="w-8 h-8" />
           </div>
           <div className="flex flex-col">
@@ -37,16 +43,20 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <div className="w-full max-w-[460px]">
+      <div className={`flex-1 flex flex-col items-center justify-center pb-12 ${
+        isMobile ? 'px-4' : 'px-6'
+      }`}>
+        <div className={`w-full ${isMobile ? 'max-w-none' : 'max-w-[460px]'}`}>
           {/* Title Section */}
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center mb-8"
+            className={`text-center mb-8 ${isMobile ? 'mb-6' : ''}`}
           >
-            <h1 className="text-3xl font-black text-zinc-text tracking-tight uppercase">
+            <h1 className={`font-black text-zinc-text tracking-tight uppercase ${
+              isMobile ? 'text-2xl' : 'text-3xl'
+            }`}>
               {title || t('login.welcome')}
             </h1>
             <p className="text-sm font-bold text-brand uppercase tracking-[0.2em] mt-2">
@@ -59,7 +69,11 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="bg-obsidian-card border border-border rounded-3xl shadow-sm p-8 md:p-10"
+            className={
+              isMobile
+                ? 'bg-transparent p-4'
+                : 'bg-obsidian-card border border-border rounded-3xl shadow-sm p-8 md:p-10'
+            }
           >
             {children}
           </motion.div>
@@ -69,7 +83,7 @@ export const ForsaAuthLayout: React.FC<ForsaAuthLayoutProps> = ({ children, titl
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="mt-8 text-center"
+            className={`text-center ${isMobile ? 'mt-6' : 'mt-8'}`}
           >
             <div className="flex items-center justify-center gap-6">
               <div className="flex items-center gap-2">

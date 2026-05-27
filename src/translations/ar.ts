@@ -1376,4 +1376,15 @@ export const ar: Record<string, string> = {
   "mobile.install.ios_step3": "افتح فرصة من الشاشة الرئيسية",
   "mobile.install.already_installed": "تطبيق فرصة مثبت بالفعل على هذا الجهاز.",
   "mobile.install.dismiss": "ليس الآن",
+
+  // Mobile controls (More sheet)
+  "mobile.controls.language": "اللغة",
+  "mobile.controls.theme": "المظهر",
+  "mobile.controls.light": "فاتح",
+  "mobile.controls.dark": "داكن",
+
+  // Offline fallback
+  "offline.title": "أنت غير متصل",
+  "offline.message": "تحقق من اتصالك بالإنترنت وحاول مرة أخرى.",
+  "offline.retry": "إعادة المحاولة",
 };

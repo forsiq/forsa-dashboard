@@ -1375,4 +1375,15 @@ export const en: Record<string, string> = {
   "mobile.install.ios_step3": "Open Forsa from your home screen",
   "mobile.install.already_installed": "Forsa is already installed on this device.",
   "mobile.install.dismiss": "Not now",
+
+  // Mobile controls (More sheet)
+  "mobile.controls.language": "Language",
+  "mobile.controls.theme": "Theme",
+  "mobile.controls.light": "Light",
+  "mobile.controls.dark": "Dark",
+
+  // Offline fallback
+  "offline.title": "You're Offline",
+  "offline.message": "Check your internet connection and try again.",
+  "offline.retry": "Retry",
 };
