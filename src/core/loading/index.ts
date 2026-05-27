@@ -1,3 +1,1 @@
-export { DetailPageSkeleton } from './DetailPageSkeleton';
-export { ListPageSkeleton } from './ListPageSkeleton';
-export { FetchingOverlay } from './FetchingOverlay';
+export { DetailPageSkeleton, ListPageSkeleton, FetchingOverlay } from '@yousef2001/core-ui/loading';

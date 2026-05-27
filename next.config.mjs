@@ -8,7 +8,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const corePkgPath = path.resolve(__dirname, 'node_modules/@yousef2001/core-ui/dist');
 const localCorePath = path.resolve(__dirname, 'src/core');
-const languageContextOverride = path.join(localCorePath, 'contexts/LanguageContext.tsx');
 
 const revision =
   spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() ||
@@ -52,17 +51,6 @@ const nextConfig = {
       // @core resolves: local src/core/ overrides take priority,
       // then falls back to core-ui package
       '@core': [localCorePath, corePkgPath],
-      // Force single LanguageContext instance (local override fixes hydration mismatch)
-      [path.join(corePkgPath, 'contexts/LanguageContext.js')]: languageContextOverride,
-      // Safe StatusBadge / resolveStatusLabel override (undefined status from API)
-      '@yousef2001/core-ui/dist/components/Data/StatusBadge': path.join(
-        localCorePath,
-        'components/Data/StatusBadge.tsx',
-      ),
-      '@yousef2001/core-ui/dist/lib/utils/resolveStatusLabel': path.join(
-        localCorePath,
-        'lib/utils/resolveStatusLabel.ts',
-      ),
     };
 
     // YAML → JS module (yaml-loader emits `export default …`).

@@ -9,7 +9,7 @@ import { LoginCredentials } from '../types';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AUTH_ERROR_CODES, isAuthErrorCode } from '../constants/authErrors';
 import { resolveAuthErrorMessage } from '../utils/resolveAuthError';
-import { InstallAppLoginLink } from '@core/components/Mobile/InstallAppLoginLink';
+import { InstallAppLoginLink } from '@core/components/PWA/InstallAppLoginLink';
 
 function getErrorInfo(error: string): { icon: React.ReactNode; type: 'network' | 'auth' | 'validation' } {
   if (isAuthErrorCode(error)) {

@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { BeforeInstallPromptEvent } from '@core/components/Mobile/pwa-install.types';
-import type { PwaInstallPlatform } from '@core/components/Mobile/pwa-install.types';
+import type { BeforeInstallPromptEvent, PwaInstallPlatform } from '@core/components/PWA/types';
 
 const BANNER_DISMISS_KEY = 'forsa-install-banner-dismissed';
 const BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;

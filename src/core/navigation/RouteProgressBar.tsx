@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRouteProgress } from './RouteProgressContext';
+import { useRouteProgress } from '@yousef2001/core-ui/navigation';
 
 export function RouteProgressBar() {
   const { isNavigating } = useRouteProgress();

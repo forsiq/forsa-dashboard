@@ -18,9 +18,9 @@ import { useIsMobile } from '@core/hooks/useIsMobile';
 import { LayoutMobileHeader } from '@core/components/Mobile/LayoutMobileHeader';
 import { BottomTabBar } from '@core/components/Mobile/BottomTabBar';
 import { NavigationSheet } from '@core/components/Mobile/NavigationSheet';
-import { InstallPromptBannerGate } from '@core/components/Mobile/InstallPromptBannerGate';
+import { InstallPromptBannerGate } from '@core/components/PWA/InstallPromptBannerGate';
 import { usePwaInstallContext } from '@core/contexts/PwaInstallContext';
-import { InstallPromptSheet } from '@core/components/Mobile/InstallPromptSheet';
+import { InstallPromptSheet } from '@core/components/PWA/InstallPromptSheet';
 
 const SIDEBAR_COLLAPSED_KEY = 'forsa-sidebar-collapsed';
 const sidebarCollapseListeners = new Set<() => void>();

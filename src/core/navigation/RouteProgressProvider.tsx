@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { RouteProgressContext } from './RouteProgressContext';
+import { RouteProgressContext } from '@yousef2001/core-ui/navigation';
 
 export function RouteProgressProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
