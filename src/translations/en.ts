@@ -1063,6 +1063,8 @@ export const en: Record<string, string> = {
 
   // Auction (missing)
   "auction.create_auction": "New Auction",
+  "auction.detail.view_product": "View Product",
+  "auction.detail.republish": "Republish",
 
   // Auction Create Page
   "auction.create.title": "Create Auction",

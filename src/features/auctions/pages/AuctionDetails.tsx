@@ -17,7 +17,7 @@ import {
   Gavel,
   User,
   Tag,
-  Package,
+  PackageOpen,
   Rocket,
   FileText,
   ExternalLink,
@@ -260,7 +260,7 @@ export const AuctionDetails: React.FC = () => {
                   className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5"
                   onClick={() => void router.push(`/listings/${auction.listingId}`)}
                 >
-                  <Package className="w-3.5 h-3.5" />
+                  <PackageOpen className="w-3.5 h-3.5" />
                   {t('auction.detail.view_product') || 'View Product'}
                 </AmberButton>
               )}
@@ -595,7 +595,7 @@ export const AuctionDetails: React.FC = () => {
               }}
             >
               <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
-                <Package className="w-4 h-4" />
+                <PackageOpen className="w-4 h-4" />
               </div>
               <span className="text-sm font-bold text-zinc-text">{t('auction.detail.view_product') || 'View Product'}</span>
             </button>

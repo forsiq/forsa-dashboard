@@ -1064,6 +1064,8 @@ export const ar: Record<string, string> = {
 
   // مزاد (مفقود)
   "auction.create_auction": "مزاد جديد",
+  "auction.detail.view_product": "عرض المنتج",
+  "auction.detail.republish": "إعادة النشر",
 
   // إنشاء مزاد
   "auction.create.title": "إنشاء مزاد",
