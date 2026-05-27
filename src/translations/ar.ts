@@ -821,6 +821,9 @@ export const ar: Record<string, string> = {
   "category.save_order": "حفظ الترتيب",
   "category.saving_order": "جاري حفظ الترتيب…",
   "category.reorder_requires_full_list": "امسح البحث واختر «الكل» لإعادة ترتيب الفئات",
+  "category.suggestions": "اقتراحات",
+  "category.view_list": "قائمة",
+  "category.view_tree": "شجرة",
 
   // Order statuses
   "orders.status.pending": "معلق",

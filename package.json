@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 4002 --webpack",
     "build": "next build --webpack",
+    "build:safe": "BUILD_SAFE=1 WEBPACK_PARALLELISM=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS='--max-old-space-size=6144' next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

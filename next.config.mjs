@@ -19,10 +19,18 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/~offline", revision }],
 });
 
+const isSafeBuild = process.env.BUILD_SAFE === '1';
+const webpackParallelism = process.env.WEBPACK_PARALLELISM
+  ? Number.parseInt(process.env.WEBPACK_PARALLELISM, 10)
+  : undefined;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Next was inferring ~/package-lock.json as repo root, which slows output file tracing.
   outputFileTracingRoot: path.join(__dirname),
+
+  // Limit static-generation workers when BUILD_SAFE=1 (avoids saturating all CPU cores).
+  ...(isSafeBuild ? { experimental: { cpus: 1 } } : {}),
 
   transpilePackages: ['@yousef2001/core-ui'],
   images: {
@@ -73,6 +81,9 @@ const nextConfig = {
           '**/.dist/**',
         ],
       };
+    } else if (webpackParallelism && webpackParallelism > 0) {
+      // Webpack defaults to high parallelism; cap it so Cursor/other apps stay responsive.
+      config.parallelism = webpackParallelism;
     }
     return config;
   },
@@ -94,7 +105,10 @@ export default withSerwist(
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  widenClientFileUpload: !isSafeBuild,
+
+  // Skip Sentry upload work during local safe builds (major CPU/IO saver).
+  ...(isSafeBuild ? { sourcemaps: { disable: true } } : {}),
 
   webpack: {
     // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)

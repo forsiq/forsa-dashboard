@@ -820,6 +820,9 @@ export const en: Record<string, string> = {
   "category.save_order": "Save Order",
   "category.saving_order": "Saving order…",
   "category.reorder_requires_full_list": "Clear search and select All to reorder categories",
+  "category.suggestions": "Suggestions",
+  "category.view_list": "List",
+  "category.view_tree": "Tree",
 
   // Order statuses
   "orders.status.pending": "Pending",
