@@ -13,10 +13,6 @@ interface AuctionPricingFieldsProps {
   onChange: (field: string, value: any) => void;
 }
 
-const START_PRICE_PRESETS = [100_000, 250_000, 500_000, 1_000_000, 5_000_000];
-const BID_INCREMENT_PRESETS = [1_000, 5_000, 10_000, 25_000, 50_000];
-const RESERVE_PRICE_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
-
 export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
   startPrice,
   bidIncrement,
@@ -34,7 +30,6 @@ export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
           value={startPrice ?? 0}
           onChange={(v) => onChange('startPrice', v)}
           denomination="thousand"
-          presets={START_PRICE_PRESETS}
           icon={<TrendingUp className="w-4 h-4" />}
           error={errors.startPrice}
         />
@@ -43,7 +38,6 @@ export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
           value={bidIncrement ?? 0}
           onChange={(v) => onChange('bidIncrement', v)}
           denomination="unit"
-          presets={BID_INCREMENT_PRESETS}
           icon={<Gavel className="w-4 h-4" />}
           error={errors.bidIncrement}
         />
@@ -52,7 +46,6 @@ export const AuctionPricingFields: React.FC<AuctionPricingFieldsProps> = ({
           value={reservePrice ?? 0}
           onChange={(v) => onChange('reservePrice', v || undefined)}
           denomination="thousand"
-          presets={RESERVE_PRICE_PRESETS}
           icon={<History className="w-4 h-4" />}
           error={errors.reservePrice}
         />

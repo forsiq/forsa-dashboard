@@ -1017,7 +1017,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 setAuctionPricing((prev) => ({ ...prev, startPrice: v }));
               }}
               denomination="thousand"
-              presets={[100_000, 250_000, 500_000, 1_000_000, 5_000_000]}
               icon={<IqdSymbol />}
               error={fieldErrors.startPrice}
               rightElement={<FieldHelpHint text={t('listing.deploy.hint.start_price')} />}
@@ -1058,7 +1057,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                         setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
                       }}
                       denomination="thousand"
-                      presets={[500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000]}
                       icon={<IqdSymbol />}
                       error={fieldErrors.originalPrice}
                       rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
@@ -1075,7 +1073,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                         setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
                       }}
                       denomination="unit"
-                      presets={[1_000, 5_000, 10_000, 25_000, 50_000]}
                       icon={<Gavel className="w-4 h-4" />}
                       error={fieldErrors.bidIncrement}
                       rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
@@ -1097,7 +1094,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                     setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
                   }}
                   denomination="thousand"
-                  presets={[500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000]}
                   icon={<IqdSymbol />}
                   error={fieldErrors.originalPrice}
                   rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
@@ -1114,7 +1110,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                     setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
                   }}
                   denomination="unit"
-                  presets={[1_000, 5_000, 10_000, 25_000, 50_000]}
                   icon={<Gavel className="w-4 h-4" />}
                   error={fieldErrors.bidIncrement}
                   rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
@@ -1140,7 +1135,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 setGroupBuyPricing((p) => ({ ...p, originalPrice: v }));
               }}
               denomination="thousand"
-              presets={[100_000, 250_000, 500_000, 1_000_000, 5_000_000]}
               icon={<IqdSymbol />}
               error={fieldErrors.originalPrice}
             />
@@ -1156,7 +1150,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 setGroupBuyPricing((p) => ({ ...p, dealPrice: v }));
               }}
               denomination="thousand"
-              presets={[50_000, 100_000, 250_000, 500_000, 1_000_000]}
               error={fieldErrors.dealPrice}
             />
             <AmberInput
