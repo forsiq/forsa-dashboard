@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useRouter } from 'next/router';
 import {
   ChevronLeft,
@@ -13,6 +14,8 @@ import {
   X,
   SendHorizonal,
   CheckCircle,
+  ScanBarcode,
+  ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -40,7 +43,7 @@ import {
 import { useList as useCategories } from '../../../services/categories/hooks';
 import { getLocalizedName } from '../../../services/categories/types';
 import type { FormFieldConfig } from '@core/services/types';
-import type { ListingSpec, ListingSource, CreateListingInput } from '../../../types/services/listings.types';
+import type { ListingSpec, ListingSource, CreateListingInput, ProductListing } from '../../../types/services/listings.types';
 import {
   useCreateListing,
   useUpdateListing,
@@ -48,6 +51,7 @@ import {
   useDeployAsAuction,
   useDeployAsGroupBuy,
   useSubmitListingForReview,
+  useLookupByBarcode,
 } from '../api/listing-hooks';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
@@ -156,6 +160,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     condition: '',
     authenticity: '',
     sku: '',
+    barcode: '',
     specs: [] as ListingSpec[],
     sources: [] as ListingSource[],
   });
@@ -194,6 +199,10 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const deployAuctionMutation = useDeployAsAuction();
   const deployGroupBuyMutation = useDeployAsGroupBuy();
   const submitForReviewMutation = useSubmitListingForReview();
+
+  const lookupByBarcodeMutation = useLookupByBarcode();
+  const [barcodeFoundListing, setBarcodeFoundListing] = useState<ProductListing | null>(null);
+  const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
 
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
 
@@ -255,6 +264,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         condition: existingListing.condition || '',
         authenticity: existingListing.authenticity || '',
         sku: existingListing.sku || '',
+        barcode: (existingListing as any).barcode || '',
         specs: existingListing.specs || [],
         sources: existingListing.sources || [],
       });
@@ -310,6 +320,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     condition: catalog.condition || undefined,
     authenticity: catalog.authenticity || undefined,
     sku: catalog.sku || undefined,
+    barcode: catalog.barcode || undefined,
     specs: filterSpecs(catalog.specs),
     sources: filterSources(catalog.sources),
   });
@@ -588,6 +599,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       condition: catalog.condition,
       authenticity: catalog.authenticity,
       sku: catalog.sku,
+      barcode: catalog.barcode,
     }),
     [catalog],
   );
@@ -734,6 +746,102 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 onChange={(e) => setCatalog((p) => ({ ...p, description: e.target.value }))}
               />
             </div>
+
+            {/* Barcode scan / lookup */}
+            <div className="mt-6 space-y-2">
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('listing.form.barcode') || 'Barcode'}
+              </label>
+              <div className="flex gap-2">
+                <AmberInput
+                  placeholder={t('listing.form.barcode_placeholder') || 'Scan or enter barcode...'}
+                  value={catalog.barcode}
+                  onChange={(e) => {
+                    setCatalog((p) => ({ ...p, barcode: e.target.value }));
+                    if (fieldErrors.barcode) {
+                      setFieldErrors((prev) => { const n = { ...prev }; delete n.barcode; return n; });
+                    }
+                  }}
+                  error={fieldErrors.barcode}
+                />
+                <AmberButton
+                  variant="outline"
+                  className="h-11 px-4 shrink-0 rounded-xl border-border"
+                  disabled={!catalog.barcode.trim() || lookupByBarcodeMutation.isPending}
+                  onClick={async () => {
+                    const barcode = catalog.barcode.trim();
+                    if (!barcode) return;
+                    try {
+                      const found = await lookupByBarcodeMutation.mutateAsync(barcode);
+                      if (found) {
+                        setBarcodeFoundListing(found);
+                        setShowBarcodeDialog(true);
+                      }
+                    } catch {
+                      // Not found — continue normal flow
+                    }
+                  }}
+                >
+                  {lookupByBarcodeMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-zinc-muted border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <ScanBarcode className="w-4 h-4" />
+                  )}
+                </AmberButton>
+              </div>
+              <p className="text-[10px] text-zinc-muted">
+                {t('listing.form.barcode_hint') || 'Enter EAN/UPC barcode to check for existing products'}
+              </p>
+            </div>
+
+            {/* Barcode found dialog */}
+            {showBarcodeDialog && barcodeFoundListing && typeof window !== 'undefined' && ReactDOM.createPortal(
+              <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
+                <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                      <AlertCircle className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+                        {t('listing.barcode.found_title') || 'Product Already Exists'}
+                      </h3>
+                      <p className="text-[13px] text-zinc-muted font-bold truncate max-w-[280px]">
+                        {barcodeFoundListing.title}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-zinc-muted mb-5">
+                    {t('listing.barcode.found_desc') || 'A product with this barcode already exists in the catalog. You can view it or continue creating a new listing.'}
+                  </p>
+                  <div className="flex items-center justify-end gap-3">
+                    <AmberButton
+                      variant="outline"
+                      className="h-10 px-5 font-bold uppercase tracking-wider text-xs"
+                      onClick={() => {
+                        setShowBarcodeDialog(false);
+                        setBarcodeFoundListing(null);
+                      }}
+                    >
+                      {t('listing.barcode.continue_create') || 'Continue Creating'}
+                    </AmberButton>
+                    <AmberButton
+                      className="h-10 px-5 font-bold uppercase tracking-wider text-xs bg-brand text-black border-none"
+                      onClick={() => {
+                        setShowBarcodeDialog(false);
+                        if (barcodeFoundListing.id) {
+                          router.push(`/listings/${barcodeFoundListing.id}`);
+                        }
+                      }}
+                    >
+                      <ExternalLink className="w-3 h-3 me-1" />
+                      {t('listing.barcode.view_product') || 'View Product'}
+                    </AmberButton>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )}
 
             {isMobile && (
               <>

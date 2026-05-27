@@ -27,6 +27,7 @@ export interface ProductListing {
   manufacturer?: string;
   origin?: string;
   sku?: string;
+  barcode?: string;
   specs?: ListingSpec[];
   sources?: ListingSource[];
   mainAttachmentId?: number;
@@ -114,6 +115,7 @@ export interface CreateListingInput {
   manufacturer?: string;
   origin?: string;
   sku?: string;
+  barcode?: string;
   specs?: ListingSpec[];
   sources?: ListingSource[];
   mainAttachmentId?: number;

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'merchant' | 'customer_support' | 'product_analyst';
+export type UserRole = 'admin' | 'merchant' | 'customer_support' | 'product_analyst' | 'product_moderator';
 
 export interface LoginCredentials {
   username: string;

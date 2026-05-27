@@ -206,3 +206,9 @@ export function useSubmitListingForReview() {
 }
 
 export { listingKeys };
+
+export function useLookupByBarcode() {
+  return useMutation({
+    mutationFn: (barcode: string) => listingApi.lookupByBarcode(barcode),
+  });
+}

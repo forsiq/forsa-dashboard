@@ -94,4 +94,10 @@ export const listingApi = {
     const response = await client.post(`/listings/${id}/submit`);
     return response.data.data;
   },
+
+  lookupByBarcode: async (barcode: string): Promise<ProductListing | null> => {
+    const client = listingBaseApi.getInstance();
+    const response = await client.get('/listings/lookup', { params: { barcode } });
+    return response.data.data ?? null;
+  },
 };

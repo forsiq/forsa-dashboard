@@ -10,6 +10,7 @@ export const DASHBOARD_ROLES: readonly UserRole[] = [
   'merchant',
   'customer_support',
   'product_analyst',
+  'product_moderator',
 ] as const;
 
 const ROLE_PRIORITY: UserRole[] = [...DASHBOARD_ROLES];
@@ -20,13 +21,14 @@ const ROLE_ALIASES: Record<string, UserRole> = {
   staff: 'customer_support',
   seller: 'merchant',
   vendor: 'merchant',
-  moderator: 'customer_support',
+  moderator: 'product_moderator',
   support: 'customer_support',
   employee: 'customer_support',
   customer: 'customer_support',
   user: 'customer_support',
   buyer: 'customer_support',
   developer: 'admin',
+  product_moderator: 'product_moderator',
 };
 
 function resolveRoleToken(value: string | undefined): UserRole | null {

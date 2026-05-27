@@ -498,6 +498,18 @@ export const ar: Record<string, string> = {
   "listing.form.title_required": "العنوان مطلوب",
   "listing.form.create_listing": "إنشاء منتج قابل لإعادة الاستخدام",
 
+  // الباركود
+  "listing.form.barcode": "باركود",
+  "listing.form.barcode_placeholder": "مسح أو إدخال الباركود...",
+  "listing.form.barcode_hint": "أدخل باركود EAN/UPC للتحقق من المنتجات الموجودة",
+  "listing.barcode.found_title": "المنتج موجود بالفعل",
+  "listing.barcode.found_desc": "يوجد منتج بهذا الباركود في الكتالوج. يمكنك عرضه أو المتابعة بإنشاء منتج جديد.",
+  "listing.barcode.view_product": "عرض المنتج",
+  "listing.barcode.continue_create": "متابعة الإنشاء",
+  "listing.barcode.scan": "مسح الباركود",
+  "listing.barcode.lookup_failed": "فشل البحث بالباركود",
+  "listing.table.barcode": "باركود",
+
   // Listing wizard
   "listing.wizard.title_create": "منتج جديد",
   "listing.wizard.title_edit": "تعديل المنتج",
@@ -1114,6 +1126,11 @@ export const ar: Record<string, string> = {
   "roles.merchant": "تاجر",
   "roles.customer_support": "خدمة العملاء",
   "roles.product_analyst": "محلل المنتجات",
+  "roles.product_moderator": "مراجع المنتجات",
+
+  // التاجر الموثوق
+  "merchant.trusted": "تاجر موثوق",
+  "merchant.trusted_desc": "منتجات التجار الموثوقين تُوافق عليها تلقائياً",
 
   // القائمة الجانبية - تنقل حسب الدور
   "sidebar.merchants": "التجار",
@@ -1181,8 +1198,10 @@ export const ar: Record<string, string> = {
   "moderation.approval.reject": "رفض",
   "moderation.approval.request_changes": "طلب تعديلات",
   "moderation.approval.approve": "موافقة",
+  "moderation.approval.edit_approve": "تعديل وموافقة",
   "moderation.approval.error_approve_auction": "فشلت الموافقة على المزاد",
   "moderation.approval.error_already_approved": "هذا العنصر تمت الموافقة عليه مسبقاً",
+  "moderation.approval.error_load_pending": "فشل تحميل العناصر المعلقة",
 
   // إدارة التجار
   "merchant.title": "التجار",

@@ -16,6 +16,8 @@ import {
   Package,
   Gavel,
   Inbox,
+  Pencil,
+  AlertTriangle,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import {
@@ -28,6 +30,7 @@ import {
   useRequestChangesAuction,
 } from '../hooks/useModeration';
 import type { PendingItem } from '../services/moderationService';
+import { useRouter } from 'next/router';
 
 type TabValue = 'listings' | 'auctions';
 type ModalAction = 'reject' | 'request_changes';
@@ -303,6 +306,12 @@ function PendingItemCard({
   isMutating: boolean;
   t: (key: string) => string;
 }) {
+  const router = useRouter();
+
+  const readinessWarnings = item.readinessWarnings ?? 0;
+  const readinessScore = item.readinessScore;
+  const hasWarnings = readinessWarnings > 0;
+
   return (
     <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-5 hover:border-[var(--color-brand)]/30 transition-all duration-200 group">
       <div className="flex items-start gap-4">
@@ -342,10 +351,41 @@ function PendingItemCard({
               </span>
             </div>
           </div>
+
+          {/* Readiness indicator */}
+          {type === 'listing' && (hasWarnings || readinessScore !== undefined) && (
+            <div className={cn(
+              'mt-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider',
+              hasWarnings ? 'text-amber-400' : 'text-green-400',
+            )}>
+              {hasWarnings ? (
+                <>
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>{readinessWarnings} {t('listing.readiness.warnings') || 'issues'}</span>
+                </>
+              ) : readinessScore !== undefined ? (
+                <>
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>{t('listing.readiness.ready') || 'Ready'}</span>
+                </>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {type === 'listing' && (
+            <AmberButton
+              className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"
+              onClick={() => router.push(`/listings/${item.id}/edit`)}
+              disabled={isMutating}
+            >
+              <Pencil className="w-3 h-3 me-1" />
+              {t('moderation.approval.edit_approve') || 'Edit & Approve'}
+            </AmberButton>
+          )}
+
           <AmberButton
             className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 rounded-lg transition-all"
             onClick={onApprove}

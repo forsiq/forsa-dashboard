@@ -1,8 +1,9 @@
+import { useRef, useEffect } from 'react';
 import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
-import { useErrorHandler } from '@core/hooks';
 import { useMutationContext } from '@core/hooks/useMutationContext';
 import { moderationService } from '../services/moderationService';
 import type { PendingResponse } from '../services/moderationService';
+import { useLanguage } from '@core/contexts/LanguageContext';
 
 export const moderationKeys = {
   all: ['moderation-approval'] as const,
@@ -10,6 +11,10 @@ export const moderationKeys = {
 };
 
 export function usePendingItems() {
+  const { t } = useLanguage();
+  const { toast } = useMutationContext();
+  const lastErrorRef = useRef<string | null>(null);
+
   const query = useQuery<PendingResponse>({
     queryKey: moderationKeys.pending(),
     queryFn: () => moderationService.getPending(),
@@ -18,7 +23,19 @@ export function usePendingItems() {
     placeholderData: keepPreviousData,
   });
 
-  useErrorHandler(query.error, 'Failed to load pending items');
+  useEffect(() => {
+    if (query.error) {
+      const errorMsg = (query.error as any)?.message || (query.error as any)?.error || 'Unknown error';
+      const errorKey = `pending:${errorMsg}`;
+      if (lastErrorRef.current !== errorKey) {
+        lastErrorRef.current = errorKey;
+        toast.error(`${t('moderation.approval.error_load_pending')}: ${errorMsg}`, 8000);
+      }
+    } else {
+      lastErrorRef.current = null;
+    }
+  }, [query.error, t, toast]);
+
   return query;
 }
 

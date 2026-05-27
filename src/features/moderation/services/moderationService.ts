@@ -16,6 +16,8 @@ export interface PendingItem {
   category: string;
   imageUrl?: string | null;
   status: string;
+  readinessScore?: number | null;
+  readinessWarnings?: number | null;
 }
 
 export interface PendingResponse {
@@ -33,6 +35,8 @@ function mapPendingItem(raw: Record<string, unknown>): PendingItem {
     category: String(raw.categoryName ?? '—'),
     imageUrl: (raw.imageUrl as string | null | undefined) ?? null,
     status: String(raw.approvalStatus ?? raw.status ?? 'unknown'),
+    readinessScore: raw.readinessScore != null ? Number(raw.readinessScore) : null,
+    readinessWarnings: raw.readinessWarnings != null ? Number(raw.readinessWarnings) : null,
   };
 }
 

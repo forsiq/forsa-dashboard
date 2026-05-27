@@ -500,6 +500,18 @@ export const en: Record<string, string> = {
   "listing.form.title_required": "Title is required",
   "listing.form.create_listing": "Create a reusable product listing",
 
+  // Barcode
+  "listing.form.barcode": "Barcode",
+  "listing.form.barcode_placeholder": "Scan or enter barcode...",
+  "listing.form.barcode_hint": "Enter EAN/UPC barcode to check for existing products",
+  "listing.barcode.found_title": "Product Already Exists",
+  "listing.barcode.found_desc": "A product with this barcode already exists in the catalog. You can view it or continue creating a new listing.",
+  "listing.barcode.view_product": "View Product",
+  "listing.barcode.continue_create": "Continue Creating",
+  "listing.barcode.scan": "Scan Barcode",
+  "listing.barcode.lookup_failed": "Barcode lookup failed",
+  "listing.table.barcode": "Barcode",
+
   // Listing wizard
   "listing.wizard.title_create": "New Product",
   "listing.wizard.title_edit": "Edit Product",
@@ -1113,6 +1125,11 @@ export const en: Record<string, string> = {
   "roles.merchant": "Merchant",
   "roles.customer_support": "Customer Support",
   "roles.product_analyst": "Product Analyst",
+  "roles.product_moderator": "Product Moderator",
+
+  // Trusted merchant
+  "merchant.trusted": "Trusted Merchant",
+  "merchant.trusted_desc": "Products from trusted merchants are auto-approved",
 
   // Sidebar - role-based navigation
   "sidebar.merchants": "Merchants",
@@ -1180,8 +1197,10 @@ export const en: Record<string, string> = {
   "moderation.approval.reject": "Reject",
   "moderation.approval.request_changes": "Request Changes",
   "moderation.approval.approve": "Approve",
+  "moderation.approval.edit_approve": "Edit & Approve",
   "moderation.approval.error_approve_auction": "Failed to approve auction",
   "moderation.approval.error_already_approved": "This item is already approved",
+  "moderation.approval.error_load_pending": "Failed to load pending items",
 
   // Merchant Management
   "merchant.title": "Merchants",
