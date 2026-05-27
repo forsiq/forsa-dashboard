@@ -12,6 +12,7 @@ import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
 import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
 import { TimerProvider } from '@core/contexts/TimerContext';
+import { PwaInstallProvider } from '@core/contexts/PwaInstallContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
 import { clearViewportBlockers } from '@core/lib/utils/clearViewportBlockers';
@@ -75,6 +76,7 @@ function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
                 <NavigationProvider>
                   <ProjectProvider>
                     <TimerProvider>
+                    <PwaInstallProvider>
                     <Toast />
                     {!isPublicRoute && <SessionExpiredDialog />}
                     <RouteProgressBar />
@@ -93,6 +95,7 @@ function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
                         </ProjectGuard>
                       </AuthGuard>
                     )}
+                    </PwaInstallProvider>
                     </TimerProvider>
                   </ProjectProvider>
                 </NavigationProvider>

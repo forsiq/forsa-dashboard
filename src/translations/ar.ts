@@ -1362,4 +1362,18 @@ export const ar: Record<string, string> = {
   "mobile.card.time_left": "الوقت المتبقي",
   "mobile.card.live": "مباشر",
   "mobile.header.search": "بحث",
+
+  // PWA install / download app
+  "mobile.nav.download_app": "تحميل التطبيق",
+  "mobile.install.title": "حمّل تطبيق فرصة",
+  "mobile.install.download": "تحميل",
+  "mobile.install.open_instructions": "طريقة التثبيت",
+  "mobile.install.description": "ثبّت فرصة على جهازك للوصول السريع، تجربة ملء الشاشة، وأداء يشبه التطبيق.",
+  "mobile.install.banner_cta": "احصل على التطبيق على الشاشة الرئيسية",
+  "mobile.install.ios_title": "التثبيت على iPhone / iPad",
+  "mobile.install.ios_step1": "اضغط مشاركة في Safari",
+  "mobile.install.ios_step2": "اختر إضافة إلى الشاشة الرئيسية",
+  "mobile.install.ios_step3": "افتح فرصة من الشاشة الرئيسية",
+  "mobile.install.already_installed": "تطبيق فرصة مثبت بالفعل على هذا الجهاز.",
+  "mobile.install.dismiss": "ليس الآن",
 };

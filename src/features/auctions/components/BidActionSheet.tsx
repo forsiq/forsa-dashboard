@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Gavel, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -42,22 +42,9 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
   const { t, dir } = useLanguage();
   const router = useRouter();
   const countdownLabel = useCountdown(bid?.endTime);
+  const { shouldRender, isOpen: isSheetOpen } = useOverlayPortal(isOpen, onClose);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleEsc);
-    const original = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = original;
-    };
-  }, [isOpen, onClose]);
-
-  if (!bid || typeof window === 'undefined') return null;
+  if (!bid || !shouldRender) return null;
 
   const statusConfig = STATUS_CONFIG[bid.displayStatus] || STATUS_CONFIG.active;
   const isAuctionEnded = bid.auctionStatus === 'ended' || bid.auctionStatus === 'sold';
@@ -68,27 +55,23 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
     router.push(`/auctions/${bid.auctionId}`);
   };
 
-  return ReactDOM.createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center" role="dialog" aria-modal="true">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
-          />
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-end justify-center" role="dialog" aria-modal="true">
+      <div
+        className={cn(
+          'absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300',
+          isSheetOpen ? 'opacity-100' : 'opacity-0',
+        )}
+        onClick={onClose}
+      />
 
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-obsidian-card border-t border-white/10 rounded-t-2xl shadow-2xl"
-            dir={dir}
-          >
+      <div
+        className={cn(
+          'relative w-full max-w-lg bg-obsidian-card border-t border-white/10 rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out',
+          isSheetOpen ? 'translate-y-0' : 'translate-y-full',
+        )}
+        dir={dir}
+      >
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-white/20" />
@@ -211,10 +194,8 @@ export const BidActionSheet: React.FC<BidActionSheetProps> = ({ isOpen, onClose,
                 }
               </button>
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>,
-    document.body
+      </div>
+    </div>,
+    getOverlayPortalRoot(),
   );
 };

@@ -18,6 +18,7 @@ import { useIsMobile } from '@core/hooks/useIsMobile';
 import { LayoutMobileHeader } from '@core/components/Mobile/LayoutMobileHeader';
 import { BottomTabBar } from '@core/components/Mobile/BottomTabBar';
 import { NavigationSheet } from '@core/components/Mobile/NavigationSheet';
+import { InstallPromptBannerGate } from '@core/components/Mobile/InstallPromptBannerGate';
 
 const SIDEBAR_COLLAPSED_KEY = 'forsa-sidebar-collapsed';
 const sidebarCollapseListeners = new Set<() => void>();
@@ -84,10 +85,12 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   const topbarUser = useTopbarUser();
 
   const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const closeNavSheet = useCallback(() => setIsNavSheetOpen(false), []);
 
   // Prevent a stuck mobile overlay after navigation or desktop resize.
   useEffect(() => {
     closeSidebar();
+    setIsNavSheetOpen(false);
   }, [router.pathname, closeSidebar]);
 
   useEffect(() => {
@@ -108,22 +111,35 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isSidebarOpen, closeSidebar]);
 
+  // Close mobile nav sheet before desktop layout unmounts the portal host.
+  useEffect(() => {
+    if (!isMobile) setIsNavSheetOpen(false);
+  }, [isMobile]);
+
+  const navSheet = (
+    <NavigationSheet isOpen={isMobile && isNavSheetOpen} onClose={closeNavSheet} />
+  );
+
   // ── Mobile layout ────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
-        <LayoutMobileHeader />
-        <main className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="pb-20">{children}</div>
-        </main>
-        <BottomTabBar onMorePress={() => setIsNavSheetOpen(true)} />
-        <NavigationSheet isOpen={isNavSheetOpen} onClose={() => setIsNavSheetOpen(false)} />
-      </div>
+      <>
+        <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
+          <LayoutMobileHeader />
+          <InstallPromptBannerGate />
+          <main className="flex-1 overflow-y-auto scroll-smooth">
+            <div className="pb-20">{children}</div>
+          </main>
+          <BottomTabBar onMorePress={() => setIsNavSheetOpen(true)} />
+        </div>
+        {navSheet}
+      </>
     );
   }
 
   // ── Desktop layout ───────────────────────────────────────────────────
   return (
+    <>
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
       <AmberTopbar
         onOpenSidebar={() => setIsSidebarOpen(true)}
@@ -169,5 +185,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
         </main>
       </div>
     </div>
+    {navSheet}
+    </>
   );
 };

@@ -1361,4 +1361,18 @@ export const en: Record<string, string> = {
   "mobile.card.time_left": "Time Left",
   "mobile.card.live": "Live",
   "mobile.header.search": "Search",
+
+  // PWA install / download app
+  "mobile.nav.download_app": "Download App",
+  "mobile.install.title": "Download Forsa App",
+  "mobile.install.download": "Download",
+  "mobile.install.open_instructions": "How to install",
+  "mobile.install.description": "Install Forsa on your device for quick access, full-screen experience, and app-like performance.",
+  "mobile.install.banner_cta": "Get the app on your home screen",
+  "mobile.install.ios_title": "Install on iPhone / iPad",
+  "mobile.install.ios_step1": "Tap Share in Safari",
+  "mobile.install.ios_step2": "Choose Add to Home Screen",
+  "mobile.install.ios_step3": "Open Forsa from your home screen",
+  "mobile.install.already_installed": "Forsa is already installed on this device.",
+  "mobile.install.dismiss": "Not now",
 };

@@ -1,3 +1,14 @@
+- version: "1.5.6"
+  date: "2026-05-27"
+  title:
+    en: "Download Forsa app (PWA)"
+    ar: "تحميل تطبيق فرصة (PWA)"
+  entries:
+    - description:
+        en: "Mobile dashboard shows a branded Download App banner and More menu entry with Android install prompt and iOS Add to Home Screen steps."
+        ar: "لوحة التحكم على الجوال تعرض شريط تحميل التطبيق وخيار في قائمة المزيد مع تثبيت Android وتعليمات إضافة إلى الشاشة الرئيسية على iOS."
+      type: added
+
 - version: "1.5.5"
   date: "2026-05-26"
   title:
