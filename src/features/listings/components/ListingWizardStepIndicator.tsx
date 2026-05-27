@@ -1,29 +1,23 @@
 import React from 'react';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { WIZARD_STEP_IDS } from '../utils/listing-wizard.utils';
 
 interface ListingWizardStepIndicatorProps {
   currentStep: number;
   maxStep?: number;
   minStep?: number;
+  stepLabelKeys: readonly string[];
 }
-
-const STEP_LABEL_KEYS = [
-  'listing.wizard.step.product',
-  'listing.wizard.step.details',
-  'listing.wizard.step.media',
-  'listing.wizard.step.channel',
-  'listing.wizard.step.publish',
-] as const;
 
 export function ListingWizardStepIndicator({
   currentStep,
-  maxStep = WIZARD_STEP_IDS.length,
+  maxStep,
   minStep = 1,
+  stepLabelKeys,
 }: ListingWizardStepIndicatorProps) {
   const { t, dir } = useLanguage();
-  const steps = STEP_LABEL_KEYS.slice(minStep - 1, maxStep);
+  const resolvedMaxStep = maxStep ?? stepLabelKeys.length;
+  const steps = stepLabelKeys.slice(minStep - 1, resolvedMaxStep);
 
   return (
     <div className="w-full overflow-x-auto scrollbar-hide pb-2" dir={dir}>

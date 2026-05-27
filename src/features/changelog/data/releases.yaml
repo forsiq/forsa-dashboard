@@ -1,3 +1,15 @@
+- version: "1.5.7"
+  date: "2026-05-27"
+  title:
+    en: "Simpler new product wizard"
+    ar: "معالج منتج جديد أبسط"
+  entries:
+    - description:
+        en: "New listing wizard on mobile shows essentials first; brand, SKU, specs, and advanced auction pricing are tucked into optional sections. Desktop keeps the full step-by-step form."
+        ar: "معالج المنتج الجديد على الجوال يعرض الأساسيات أولاً مع أقسام اختيارية للتفاصيل. على سطح المكتب يبقى النموذج الكامل خطوة بخطوة."
+      type: improved
+      sidebarPath: /listings
+
 - version: "1.5.6"
   date: "2026-05-27"
   title:
