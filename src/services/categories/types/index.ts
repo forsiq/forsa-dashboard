@@ -119,7 +119,7 @@ export interface CreateCategoryInput {
   icon?: string;
   sortOrder?: number;
   isActive?: boolean;
-  // Arabic name stored in translations
+  /** Arabic name → auction-service `translations.ar.name` */
   nameAr?: string;
   // Hierarchical fields
   parentId?: number | null;

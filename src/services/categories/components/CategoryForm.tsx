@@ -165,6 +165,10 @@ export function CategoryForm({
         level,
       };
 
+      if (data.nameAr?.trim()) {
+        payload.nameAr = data.nameAr.trim();
+      }
+
       if (initialData) {
         await onSubmit({ ...payload, id: initialData.id });
       } else {
