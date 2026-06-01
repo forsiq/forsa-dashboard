@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Plus,
@@ -11,9 +11,29 @@ import {
   Layers,
   Power,
   PowerOff,
+  GripVertical,
+  Loader2,
   ChevronDown,
+  Folder,
+  FolderOpen,
   MessageSquare,
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
@@ -27,6 +47,7 @@ import {
   useGetCategoryStats,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
+  useReorderCategories,
   useCategoryTree,
 } from '../hooks';
 import type { Category, CategoryTreeNode } from '../types';
@@ -87,7 +108,109 @@ function filterCategoryTree(
   return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
 }
 
+function arrayMove<T>(array: T[], from: number, to: number): T[] {
+  const next = array.slice();
+  const [removed] = next.splice(from, 1);
+  next.splice(to, 0, removed);
+  return next;
+}
+
+function findSiblingContext(
+  nodes: CategoryTreeNode[],
+  targetId: string,
+  parentId: string | null = null,
+): { siblings: CategoryTreeNode[]; parentId: string | null } | null {
+  if (nodes.some((n) => String(n.id) === targetId)) {
+    return { siblings: nodes, parentId };
+  }
+  for (const node of nodes) {
+    if (!node.children?.length) continue;
+    const found = findSiblingContext(node.children, targetId, node.id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function reorderSiblingsInTree(
+  nodes: CategoryTreeNode[],
+  parentId: string | null,
+  orderedIds: string[],
+): CategoryTreeNode[] {
+  if (parentId === null) {
+    const byId = new Map(nodes.map((n) => [String(n.id), n]));
+    return orderedIds.map((id) => byId.get(id)).filter((n): n is CategoryTreeNode => Boolean(n));
+  }
+  return nodes.map((node) => {
+    if (String(node.id) === String(parentId)) {
+      const byId = new Map((node.children ?? []).map((c) => [String(c.id), c]));
+      return {
+        ...node,
+        children: orderedIds.map((id) => byId.get(id)).filter((c): c is CategoryTreeNode => Boolean(c)),
+      };
+    }
+    if (node.children?.length) {
+      return {
+        ...node,
+        children: reorderSiblingsInTree(node.children, parentId, orderedIds),
+      };
+    }
+    return node;
+  });
+}
+
 // --- Tree rows (desktop table + mobile cards) ---
+
+const TREE_GUIDE_WIDTH = 22;
+
+interface CategoryTreeGuidesProps {
+  level: number;
+  isLastSibling: boolean;
+  ancestorContinues: boolean[];
+}
+
+/** Vertical/horizontal connectors for nested category rows (file-tree style). */
+function CategoryTreeGuides({
+  level,
+  isLastSibling,
+  ancestorContinues,
+}: CategoryTreeGuidesProps) {
+  if (level === 0) return null;
+
+  return (
+    <div className="flex items-stretch shrink-0 self-stretch min-h-8" aria-hidden>
+      {ancestorContinues.map((showVertical, depth) => (
+        <div
+          key={`tree-pipe-${depth}`}
+          className="relative shrink-0"
+          style={{ width: TREE_GUIDE_WIDTH }}
+        >
+          {showVertical && (
+            <span className="pointer-events-none absolute inset-y-0 start-2 w-px bg-white/15" />
+          )}
+        </div>
+      ))}
+      <div className="relative shrink-0" style={{ width: TREE_GUIDE_WIDTH }}>
+        <span className="pointer-events-none absolute top-0 start-2 h-1/2 w-px bg-white/20" />
+        <span className="pointer-events-none absolute top-1/2 start-2 end-0 h-px -translate-y-px bg-white/20" />
+        {!isLastSibling && (
+          <span className="pointer-events-none absolute bottom-0 top-1/2 start-2 w-px bg-white/20" />
+        )}
+        <span className="pointer-events-none absolute top-1/2 start-1.5 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-brand/50 ring-2 ring-brand/10" />
+      </div>
+    </div>
+  );
+}
+
+function resolveCategoryTreeIcon(
+  node: CategoryTreeNode,
+  hasChildren: boolean,
+  expanded: boolean,
+): React.ComponentType<{ className?: string }> {
+  const custom = node.icon ? getIconByName(node.icon) : null;
+  if (custom) return custom;
+  if (hasChildren) return expanded ? FolderOpen : Folder;
+  return LayoutGrid;
+}
 
 interface TreeNodeSharedProps {
   node: CategoryTreeNode;
@@ -106,6 +229,9 @@ interface TreeNodeSharedProps {
     onConfirm: () => void;
   }) => void;
   t: (key: string) => string;
+  canReorder?: boolean;
+  isLastSibling?: boolean;
+  ancestorContinues?: boolean[];
 }
 
 function CategoryRowActions({
@@ -181,17 +307,22 @@ function TreeCategoryCard({
   onDelete,
   openConfirm,
   t,
+  isLastSibling = true,
+  ancestorContinues = [],
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = Boolean(node.children?.length);
-  const IconComponent = node.icon ? getIconByName(node.icon) : null;
-  const Icon = IconComponent || LayoutGrid;
-  const indentPx = level * 12;
+  const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
 
   return (
-    <div style={{ marginInlineStart: indentPx }} className="space-y-2">
+    <div className="space-y-2">
       <AmberCard className="!p-4 bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm">
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-1 min-w-0">
+          <CategoryTreeGuides
+            level={level}
+            isLastSibling={isLastSibling}
+            ancestorContinues={ancestorContinues}
+          />
           <div className="flex items-center justify-center w-8 h-8 shrink-0 mt-0.5">
             {hasChildren ? (
               <button
@@ -220,8 +351,20 @@ function TreeCategoryCard({
           <div className="flex-1 min-w-0 space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)] shrink-0">
-                  <Icon className="w-4 h-4 text-zinc-muted" />
+                <div
+                  className={cn(
+                    'p-1.5 rounded-lg border shrink-0',
+                    hasChildren
+                      ? 'bg-brand/10 border-brand/20'
+                      : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'w-4 h-4',
+                      hasChildren ? 'text-brand' : 'text-zinc-muted',
+                    )}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p
@@ -275,11 +418,13 @@ function TreeCategoryCard({
 
       {expanded &&
         hasChildren &&
-        node.children!.map((child) => (
+        node.children!.map((child, index) => (
           <TreeCategoryCard
             key={child.id}
             node={child}
             level={level + 1}
+            isLastSibling={index === node.children!.length - 1}
+            ancestorContinues={[...ancestorContinues, !isLastSibling]}
             language={language}
             dir={dir}
             canManage={canManage}
@@ -294,26 +439,70 @@ function TreeCategoryCard({
   );
 }
 
-function TreeRow({
+function SortableTreeRow({
   node,
   level,
   language,
   dir,
   canManage,
+  canReorder = false,
   onEdit,
   onToggleStatus,
   onDelete,
   openConfirm,
   t,
+  isLastSibling = true,
+  ancestorContinues = [],
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
-  const IconComponent = node.icon ? getIconByName(node.icon) : null;
-  const Icon = IconComponent || LayoutGrid;
+  const Icon = resolveCategoryTreeIcon(node, Boolean(hasChildren), expanded);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: node.id, disabled: !canReorder });
+
+  const rowStyle: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: 'relative',
+    zIndex: isDragging ? 50 : 'auto',
+  };
 
   return (
     <>
-      <tr className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
+      <tr
+        ref={setNodeRef}
+        style={rowStyle}
+        className={cn(
+          'group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]',
+          level > 0 && 'bg-white/[0.015]',
+        )}
+      >
+        {/* Drag handle */}
+        <td className="px-3 py-5 align-middle w-10">
+          <div
+            ref={setActivatorNodeRef}
+            {...attributes}
+            {...listeners}
+            className={cn(
+              'flex items-center justify-center w-8 h-8 text-zinc-muted/30 transition-colors',
+              canReorder
+                ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
+                : 'cursor-not-allowed opacity-40',
+            )}
+            aria-hidden={!canReorder}
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+        </td>
         {/* Expand toggle — aligned with row content */}
         <td className="px-3 py-5 align-middle w-10">
           <div className="flex items-center justify-center w-8 h-8">
@@ -342,19 +531,38 @@ function TreeRow({
           </div>
         </td>
         {/* Name */}
-        <td className="px-6 py-5" style={{ paddingLeft: level > 0 ? `${24 + level * 32}px` : undefined }}>
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
-              <Icon className="w-4 h-4 text-zinc-muted" />
+        <td className="px-4 py-5 align-middle">
+          <div className="flex items-center gap-2 min-w-0">
+            <CategoryTreeGuides
+              level={level}
+              isLastSibling={isLastSibling}
+              ancestorContinues={ancestorContinues}
+            />
+            <div
+              className={cn(
+                'p-1.5 rounded-lg border shrink-0',
+                hasChildren
+                  ? 'bg-brand/10 border-brand/20'
+                  : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
+              )}
+            >
+              <Icon
+                className={cn(
+                  'w-4 h-4',
+                  hasChildren ? 'text-brand' : 'text-zinc-muted',
+                )}
+              />
             </div>
-            <span className={cn(
-              'text-sm tracking-tight',
-              level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
-            )}>
+            <span
+              className={cn(
+                'text-sm tracking-tight truncate',
+                level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
+              )}
+            >
               {getLocalizedName(node, language)}
             </span>
             {hasChildren && (
-              <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full shrink-0 tabular-nums">
                 {node.children!.length}
               </span>
             )}
@@ -398,21 +606,31 @@ function TreeRow({
         </td>
       </tr>
       {/* Render children */}
-      {expanded && hasChildren && node.children!.map((child) => (
-        <TreeRow
-          key={child.id}
-          node={child}
-          level={level + 1}
-          language={language}
-          dir={dir}
-          canManage={canManage}
-          onEdit={onEdit}
-          onToggleStatus={onToggleStatus}
-          onDelete={onDelete}
-          openConfirm={openConfirm}
-          t={t}
-        />
-      ))}
+      {expanded && hasChildren && (
+        <SortableContext
+          items={node.children!.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {node.children!.map((child, index) => (
+            <SortableTreeRow
+              key={child.id}
+              node={child}
+              level={level + 1}
+              isLastSibling={index === node.children!.length - 1}
+              ancestorContinues={[...ancestorContinues, !isLastSibling]}
+              language={language}
+              dir={dir}
+              canManage={canManage}
+              canReorder={canReorder}
+              onEdit={onEdit}
+              onToggleStatus={onToggleStatus}
+              onDelete={onDelete}
+              openConfirm={openConfirm}
+              t={t}
+            />
+          ))}
+        </SortableContext>
+      )}
     </>
   );
 }
@@ -444,6 +662,78 @@ export function CategoriesPage() {
 
   const hasActiveFilters =
     statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
+
+  const canReorder =
+    canManageCategories &&
+    statusFilter === 'all' &&
+    !(debouncedSearch ?? '').trim();
+
+  const [localTree, setLocalTree] = useState<CategoryTreeNode[]>([]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  const displayTree = canReorder ? localTree : filteredTree;
+
+  useEffect(() => {
+    if (isSavingOrder) return;
+    if (canReorder) {
+      setLocalTree(treeData?.tree ?? []);
+    }
+  }, [treeData?.tree, canReorder, isSavingOrder]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const reorderMutation = useReorderCategories({
+    onSuccess: () => {
+      void refetchTree();
+    },
+  });
+
+  const persistSiblingOrder = useCallback(
+    async (orderedIds: string[]) => {
+      setIsSavingOrder(true);
+      try {
+        await reorderMutation.mutateAsync(orderedIds);
+      } catch {
+        setLocalTree(treeData?.tree ?? []);
+      } finally {
+        setIsSavingOrder(false);
+      }
+    },
+    [reorderMutation, treeData?.tree],
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      if (!canReorder) return;
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const activeCtx = findSiblingContext(localTree, String(active.id));
+      const overCtx = findSiblingContext(localTree, String(over.id));
+      if (!activeCtx || !overCtx || activeCtx.parentId !== overCtx.parentId) return;
+
+      const oldIndex = activeCtx.siblings.findIndex(
+        (s) => String(s.id) === String(active.id),
+      );
+      const newIndex = activeCtx.siblings.findIndex(
+        (s) => String(s.id) === String(over.id),
+      );
+      if (oldIndex < 0 || newIndex < 0) return;
+
+      const reordered = arrayMove(activeCtx.siblings, oldIndex, newIndex);
+      const orderedIds = reordered.map((s) => String(s.id));
+      setLocalTree((prev) =>
+        reorderSiblingsInTree(prev, activeCtx.parentId, orderedIds),
+      );
+      void persistSiblingOrder(orderedIds);
+    },
+    [canReorder, localTree, persistSiblingOrder],
+  );
 
   // Fetch stats
   const { data: stats, isPending: statsLoading } = useGetCategoryStats();
@@ -518,6 +808,12 @@ export function CategoriesPage() {
       headerActions={
         canManageCategories ? (
         <div className="flex items-center gap-3">
+          {isSavingOrder && (
+            <span className="hidden md:flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
+              <Loader2 className="w-4 h-4 animate-spin text-brand" />
+              {t('category.saving_order') || t('common.saving') || 'جاري الحفظ...'}
+            </span>
+          )}
           <AmberButton
             className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
             onClick={() => router.push('/categories/new')}
@@ -636,11 +932,13 @@ export function CategoriesPage() {
               <div className="flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm">
                 {/* Mobile: card tree */}
                 <div className="md:hidden p-3 space-y-2 min-h-[200px]">
-                  {filteredTree.map((node) => (
+                  {displayTree.map((node, index) => (
                     <TreeCategoryCard
                       key={node.id}
                       node={node}
                       level={0}
+                      isLastSibling={index === displayTree.length - 1}
+                      ancestorContinues={[]}
                       language={language}
                       dir={dir}
                       canManage={canManageCategories}
@@ -653,47 +951,68 @@ export function CategoriesPage() {
                   ))}
                 </div>
 
-                {/* Desktop: table tree */}
+                {/* Desktop: table tree with drag-and-drop reorder */}
                 <div className="hidden md:block flex-1 min-h-[200px] overflow-x-auto">
-                  <table className="w-full text-start border-collapse min-w-[800px]">
-                    <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
-                      <tr>
-                        <th className="px-3 py-5 w-10" />
-                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
-                          {t('category.name') || 'Name'}
-                        </th>
-                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
-                          {t('category.slug') || 'Slug'}
-                        </th>
-                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                          {t('category.products_count') || 'Products'}
-                        </th>
-                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                          {t('category.status') || 'Status'}
-                        </th>
-                        <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                          {t('common.actions') || 'Actions'}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.03]">
-                      {filteredTree.map((node) => (
-                        <TreeRow
-                          key={node.id}
-                          node={node}
-                          level={0}
-                          language={language}
-                          dir={dir}
-                          canManage={canManageCategories}
-                          onEdit={handleEdit}
-                          onToggleStatus={handleToggleStatus}
-                          onDelete={handleDelete}
-                          openConfirm={openConfirm}
-                          t={t}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    {canManageCategories && !canReorder && (
+                      <p className="px-4 py-2 text-[10px] font-bold text-zinc-muted uppercase tracking-widest border-b border-white/5 bg-white/[0.02]">
+                        {t('category.reorder_requires_full_list') ||
+                          'امسح البحث واختر «الكل» لإعادة ترتيب الفئات'}
+                      </p>
+                    )}
+                    <table className="w-full text-start border-collapse min-w-[800px]">
+                      <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+                        <tr>
+                          <th className="px-3 py-5 w-10" />
+                          <th className="px-3 py-5 w-10" />
+                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
+                            {t('category.name') || 'Name'}
+                          </th>
+                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
+                            {t('category.slug') || 'Slug'}
+                          </th>
+                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                            {t('category.products_count') || 'Products'}
+                          </th>
+                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                            {t('category.status') || 'Status'}
+                          </th>
+                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
+                            {t('common.actions') || 'Actions'}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.03]">
+                        <SortableContext
+                          items={displayTree.map((n) => n.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {displayTree.map((node, index) => (
+                            <SortableTreeRow
+                              key={node.id}
+                              node={node}
+                              level={0}
+                              isLastSibling={index === displayTree.length - 1}
+                              ancestorContinues={[]}
+                              language={language}
+                              dir={dir}
+                              canManage={canManageCategories}
+                              canReorder={canReorder}
+                              onEdit={handleEdit}
+                              onToggleStatus={handleToggleStatus}
+                              onDelete={handleDelete}
+                              openConfirm={openConfirm}
+                              t={t}
+                            />
+                          ))}
+                        </SortableContext>
+                      </tbody>
+                    </table>
+                  </DndContext>
                 </div>
               </div>
             </div>
