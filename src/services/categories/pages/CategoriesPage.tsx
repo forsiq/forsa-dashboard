@@ -15,7 +15,6 @@ import {
   GripVertical,
   Loader2,
   ChevronDown,
-  ChevronRight,
   ListTree,
   MessageSquare,
 } from 'lucide-react';
@@ -116,6 +115,7 @@ interface TreeRowProps {
   node: CategoryTreeNode;
   level: number;
   language: string;
+  dir: 'ltr' | 'rtl';
   onEdit: (category: Category) => void;
   onToggleStatus: (category: Category) => void;
   onDelete: (id: string) => void;
@@ -123,7 +123,7 @@ interface TreeRowProps {
   t: (key: string) => string;
 }
 
-function TreeRow({ node, level, language, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
+function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const IconComponent = node.icon ? getIconByName(node.icon) : null;
@@ -132,21 +132,31 @@ function TreeRow({ node, level, language, onEdit, onToggleStatus, onDelete, open
   return (
     <>
       <tr className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
-        {/* Expand toggle */}
-        <td className="px-3 py-5">
+        {/* Expand toggle — chevron anchored at bottom of row */}
+        <td className="px-3 py-0 align-bottom w-10">
           {hasChildren ? (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="p-1 rounded hover:bg-white/10 transition-colors text-zinc-muted"
-            >
-              {expanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </button>
+            <div className="flex flex-col justify-end min-h-[52px] pb-2">
+              <button
+                type="button"
+                onClick={() => setExpanded(!expanded)}
+                className="p-1 rounded hover:bg-white/10 transition-colors text-zinc-muted"
+                aria-expanded={expanded}
+                aria-label={
+                  expanded
+                    ? t('common.collapse') || 'Collapse'
+                    : t('common.expand') || 'Expand'
+                }
+              >
+                <ChevronDown
+                  className={cn(
+                    'w-4 h-4 transition-transform duration-200',
+                    !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
+                  )}
+                />
+              </button>
+            </div>
           ) : (
-            <div className="w-6" />
+            <div className="min-h-[52px]" />
           )}
         </td>
         {/* Name */}
@@ -244,6 +254,7 @@ function TreeRow({ node, level, language, onEdit, onToggleStatus, onDelete, open
           node={child}
           level={level + 1}
           language={language}
+          dir={dir}
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
           onDelete={onDelete}
@@ -644,6 +655,7 @@ export function CategoriesPage() {
                           node={node}
                           level={0}
                           language={language}
+                          dir={dir}
                           onEdit={handleEdit}
                           onToggleStatus={handleToggleStatus}
                           onDelete={handleDelete}

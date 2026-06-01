@@ -11,7 +11,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { IconPicker } from '@core/components/IconPicker';
-import { AmberToggle } from '@core/components/AmberToggle';
+import { AmberToggle } from '@core/components';
 import { useFormUX } from '@core/hooks/useFormUX';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 import { getLocalizedName } from '../types';
