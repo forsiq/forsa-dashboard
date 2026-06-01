@@ -207,13 +207,18 @@ export function CategoryDetailPage() {
                 </div>
               )}
 
-              {/* Sort Order */}
-              <DetailRow
-                icon={<SortAsc className="w-4 h-4" />}
-                label={t('category.order') || 'Sort Order'}
-                value={String(category.sortOrder ?? 0)}
-                isRTL={isRTL}
-              />
+              {/* Sort order — managed from categories list */}
+              <div className="flex items-start justify-between group">
+                <div className="flex items-center gap-3">
+                  <SortAsc className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors mt-0.5" />
+                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                    {t('category.order') || 'Order'}
+                  </span>
+                </div>
+                <span className="text-[13px] font-bold text-zinc-muted tracking-tight max-w-[60%] text-end">
+                  {t('category.order_from_list')}
+                </span>
+              </div>
 
               {/* Product Count */}
               <DetailRow

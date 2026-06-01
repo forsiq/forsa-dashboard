@@ -22,7 +22,7 @@ export const categoryFormFields: FormFieldConfig[] = [
       min: 2,
       max: 100,
     },
-    grid: { xs: 12, md: 6 },
+    grid: { xs: 12 },
   },
   {
     name: 'nameAr',
@@ -32,55 +32,7 @@ export const categoryFormFields: FormFieldConfig[] = [
     validation: {
       max: 100,
     },
-    grid: { xs: 12, md: 6 },
-  },
-  {
-    name: 'slug',
-    label: 'category.slug',
-    type: 'text',
-    placeholder: 'category-url-slug',
-    validation: {
-      pattern: '^[a-z0-9-]+$',
-      custom: (value: unknown) => {
-        const str = String(value);
-        if (str && !/^[a-z0-9-]+$/.test(str)) {
-          return 'Slug must contain only lowercase letters, numbers, and hyphens';
-        }
-        return undefined;
-      },
-    },
-    grid: { xs: 12, md: 6 },
-  },
-  {
-    name: 'status',
-    label: 'category.status',
-    type: 'select',
-    options: [
-      { label: 'category.active', value: 'active' },
-      { label: 'category.inactive', value: 'inactive' },
-    ],
-    defaultValue: 'active',
-    required: true,
-    grid: { xs: 12, md: 6 },
-  },
-  {
-    name: 'parentId',
-    label: 'category.parent',
-    type: 'select',
-    options: [], // Will be populated dynamically
-    placeholder: 'category.select_parent',
-    grid: { xs: 12, md: 6 },
-  },
-  {
-    name: 'order',
-    label: 'category.order',
-    type: 'number',
-    placeholder: '0',
-    defaultValue: 0,
-    validation: {
-      min: 0,
-    },
-    grid: { xs: 12, md: 6 },
+    grid: { xs: 12 },
   },
   {
     name: 'description',
@@ -90,6 +42,33 @@ export const categoryFormFields: FormFieldConfig[] = [
     validation: {
       max: 500,
     },
+    grid: { xs: 12 },
+  },
+  {
+    name: 'parentId',
+    label: 'category.parent',
+    type: 'select',
+    options: [], // Populated dynamically
+    placeholder: 'category.select_parent',
+    grid: { xs: 12 },
+  },
+  {
+    name: 'icon',
+    label: 'category.icon',
+    type: 'text',
+    placeholder: 'category.icon_placeholder',
+    grid: { xs: 12, md: 6 },
+  },
+  {
+    name: 'isActive',
+    label: 'category.status',
+    type: 'radio',
+    options: [
+      { label: 'category.active', value: 'active' },
+      { label: 'category.inactive', value: 'inactive' },
+    ],
+    defaultValue: 'active',
+    required: true,
     grid: { xs: 12 },
   },
   {
@@ -107,48 +86,42 @@ export const categoryFormFields: FormFieldConfig[] = [
 export const categoryFormConfig = {
   fields: categoryFormFields,
 
-  // Form layout
   layout: 'vertical' as const,
-  columns: 2, // 2 columns for most fields, full width for description
+  columns: 1,
 
-  // Form sections (for multi-step forms)
   sections: [
     {
-      id: 'basic',
-      title: 'category.basic_info',
-      description: 'category.basic_info_desc',
-      fields: ['name', 'nameAr', 'slug', 'status', 'parentId', 'order'],
+      id: 'content',
+      title: 'category.section_content',
+      fields: ['name', 'nameAr', 'description'],
     },
     {
-      id: 'details',
+      id: 'placement',
+      title: 'category.section_placement',
+      fields: ['parentId', 'icon'],
+    },
+    {
+      id: 'visibility',
+      title: 'category.section_visibility',
+      fields: ['isActive'],
+    },
+    {
+      id: 'media',
       title: 'category.details',
-      fields: ['description', 'image'],
+      fields: ['image'],
     },
   ],
 
-  // Validation schema (matches the fields above)
   validation: {
     name: {
       required: true,
       minLength: 2,
       maxLength: 100,
     },
-    slug: {
-      pattern: /^[a-z0-9-]+$/,
-    },
   },
 
-  // Submit behavior
   submitOnEnter: false,
   resetAfterSubmit: false,
-
-  // Auto-generate slug from name
-  autoSlug: {
-    from: 'name',
-    to: 'slug',
-    lowercase: true,
-    slugify: true,
-  },
 };
 
 // ============================================================================

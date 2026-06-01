@@ -9,6 +9,11 @@
         ar: "يمكن للتجار إنشاء وتعديل فئات المنتجات (نفس صلاحيات كتالوج المنتجات)."
       type: changed
       sidebarPath: /categories
+    - description:
+        en: "Category add/edit form simplified: one name with auto-translate hint, optional Arabic override, active/inactive radios; slug and manual sort order removed from the form (order via list drag-and-drop)."
+        ar: "تبسيط نموذج إضافة/تعديل الفئة: اسم واحد مع تلميح الترجمة التلقائية، عربي اختياري، حالة نشط/غير نشط؛ إزالة المعرّف والترتيب اليدوي من النموذج (الترتيب من القائمة بالسحب)."
+      type: improved
+      sidebarPath: /categories
 
 - version: "1.5.7"
   date: "2026-05-27"
