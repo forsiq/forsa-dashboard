@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Lightbulb, Loader2, Check, X, ChevronDown } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Lightbulb, Loader2, Check, X } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
@@ -8,12 +10,19 @@ import { AmberDropdown } from '@core/components/AmberDropdown';
 import { getLocalizedName } from '../types';
 import type { Category, SuggestCategoryInput } from '../types';
 
-// These hooks are added by the concurrent agent
 import {
   useMainCategories,
   useCategoryChildren,
   useSuggestCategory,
 } from '../hooks';
+
+import {
+  suggestCategorySchema,
+  type SuggestCategoryFormData,
+  toSuggestCategoryPayload,
+  NAME_MAX,
+  DESC_MAX,
+} from '../lib';
 
 interface CategoryPickerProps {
   value?: number;
@@ -30,10 +39,23 @@ export function CategoryPicker({
   const { t, language, dir, isRTL } = useLanguage();
   const [selectedMainId, setSelectedMainId] = useState<string | null>(null);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
-  const [suggestName, setSuggestName] = useState('');
-  const [suggestDescription, setSuggestDescription] = useState('');
-  const [suggestParentId, setSuggestParentId] = useState<string>('');
   const [suggestSuccess, setSuggestSuccess] = useState(false);
+
+  // Suggest form with RHF + Zod
+  const {
+    register: registerSuggest,
+    handleSubmit: handleSuggestSubmit,
+    formState: { errors: suggestErrors },
+    reset: resetSuggestForm,
+    watch: watchSuggest,
+  } = useForm<SuggestCategoryFormData>({
+    resolver: zodResolver(suggestCategorySchema as any),
+    defaultValues: { name: '', description: '', parentId: '' },
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
+
+  const suggestParentId = watchSuggest('parentId');
 
   // Fetch main categories
   const { data: mainCategories, isLoading: loadingMain } = useMainCategories();
@@ -67,21 +89,13 @@ export function CategoryPicker({
     onChange(Number(category.id));
   };
 
-  const handleSuggestSubmit = () => {
-    if (!suggestName.trim()) return;
-
-    const input: SuggestCategoryInput = {
-      name: suggestName.trim(),
-      description: suggestDescription.trim() || undefined,
-      parentId: suggestParentId ? Number(suggestParentId) : undefined,
-    };
+  const onSuggestValid = (data: SuggestCategoryFormData) => {
+    const input: SuggestCategoryInput = toSuggestCategoryPayload(data);
 
     suggestMutation.mutate(input, {
       onSuccess: () => {
         setSuggestSuccess(true);
-        setSuggestName('');
-        setSuggestDescription('');
-        setSuggestParentId('');
+        resetSuggestForm();
         setTimeout(() => {
           setSuggestSuccess(false);
           setShowSuggestForm(false);
@@ -130,7 +144,6 @@ export function CategoryPicker({
           <div className="flex flex-wrap gap-2">
             {mainCats.map((cat) => {
               const isSelected = String(value) === String(cat.id);
-              const isExpanded = selectedMainId === String(cat.id);
 
               return (
                 <button
@@ -225,15 +238,16 @@ export function CategoryPicker({
               </span>
             </div>
           ) : (
-            <>
+            <form onSubmit={handleSuggestSubmit(onSuggestValid)} className="space-y-4">
               <AmberInput
                 label={t('category.suggest_name') || 'Category Name'}
                 placeholder={
                   t('category.suggest_name_placeholder') || 'Enter category name'
                 }
-                value={suggestName}
-                onChange={(e) => setSuggestName(e.target.value)}
+                maxLength={NAME_MAX}
+                error={suggestErrors.name?.message ? t(suggestErrors.name.message) : undefined}
                 required
+                {...registerSuggest('name')}
               />
 
               <AmberInput
@@ -244,10 +258,11 @@ export function CategoryPicker({
                   t('category.suggest_description_placeholder') ||
                   'Brief description of the category'
                 }
-                value={suggestDescription}
-                onChange={(e) => setSuggestDescription(e.target.value)}
+                maxLength={DESC_MAX}
+                error={suggestErrors.description?.message ? t(suggestErrors.description.message) : undefined}
                 multiline
                 rows={2}
+                {...registerSuggest('description')}
               />
 
               <AmberDropdown
@@ -259,8 +274,11 @@ export function CategoryPicker({
                     value: String(cat.id),
                   })),
                 ]}
-                value={suggestParentId}
-                onChange={setSuggestParentId}
+                value={suggestParentId || ''}
+                onChange={(val: string) => {
+                  // Use manual setValue-like approach since AmberDropdown isn't a native input
+                  registerSuggest('parentId').onChange({ target: { value: val, name: 'parentId' } } as any);
+                }}
                 placeholder={
                   t('category.select_parent_placeholder') || 'Select parent...'
                 }
@@ -268,8 +286,8 @@ export function CategoryPicker({
 
               <div className="flex items-center gap-3 pt-2">
                 <AmberButton
-                  onClick={handleSuggestSubmit}
-                  disabled={!suggestName.trim() || suggestMutation.isPending}
+                  type="submit"
+                  disabled={suggestMutation.isPending}
                   className="h-10 px-6 bg-brand hover:bg-brand text-black font-bold rounded-xl border-none"
                 >
                   {suggestMutation.isPending ? (
@@ -282,6 +300,7 @@ export function CategoryPicker({
                   )}
                 </AmberButton>
                 <AmberButton
+                  type="button"
                   variant="outline"
                   onClick={() => setShowSuggestForm(false)}
                   className="h-10 px-6 rounded-xl font-bold"
@@ -289,7 +308,7 @@ export function CategoryPicker({
                   {t('common.cancel') || 'Cancel'}
                 </AmberButton>
               </div>
-            </>
+            </form>
           )}
         </div>
       )}

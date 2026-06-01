@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CheckCircle2,
   XCircle,
@@ -19,12 +21,17 @@ import { EmptyState } from '@core/components/EmptyState';
 import { getLocalizedName } from '../types';
 import type { CategorySuggestion, ReviewSuggestionInput } from '../types';
 
-// These hooks are added by the concurrent agent
 import {
   useCategorySuggestions,
   useReviewSuggestion,
   useMainCategories,
 } from '../hooks';
+
+import {
+  rejectSuggestionSchema,
+  type RejectSuggestionFormData,
+  REJECTION_REASON_MAX,
+} from '../lib';
 
 type SuggestionStatus = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -44,7 +51,19 @@ function SuggestionCard({
   const { t, language, dir, isRTL } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [showRejectForm, setShowRejectForm] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
+
+  // Reject form with RHF + Zod
+  const {
+    register: registerReject,
+    handleSubmit: handleRejectSubmit,
+    formState: { errors: rejectErrors, isValid: rejectFormValid },
+    reset: resetRejectForm,
+  } = useForm<RejectSuggestionFormData>({
+    resolver: zodResolver(rejectSuggestionSchema as any),
+    defaultValues: { rejectionReason: '' },
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const parentCategory = suggestion.parentId
     ? parentCategories.find(
@@ -77,14 +96,13 @@ function SuggestionCard({
     onReview(suggestion.id, { status: 'approved' });
   };
 
-  const handleReject = () => {
-    if (!rejectionReason.trim()) return;
+  const onRejectValid = (data: RejectSuggestionFormData) => {
     onReview(suggestion.id, {
       status: 'rejected',
-      rejectionReason: rejectionReason.trim(),
+      rejectionReason: data.rejectionReason.trim(),
     });
     setShowRejectForm(false);
-    setRejectionReason('');
+    resetRejectForm();
   };
 
   const formattedDate = new Date(suggestion.createdAt).toLocaleDateString(
@@ -202,7 +220,7 @@ function SuggestionCard({
 
           {/* Reject Form */}
           {isPending && showRejectForm && (
-            <div className="space-y-3 pt-1">
+            <form onSubmit={handleRejectSubmit(onRejectValid)} className="space-y-3 pt-1">
               <AmberInput
                 label={
                   t('category.rejection_reason_label') || 'Reason for rejection'
@@ -211,16 +229,17 @@ function SuggestionCard({
                   t('category.rejection_reason_placeholder') ||
                   'Explain why this is being rejected...'
                 }
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                maxLength={REJECTION_REASON_MAX}
+                error={rejectErrors.rejectionReason?.message ? t(rejectErrors.rejectionReason.message) : undefined}
                 multiline
                 rows={2}
                 required
+                {...registerReject('rejectionReason')}
               />
               <div className="flex items-center gap-3">
                 <AmberButton
-                  onClick={handleReject}
-                  disabled={!rejectionReason.trim() || isReviewing}
+                  type="submit"
+                  disabled={isReviewing}
                   className="h-9 px-5 bg-danger hover:bg-danger text-white font-bold rounded-lg border-none text-sm"
                 >
                   {isReviewing ? (
@@ -230,17 +249,18 @@ function SuggestionCard({
                   )}
                 </AmberButton>
                 <AmberButton
+                  type="button"
                   variant="outline"
                   onClick={() => {
                     setShowRejectForm(false);
-                    setRejectionReason('');
+                    resetRejectForm();
                   }}
                   className="h-9 px-5 rounded-lg font-bold text-sm"
                 >
                   {t('common.cancel') || 'Cancel'}
                 </AmberButton>
               </div>
-            </div>
+            </form>
           )}
         </div>
       )}

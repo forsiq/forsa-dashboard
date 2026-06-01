@@ -218,6 +218,8 @@ export const en: Record<string, string> = {
   "common.all": "All",
   "common.uncategorized": "Uncategorized",
   "common.apply": "Apply",
+  "common.expand": "Expand",
+  "common.collapse": "Collapse",
   "common.image_upload_hint": "PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.",
   "common.authenticity_copy": "Replica / copy",
   "common.authenticity_high_copy": "High-quality replica",
@@ -847,6 +849,16 @@ export const en: Record<string, string> = {
   "category.icon_search": "Search icons…",
   "category.description_placeholder": "Category description…",
   "category.order_from_list": "Order is managed by drag and drop on the categories list.",
+
+  // Category validation messages
+  "category.validation.name_required": "Category name is required",
+  "category.validation.name_max": "Name must be 100 characters or less",
+  "category.validation.description_max": "Description must be 500 characters or less",
+  "category.validation.icon_max": "Icon name must be 50 characters or less",
+  "category.validation.rejection_required": "Rejection reason is required",
+  "category.validation.rejection_max": "Reason must be 500 characters or less",
+  "category.validation.max_depth": "Maximum category depth exceeded",
+  "category.validation.slug_conflict": "A category with this name already exists",
 
   // Order statuses
   "orders.status.pending": "Pending",

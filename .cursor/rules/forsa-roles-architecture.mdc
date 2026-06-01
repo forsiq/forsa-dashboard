@@ -1,0 +1,60 @@
+---
+description: "Forsa (project 11) role architecture: three-layer roles (platform / business / flex-auth), JWT flow, and how Developer Platform changes propagate to Dashboard."
+alwaysApply: true
+---
+
+# Forsa Roles Architecture (Project 11)
+
+## Three Role Layers (do not confuse)
+
+| Layer | Storage | Examples | Consumer |
+|-------|----------|----------|----------|
+| **Platform role** | `zv-auth` `User.role` | `user`, `admin`, `developer` | ZoneVast platform permissions |
+| **Business role** (Forsa only) | `zv-project` `ProjectCollaborator.business_role` | `merchant`, `trusted_merchant`, `product_moderator`, `customer_support` | JWT at login + Dashboard + auction-service |
+| **Permission role** | `ProjectCollaborator.role` | `admin`, `editor`, `viewer` | Project management in Developer Platform |
+| **Flex-auth role** | `zv_phone_auth.users.role` | `customer`, `staff`, `admin` | **Mobile only** — does NOT affect Forsa Dashboard |
+
+## JWT Flow for Dashboard Access
+
+1. Login: `POST /api/v1/auth/auth/token/` on **zv-auth** (NOT flex-auth) with `project_id: 11`.
+2. JWT builder reads `account_projectcollaborator` by `user_id` (integer from Django User) + `project_id=11`.
+3. If collaborator has `business_role`, it is added to JWT as both `business_role` and `role`.
+4. Dashboard reads JWT via `extractDashboardRole()` in `src/core/auth/dashboardRole.ts`.
+5. Priority: `business_role` claim → `role` claim → alias mapping → default `customer_support`.
+
+## Source of Truth
+
+- **Forsa Dashboard roles** = `ProjectCollaborator.business_role` on project 11.
+- Changing flex-auth `role` does NOT affect Dashboard unless collaborator is also updated.
+- After collaborator change, user must **re-login** (JWT is built at token issuance time).
+
+## Developer Platform — Correct Paths
+
+- **Users Service → User Form / User Detail**: Can set `business_role` on collaborator. This is the correct path for Forsa role changes.
+- **Flex Auth → Users**: Only changes mobile role. Does NOT write `ProjectCollaborator`. For project 11, a separate sync mechanism is needed.
+- **Project Team / Users Permissions**: Currently only sets permission role (admin/editor/viewer), NOT `business_role`. Needs enhancement.
+
+## Role Matrix
+
+| business_role | Dashboard role | Categories CRUD | Suggestions review |
+|---------------|----------------|-----------------|---------------------|
+| `admin` (platform) | admin | yes | yes |
+| `merchant` | merchant | yes | no |
+| `trusted_merchant` | merchant (alias) | yes (backend: trusted) | no |
+| `product_moderator` | product_moderator | no (read only) | yes |
+| `customer_support` | customer_support | depends on routes | no |
+| `product_analyst` | product_analyst | depends on routes | no |
+| empty / flex-auth only | defaults to `customer_support` | limited | no |
+
+## Key Files
+
+- Role resolution: `src/core/auth/dashboardRole.ts`
+- Edge middleware: `src/proxy.ts`
+- Nav visibility: `src/core/auth/navRoleAccess.ts`
+- Route guard: `src/core/components/RoleGuard.tsx`
+- Auth API: `src/features/auth/services/authApi.ts` (always sends `project_id: 11`)
+- Backend JWT: `services/zv-auth-service/zv_auth_service/custom_jwt_serializers.py`
+- Backend guard: `services/auction-service/src/common/guards/roles.guard.ts`
+- Backend strategy: `services/auction-service/src/common/guards/jwt.strategy.ts`
+- Collaborator model: `services/zv-project-service/apps/account/models.py` (class `ProjectCollaborator`)
+- JWT token builder: reads `SELECT role, business_role FROM project.account_projectcollaborator WHERE project_id = %s AND user_id = %s`

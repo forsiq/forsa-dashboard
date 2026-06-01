@@ -216,6 +216,8 @@ export const ar: Record<string, string> = {
   "common.all": "الكل",
   "common.uncategorized": "بدون تصنيف",
   "common.apply": "تطبيق",
+  "common.expand": "توسيع",
+  "common.collapse": "طي",
   "common.image_upload_hint": "PNG أو JPG حتى 10 ميجابايت. اسحب لإعادة الترتيب — الصورة الأولى هي صورة الغلاف.",
   "common.authenticity_copy": "نسخة / مقلّد",
   "common.authenticity_high_copy": "نسخة عالية الجودة",
@@ -848,6 +850,16 @@ export const ar: Record<string, string> = {
   "category.icon_search": "بحث عن أيقونة…",
   "category.description_placeholder": "وصف التصنيف…",
   "category.order_from_list": "يُدار الترتيب بالسحب والإفلات من قائمة الفئات.",
+
+  // Category validation messages
+  "category.validation.name_required": "اسم الفئة مطلوب",
+  "category.validation.name_max": "يجب ألا يتجاوز الاسم 100 حرف",
+  "category.validation.description_max": "يجب ألا يتجاوز الوصف 500 حرف",
+  "category.validation.icon_max": "يجب ألا يتجاوز اسم الأيقونة 50 حرفاً",
+  "category.validation.rejection_required": "سبب الرفض مطلوب",
+  "category.validation.rejection_max": "يجب ألا يتجاوز السبب 500 حرف",
+  "category.validation.max_depth": "تم تجاوز الحد الأقصى لعمق الفئات",
+  "category.validation.slug_conflict": "توجد فئة بنفس الاسم بالفعل",
 
   // Order statuses
   "orders.status.pending": "معلق",

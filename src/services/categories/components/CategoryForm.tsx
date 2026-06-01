@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -16,40 +15,15 @@ import { useFormUX } from '@core/hooks/useFormUX';
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from '../types';
 import { getLocalizedName } from '../types';
 import { useMainCategories } from '../hooks';
+import {
+  categoryFormSchema,
+  type CategoryFormData,
+  toCreateCategoryPayload,
+  toUpdateCategoryPayload,
+  mapCategoryApiError,
+} from '../lib';
 
-// --- Validation Schema ---
-// Must match auction-service CreateCategoryDto / UpdateCategoryDto
-// Backend: name @IsString @MaxLength(100), description @MaxLength(500),
-//          icon @MaxLength(50), nameAr @MaxLength(100)
-
-const categorySchema = z.object({
-  name: z.string()
-    .min(1, 'Category name is required')
-    .max(100, 'Name must be 100 characters or less'),
-  nameAr: z.string()
-    .max(100, 'Name must be 100 characters or less')
-    .optional()
-    .or(z.literal('')),
-  description: z.string()
-    .max(500, 'Description must be 500 characters or less')
-    .optional()
-    .or(z.literal('')),
-  icon: z.string()
-    .max(50, 'Icon name must be 50 characters or less')
-    .optional()
-    .or(z.literal('')),
-  isActive: z.boolean().optional(),
-  parentId: z.string().optional(),
-});
-
-export type CategoryFormData = z.infer<typeof categorySchema>;
-
-function slugifyName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+// --- Helpers ---
 
 function hasManualSecondaryName(category?: Category): boolean {
   if (!category) return false;
@@ -98,7 +72,6 @@ export function CategoryForm({
   const { t, dir, language } = useLanguage();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSecondaryLang, setShowSecondaryLang] = useState(() =>
     hasManualSecondaryName(initialData),
   );
@@ -139,10 +112,13 @@ export function CategoryForm({
     handleSubmit,
     formState: { isSubmitting, errors: formErrors },
     watch,
-    setValue,
+    control,
+    setError,
   } = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema as any),
+    resolver: zodResolver(categoryFormSchema as any),
     defaultValues,
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
   });
 
   const watchedValues = watch();
@@ -155,38 +131,24 @@ export function CategoryForm({
 
   const handleFormSubmit = async (data: CategoryFormData) => {
     try {
-      setErrors({});
-      const watchedParentId = watch('parentId');
-
-      const slug = initialData?.slug ?? slugifyName(data.name);
-
-      const payload: CreateCategoryInput & { id?: string } = {
-        name: data.name,
-        slug: slug || undefined,
-        description: data.description || undefined,
-        icon: data.icon || undefined,
-        isActive: data.isActive ?? true,
-        parentId: watchedParentId ? Number(watchedParentId) : null,
-      };
-
       if (initialData) {
-        payload.sortOrder = initialData.sortOrder ?? 0;
-      }
-
-      if (data.nameAr?.trim()) {
-        payload.nameAr = data.nameAr.trim();
-      }
-
-      if (initialData) {
-        await onSubmit({ ...payload, id: initialData.id });
+        const payload = toUpdateCategoryPayload(data, {
+          id: initialData.id,
+          existingSlug: initialData.slug,
+          sortOrder: initialData.sortOrder ?? 0,
+        });
+        await onSubmit(payload as UpdateCategoryInput);
       } else {
-        await onSubmit(payload as CreateCategoryInput);
+        const payload = toCreateCategoryPayload(data);
+        await onSubmit(payload as unknown as CreateCategoryInput);
       }
     } catch (err: any) {
-      if (err.details) {
-        setErrors(err.details);
-      } else {
-        setErrors({ form: err.message || 'An error occurred' });
+      const fieldErrors = mapCategoryApiError(err);
+      for (const [field, message] of Object.entries(fieldErrors)) {
+        setError(field as keyof CategoryFormData, {
+          type: 'server',
+          message,
+        });
       }
     }
   };
@@ -196,12 +158,15 @@ export function CategoryForm({
   const sectionTitleClass =
     'text-sm font-black text-zinc-text uppercase tracking-widest';
 
+  // Collect root-level error message (from mapCategoryApiError's 'root' key)
+  const rootError = formErrors.root?.message;
+
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {errors.form && (
+      {rootError && (
         <div className="flex items-start gap-3 p-4 rounded-lg bg-danger/10 border border-danger/20">
           <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
-          <p className="text-sm text-danger">{errors.form}</p>
+          <p className="text-sm text-danger">{rootError}</p>
         </div>
       )}
 
@@ -214,7 +179,7 @@ export function CategoryForm({
         <AmberInput
           label={t('category.name')}
           placeholder={t('category.name')}
-          error={formErrors.name?.message || errors.name}
+          error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
           required
           {...register('name')}
         />
@@ -245,7 +210,7 @@ export function CategoryForm({
             <AmberInput
               label={t('category.name_en')}
               placeholder="Category name"
-              error={formErrors.nameAr?.message}
+              error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
               {...register('nameAr')}
             />
           </div>
@@ -257,7 +222,7 @@ export function CategoryForm({
             multiline
             rows={3}
             placeholder={t('category.description_placeholder')}
-            error={formErrors.description?.message}
+            error={formErrors.description?.message ? t(formErrors.description.message) : undefined}
             {...register('description')}
           />
         </div>
@@ -266,20 +231,39 @@ export function CategoryForm({
       {/* Section: Placement — single row: parent + icon */}
       <AmberCard>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AmberDropdown
-            label={t('category.parent')}
-            options={parentOptions}
-            value={watch('parentId') || ''}
-            onChange={(val) => setValue('parentId', val)}
-            placeholder={t('category.select_parent')}
+          <Controller
+            name="parentId"
+            control={control}
+            render={({ field }) => (
+              <div>
+                <AmberDropdown
+                  label={t('category.parent')}
+                  options={parentOptions}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  placeholder={t('category.select_parent')}
+                />
+                {formErrors.parentId?.message && (
+                  <p className="text-xs text-danger mt-1">
+                    {t(formErrors.parentId.message)}
+                  </p>
+                )}
+              </div>
+            )}
           />
 
-          <IconPicker
-            value={watch('icon') || ''}
-            onChange={(val) => setValue('icon', val)}
-            label={t('category.icon')}
-            placeholder={t('category.icon_placeholder')}
-            searchPlaceholder={t('category.icon_search')}
+          <Controller
+            name="icon"
+            control={control}
+            render={({ field }) => (
+              <IconPicker
+                value={field.value || ''}
+                onChange={field.onChange}
+                label={t('category.icon')}
+                placeholder={t('category.icon_placeholder')}
+                searchPlaceholder={t('category.icon_search')}
+              />
+            )}
           />
         </div>
       </AmberCard>
@@ -290,9 +274,15 @@ export function CategoryForm({
           <span className={cn(sectionTitleClass)}>
             {t('category.active')}
           </span>
-          <AmberToggle
-            enabled={watch('isActive') ?? true}
-            onToggle={() => setValue('isActive', !(watch('isActive') ?? true))}
+          <Controller
+            name="isActive"
+            control={control}
+            render={({ field }) => (
+              <AmberToggle
+                enabled={field.value ?? true}
+                onToggle={() => field.onChange(!(field.value ?? true))}
+              />
+            )}
           />
         </div>
       </AmberCard>

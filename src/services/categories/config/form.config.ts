@@ -3,9 +3,13 @@
  *
  * Defines how the category form is rendered.
  * Includes field definitions, validation, and form layout.
+ *
+ * Validation constants live in category.validation.ts — this file
+ * imports them to avoid duplicating limits.
  */
 
 import type { FormFieldConfig } from '@core/services/types';
+import { NAME_MAX, DESC_MAX, ICON_MAX, NAME_AR_MAX } from '../lib';
 
 // ============================================================================
 // Form Fields Configuration
@@ -19,8 +23,8 @@ export const categoryFormFields: FormFieldConfig[] = [
     placeholder: 'Enter category name',
     required: true,
     validation: {
-      min: 2,
-      max: 100,
+      min: 1,
+      max: NAME_MAX,
     },
     grid: { xs: 12 },
   },
@@ -30,7 +34,7 @@ export const categoryFormFields: FormFieldConfig[] = [
     type: 'text',
     placeholder: 'الاسم بالعربية',
     validation: {
-      max: 100,
+      max: NAME_AR_MAX,
     },
     grid: { xs: 12 },
   },
@@ -40,7 +44,7 @@ export const categoryFormFields: FormFieldConfig[] = [
     type: 'textarea',
     placeholder: 'category.description_placeholder',
     validation: {
-      max: 500,
+      max: DESC_MAX,
     },
     grid: { xs: 12 },
   },
@@ -57,6 +61,9 @@ export const categoryFormFields: FormFieldConfig[] = [
     label: 'category.icon',
     type: 'text',
     placeholder: 'category.icon_placeholder',
+    validation: {
+      max: ICON_MAX,
+    },
     grid: { xs: 12, md: 6 },
   },
   {
@@ -115,8 +122,8 @@ export const categoryFormConfig = {
   validation: {
     name: {
       required: true,
-      minLength: 2,
-      maxLength: 100,
+      minLength: 1,
+      maxLength: NAME_MAX,
     },
   },
 
