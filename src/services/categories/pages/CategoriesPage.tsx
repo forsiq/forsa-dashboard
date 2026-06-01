@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -54,6 +54,7 @@ import {
 import type { Category, CategoryTreeNode } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
 import { useIsClient } from '@core/hooks/useIsClient';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
   AdminListPageShell,
   ListPageToolbar,
@@ -116,6 +117,7 @@ interface TreeRowProps {
   level: number;
   language: string;
   dir: 'ltr' | 'rtl';
+  canManage: boolean;
   onEdit: (category: Category) => void;
   onToggleStatus: (category: Category) => void;
   onDelete: (id: string) => void;
@@ -123,7 +125,7 @@ interface TreeRowProps {
   t: (key: string) => string;
 }
 
-function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
+function TreeRow({ node, level, language, dir, canManage, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const IconComponent = node.icon ? getIconByName(node.icon) : null;
@@ -203,6 +205,8 @@ function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete,
         {/* Actions */}
         <td className="px-6 py-5">
           <div className="flex items-center justify-center gap-1">
+            {canManage && (
+            <>
             <button
               onClick={() => onEdit(node)}
               className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
@@ -244,6 +248,8 @@ function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete,
             >
               <Trash2 className="w-4 h-4" />
             </button>
+            </>
+            )}
           </div>
         </td>
       </tr>
@@ -255,6 +261,7 @@ function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete,
           level={level + 1}
           language={language}
           dir={dir}
+          canManage={canManage}
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
           onDelete={onDelete}
@@ -268,6 +275,8 @@ function TreeRow({ node, level, language, dir, onEdit, onToggleStatus, onDelete,
 
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
+  const { isAdmin, isModerator } = useDashboardRole();
+  const canManageCategories = !isModerator;
   const router = useRouter();
   const { isMobile } = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
@@ -459,10 +468,21 @@ export function CategoriesPage() {
     { key: 'inactive', labelKey: 'status.inactive' },
   ];
 
-  const PAGE_TABS: { key: PageTab; labelKey: string; icon: any }[] = [
-    { key: 'categories', labelKey: 'category.title', icon: LayoutGrid },
-    { key: 'suggestions', labelKey: 'category.suggestions', icon: MessageSquare },
-  ];
+  const pageTabs = useMemo(() => {
+    const tabs: { key: PageTab; labelKey: string; icon: typeof LayoutGrid }[] = [
+      { key: 'categories', labelKey: 'category.title', icon: LayoutGrid },
+    ];
+    if (isAdmin || isModerator) {
+      tabs.push({ key: 'suggestions', labelKey: 'category.suggestions', icon: MessageSquare });
+    }
+    return tabs;
+  }, [isAdmin, isModerator]);
+
+  useEffect(() => {
+    if (!isAdmin && !isModerator && pageTab === 'suggestions') {
+      setPageTab('categories');
+    }
+  }, [isAdmin, isModerator, pageTab]);
 
   if (!isClient) return null;
 
@@ -473,6 +493,7 @@ export function CategoriesPage() {
       icon={LayoutGrid}
       className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
+        canManageCategories ? (
         <div className="flex items-center gap-3">
           {isSavingOrder && (
             <span className="hidden md:flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
@@ -488,6 +509,7 @@ export function CategoriesPage() {
             <Plus className="w-5 h-5" />
           </AmberButton>
         </div>
+        ) : undefined
       }
       statsLoading={statsLoading}
       stats={[
@@ -500,7 +522,7 @@ export function CategoriesPage() {
         <div className="flex items-center gap-2 md:gap-4 overflow-x-auto scrollbar-hide">
           {/* Page Tabs */}
           <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
-            {PAGE_TABS.map((tab) => {
+            {pageTabs.map((tab) => {
               const TabIcon = tab.icon;
               return (
                 <button
@@ -619,8 +641,8 @@ export function CategoriesPage() {
               icon={LayoutGrid}
               title={t('category.empty') || 'No Categories'}
               description={t('category.empty_description') || 'No categories found.'}
-              actionLabel={t('category.add_new') || 'Add Category'}
-              onAction={() => router.push('/categories/new')}
+              actionLabel={canManageCategories ? (t('category.add_new') || 'Add Category') : undefined}
+              onAction={canManageCategories ? () => router.push('/categories/new') : undefined}
             />
           ) : (
             <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
@@ -656,6 +678,7 @@ export function CategoriesPage() {
                           level={0}
                           language={language}
                           dir={dir}
+                          canManage={canManageCategories}
                           onEdit={handleEdit}
                           onToggleStatus={handleToggleStatus}
                           onDelete={handleDelete}
@@ -695,8 +718,8 @@ export function CategoriesPage() {
                 ? t('category.no_results') || 'No categories match your search.'
                 : t('category.empty_description') || 'No categories found.'
             }
-            actionLabel={t('category.add_new') || 'Add Category'}
-            onAction={() => router.push('/categories/new')}
+            actionLabel={canManageCategories ? (t('category.add_new') || 'Add Category') : undefined}
+            onAction={canManageCategories ? () => router.push('/categories/new') : undefined}
           />
         ) : (
           <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
@@ -798,6 +821,8 @@ export function CategoriesPage() {
                               {/* Actions */}
                               <td className="px-6 py-5">
                                 <div className="flex items-center justify-center gap-1">
+                                  {canManageCategories && (
+                                  <>
                                   <button
                                     onClick={() => handleEdit(category)}
                                     className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
@@ -825,20 +850,8 @@ export function CategoriesPage() {
                                       <Power className="w-4 h-4" />
                                     )}
                                   </button>
-                                  <button
-                                    onClick={() => {
-                                      openConfirm({
-                                        title: t('category.delete') || 'حذف الفئة',
-                                        message: `${t('category.delete_confirm') || 'هل أنت متأكد من حذف هذه الفئة؟'}\n\n"${getLocalizedName(category, language)}"`,
-                                        variant: 'destructive',
-                                        onConfirm: () => handleDelete(category.id),
-                                      });
-                                    }}
-                                    className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
-                                    title={t('common.delete') || 'حذف'}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                  </>
+                                  )}
                                 </div>
                               </td>
                             </SortableRow>

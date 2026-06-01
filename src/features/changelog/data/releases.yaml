@@ -14,6 +14,11 @@
         ar: "تبسيط نموذج إضافة/تعديل الفئة: اسم واحد مع تلميح الترجمة التلقائية، عربي اختياري، حالة نشط/غير نشط؛ إزالة المعرّف والترتيب اليدوي من النموذج (الترتيب من القائمة بالسحب)."
       type: improved
       sidebarPath: /categories
+    - description:
+        en: "Category suggestions review is now available to admins and product moderators; trusted merchants are treated as merchants in the dashboard."
+        ar: "مراجعة اقتراحات الفئات متاحة الآن للمسؤولين ومشرفي المنتجات؛ التجار الموثوقين يُعامَلون كتجار في لوحة التحكم."
+      type: changed
+      sidebarPath: /categories
 
 - version: "1.5.7"
   date: "2026-05-27"

@@ -9,7 +9,7 @@ export const NAV_ROLE_MAP: Record<string, UserRole[]> = {
   '/merchants': ['admin'],
   '/live-monitor': ['admin', 'product_analyst'],
   '/listings': ['admin', 'merchant'],
-  '/categories': ['admin', 'merchant'],
+  '/categories': ['admin', 'merchant', 'product_moderator'],
   '/auctions': ['admin', 'merchant', 'product_analyst'],
   '/group-buying': ['admin', 'merchant', 'product_analyst'],
   '/inventory': ['admin', 'merchant'],

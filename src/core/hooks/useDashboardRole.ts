@@ -8,6 +8,7 @@ export interface DashboardRoleResult {
   role: UserRole;
   isMerchant: boolean;
   isAdmin: boolean;
+  isModerator: boolean;
 }
 
 export function useDashboardRole(): DashboardRoleResult {
@@ -21,5 +22,6 @@ export function useDashboardRole(): DashboardRoleResult {
     role,
     isMerchant: role === 'merchant',
     isAdmin: role === 'admin',
+    isModerator: role === 'product_moderator',
   };
 }

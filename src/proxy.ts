@@ -23,7 +23,7 @@ const REPORTS_ACCESS_ROLES: readonly UserRole[] = [
 
 const LIVE_MONITOR_ACCESS_ROLES: readonly UserRole[] = ['admin', 'product_analyst'];
 
-const MARKETPLACE_CATALOG_ROLES: readonly UserRole[] = ['admin', 'merchant'];
+const MARKETPLACE_CATALOG_ROLES: readonly UserRole[] = ['admin', 'merchant', 'product_moderator'];
 
 const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
   '/moderation': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
