@@ -23,6 +23,8 @@ const REPORTS_ACCESS_ROLES: readonly UserRole[] = [
 
 const LIVE_MONITOR_ACCESS_ROLES: readonly UserRole[] = ['admin', 'product_analyst'];
 
+const MARKETPLACE_CATALOG_ROLES: readonly UserRole[] = ['admin', 'merchant'];
+
 const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
   '/moderation': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/settlements': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
@@ -35,6 +37,7 @@ const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
   '/auctions/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/group-buying/new': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
   '/group-buying/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
+  '/categories': { roles: MARKETPLACE_CATALOG_ROLES, redirectPath: '/dashboard' },
 };
 
 const parseJwtExp = (token?: string): number | null => {

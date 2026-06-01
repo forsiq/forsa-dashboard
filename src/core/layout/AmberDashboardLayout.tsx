@@ -169,7 +169,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
         dir={dir}
         user={topbarUser}
         appLabel={appLabel}
-        showServices={mode !== 'unified'}
+        showServices={false}
         sidebarInsetClassName={isPortalPage ? '' : isCollapsed ? 'lg:ps-20' : 'lg:ps-64'}
       />
       <div className="flex flex-1 relative min-h-0 overflow-x-hidden">

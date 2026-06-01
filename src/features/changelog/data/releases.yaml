@@ -1,3 +1,15 @@
+- version: "1.5.8"
+  date: "2026-06-01"
+  title:
+    en: "Merchant category management"
+    ar: "إدارة الفئات للتاجر"
+  entries:
+    - description:
+        en: "Merchants can create and edit product categories (same access as listings catalog)."
+        ar: "يمكن للتجار إنشاء وتعديل فئات المنتجات (نفس صلاحيات كتالوج المنتجات)."
+      type: changed
+      sidebarPath: /categories
+
 - version: "1.5.7"
   date: "2026-05-27"
   title:
