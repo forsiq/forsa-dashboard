@@ -18,13 +18,26 @@ import { getLocalizedName } from '../types';
 import { useMainCategories } from '../hooks';
 
 // --- Validation Schema ---
-// Must match auction-service CreateCategoryDto / UpdateCategoryDto (visible fields only)
+// Must match auction-service CreateCategoryDto / UpdateCategoryDto
+// Backend: name @IsString @MaxLength(100), description @MaxLength(500),
+//          icon @MaxLength(50), nameAr @MaxLength(100)
 
 const categorySchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  nameAr: z.string().optional(),
-  description: z.string().optional(),
-  icon: z.string().optional(),
+  name: z.string()
+    .min(1, 'Category name is required')
+    .max(100, 'Name must be 100 characters or less'),
+  nameAr: z.string()
+    .max(100, 'Name must be 100 characters or less')
+    .optional()
+    .or(z.literal('')),
+  description: z.string()
+    .max(500, 'Description must be 500 characters or less')
+    .optional()
+    .or(z.literal('')),
+  icon: z.string()
+    .max(50, 'Icon name must be 50 characters or less')
+    .optional()
+    .or(z.literal('')),
   isActive: z.boolean().optional(),
   parentId: z.string().optional(),
 });
@@ -124,7 +137,7 @@ export function CategoryForm({
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors: formErrors },
     watch,
     setValue,
   } = useForm<CategoryFormData>({
@@ -201,7 +214,7 @@ export function CategoryForm({
         <AmberInput
           label={t('category.name')}
           placeholder={t('category.name')}
-          error={errors.name}
+          error={formErrors.name?.message || errors.name}
           required
           {...register('name')}
         />
@@ -232,6 +245,7 @@ export function CategoryForm({
             <AmberInput
               label={t('category.name_en')}
               placeholder="Category name"
+              error={formErrors.nameAr?.message}
               {...register('nameAr')}
             />
           </div>
@@ -243,6 +257,7 @@ export function CategoryForm({
             multiline
             rows={3}
             placeholder={t('category.description_placeholder')}
+            error={formErrors.description?.message}
             {...register('description')}
           />
         </div>

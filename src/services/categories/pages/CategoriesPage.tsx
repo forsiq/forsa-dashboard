@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Search,
@@ -12,43 +11,22 @@ import {
   Layers,
   Power,
   PowerOff,
-  GripVertical,
-  Loader2,
   ChevronDown,
-  ListTree,
   MessageSquare,
 } from 'lucide-react';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
-import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberButton } from '@core/components/AmberButton';
+import { AmberCard } from '@core/components/AmberCard';
 import { AmberInput } from '@core/components/AmberInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { getIconByName } from '@core/components/IconPicker';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import {
-  useGetCategories,
   useGetCategoryStats,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
-  useReorderCategories,
   useCategoryTree,
 } from '../hooks';
 import type { Category, CategoryTreeNode } from '../types';
@@ -65,54 +43,53 @@ import { EmptyState } from '@core/components/EmptyState';
 import { SuggestionReview } from '../components/SuggestionReview';
 
 type StatusTab = 'all' | 'active' | 'inactive';
-type ViewMode = 'list' | 'tree';
 type PageTab = 'categories' | 'suggestions';
 
-function arrayMove<T>(array: T[], from: number, to: number): T[] {
-  const newArray = array.slice();
-  const [removed] = newArray.splice(from, 1);
-  newArray.splice(to, 0, removed);
-  return newArray;
+function nodeMatchesStatus(node: CategoryTreeNode, statusFilter: StatusTab): boolean {
+  if (statusFilter === 'all') return true;
+  const wantActive = statusFilter === 'active';
+  return node.isActive === wantActive;
 }
 
-interface SortableRowProps {
-  id: string;
-  disabled?: boolean;
-  children: React.ReactNode;
-}
-
-function SortableRow({ id, children, disabled = false }: SortableRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled });
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    position: 'relative' as const,
-    zIndex: isDragging ? 50 : 'auto' as const,
-  };
-
+function nodeMatchesSearch(node: CategoryTreeNode, language: string, query: string): boolean {
+  if (!query) return true;
+  const q = query.toLowerCase();
   return (
-    <tr ref={setNodeRef} style={style} className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
-      {React.Children.map(children, (child, index) => {
-        if (index === 0) {
-          return React.cloneElement(child as React.ReactElement, { ...listeners });
-        }
-        return child;
-      })}
-    </tr>
+    getLocalizedName(node, language)?.toLowerCase().includes(q) ||
+    node.slug?.toLowerCase().includes(q) ||
+    getLocalizedDescription(node, language)?.toLowerCase().includes(q) ||
+    false
   );
 }
 
-// --- Tree View Components ---
+function filterCategoryTree(
+  nodes: CategoryTreeNode[],
+  language: string,
+  statusFilter: StatusTab,
+  search: string,
+): CategoryTreeNode[] {
+  const filterNode = (node: CategoryTreeNode): CategoryTreeNode | null => {
+    const filteredChildren = (node.children ?? [])
+      .map(filterNode)
+      .filter((child): child is CategoryTreeNode => child !== null);
 
-interface TreeRowProps {
+    const selfMatches =
+      nodeMatchesStatus(node, statusFilter) && nodeMatchesSearch(node, language, search.trim());
+
+    if (!selfMatches && filteredChildren.length === 0) return null;
+
+    return {
+      ...node,
+      children: filteredChildren,
+    };
+  };
+
+  return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
+}
+
+// --- Tree rows (desktop table + mobile cards) ---
+
+interface TreeNodeSharedProps {
   node: CategoryTreeNode;
   level: number;
   language: string;
@@ -121,27 +98,106 @@ interface TreeRowProps {
   onEdit: (category: Category) => void;
   onToggleStatus: (category: Category) => void;
   onDelete: (id: string) => void;
-  openConfirm: any;
+  openConfirm: (options: {
+    title: string;
+    message: string;
+    variant?: 'default' | 'destructive' | 'warning';
+    confirmText?: string;
+    onConfirm: () => void;
+  }) => void;
   t: (key: string) => string;
 }
 
-function TreeRow({ node, level, language, dir, canManage, onEdit, onToggleStatus, onDelete, openConfirm, t }: TreeRowProps) {
-  const [expanded, setExpanded] = useState(false);
-  const hasChildren = node.children && node.children.length > 0;
-  const IconComponent = node.icon ? getIconByName(node.icon) : null;
-  const Icon = IconComponent || LayoutGrid;
+function CategoryRowActions({
+  node,
+  language,
+  canManage,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  openConfirm,
+  t,
+  className,
+}: Pick<
+  TreeNodeSharedProps,
+  'node' | 'language' | 'canManage' | 'onEdit' | 'onToggleStatus' | 'onDelete' | 'openConfirm' | 't'
+> & { className?: string }) {
+  if (!canManage) return null;
 
   return (
-    <>
-      <tr className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
-        {/* Expand toggle — chevron anchored at bottom of row */}
-        <td className="px-3 py-0 align-bottom w-10">
-          {hasChildren ? (
-            <div className="flex flex-col justify-end min-h-[52px] pb-2">
+    <div className={cn('flex items-center gap-1', className)}>
+      <button
+        type="button"
+        onClick={() => onEdit(node)}
+        className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
+        title={t('common.edit') || 'Edit'}
+      >
+        <Edit className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onToggleStatus(node)}
+        className={cn(
+          'p-2 rounded-lg transition-all',
+          node.isActive
+            ? 'text-zinc-muted hover:text-warning hover:bg-warning/10'
+            : 'text-zinc-muted hover:text-success hover:bg-success/10',
+        )}
+        title={
+          node.isActive
+            ? t('category.deactivate') || 'Deactivate'
+            : t('category.activate') || 'Activate'
+        }
+      >
+        {node.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          openConfirm({
+            title: t('category.delete') || 'Delete Category',
+            message: `${t('category.delete_confirm') || 'Are you sure?'}\n\n"${getLocalizedName(node, language)}"`,
+            variant: 'destructive',
+            onConfirm: () => onDelete(node.id),
+          });
+        }}
+        className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
+        title={t('common.delete') || 'Delete'}
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function TreeCategoryCard({
+  node,
+  level,
+  language,
+  dir,
+  canManage,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  openConfirm,
+  t,
+}: TreeNodeSharedProps) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = Boolean(node.children?.length);
+  const IconComponent = node.icon ? getIconByName(node.icon) : null;
+  const Icon = IconComponent || LayoutGrid;
+  const indentPx = level * 12;
+
+  return (
+    <div style={{ marginInlineStart: indentPx }} className="space-y-2">
+      <AmberCard className="!p-4 bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm">
+        <div className="flex items-start gap-2">
+          <div className="flex items-center justify-center w-8 h-8 shrink-0 mt-0.5">
+            {hasChildren ? (
               <button
                 type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="p-1 rounded hover:bg-white/10 transition-colors text-zinc-muted"
+                className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-zinc-muted"
                 aria-expanded={expanded}
                 aria-label={
                   expanded
@@ -156,10 +212,134 @@ function TreeRow({ node, level, language, dir, canManage, onEdit, onToggleStatus
                   )}
                 />
               </button>
+            ) : (
+              <span className="w-8 h-8 shrink-0" aria-hidden />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)] shrink-0">
+                  <Icon className="w-4 h-4 text-zinc-muted" />
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className={cn(
+                      'text-sm tracking-tight truncate',
+                      level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
+                    )}
+                  >
+                    {getLocalizedName(node, language)}
+                  </p>
+                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest truncate mt-0.5">
+                    {node.slug || '-'}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge
+                status={
+                  node.isActive
+                    ? t('category.active') || 'Active'
+                    : t('category.inactive') || 'Inactive'
+                }
+                variant={node.isActive ? 'success' : 'inactive'}
+                size="sm"
+              />
             </div>
-          ) : (
-            <div className="min-h-[52px]" />
-          )}
+
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-zinc-muted uppercase tracking-widest">
+                <span>{t('category.products_count') || 'Products'}</span>
+                <span className="text-zinc-text tabular-nums">{node.productCount || 0}</span>
+                {hasChildren && (
+                  <span className="text-[10px] font-bold text-zinc-muted bg-white/[0.04] px-2 py-0.5 rounded-full normal-case">
+                    {node.children!.length}
+                  </span>
+                )}
+              </div>
+              <CategoryRowActions
+                node={node}
+                language={language}
+                canManage={canManage}
+                onEdit={onEdit}
+                onToggleStatus={onToggleStatus}
+                onDelete={onDelete}
+                openConfirm={openConfirm}
+                t={t}
+              />
+            </div>
+          </div>
+        </div>
+      </AmberCard>
+
+      {expanded &&
+        hasChildren &&
+        node.children!.map((child) => (
+          <TreeCategoryCard
+            key={child.id}
+            node={child}
+            level={level + 1}
+            language={language}
+            dir={dir}
+            canManage={canManage}
+            onEdit={onEdit}
+            onToggleStatus={onToggleStatus}
+            onDelete={onDelete}
+            openConfirm={openConfirm}
+            t={t}
+          />
+        ))}
+    </div>
+  );
+}
+
+function TreeRow({
+  node,
+  level,
+  language,
+  dir,
+  canManage,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  openConfirm,
+  t,
+}: TreeNodeSharedProps) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = node.children && node.children.length > 0;
+  const IconComponent = node.icon ? getIconByName(node.icon) : null;
+  const Icon = IconComponent || LayoutGrid;
+
+  return (
+    <>
+      <tr className="group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
+        {/* Expand toggle — aligned with row content */}
+        <td className="px-3 py-5 align-middle w-10">
+          <div className="flex items-center justify-center w-8 h-8">
+            {hasChildren ? (
+              <button
+                type="button"
+                onClick={() => setExpanded(!expanded)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-zinc-muted"
+                aria-expanded={expanded}
+                aria-label={
+                  expanded
+                    ? t('common.collapse') || 'Collapse'
+                    : t('common.expand') || 'Expand'
+                }
+              >
+                <ChevronDown
+                  className={cn(
+                    'w-4 h-4 transition-transform duration-200',
+                    !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
+                  )}
+                />
+              </button>
+            ) : (
+              <span className="w-8 h-8 shrink-0" aria-hidden />
+            )}
+          </div>
         </td>
         {/* Name */}
         <td className="px-6 py-5" style={{ paddingLeft: level > 0 ? `${24 + level * 32}px` : undefined }}>
@@ -204,53 +384,17 @@ function TreeRow({ node, level, language, dir, canManage, onEdit, onToggleStatus
         </td>
         {/* Actions */}
         <td className="px-6 py-5">
-          <div className="flex items-center justify-center gap-1">
-            {canManage && (
-            <>
-            <button
-              onClick={() => onEdit(node)}
-              className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
-              title={t('common.edit') || 'Edit'}
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onToggleStatus(node)}
-              className={cn(
-                'p-2 rounded-lg transition-all',
-                node.isActive
-                  ? 'text-zinc-muted hover:text-warning hover:bg-warning/10'
-                  : 'text-zinc-muted hover:text-success hover:bg-success/10',
-              )}
-              title={
-                node.isActive
-                  ? t('category.deactivate') || 'Deactivate'
-                  : t('category.activate') || 'Activate'
-              }
-            >
-              {node.isActive ? (
-                <PowerOff className="w-4 h-4" />
-              ) : (
-                <Power className="w-4 h-4" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                openConfirm({
-                  title: t('category.delete') || 'Delete Category',
-                  message: `${t('category.delete_confirm') || 'Are you sure?'}\n\n"${getLocalizedName(node, language)}"`,
-                  variant: 'destructive',
-                  onConfirm: () => onDelete(node.id),
-                });
-              }}
-              className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
-              title={t('common.delete') || 'Delete'}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            </>
-            )}
-          </div>
+          <CategoryRowActions
+            node={node}
+            language={language}
+            canManage={canManage}
+            onEdit={onEdit}
+            onToggleStatus={onToggleStatus}
+            onDelete={onDelete}
+            openConfirm={openConfirm}
+            t={t}
+            className="justify-center"
+          />
         </td>
       </tr>
       {/* Render children */}
@@ -278,18 +422,13 @@ export function CategoriesPage() {
   const { isAdmin, isModerator } = useDashboardRole();
   const canManageCategories = !isModerator;
   const router = useRouter();
-  const { isMobile } = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [pageTab, setPageTab] = useState<PageTab>('categories');
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [page, setPage] = useState(1);
-  const limit = 50;
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
-  // Tree view data
   const {
     data: treeData,
     isPending: treeLoading,
@@ -298,62 +437,13 @@ export function CategoriesPage() {
     refetch: refetchTree,
   } = useCategoryTree();
 
-  // Drag & drop state (reorder only when full list is visible — not search/filter subset)
-  const [localCategories, setLocalCategories] = useState<Category[]>([]);
-  const [isSavingOrder, setIsSavingOrder] = useState(false);
-  const canReorder =
-    statusFilter === 'all' && !(debouncedSearch ?? '').trim();
+  const filteredTree = useMemo(() => {
+    const roots = treeData?.tree ?? [];
+    return filterCategoryTree(roots, language, statusFilter, debouncedSearch ?? '');
+  }, [treeData?.tree, language, statusFilter, debouncedSearch]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  // Fetch all categories
-  const {
-    data,
-    isPending,
-    isFetching,
-    error,
-    refetch,
-  } = useGetCategories({ page: 1, limit: 100 });
-
-  // Client-side filtering
-  const filteredCategories = React.useMemo(() => {
-    let categories = data?.categories || [];
-
-    if (statusFilter !== 'all') {
-      const wantActive = statusFilter === 'active';
-      categories = categories.filter((c: Category) => c.isActive === wantActive);
-    }
-
-    if (debouncedSearch) {
-      const query = debouncedSearch.toLowerCase();
-      categories = categories.filter(
-        (c: Category) =>
-          getLocalizedName(c, language)?.toLowerCase().includes(query) ||
-          c.slug?.toLowerCase().includes(query) ||
-          getLocalizedDescription(c, language)?.toLowerCase().includes(query),
-      );
-    }
-
-    // Sort by sortOrder by default
-    categories.sort((a: Category, b: Category) => {
-      const aVal = a.sortOrder ?? 0;
-      const bVal = b.sortOrder ?? 0;
-      return aVal - bVal;
-    });
-
-    return categories;
-  }, [data?.categories, statusFilter, debouncedSearch, language]);
-
-  // Sync local categories when server list changes (skip while saving drag order)
-  useEffect(() => {
-    if (isSavingOrder) return;
-    setLocalCategories(filteredCategories);
-  }, [filteredCategories, isSavingOrder]);
+  const hasActiveFilters =
+    statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
 
   // Fetch stats
   const { data: stats, isPending: statsLoading } = useGetCategoryStats();
@@ -361,7 +451,7 @@ export function CategoriesPage() {
   // Delete mutation
   const deleteMutation = useDeleteCategoryMutation({
     onSuccess: () => {
-      refetch();
+      void refetchTree();
     },
     onError: (err) => {
       alert(err.message || t('category.delete_error') || 'Failed to delete category');
@@ -369,7 +459,6 @@ export function CategoriesPage() {
   });
 
   const updateMutation = useUpdateCategoryMutation();
-  const reorderMutation = useReorderCategories();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -395,72 +484,6 @@ export function CategoriesPage() {
       },
     });
   };
-
-  const persistCategoryOrder = async (ordered: Category[]) => {
-    setIsSavingOrder(true);
-    try {
-      await reorderMutation.mutateAsync(ordered.map((c) => String(c.id)));
-      await refetch();
-    } catch {
-      setLocalCategories(filteredCategories);
-    } finally {
-      setIsSavingOrder(false);
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    if (!canReorder) return;
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = localCategories.findIndex((c) => String(c.id) === String(active.id));
-    const newIndex = localCategories.findIndex((c) => String(c.id) === String(over.id));
-    if (oldIndex < 0 || newIndex < 0) return;
-
-    const nextOrder = arrayMove(localCategories, oldIndex, newIndex);
-    setLocalCategories(nextOrder);
-    void persistCategoryOrder(nextOrder);
-  };
-
-  const queryClient = useQueryClient();
-
-  const bulkActions = [
-    {
-      label: t('category.bulk_activate') || 'Activate Selected',
-      icon: Power,
-      onClick: (selectedIds: string[]) => {
-        openConfirm({
-          title: t('category.bulk_activate') || 'Activate Selected',
-          message: `${t('category.bulk_activate_confirm') || 'Are you sure you want to activate'} ${selectedIds.length} ${t('category.items') || 'items'}?`,
-          variant: 'warning',
-          onConfirm: () => {
-            selectedIds.forEach((id) => {
-              updateMutation.mutate({ id, isActive: true });
-            });
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-          },
-        });
-      },
-    },
-    {
-      label: t('category.bulk_deactivate') || 'Deactivate Selected',
-      icon: PowerOff,
-      variant: 'danger' as const,
-      onClick: (selectedIds: string[]) => {
-        openConfirm({
-          title: t('category.bulk_deactivate') || 'Deactivate Selected',
-          message: `${t('category.bulk_deactivate_confirm') || 'Are you sure you want to deactivate'} ${selectedIds.length} ${t('category.items') || 'items'}?`,
-          variant: 'destructive',
-          onConfirm: () => {
-            selectedIds.forEach((id) => {
-              updateMutation.mutate({ id, isActive: false });
-            });
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-          },
-        });
-      },
-    },
-  ];
 
   const STATUS_TABS: { key: StatusTab; labelKey: string }[] = [
     { key: 'all', labelKey: 'common.all' },
@@ -495,12 +518,6 @@ export function CategoriesPage() {
       headerActions={
         canManageCategories ? (
         <div className="flex items-center gap-3">
-          {isSavingOrder && (
-            <span className="hidden md:flex items-center gap-2 text-xs font-bold text-zinc-muted uppercase tracking-widest">
-              <Loader2 className="w-4 h-4 animate-spin text-brand" />
-              {t('category.saving_order') || t('common.saving') || 'جاري الحفظ...'}
-            </span>
-          )}
           <AmberButton
             className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
             onClick={() => router.push('/categories/new')}
@@ -527,10 +544,7 @@ export function CategoriesPage() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => {
-                    setPageTab(tab.key);
-                    setPage(1);
-                  }}
+                  onClick={() => setPageTab(tab.key)}
                   className={cn(
                     'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
                     pageTab === tab.key
@@ -545,46 +559,13 @@ export function CategoriesPage() {
             })}
           </div>
 
-          {/* View Mode Toggle (only in categories tab) */}
+          {/* Status filter */}
           {pageTab === 'categories' && (
-            <div className="hidden md:flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm">
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
-                  viewMode === 'list'
-                    ? 'bg-white/10 text-zinc-text shadow-sm'
-                    : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                {t('category.view_list') || 'List'}
-              </button>
-              <button
-                onClick={() => setViewMode('tree')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
-                  viewMode === 'tree'
-                    ? 'bg-white/10 text-zinc-text shadow-sm'
-                    : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
-                )}
-              >
-                <ListTree className="w-3.5 h-3.5" />
-                {t('category.view_tree') || 'Tree'}
-              </button>
-            </div>
-          )}
-
-          {/* Status Tabs (only in list view) */}
-          {pageTab === 'categories' && viewMode === 'list' && (
             <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
               {STATUS_TABS.map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => {
-                    setStatusFilter(tab.key);
-                    setPage(1);
-                  }}
+                  onClick={() => setStatusFilter(tab.key)}
                   className={cn(
                     'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
                     statusFilter === tab.key
@@ -604,10 +585,7 @@ export function CategoriesPage() {
           search={
             <ListPageToolbarSearch
               value={searchQuery}
-              onChange={(v) => {
-                setSearchQuery(v);
-                setPage(1);
-              }}
+              onChange={setSearchQuery}
               placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
             />
           }
@@ -618,9 +596,7 @@ export function CategoriesPage() {
         {/* Suggestions Tab */}
         {pageTab === 'suggestions' ? (
           <SuggestionReview />
-        ) : viewMode === 'tree' ? (
-          /* Tree View */
-          treeLoading ? (
+        ) : treeLoading ? (
             <ListPageSkeleton count={6} columns={4} showStats />
           ) : treeError ? (
             <div className="p-12 text-center">
@@ -644,11 +620,41 @@ export function CategoriesPage() {
               actionLabel={canManageCategories ? (t('category.add_new') || 'Add Category') : undefined}
               onAction={canManageCategories ? () => router.push('/categories/new') : undefined}
             />
+          ) : filteredTree.length === 0 ? (
+            <EmptyState
+              icon={LayoutGrid}
+              title={t('category.no_results') || 'No Categories'}
+              description={
+                hasActiveFilters
+                  ? t('category.no_results') || 'No categories match your filters.'
+                  : t('category.empty_description') || 'No categories found.'
+              }
+            />
           ) : (
             <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
               {treeFetching && <FetchingOverlay />}
               <div className="flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm">
-                <div className="flex-1 min-h-[200px] overflow-x-auto">
+                {/* Mobile: card tree */}
+                <div className="md:hidden p-3 space-y-2 min-h-[200px]">
+                  {filteredTree.map((node) => (
+                    <TreeCategoryCard
+                      key={node.id}
+                      node={node}
+                      level={0}
+                      language={language}
+                      dir={dir}
+                      canManage={canManageCategories}
+                      onEdit={handleEdit}
+                      onToggleStatus={handleToggleStatus}
+                      onDelete={handleDelete}
+                      openConfirm={openConfirm}
+                      t={t}
+                    />
+                  ))}
+                </div>
+
+                {/* Desktop: table tree */}
+                <div className="hidden md:block flex-1 min-h-[200px] overflow-x-auto">
                   <table className="w-full text-start border-collapse min-w-[800px]">
                     <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                       <tr>
@@ -671,7 +677,7 @@ export function CategoriesPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.03]">
-                      {treeData.tree.map((node) => (
+                      {filteredTree.map((node) => (
                         <TreeRow
                           key={node.id}
                           node={node}
@@ -692,179 +698,7 @@ export function CategoriesPage() {
               </div>
             </div>
           )
-        ) : isPending ? (
-          /* List View (existing) */
-          <ListPageSkeleton count={8} columns={4} showStats />
-        ) : error ? (
-          <div className="p-12 text-center">
-            <p className="text-danger font-bold">
-              {t('category.error_loading') || 'حدث خطأ في تحميل الفئات'}
-            </p>
-            <AmberButton
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              className="mt-6 font-bold"
-            >
-              {t('common.retry') || 'إعادة المحاولة'}
-            </AmberButton>
-          </div>
-        ) : filteredCategories.length === 0 ? (
-          <EmptyState
-            icon={LayoutGrid}
-            title={t('category.empty') || 'No Categories'}
-            description={
-              debouncedSearch
-                ? t('category.no_results') || 'No categories match your search.'
-                : t('category.empty_description') || 'No categories found.'
-            }
-            actionLabel={canManageCategories ? (t('category.add_new') || 'Add Category') : undefined}
-            onAction={canManageCategories ? () => router.push('/categories/new') : undefined}
-          />
-        ) : (
-          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-            {isFetching && <FetchingOverlay />}
-
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              {!canReorder && (
-                <p className="px-4 py-2 text-[10px] font-bold text-zinc-muted uppercase tracking-widest border-b border-white/5 bg-white/[0.02]">
-                  {t('category.reorder_requires_full_list') ||
-                    'امسح البحث واختر «الكل» لإعادة ترتيب الفئات'}
-                </p>
-              )}
-              <SortableContext
-                items={localCategories.map((c) => c.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm">
-                  <div className="flex-1 min-h-[200px] overflow-x-auto">
-                    <table className="w-full text-start border-collapse min-w-[800px]">
-                      <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
-                        <tr>
-                          <th className="px-3 py-5 w-10" />
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
-                            {t('category.name') || 'Name'}
-                          </th>
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
-                            {t('category.slug') || 'Slug'}
-                          </th>
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                            {t('category.products_count') || 'Products'}
-                          </th>
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                            {t('category.status') || 'Status'}
-                          </th>
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-center">
-                            {t('common.actions') || 'Actions'}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/[0.03]">
-                        {localCategories.map((category) => {
-                          const IconComponent = category.icon
-                            ? getIconByName(category.icon)
-                            : null;
-                          const Icon = IconComponent || LayoutGrid;
-
-                          return (
-                            <SortableRow key={category.id} id={category.id} disabled={!canReorder}>
-                              {/* Drag handle cell - receives listeners from SortableRow */}
-                              <td className="px-3 py-5">
-                                <div
-                                  className={cn(
-                                    'text-zinc-muted/30 transition-colors',
-                                    canReorder
-                                      ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
-                                      : 'cursor-not-allowed opacity-40',
-                                  )}
-                                >
-                                  <GripVertical className="w-4 h-4" />
-                                </div>
-                              </td>
-                              {/* Name */}
-                              <td className="px-6 py-5">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-1.5 rounded-lg bg-[var(--color-obsidian-hover)] border border-[var(--color-border)]">
-                                    <Icon className="w-4 h-4 text-zinc-muted" />
-                                  </div>
-                                  <span className="text-sm font-bold text-zinc-text tracking-tight">
-                                    {getLocalizedName(category, language)}
-                                  </span>
-                                </div>
-                              </td>
-                              {/* Slug */}
-                              <td className="px-6 py-5">
-                                <span className="text-sm text-zinc-text font-medium uppercase tracking-tight">
-                                  {category.slug || '-'}
-                                </span>
-                              </td>
-                              {/* Product Count */}
-                              <td className="px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight text-center">
-                                {category.productCount || 0}
-                              </td>
-                              {/* Status */}
-                              <td className="px-6 py-5 text-center">
-                                <StatusBadge
-                                  status={
-                                    category.isActive
-                                      ? t('category.active') || 'Active'
-                                      : t('category.inactive') || 'Inactive'
-                                  }
-                                  variant={category.isActive ? 'success' : 'inactive'}
-                                  size="sm"
-                                />
-                              </td>
-                              {/* Actions */}
-                              <td className="px-6 py-5">
-                                <div className="flex items-center justify-center gap-1">
-                                  {canManageCategories && (
-                                  <>
-                                  <button
-                                    onClick={() => handleEdit(category)}
-                                    className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
-                                    title={t('common.edit') || 'تعديل'}
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleToggleStatus(category)}
-                                    className={cn(
-                                      'p-2 rounded-lg transition-all',
-                                      category.isActive
-                                        ? 'text-zinc-muted hover:text-warning hover:bg-warning/10'
-                                        : 'text-zinc-muted hover:text-success hover:bg-success/10',
-                                    )}
-                                    title={
-                                      category.isActive
-                                        ? t('category.deactivate') || 'تعطيل'
-                                        : t('category.activate') || 'تفعيل'
-                                    }
-                                  >
-                                    {category.isActive ? (
-                                      <PowerOff className="w-4 h-4" />
-                                    ) : (
-                                      <Power className="w-4 h-4" />
-                                    )}
-                                  </button>
-                                  </>
-                                  )}
-                                </div>
-                              </td>
-                            </SortableRow>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </SortableContext>
-            </DndContext>
-          </div>
-        )}
+        }
       </div>
 
       <ConfirmModal />

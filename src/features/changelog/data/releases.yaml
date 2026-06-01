@@ -5,6 +5,11 @@
     ar: "إدارة الفئات للتاجر"
   entries:
     - description:
+        en: "Categories page always uses the hierarchical tree table (expand subcategories, filter by status and search)."
+        ar: "صفحة الفئات تعرض دائماً جدول الشجرة الهرمي (توسيع الفئات الفرعية، فلترة بالحالة والبحث)."
+      type: changed
+      sidebarPath: /categories
+    - description:
         en: "Merchants can create and edit product categories (same access as listings catalog)."
         ar: "يمكن للتجار إنشاء وتعديل فئات المنتجات (نفس صلاحيات كتالوج المنتجات)."
       type: changed
