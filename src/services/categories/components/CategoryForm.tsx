@@ -277,7 +277,7 @@ export function CategoryForm({
           </span>
           <AmberToggle
             enabled={watch('isActive') ?? true}
-            onToggle={(val) => setValue('isActive', val)}
+            onToggle={() => setValue('isActive', !(watch('isActive') ?? true))}
           />
         </div>
       </AmberCard>
