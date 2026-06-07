@@ -786,6 +786,18 @@ export const ar: Record<string, string> = {
   "amazon.no_results_desc": "لم يتم العثور على منتجات. جرب كلمة بحث مختلفة.",
   "amazon.search_results": "نتائج البحث",
   "amazon.bestsellers": "الأكثر مبيعاً",
+  "amazon.import.category_section": "تصنيف المنتج",
+  "amazon.import.category_hint": "اختر الفئة الرئيسية أولاً. نُنشئ فئة فرعية باسم قصير — وليس عنوان المنتج الكامل كفئة عليا.",
+  "amazon.import.amazon_path": "مسار أمازون",
+  "amazon.import.suggested_parents": "فئات رئيسية مقترحة",
+  "amazon.import.other_parents": "أو اختر فئة رئيسية أخرى",
+  "amazon.import.subcategory": "الفئة الفرعية",
+  "amazon.import.create_sub": "إنشاء فئة فرعية عند الاستيراد",
+  "amazon.import.match_sub": "مطابقة فئة فرعية موجودة",
+  "amazon.import.sub_name": "اسم الفئة الفرعية (قصير)",
+  "amazon.import.no_create_permission": "إن لم توجد مطابقة، تُستخدم الفئة الرئيسية حتى تُضاف فئة فرعية.",
+  "amazon.import.existing_subs": "أو اختر فئة فرعية موجودة",
+  "amazon.import.parent_required": "اختر فئة رئيسية للاستيراد",
 
   // Report labels (sidebar)
   "report.dashboard": "لوحة التقارير",

@@ -785,6 +785,18 @@ export const en: Record<string, string> = {
   "amazon.no_results_desc": "No products found. Try a different search term.",
   "amazon.search_results": "Search Results",
   "amazon.bestsellers": "Best Sellers",
+  "amazon.import.category_section": "Category placement",
+  "amazon.import.category_hint": "Pick a main category first. We create a short subcategory — never the full product title as a top-level category.",
+  "amazon.import.amazon_path": "Amazon path",
+  "amazon.import.suggested_parents": "Suggested main categories",
+  "amazon.import.other_parents": "Or choose another main category",
+  "amazon.import.subcategory": "Subcategory",
+  "amazon.import.create_sub": "Create subcategory on import",
+  "amazon.import.match_sub": "Match existing subcategory",
+  "amazon.import.sub_name": "Subcategory name (short)",
+  "amazon.import.no_create_permission": "If no match exists, the main category will be used until a subcategory is added.",
+  "amazon.import.existing_subs": "Or pick existing subcategory",
+  "amazon.import.parent_required": "Select a main category to import",
 
   // Report labels (sidebar)
   "report.dashboard": "Reports Dashboard",

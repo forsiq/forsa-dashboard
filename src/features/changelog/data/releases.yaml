@@ -5,6 +5,16 @@
     ar: "اختيار فئات أذكى"
   entries:
     - description:
+        en: "Amazon import suggests a main category from browse data, lets you pick parent + sub (create short subcategory or match existing), and assigns categoryId on the listing — never the full product title as a top-level category."
+        ar: "استيراد أمازون يقترح فئة رئيسية من بيانات التصفح، ويتيح اختيار الأب + الفرعية (إنشاء اسم قصير أو مطابقة موجودة)، ويربط categoryId بالمنتج — دون استخدام عنوان المنتج الكامل كفئة عليا."
+      type: added
+      sidebarPath: /amazon-import
+    - description:
+        en: "Category drag-and-drop reorder is limited to admin, merchant, and trusted merchant roles; moderators and other roles no longer see the drag handle."
+        ar: "إعادة ترتيب الفئات بالسحب مقصورة على admin وmerchant وtrusted merchant؛ المشرفون والأدوار الأخرى لا يرون مقبض السحب."
+      type: changed
+      sidebarPath: /categories
+    - description:
         en: "Inventory picker on Create Auction (/auctions/add): pick from my products creates a catalog card and opens publish. Listing wizard product step is manual catalog only. Brief flow banners on key pages explain inventory → catalog → publish → live."
         ar: "منتقي المخزون في «إنشاء مزاد»: اختر من منتجاتي ينشئ بطاقة كatalog ويفتح النشر. خطوة المنتج في المعالج للإدخال اليدوي. شارات مختصرة توضّح المسار: مخزون → كatalog → نشر → بيع حي."
       type: changed

@@ -7,6 +7,7 @@ import type { UserRole } from '@features/auth/types';
 export type DashboardCapability =
   | 'categories.view'
   | 'categories.manage'
+  | 'categories.reorder'
   | 'categories.reviewSuggestions'
   | 'auctions.view'
   | 'auctions.manage'
@@ -20,6 +21,8 @@ export type DashboardCapability =
 const CAPABILITY_ROLES: Record<DashboardCapability, readonly UserRole[]> = {
   'categories.view': ['admin', 'merchant', 'product_moderator'],
   'categories.manage': ['admin', 'merchant'],
+  /** admin, merchant, trusted_merchant (JWT alias → merchant) — matches auction-service PATCH /categories/reorder */
+  'categories.reorder': ['admin', 'merchant'],
   'categories.reviewSuggestions': ['admin', 'product_moderator'],
   'auctions.view': ['admin', 'merchant', 'product_analyst'],
   'auctions.manage': ['admin', 'merchant'],

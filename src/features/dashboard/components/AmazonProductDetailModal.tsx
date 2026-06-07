@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import Image from 'next/image';
 import {
@@ -21,6 +21,14 @@ import { useCreateListing, listingKeys } from '@features/listings/api/listing-ho
 import { collectAmazonProductImages } from '@services/amazon/utils/amazon-images';
 import type { ListingSpec } from '../../../types/services/listings.types';
 import { useRouter } from 'next/router';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
+import { categoryKeys } from '@services/categories/api/categories';
+import { resolveImportCategory } from '@services/amazon/utils/resolve-import-category';
+import {
+  AmazonImportCategoryPanel,
+  createInitialCategoryState,
+  type AmazonImportCategoryState,
+} from './AmazonImportCategoryPanel';
 
 interface AmazonProductDetailModalProps {
   asin: string | null;
@@ -35,14 +43,18 @@ export function AmazonProductDetailModal({
   isOpen,
   onClose,
 }: AmazonProductDetailModalProps) {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const isRTL = dir === 'rtl';
   const router = useRouter();
   const queryClient = useQueryClient();
   const createMutation = useCreateListing();
+  const { canManageCategories } = useDashboardRole();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [importPhase, setImportPhase] = useState<ImportPhase>('idle');
   const [importImageCount, setImportImageCount] = useState(0);
+  const [categoryState, setCategoryState] = useState<AmazonImportCategoryState>(
+    createInitialCategoryState,
+  );
 
   const isImporting = importPhase !== 'idle';
 
@@ -56,8 +68,15 @@ export function AmazonProductDetailModal({
     if (!isOpen && importPhase === 'idle') {
       setImportImageCount(0);
       setCurrentImageIndex(0);
+      setCategoryState(createInitialCategoryState());
     }
   }, [isOpen, importPhase]);
+
+  useEffect(() => {
+    if (isOpen && product?.asin) {
+      setCategoryState(createInitialCategoryState());
+    }
+  }, [isOpen, product?.asin]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -74,14 +93,32 @@ export function AmazonProductDetailModal({
     return product.price.display || (product.price.value ? `${product.price.value}` : null);
   };
 
+  const handleCategoryChange = useCallback((next: AmazonImportCategoryState) => {
+    setCategoryState(next);
+  }, []);
+
   const handleImport = async () => {
-    if (!product) return;
+    if (!product || !categoryState.parentId) return;
 
     const imageUrls = collectAmazonProductImages(product);
     setImportImageCount(imageUrls.length);
     setImportPhase('creating');
 
     try {
+      const categoryResult = await resolveImportCategory({
+        product,
+        parentId: categoryState.parentId,
+        mode: categoryState.mode,
+        subName: categoryState.subName,
+        existingSubId: categoryState.existingSubId,
+        canCreateCategory: canManageCategories,
+        language,
+      });
+
+      if (categoryResult.createdSubcategory) {
+        await queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      }
+
       // Convert Amazon specifications to ListingSpec[] format
       const specs: ListingSpec[] = product.specifications
         ? Object.entries(product.specifications)
@@ -98,6 +135,7 @@ export function AmazonProductDetailModal({
       const payload: any = {
         title: String(product.title ?? '').trim() || 'Untitled',
         description: product.description || product.feature_bullets?.join('\n') || '',
+        categoryId: categoryResult.categoryId,
         images: imageUrls.length > 0 ? imageUrls : undefined,
         brand: product.brand || '',
         sku: product.asin,
@@ -107,6 +145,12 @@ export function AmazonProductDetailModal({
           asin: product.asin,
           originalImageUrls: imageUrls,
           imagesCount: imageUrls.length,
+          importCategory: {
+            parentId: categoryState.parentId,
+            categoryId: categoryResult.categoryId,
+            createdSub: !!categoryResult.createdSubcategory,
+            matchedExisting: !!categoryResult.matchedExisting,
+          },
         },
       };
 
@@ -370,12 +414,19 @@ export function AmazonProductDetailModal({
                 </div>
               )}
 
+              <AmazonImportCategoryPanel
+                product={product}
+                value={categoryState}
+                onChange={handleCategoryChange}
+                disabled={isImporting}
+              />
+
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t border-white/5">
                 <AmberButton
                   className="flex-1 h-12 bg-brand text-black font-black rounded-xl gap-2 border-none active:scale-95 transition-all"
                   onClick={handleImport}
-                  disabled={isImporting}
+                  disabled={isImporting || !categoryState.parentId || !categoryState.isReady}
                 >
                   {isImporting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

@@ -15,6 +15,7 @@ export interface DashboardRoleResult {
   isAdmin: boolean;
   isModerator: boolean;
   canManageCategories: boolean;
+  canReorderCategories: boolean;
   canReviewCategorySuggestions: boolean;
   canManageAuctions: boolean;
   canManageGroupBuying: boolean;
@@ -48,6 +49,7 @@ export function useDashboardRole(): DashboardRoleResult {
     isAdmin: role === 'admin',
     isModerator: role === 'product_moderator',
     canManageCategories: can('categories.manage'),
+    canReorderCategories: can('categories.reorder'),
     canReviewCategorySuggestions: can('categories.reviewSuggestions'),
     canManageAuctions: can('auctions.manage'),
     canManageGroupBuying: can('groupBuying.manage'),

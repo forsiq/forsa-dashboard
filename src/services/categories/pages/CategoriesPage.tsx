@@ -255,6 +255,7 @@ interface TreeNodeSharedProps {
   }) => void;
   t: (key: string) => string;
   canReorder?: boolean;
+  showDragHandle?: boolean;
   isLastSibling?: boolean;
   ancestorContinues?: boolean[];
   issuesByCategoryId?: Map<string, CategoryIssue[]>;
@@ -485,6 +486,7 @@ function SortableTreeRow({
   dir,
   canManage,
   canReorder = false,
+  showDragHandle = false,
   onEdit,
   onToggleStatus,
   onDelete,
@@ -527,23 +529,24 @@ function SortableTreeRow({
           level > 0 && 'bg-white/[0.015]',
         )}
       >
-        {/* Drag handle */}
-        <td className="px-3 py-5 align-middle w-10">
-          <div
-            ref={setActivatorNodeRef}
-            {...attributes}
-            {...listeners}
-            className={cn(
-              'flex items-center justify-center w-8 h-8 text-zinc-muted/30 transition-colors',
-              canReorder
-                ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
-                : 'cursor-not-allowed opacity-40',
-            )}
-            aria-hidden={!canReorder}
-          >
-            <GripVertical className="w-4 h-4" />
-          </div>
-        </td>
+        {/* Drag handle — admin / merchant / trusted_merchant only */}
+        {showDragHandle && (
+          <td className="px-3 py-5 align-middle w-10">
+            <div
+              ref={setActivatorNodeRef}
+              {...(canReorder ? { ...attributes, ...listeners } : {})}
+              className={cn(
+                'flex items-center justify-center w-8 h-8 text-zinc-muted/30 transition-colors',
+                canReorder
+                  ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
+                  : 'cursor-not-allowed opacity-40',
+              )}
+              aria-hidden={!canReorder}
+            >
+              <GripVertical className="w-4 h-4" />
+            </div>
+          </td>
+        )}
         {/* Expand toggle — aligned with row content */}
         <td className="px-3 py-5 align-middle w-10">
           <div className="flex items-center justify-center w-8 h-8">
@@ -666,6 +669,7 @@ function SortableTreeRow({
               dir={dir}
               canManage={canManage}
               canReorder={canReorder}
+              showDragHandle={showDragHandle}
               onEdit={onEdit}
               onToggleStatus={onToggleStatus}
               onDelete={onDelete}
@@ -682,7 +686,7 @@ function SortableTreeRow({
 
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
-  const { canManageCategories, canReviewCategorySuggestions } = useDashboardRole();
+  const { canManageCategories, canReorderCategories, canReviewCategorySuggestions } = useDashboardRole();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
@@ -726,7 +730,7 @@ export function CategoriesPage() {
     statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
 
   const canReorder =
-    canManageCategories &&
+    canReorderCategories &&
     statusFilter === 'all' &&
     !(debouncedSearch ?? '').trim();
 
@@ -1094,7 +1098,7 @@ export function CategoriesPage() {
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
                   >
-                    {canManageCategories && !canReorder && (
+                    {canReorderCategories && !canReorder && (
                       <p className="px-4 py-2 text-[10px] font-bold text-zinc-muted uppercase tracking-widest border-b border-white/5 bg-white/[0.02]">
                         {t('category.reorder_requires_full_list') ||
                           'امسح البحث واختر «الكل» لإعادة ترتيب الفئات'}
@@ -1103,7 +1107,7 @@ export function CategoriesPage() {
                     <table className="w-full text-start border-collapse min-w-[800px]">
                       <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                         <tr>
-                          <th className="px-3 py-5 w-10" />
+                          {canReorderCategories && <th className="px-3 py-5 w-10" />}
                           <th className="px-3 py-5 w-10" />
                           <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
                             {t('category.name') || 'Name'}
@@ -1138,6 +1142,7 @@ export function CategoriesPage() {
                               dir={dir}
                               canManage={canManageCategories}
                               canReorder={canReorder}
+                              showDragHandle={canReorderCategories}
                               onEdit={handleEdit}
                               onToggleStatus={handleToggleStatus}
                               onDelete={handleDelete}

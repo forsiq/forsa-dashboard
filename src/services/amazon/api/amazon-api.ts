@@ -54,6 +54,8 @@ export interface AmazonProduct {
   specifications?: Record<string, any>;
   brand?: string;
   link?: string;
+  /** Rainforest browse nodes (breadcrumb path). */
+  categories?: Array<{ name?: string; link?: string } | string>;
   buybox_winner?: {
     price?: {
       value?: number;
