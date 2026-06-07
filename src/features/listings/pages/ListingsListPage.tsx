@@ -37,6 +37,7 @@ import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
 import { ListingImage } from '../components/ListingImage';
+import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingReadinessBadge } from '../components/ListingReadinessBadge';
 import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 
@@ -433,6 +434,9 @@ export const ListingsListPage: React.FC = () => {
       }
     >
       <div className="space-y-6">
+        {canManageListings && (
+          <FlowConceptBanner messageKey="listing.flow.concept_catalog" />
+        )}
         {isPending ? (
           <ListPageSkeleton count={6} columns={3} />
         ) : filteredListings.length === 0 ? (

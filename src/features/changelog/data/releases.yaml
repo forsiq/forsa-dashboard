@@ -5,8 +5,18 @@
     ar: "اختيار فئات أذكى"
   entries:
     - description:
+        en: "Inventory picker on Create Auction (/auctions/add): pick from my products creates a catalog card and opens publish. Listing wizard product step is manual catalog only. Brief flow banners on key pages explain inventory → catalog → publish → live."
+        ar: "منتقي المخزون في «إنشاء مزاد»: اختر من منتجاتي ينشئ بطاقة كatalog ويفتح النشر. خطوة المنتج في المعالج للإدخال اليدوي. شارات مختصرة توضّح المسار: مخزون → كatalog → نشر → بيع حي."
+      type: changed
+      sidebarPath: /auctions
+    - description:
         en: "Fixed listing publish wizard for trusted merchants: channel selection and deploy steps now appear after direct publish instead of a blank page with a non-functional Next button."
         ar: "إصلاح معالج نشر المنتج للتجار الموثوقين: خطوات اختيار القناة والنشر تظهر الآن بعد النشر المباشر بدلاً من صفحة فارغة مع زر التالي الذي لا يعمل."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Fixed listing wizard photos for imported listings (Amazon, inventory): resolves attachment IDs to preview URLs, supports up to 10 images, persists cover order on save/reorder, and transfers remaining external URLs server-side on save."
+        ar: "إصلاح صور معالج المنتج للقوائم المستوردة (أمازون، المخزون): حل attachment IDs لمعاينة الصور، دعم حتى 10 صور، حفظ ترتيب الغلاف عند الحفظ/إعادة الترتيب، ونقل الروابط الخارجية المتبقية عبر الخادم عند الحفظ."
       type: fixed
       sidebarPath: /listings
     - description:
@@ -28,6 +38,11 @@
         en: "Listing wizard, quick add, and group buying forms now use a searchable hierarchical category picker with icons, suggest-category, and add-category shortcuts instead of a flat dropdown."
         ar: "معالج المنتج والإضافة السريعة ونماذج الشراء الجماعي تستخدم الآن منتقي فئات هرمي قابل للبحث مع أيقونات واقتراح فئة واختصار إضافة فئة بدلاً من قائمة منسدلة مسطّحة."
       type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Fixed blank listing edit page after Amazon import: shows loading, import banner, and clear errors for missing products, network failures, or invalid links instead of an empty body."
+        ar: "إصلاح صفحة تعديل المنتج الفارغة بعد استيراد أمازون: عرض التحميل وشريط الاستيراد ورسائل واضحة عند عدم وجود المنتج أو فشل الشبكة أو رابط غير صالح بدلاً من body فارغ."
+      type: fixed
       sidebarPath: /listings
     - description:
         en: "Category picker search now opens a dropdown list on focus with filtered results and parent › child hierarchy; chip selection remains below."

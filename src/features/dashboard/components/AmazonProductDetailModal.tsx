@@ -53,11 +53,11 @@ export function AmazonProductDetailModal({
   const product = data?.product;
 
   useEffect(() => {
-    if (!isOpen) {
-      setImportPhase('idle');
+    if (!isOpen && importPhase === 'idle') {
       setImportImageCount(0);
+      setCurrentImageIndex(0);
     }
-  }, [isOpen]);
+  }, [isOpen, importPhase]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -66,7 +66,8 @@ export function AmazonProductDetailModal({
     return () => { document.body.style.overflow = original; };
   }, [isOpen]);
 
-  if (!isOpen || typeof window === 'undefined') return null;
+  const keepPortalMounted = isOpen || importPhase !== 'idle';
+  if (!keepPortalMounted || typeof window === 'undefined') return null;
 
   const formatPrice = () => {
     if (!product?.price) return null;
@@ -118,7 +119,12 @@ export function AmazonProductDetailModal({
       }
 
       setImportPhase('redirecting');
-      onClose();
+
+      // Keep the portal mounted until navigation completes — closing the modal
+      // before router.push races React portal cleanup with the page transition.
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
 
       if (listingId) {
         await router.push({

@@ -31,8 +31,10 @@ import { IqdSymbol } from '@core/components/IqdSymbol';
 import { IqdPriceInput } from '@core/components/IqdPriceInput';
 import { EmptyState } from '@core/components/EmptyState';
 import { useFormUX } from '@core/hooks/useFormUX';
+import { useIsClient } from '@core/hooks/useIsClient';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
+import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useMapApiValidationFieldErrors } from '@core/hooks/useMapApiValidationFieldErrors';
 import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
@@ -55,6 +57,7 @@ import {
 } from '../api/listing-hooks';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
+import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
 import { FieldHelpHint } from '../components/FieldHelpHint';
 import { ListingImage } from '../components/ListingImage';
@@ -73,6 +76,14 @@ import {
   createDeployAuctionClientSchema,
   createDeployGroupBuyClientSchema,
 } from '../validation/deployListingSchemas';
+import {
+  buildUrlToAttachmentIdMap,
+  getListingAttachmentIds,
+  getListingImageGalleryUrls,
+  mergeListingGalleryUrls,
+  reorderRetainedAttachmentIds,
+  resolveListingMediaSave,
+} from '../utils/listing-media';
 
 export type ListingWizardMode = 'create' | 'edit' | 'publish-only';
 
@@ -96,12 +107,43 @@ function filterSources(sources: ListingSource[]): ListingSource[] {
   );
 }
 
+function resolveListingLoadError(
+  error: unknown,
+  t: (key: string) => string,
+): string {
+  const ax = error as { response?: { status?: number }; status?: number; code?: string };
+  const status = ax?.response?.status ?? ax?.status;
+  if (status === 404) return t('listing.detail.not_found');
+  if (status === 403) return t('listing.wizard.load_error_forbidden');
+  if (ax?.code === 'ERR_NETWORK' || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+    return t('listing.wizard.load_error_network');
+  }
+  return t('listing.wizard.load_error');
+}
+
+function WizardLoadingShell({
+  t,
+  banner,
+}: {
+  t: (key: string) => string;
+  banner?: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-4 p-6 max-w-[1200px] mx-auto">
+      {banner}
+      <p className="text-sm text-zinc-muted font-bold">{t('listing.wizard.preparing')}</p>
+      <AmberFormSkeleton fields={6} header actions layout="grid" />
+    </div>
+  );
+}
+
 export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   mode: modeProp,
   maxStep: maxStepProp,
 }) => {
   const { t, dir } = useLanguage();
   const router = useRouter();
+  const isClient = useIsClient();
   const mapApiError = useMapApiValidationError();
   const mapApiFieldErrors = useMapApiValidationFieldErrors();
   const isRTL = dir === 'rtl';
@@ -155,7 +197,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const [listingId, setListingId] = useState<number | undefined>(routeId);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [isClient, setIsClient] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
@@ -194,14 +235,19 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   });
 
   const imageUpload = usePendingImageFiles();
-  const { uploadMultiple, isUploading, progress: uploadProgress, error: uploadError } =
+  const { upload, isUploading, progress: uploadProgress, error: uploadError } =
     useFileUpload();
   const [retainedAttachmentIds, setRetainedAttachmentIds] = useState<number[]>([]);
+  const urlToAttachmentIdRef = useRef<Map<string, number>>(new Map());
+  const listingMediaSyncedIdRef = useRef<number | null>(null);
 
-  const { data: existingListing, isLoading: listingLoading } = useGetListing(
-    listingId!,
-    !!listingId && wizardMode !== 'create',
-  );
+  const {
+    data: existingListing,
+    isLoading: listingLoading,
+    isError: listingLoadError,
+    error: listingFetchError,
+    refetch: refetchListing,
+  } = useGetListing(listingId!, !!listingId && wizardMode !== 'create');
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();
   const deployAuctionMutation = useDeployAsAuction();
@@ -212,10 +258,51 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const [barcodeFoundListing, setBarcodeFoundListing] = useState<ProductListing | null>(null);
   const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
 
+  const listingAttachmentIds = useMemo(
+    () => (existingListing ? getListingAttachmentIds(existingListing) : []),
+    [existingListing],
+  );
+  const { data: listingAttachmentUrlMap } = useAttachmentUrls(
+    listingAttachmentIds.length > 0 ? listingAttachmentIds : [],
+  );
+
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
   const [showImportedBanner, setShowImportedBanner] = useState(false);
 
   const importedFromAmazon = router.query.imported === '1';
+
+  const invalidListingId =
+    wizardMode === 'edit' &&
+    router.isReady &&
+    router.query.id != null &&
+    (routeId == null || !Number.isFinite(routeId) || routeId <= 0);
+
+  const stepOutOfRange = useMemo(() => {
+    if (queryStep == null || Number.isNaN(queryStep)) return false;
+    return queryStep < 1 || queryStep > maxStep;
+  }, [queryStep, maxStep]);
+
+  const importedBanner = (importedFromAmazon || showImportedBanner) ? (
+    <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl flex items-start gap-3">
+      <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
+      <p className="text-sm font-bold text-zinc-text flex-1">
+        {importedFromAmazon
+          ? t('amazon.import_redirecting')
+          : t('listing.wizard.imported_banner')}
+      </p>
+    </div>
+  ) : null;
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return;
+    if (listingLoadError && listingFetchError) {
+      console.warn('[ListingWizardPage] listing fetch failed', {
+        listingId,
+        wizardMode,
+        error: listingFetchError,
+      });
+    }
+  }, [listingLoadError, listingFetchError, listingId, wizardMode]);
 
   useEffect(() => {
     if (!router.isReady || wizardMode !== 'edit') return;
@@ -231,8 +318,14 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   }, [router.isReady, router.query.imported, wizardMode, router.pathname, router]);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (stepOutOfRange && process.env.NODE_ENV === 'development') {
+      console.warn('[ListingWizardPage] wizard step out of range', {
+        queryStep,
+        maxStep,
+        currentStep,
+      });
+    }
+  }, [stepOutOfRange, queryStep, maxStep, currentStep]);
 
   useEffect(() => {
     setCurrentStep(initialStep);
@@ -280,8 +373,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         specs: existingListing.specs || [],
         sources: existingListing.sources || [],
       });
-      imageUpload.resetFromServer(existingListing.images || []);
-      setRetainedAttachmentIds(existingListing.attachmentIds || []);
       const hasAdvanced =
         !!existingListing.brand ||
         !!existingListing.model ||
@@ -296,7 +387,40 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         setShowOptionalDetails(true);
       }
     }
-  }, [existingListing, imageUpload.resetFromServer, isMobile]);
+  }, [existingListing, isMobile]);
+
+  useEffect(() => {
+    if (!existingListing) return;
+    if (imageUpload.pendingFiles.length > 0) return;
+
+    const ids = getListingAttachmentIds(existingListing);
+    const direct = getListingImageGalleryUrls(existingListing);
+
+    if (ids.length > 0 && !listingAttachmentUrlMap) return;
+
+    const merged = mergeListingGalleryUrls(direct, ids, listingAttachmentUrlMap);
+    const previewUrls = merged.length > 0 ? merged : direct;
+
+    if (listingMediaSyncedIdRef.current === existingListing.id && previewUrls.length === 0) {
+      return;
+    }
+
+    if (previewUrls.length > 0 || ids.length > 0) {
+      imageUpload.resetFromServer(previewUrls);
+      const urlMap = buildUrlToAttachmentIdMap(ids, listingAttachmentUrlMap, previewUrls);
+      urlToAttachmentIdRef.current = urlMap;
+      const orderedIds = previewUrls
+        .map((url) => urlMap.get(url))
+        .filter((id): id is number => id != null);
+      setRetainedAttachmentIds(orderedIds.length > 0 ? orderedIds : ids);
+      listingMediaSyncedIdRef.current = existingListing.id;
+    }
+  }, [
+    existingListing,
+    listingAttachmentUrlMap,
+    imageUpload.pendingFiles.length,
+    imageUpload.resetFromServer,
+  ]);
 
   const syncStepUrl = useCallback(
     (step: number) => {
@@ -349,28 +473,81 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   };
 
   const saveMedia = async (id: number) => {
-    const pendingFiles = imageUpload.pendingFiles;
-    if (pendingFiles.length === 0 && retainedAttachmentIds.length === 0) return;
+    const { previewUrls, pendingFiles } = imageUpload;
+    if (previewUrls.length === 0) return;
 
-    let newAttachmentIds: number[] = [];
-    if (pendingFiles.length > 0) {
-      newAttachmentIds = await uploadMultiple(pendingFiles);
-      if (newAttachmentIds.length === 0 && pendingFiles.length > 0) {
-        throw new Error('Image upload failed — no attachment IDs returned from server');
-      }
-    }
+    const { attachmentIds, externalUrlsForServerTransfer, hasPendingUploads } =
+      await resolveListingMediaSave({
+        previewUrls,
+        pendingFiles,
+        urlToAttachmentId: urlToAttachmentIdRef.current,
+        uploadFile: (file) => upload(file),
+      });
 
-    const allAttachmentIds = [...retainedAttachmentIds, ...newAttachmentIds];
-    if (allAttachmentIds.length > 0) {
+    if (externalUrlsForServerTransfer.length > 0) {
       await updateMutation.mutateAsync({
         id,
         data: {
-          mainAttachmentId: allAttachmentIds[0],
-          attachmentIds: allAttachmentIds,
+          images: previewUrls.filter((url) => !url.startsWith('blob:')),
+        },
+      });
+    }
+
+    if (attachmentIds.length > 0) {
+      await updateMutation.mutateAsync({
+        id,
+        data: {
+          mainAttachmentId: attachmentIds[0],
+          attachmentIds,
+        },
+      });
+      setRetainedAttachmentIds(attachmentIds);
+      urlToAttachmentIdRef.current = buildUrlToAttachmentIdMap(
+        attachmentIds,
+        listingAttachmentUrlMap,
+        previewUrls,
+      );
+      if (hasPendingUploads) {
+        imageUpload.resetFromServer(previewUrls);
+      }
+      return;
+    }
+
+    if (externalUrlsForServerTransfer.length > 0) return;
+
+    const originalIds = existingListing ? getListingAttachmentIds(existingListing) : [];
+    const orderChanged =
+      retainedAttachmentIds.length > 0 &&
+      JSON.stringify(retainedAttachmentIds) !== JSON.stringify(originalIds);
+
+    if (orderChanged) {
+      await updateMutation.mutateAsync({
+        id,
+        data: {
+          mainAttachmentId: retainedAttachmentIds[0],
+          attachmentIds: retainedAttachmentIds,
         },
       });
     }
   };
+
+  const handleImageReorder = useCallback(
+    (newOrder: string[]) => {
+      const existingCount =
+        imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+      const reorderedIds = reorderRetainedAttachmentIds(
+        newOrder.slice(0, existingCount),
+        imageUpload.previewUrls,
+        retainedAttachmentIds,
+        urlToAttachmentIdRef.current,
+      );
+      if (reorderedIds.length > 0) {
+        setRetainedAttachmentIds(reorderedIds);
+      }
+      imageUpload.reorder(newOrder);
+    },
+    [imageUpload, retainedAttachmentIds],
+  );
 
   const isBusy =
     createMutation.isPending ||
@@ -668,23 +845,69 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     });
   }, []);
 
-  if (!isClient) return null;
+  const effectiveStepLabelKeys = useMemo(() => {
+    if (!isPublishFlow) return wizardLayout.stepLabelKeys;
+    return wizardLayout.stepLabelKeys.map((key, index) => {
+      const channelIdx = fullLayoutStep.CHANNEL - 1;
+      const publishIdx = fullLayoutStep.PUBLISH - 1;
+      if (index === channelIdx) return 'listing.wizard.step.channel_publish';
+      if (index === publishIdx) return 'listing.wizard.step.pricing_publish';
+      return key;
+    });
+  }, [isPublishFlow, wizardLayout.stepLabelKeys, fullLayoutStep.CHANNEL, fullLayoutStep.PUBLISH]);
+
+
+  if (!isClient || !router.isReady) {
+    return <WizardLoadingShell t={t} banner={importedBanner} />;
+  }
+
+  if (invalidListingId) {
+    return (
+      <EmptyState
+        icon={Package}
+        title={t('listing.wizard.invalid_id')}
+        actionLabel={t('listing.form.cancel') || 'Back'}
+        onAction={() => router.push('/listings')}
+      />
+    );
+  }
 
   if (listingId && listingLoading && wizardMode !== 'create') {
+    return <WizardLoadingShell t={t} banner={importedBanner} />;
+  }
+
+  if (
+    listingLoadError &&
+    listingId &&
+    wizardMode !== 'create'
+  ) {
     return (
       <div className="space-y-4 p-6 max-w-[1200px] mx-auto">
-        {(importedFromAmazon || showImportedBanner) && (
-          <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl">
-            <p className="text-sm font-bold text-zinc-text">{t('amazon.import_redirecting')}</p>
-          </div>
-        )}
-        <AmberFormSkeleton fields={6} header actions layout="grid" />
+        {importedBanner}
+        <EmptyState
+          icon={AlertCircle}
+          title={resolveListingLoadError(listingFetchError, t)}
+          actionLabel={t('common.retry')}
+          onAction={() => void refetchListing()}
+        />
       </div>
     );
   }
 
-  if (wizardMode === 'publish-only' && listingId && !existingListing && !listingLoading) {
-    return <EmptyState icon={Package} title={t('listing.detail.not_found') || 'Not Found'} />;
+  if (
+    (wizardMode === 'publish-only' || wizardMode === 'edit') &&
+    listingId &&
+    !listingLoading &&
+    !existingListing
+  ) {
+    return (
+      <EmptyState
+        icon={Package}
+        title={t('listing.detail.not_found') || 'Not Found'}
+        actionLabel={t('listing.form.cancel') || 'Back'}
+        onAction={() => router.push('/listings')}
+      />
+    );
   }
 
   const listingCoverUrl = existingListing ?? null;
@@ -698,6 +921,14 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
   return (
     <div className="space-y-4 md:space-y-8 p-3 md:p-6 max-w-[1200px] mx-auto animate-in fade-in duration-700" dir={dir}>
+      {isPublishFlow && (
+        <FlowConceptBanner messageKey="listing.flow.concept_publish" />
+      )}
+
+      {wizardMode === 'create' && !isPublishFlow && (
+        <FlowConceptBanner messageKey="listing.flow.concept_catalog" />
+      )}
+
       {showImportedBanner && (
         <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl flex items-start gap-3">
           <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
@@ -710,6 +941,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {stepOutOfRange && (
+        <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-warning shrink-0" />
+          <p className="text-sm text-zinc-text font-medium">{t('listing.wizard.invalid_step')}</p>
         </div>
       )}
 
@@ -816,7 +1054,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         currentStep={currentStep}
         maxStep={maxStep}
         minStep={wizardMode === 'publish-only' ? fullLayoutStep.CHANNEL : 1}
-        stepLabelKeys={wizardLayout.stepLabelKeys}
+        stepLabelKeys={effectiveStepLabelKeys}
       />
 
       {currentStep === step.PRODUCT && (
@@ -1023,15 +1261,17 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 if (files?.length) imageUpload.appendFiles(files);
               }}
               onRemove={(index) => {
-                const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+                const existingCount =
+                  imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
                 if (index < existingCount) {
                   setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
                 }
                 imageUpload.removeAt(index);
               }}
-              onReorder={(newOrder) => imageUpload.reorder(newOrder)}
+              onReorder={handleImageReorder}
               multiple
               sortable
+              maxFiles={10}
               disabled={isUploading}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
@@ -1082,6 +1322,40 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
       {currentStep === fullLayoutStep.CHANNEL && showPublishSteps && (
         <div className="space-y-4">
+          {existingListing && (
+            <div
+              className={cn(
+                'flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-obsidian-card',
+                isRTL && 'flex-row-reverse',
+              )}
+            >
+              <div className="w-14 h-14 rounded-lg bg-obsidian-panel border border-white/5 overflow-hidden shrink-0">
+                {existingListing.images?.[0] || existingListing.imageUrl ? (
+                  <ListingImage
+                    listing={existingListing}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-5 h-5 text-zinc-muted/40" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
+                  {t('listing.flow.publish_listing_label')}
+                </p>
+                <p className="text-sm font-bold text-zinc-text truncate">{existingListing.title}</p>
+              </div>
+              <AmberButton
+                variant="ghost"
+                className="shrink-0 h-9 text-[11px] font-black uppercase tracking-wider text-brand"
+                onClick={() => void router.push('/auctions/add')}
+              >
+                {t('listing.flow.change_product')}
+              </AmberButton>
+            </div>
+          )}
           <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">
             {t('listing.deploy.choose')}
           </p>
@@ -1434,6 +1708,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           </AmberButton>
         )}
       </div>
+
     </div>
   );
 };
