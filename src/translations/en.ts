@@ -938,8 +938,11 @@ export const en: Record<string, string> = {
   "category.validation.icon_max": "Icon name must be 50 characters or less",
   "category.validation.rejection_required": "Rejection reason is required",
   "category.validation.rejection_max": "Reason must be 500 characters or less",
-  "category.validation.max_depth": "Maximum category depth exceeded",
-  "category.validation.slug_conflict": "A category with this name already exists",
+  "category.validation.max_depth": "Cannot add a subcategory here — only two levels are allowed (main + sub). Pick a main parent or create a new top-level category.",
+  "category.validation.slug_conflict": "A category with this slug already exists. Try a different name or choose another parent category.",
+  "category.validation.parent_not_found": "The selected parent category was not found. Refresh the list or choose another parent.",
+  "category.error.unexpected": "An unexpected error occurred. Please try again.",
+  "category.slug_suggest.apply": "Use suggested name: {name}",
 
   "category.health.tab": "Issues",
   "category.health.banner_title": "{count} categories need review",

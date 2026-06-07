@@ -166,7 +166,7 @@ export function CategoryForm({
       {rootError && (
         <div className="flex items-start gap-3 p-4 rounded-lg bg-danger/10 border border-danger/20">
           <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
-          <p className="text-sm text-danger">{rootError}</p>
+          <p className="text-sm text-danger">{t(rootError)}</p>
         </div>
       )}
 

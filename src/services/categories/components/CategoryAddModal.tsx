@@ -15,6 +15,8 @@ import {
   type CategoryFormData,
   toCreateCategoryPayload,
   mapCategoryApiError,
+  classifyCategoryApiError,
+  suggestAlternativeCategoryName,
 } from '../lib';
 
 interface CategoryAddModalProps {
@@ -33,6 +35,7 @@ export function CategoryAddModal({
   const { t, dir, language } = useLanguage();
   const createMutation = useCreateCategoryMutation();
   const [showSecondaryLang, setShowSecondaryLang] = useState(false);
+  const [suggestedName, setSuggestedName] = useState<string | null>(null);
   const { data: mainCategories } = useMainCategories();
 
   const parentOptions = useMemo(() => {
@@ -53,6 +56,7 @@ export function CategoryAddModal({
     control,
     setError,
     reset,
+    setValue,
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema as any),
     defaultValues: {
@@ -78,6 +82,7 @@ export function CategoryAddModal({
       parentId: defaultParentId || '',
     });
     setShowSecondaryLang(false);
+    setSuggestedName(null);
   }, [open, defaultParentId, reset]);
 
   const handleFormSubmit = async (data: CategoryFormData) => {
@@ -92,6 +97,11 @@ export function CategoryAddModal({
       const fieldErrors = mapCategoryApiError(err);
       for (const [field, message] of Object.entries(fieldErrors)) {
         setError(field as keyof CategoryFormData, { type: 'server', message });
+      }
+      if (classifyCategoryApiError(err) === 'slug_conflict') {
+        setSuggestedName(suggestAlternativeCategoryName(data.name));
+      } else {
+        setSuggestedName(null);
       }
     }
   };
@@ -132,7 +142,21 @@ export function CategoryAddModal({
           {formErrors.root?.message && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-danger/10 border border-danger/20">
               <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
-              <p className="text-xs text-danger">{formErrors.root.message}</p>
+              <div className="space-y-2">
+                <p className="text-xs text-danger">{t(formErrors.root.message)}</p>
+                {suggestedName && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue('name', suggestedName, { shouldValidate: true });
+                      setSuggestedName(null);
+                    }}
+                    className="text-xs font-bold text-brand hover:underline"
+                  >
+                    {t('category.slug_suggest.apply', { name: suggestedName })}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

@@ -939,8 +939,11 @@ export const ar: Record<string, string> = {
   "category.validation.icon_max": "يجب ألا يتجاوز اسم الأيقونة 50 حرفاً",
   "category.validation.rejection_required": "سبب الرفض مطلوب",
   "category.validation.rejection_max": "يجب ألا يتجاوز السبب 500 حرف",
-  "category.validation.max_depth": "تم تجاوز الحد الأقصى لعمق الفئات",
-  "category.validation.slug_conflict": "توجد فئة بنفس الاسم بالفعل",
+  "category.validation.max_depth": "لا يمكن إضافة فئة فرعية هنا — الحد الأقصى مستويان فقط (رئيسية + فرعية). اختر فئة أب رئيسية أو أنشئ فئة رئيسية جديدة.",
+  "category.validation.slug_conflict": "يوجد تصنيف بنفس المعرف (slug). جرّب اسماً مختلفاً أو اختر فئة أب أخرى.",
+  "category.validation.parent_not_found": "الفئة الأب المختارة غير موجودة. حدّث القائمة أو اختر فئة أب أخرى.",
+  "category.error.unexpected": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+  "category.slug_suggest.apply": "استخدم الاسم المقترح: {name}",
 
   "category.health.tab": "مشاكل",
   "category.health.banner_title": "{count} فئة تحتاج مراجعة",

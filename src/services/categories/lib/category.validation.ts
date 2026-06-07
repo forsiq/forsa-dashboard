@@ -170,52 +170,134 @@ export function toSuggestCategoryPayload(data: SuggestCategoryFormData) {
 
 export type FieldErrors = Record<string, string>;
 
+type TranslateFn = (key: string, variables?: Record<string, string | number>) => string;
+
+/** Normalize axios / ApiClientFactory error message to a single string. */
+export function extractCategoryApiMessage(error: unknown): string {
+  const err = error as Record<string, unknown> | undefined;
+  if (!err) return '';
+
+  const raw =
+    err.message ??
+    (err as { response?: { data?: { message?: unknown } } }).response?.data?.message ??
+    err.error;
+
+  if (Array.isArray(raw)) {
+    return raw.filter((x): x is string => typeof x === 'string').join(' · ');
+  }
+  if (typeof raw === 'string') return raw.trim();
+  return '';
+}
+
+export type CategoryApiErrorKind =
+  | 'slug_conflict'
+  | 'max_depth'
+  | 'parent_not_found'
+  | 'unknown';
+
+/** Classify auction-service category errors for i18n mapping. */
+export function classifyCategoryApiError(error: unknown): CategoryApiErrorKind {
+  const message = extractCategoryApiMessage(error).toLowerCase();
+  const status =
+    (error as { status?: number })?.status ??
+    (error as { response?: { status?: number } })?.response?.status;
+
+  if (
+    (message.includes('slug') && message.includes('exist')) ||
+    status === 409
+  ) {
+    return 'slug_conflict';
+  }
+
+  if (message.includes('maximum category depth') || message.includes('levels exceeded')) {
+    return 'max_depth';
+  }
+
+  if (message.includes('parent') && message.includes('not found')) {
+    return 'parent_not_found';
+  }
+
+  return 'unknown';
+}
+
+const CATEGORY_ERROR_KEYS: Record<Exclude<CategoryApiErrorKind, 'unknown'>, string> = {
+  slug_conflict: 'category.validation.slug_conflict',
+  max_depth: 'category.validation.max_depth',
+  parent_not_found: 'category.validation.parent_not_found',
+};
+
+/** Localized user-facing message for toasts and banners. */
+export function resolveCategoryErrorMessage(
+  error: unknown,
+  t: TranslateFn,
+): string {
+  const kind = classifyCategoryApiError(error);
+  if (kind !== 'unknown') {
+    return t(CATEGORY_ERROR_KEYS[kind]);
+  }
+
+  const message = extractCategoryApiMessage(error);
+  if (message) return message;
+
+  return t('category.error.unexpected');
+}
+
+/**
+ * Suggest an alternate category name when slug conflicts (appends -2, -3, …).
+ * Keeps within NAME_MAX after suffix.
+ */
+export function suggestAlternativeCategoryName(name: string): string {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed) return trimmed;
+
+  const match = trimmed.match(/^(.*?)(?:-(\d+))?$/);
+  const base = (match?.[1] ?? trimmed).trim();
+  const nextNum = match?.[2] ? parseInt(match[2], 10) + 1 : 2;
+  const suffix = `-${nextNum}`;
+  const maxBaseLen = Math.max(1, NAME_MAX - suffix.length);
+  return `${base.slice(0, maxBaseLen)}${suffix}`;
+}
+
 /**
  * Map a backend API error to field-level errors for RHF `setError`.
+ * Values are translation keys (pass through `t()` when rendering).
  *
  * Handles:
- *  - Slug conflict (ConflictException 409)
+ *  - Slug conflict (ConflictException 409) → name + root
  *  - Max depth exceeded (BadRequestException 400)
  *  - Parent not found (NotFoundException 404)
  *  - Generic / validation details
  */
 export function mapCategoryApiError(error: unknown): FieldErrors {
+  const kind = classifyCategoryApiError(error);
+
+  if (kind === 'slug_conflict') {
+    const key = CATEGORY_ERROR_KEYS.slug_conflict;
+    return { name: key, root: key };
+  }
+
+  if (kind === 'max_depth') {
+    return { parentId: CATEGORY_ERROR_KEYS.max_depth, root: CATEGORY_ERROR_KEYS.max_depth };
+  }
+
+  if (kind === 'parent_not_found') {
+    return {
+      parentId: CATEGORY_ERROR_KEYS.parent_not_found,
+      root: CATEGORY_ERROR_KEYS.parent_not_found,
+    };
+  }
+
   const err = error as Record<string, unknown> | undefined;
-  if (!err) return { root: 'An unexpected error occurred' };
-
-  const message = String(err.message ?? err.error ?? '');
-  const status = (err as any).response?.status ?? (err as any).status;
-
-  // Slug conflict
-  if (
-    message.toLowerCase().includes('slug') &&
-    (message.toLowerCase().includes('exist') || status === 409)
-  ) {
-    return { slug: 'category.validation.slug_conflict' };
-  }
-
-  // Max depth exceeded
-  if (
-    message.toLowerCase().includes('maximum category depth') ||
-    message.toLowerCase().includes('max')
-  ) {
-    return { parentId: 'category.validation.max_depth' };
-  }
-
-  // Parent not found
-  if (
-    message.toLowerCase().includes('parent') &&
-    (message.toLowerCase().includes('not found') || status === 404)
-  ) {
-    return { parentId: 'category.validation.max_depth' };
-  }
+  if (!err) return { root: 'category.error.unexpected' };
 
   // Backend field-level details (class-validator format)
-  const details = (err as any).response?.data?.details ?? err.details;
+  const details =
+    (err as { response?: { data?: { details?: unknown } } }).response?.data?.details ??
+    err.details;
   if (details && typeof details === 'object') {
     const fieldErrors: FieldErrors = {};
     for (const [field, messages] of Object.entries(details)) {
-      if (Array.isArray(messages)) {
+      if (Array.isArray(messages) && typeof messages[0] === 'string') {
         fieldErrors[field] = messages[0];
       } else if (typeof messages === 'string') {
         fieldErrors[field] = messages;
@@ -224,5 +306,6 @@ export function mapCategoryApiError(error: unknown): FieldErrors {
     if (Object.keys(fieldErrors).length > 0) return fieldErrors;
   }
 
-  return { root: message || 'An unexpected error occurred' };
+  const message = extractCategoryApiMessage(error);
+  return { root: message || 'category.error.unexpected' };
 }

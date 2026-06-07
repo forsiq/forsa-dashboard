@@ -6,6 +6,7 @@ import * as api from '../api/categories';
 import { useMemo } from 'react';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse, SuggestCategoryInput, ReviewSuggestionInput } from '../types';
 import { analyzeCategoryHealth } from '../lib/categoryHealth';
+import { resolveCategoryErrorMessage } from '../lib';
 
 const categoryService = createCrudService<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   name: 'categories',
@@ -49,7 +50,8 @@ export const useCreate = (options?: any) => {
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: unknown) => {
-      toast.error(t('toast.category.create_failed', { detail: getErrorDetail(error) }), 6000);
+      const detail = resolveCategoryErrorMessage(error, t) || getErrorDetail(error);
+      toast.error(t('toast.category.create_failed', { detail }), 6000);
     },
   });
 };
@@ -66,7 +68,8 @@ export const useUpdate = (options?: any) => {
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: unknown) => {
-      toast.error(t('toast.category.update_failed', { detail: getErrorDetail(error) }), 6000);
+      const detail = resolveCategoryErrorMessage(error, t) || getErrorDetail(error);
+      toast.error(t('toast.category.update_failed', { detail }), 6000);
     },
   });
 };
@@ -167,7 +170,8 @@ export function useSuggestCategory(options?: any) {
       if (options?.onSuccess) options.onSuccess(data, variables, context);
     },
     onError: (error: unknown) => {
-      toast.error(t('toast.category.suggestion_failed', { detail: getErrorDetail(error) }), 6000);
+      const detail = resolveCategoryErrorMessage(error, t) || getErrorDetail(error);
+      toast.error(t('toast.category.suggestion_failed', { detail }), 6000);
     },
   });
 }

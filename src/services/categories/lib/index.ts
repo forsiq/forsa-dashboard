@@ -22,6 +22,9 @@ export {
   toUpdateCategoryPayload,
   toSuggestCategoryPayload,
   mapCategoryApiError,
+  resolveCategoryErrorMessage,
+  suggestAlternativeCategoryName,
+  classifyCategoryApiError,
 } from './category.validation';
 
 export {

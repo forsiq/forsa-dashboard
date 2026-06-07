@@ -113,7 +113,7 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
           {formErrors.root?.message && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-danger/10 border border-danger/20">
               <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
-              <p className="text-xs text-danger">{formErrors.root.message}</p>
+              <p className="text-xs text-danger">{t(formErrors.root.message)}</p>
             </div>
           )}
 

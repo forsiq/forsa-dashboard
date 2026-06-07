@@ -145,6 +145,17 @@ function mapOneRawMessage(raw: string, t: TranslateFn, language: string): string
     return t('validation.field_must_be_at_least', { field: generic[1], min: generic[2] });
   }
 
+  // Category service (auction-service)
+  if (/^Slug already exists$/i.test(m)) {
+    return t('category.validation.slug_conflict');
+  }
+  if (/Maximum category depth/i.test(m) || /levels exceeded/i.test(m)) {
+    return t('category.validation.max_depth');
+  }
+  if (/Parent category with ID .+ not found/i.test(m)) {
+    return t('category.validation.parent_not_found');
+  }
+
   return language === 'en' ? m : t('validation.api_unmapped_fallback', { message: m });
 }
 
