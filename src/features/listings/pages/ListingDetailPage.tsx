@@ -33,12 +33,12 @@ import { ProductReadinessCard } from '../components/ProductReadinessCard';
 import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
-import { AmberImageGallery } from '@core/components/AmberImageGallery';
 import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import {
   getListingAttachmentIds,
   getListingImageGalleryUrls,
 } from '../utils/listing-media';
+import { ListingPhotoGallery } from '../components/ListingPhotoGallery';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { useIsClient } from '@core/hooks/useIsClient';
@@ -303,17 +303,13 @@ export const ListingDetailPage: React.FC = () => {
               <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
                 <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : allImages.length > 0 ? (
-              <AmberImageGallery
-                images={allImages}
-                alt={listing.title}
-                height="h-[220px] md:h-[280px] lg:h-[360px]"
-                className="rounded-lg border border-white/5"
-              />
             ) : (
-              <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
-                <Package className="w-10 h-10 text-zinc-muted/30" />
-              </div>
+              <ListingPhotoGallery
+                listingId={listingId}
+                initialImages={allImages}
+                initialAttachmentIds={attachmentIds}
+                listingTitle={listing?.title || ''}
+              />
             )}
           </Card>
 

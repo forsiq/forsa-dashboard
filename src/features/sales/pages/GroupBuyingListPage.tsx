@@ -61,7 +61,7 @@ export const GroupBuyingListPage: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const { isMerchant } = useDashboardRole();
+  const { canManageGroupBuying } = useDashboardRole();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -245,7 +245,7 @@ export const GroupBuyingListPage: React.FC = () => {
       icon: Eye,
       onClick: (campaign) => router.push(`/group-buying/${campaign.id}`),
     },
-    ...(isMerchant ? [] : [
+    ...(canManageGroupBuying ? [
     {
       label: t('common.edit') || 'Edit',
       icon: Edit,
@@ -273,7 +273,7 @@ export const GroupBuyingListPage: React.FC = () => {
         variant: 'danger',
       }),
     },
-    ] as Action<GroupBuying>[]),
+    ] as Action<GroupBuying>[] : []),
   ];
 
   if (!isClient) return null;
@@ -285,12 +285,12 @@ export const GroupBuyingListPage: React.FC = () => {
       icon={Users}
       className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
-        isMerchant ? undefined : (
+        canManageGroupBuying ? (
         <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8" onClick={() => router.push('/group-buying/new')}>
           <Plus className="w-5 h-5" />
           <span className="hidden md:inline">{t('groupBuying.create') || 'Create Campaign'}</span>
         </AmberButton>
-        )
+        ) : undefined
       }
       stats={[
         { label: t('groupBuying.active_engines'), value: stats?.activeCampaigns || 0, icon: Zap, color: 'brand', description: t('groupBuying.live_distribution') || 'LIVE' },
@@ -315,8 +315,14 @@ export const GroupBuyingListPage: React.FC = () => {
             icon={Target}
             title={t('groupBuying.operational_gap') || 'No Campaigns'}
             description={t('groupBuying.no_active_protocols') || 'No campaigns found.'}
-            actionLabel={t('groupBuying.initialize_first_call') || 'Create Campaign'}
-            onAction={() => router.push('/group-buying/new')}
+            actionLabel={
+              canManageGroupBuying
+                ? (t('groupBuying.initialize_first_call') || 'Create Campaign')
+                : undefined
+            }
+            onAction={
+              canManageGroupBuying ? () => router.push('/group-buying/new') : undefined
+            }
           />
         ) : (
           <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">

@@ -2,7 +2,7 @@ import type { UserRole } from '@features/auth/types';
 import { getNavPathBase } from '@core/utils/isNavItemActive';
 
 export const NAV_ROLE_MAP: Record<string, UserRole[]> = {
-  '/moderation': ['admin', 'product_moderator'],
+  '/moderation': ['admin'],
   '/settlements': ['admin'],
   '/users': ['admin'],
   '/settings': ['admin'],

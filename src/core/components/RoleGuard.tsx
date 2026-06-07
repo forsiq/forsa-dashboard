@@ -45,7 +45,6 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
 
     if (!allowed) {
       warning(t('toast.access_denied'));
-      void router.replace('/dashboard');
     }
   }, [allowedRoles, router, warning, t]);
 
@@ -58,7 +57,12 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles, fa
   }
 
   if (!isAllowed) {
-    return fallback ? <>{fallback}</> : null;
+    if (fallback) return <>{fallback}</>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 px-6 text-center">
+        <p className="text-zinc-muted text-sm max-w-md">{t('toast.access_denied')}</p>
+      </div>
+    );
   }
 
   return <>{children}</>;

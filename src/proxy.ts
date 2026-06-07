@@ -1,44 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import {
-  decodeJwtPayload,
-  extractDashboardRole,
-  isDashboardRoleAllowed,
-} from './core/auth/dashboardRole';
-import type { UserRole } from './features/auth/types';
-
-type RouteRoleConfig = {
-  roles: readonly UserRole[];
-  redirectPath: string;
-};
-
-const ADMIN_ONLY_ROLES: readonly UserRole[] = ['admin'];
-
-const REPORTS_ACCESS_ROLES: readonly UserRole[] = [
-  'admin',
-  'merchant',
-  'customer_support',
-  'product_analyst',
-];
-
-const LIVE_MONITOR_ACCESS_ROLES: readonly UserRole[] = ['admin', 'product_analyst'];
-
-const MARKETPLACE_CATALOG_ROLES: readonly UserRole[] = ['admin', 'merchant', 'product_moderator'];
-
-const PROTECTED_ROUTES: Record<string, RouteRoleConfig> = {
-  '/moderation': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/settlements': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/users': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/settings': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/live-monitor': { roles: LIVE_MONITOR_ACCESS_ROLES, redirectPath: '/dashboard' },
-  '/reports': { roles: REPORTS_ACCESS_ROLES, redirectPath: '/dashboard' },
-  '/auctions/add': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/auctions/clone': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/auctions/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/group-buying/new': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/group-buying/edit': { roles: ADMIN_ONLY_ROLES, redirectPath: '/dashboard' },
-  '/categories': { roles: MARKETPLACE_CATALOG_ROLES, redirectPath: '/dashboard' },
-};
+import { decodeJwtPayload } from './core/auth/dashboardRole';
 
 const parseJwtExp = (token?: string): number | null => {
   if (!token) return null;
@@ -68,10 +30,6 @@ function isPrefetchRequest(request: NextRequest): boolean {
   if (request.headers.get('x-middleware-prefetch') === '1') return true;
   if (request.headers.get('x-nextjs-data') === '1') return true;
   return false;
-}
-
-function matchRoute(pathname: string, routePrefix: string): boolean {
-  return pathname === routePrefix || pathname.startsWith(`${routePrefix}/`);
 }
 
 export function proxy(request: NextRequest) {
@@ -113,24 +71,6 @@ export function proxy(request: NextRequest) {
     !isForcedLogin
   ) {
     return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (hasValidAccess && token) {
-    let matchedConfig: RouteRoleConfig | null = null;
-    for (const [routePrefix, config] of Object.entries(PROTECTED_ROUTES)) {
-      if (matchRoute(pathname, routePrefix)) {
-        matchedConfig = config;
-        break;
-      }
-    }
-
-    if (matchedConfig) {
-      const payload = decodeJwtPayload(token);
-      const dashboardRole = extractDashboardRole(payload);
-      if (!isDashboardRoleAllowed(matchedConfig.roles, dashboardRole)) {
-        return NextResponse.redirect(new URL(matchedConfig.redirectPath, request.url));
-      }
-    }
   }
 
   return NextResponse.next();

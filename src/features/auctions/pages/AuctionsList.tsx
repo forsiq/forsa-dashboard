@@ -106,7 +106,7 @@ export const AuctionsList: React.FC = () => {
     const router = useRouter();
     const { isMobile } = useIsMobile();
 
-    const { isMerchant } = useDashboardRole();
+    const { canManageAuctions, canManageListings } = useDashboardRole();
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useFilterState('search', '');
@@ -297,7 +297,7 @@ export const AuctionsList: React.FC = () => {
           void router.push(`/auctions/${auction.id}`);
         },
       },
-      ...(isMerchant ? [] : [
+      ...(canManageAuctions ? [
       {
         label: t('common.edit') || 'Edit',
         icon: Edit,
@@ -361,7 +361,7 @@ export const AuctionsList: React.FC = () => {
           variant: 'danger',
         }),
       },
-      ] as Action<Auction>[]),
+      ] as Action<Auction>[] : []),
     ];
 
     // Mobile stats for compact 2x2 grid
@@ -388,7 +388,7 @@ export const AuctionsList: React.FC = () => {
                     {t('auction.listings.title')}
                   </h1>
                 </div>
-                {!isMerchant && (
+                {canManageListings && (
                   <AmberButton
                     className="h-9 bg-brand text-black font-black rounded-xl border-none active:scale-95 px-4 text-xs"
                     onClick={() => router.push('/listings/new')}
@@ -476,8 +476,14 @@ export const AuctionsList: React.FC = () => {
                 icon={Gavel}
                 title={t('auction.inventory.depleted') || 'No Auctions'}
                 description={t('auction.inventory.no_identifiers')}
-                actionLabel={t('auction.action.deploy_listing') || 'Create Auction'}
-                onAction={() => router.push('/listings/new')}
+                actionLabel={
+                  canManageListings
+                    ? (t('auction.action.deploy_listing') || 'Create Auction')
+                    : undefined
+                }
+                onAction={
+                  canManageListings ? () => router.push('/listings/new') : undefined
+                }
               />
             ) : (
               <>
@@ -586,7 +592,7 @@ export const AuctionsList: React.FC = () => {
             icon={Gavel}
             className="p-3 md:p-6 space-y-4 md:space-y-8"
             headerActions={
-                isMerchant ? undefined : (
+                canManageListings ? (
                 <AmberButton
                     className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8"
                     onClick={() => router.push('/listings/new')}
@@ -594,7 +600,7 @@ export const AuctionsList: React.FC = () => {
                     <Plus className="w-5 h-5" />
                     <span className="hidden md:inline">{t('auction.create_auction')}</span>
                 </AmberButton>
-                )
+                ) : undefined
             }
             stats={[
                 { label: t('auction.metrics.active_engines'), value: stats?.activeAuctions || 0, icon: Gavel, color: 'brand', description: t('auction.metrics.live_liquidations') },
@@ -645,8 +651,14 @@ export const AuctionsList: React.FC = () => {
                       icon={Gavel}
                       title={t('auction.inventory.depleted') || 'No Auctions'}
                       description={t('auction.inventory.no_identifiers')}
-                      actionLabel={t('auction.action.deploy_listing') || 'Create Auction'}
-                      onAction={() => router.push('/listings/new')}
+                      actionLabel={
+                        canManageListings
+                          ? (t('auction.action.deploy_listing') || 'Create Auction')
+                          : undefined
+                      }
+                      onAction={
+                        canManageListings ? () => router.push('/listings/new') : undefined
+                      }
                     />
                 ) : (
                     <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
@@ -668,8 +680,8 @@ export const AuctionsList: React.FC = () => {
                             data={auctions}
                             keyField="id"
                             rowActions={rowActions}
-                            selectable={!isMerchant}
-                            bulkActions={isMerchant ? [] : bulkActions}
+                            selectable={canManageAuctions}
+                            bulkActions={canManageAuctions ? bulkActions : []}
                             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
                             pagination
                             pageSize={limit}

@@ -2,6 +2,10 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import {
+  hasDashboardCapability,
+  type DashboardCapability,
+} from '@core/auth/roleCapabilities';
 import type { UserRole } from '@features/auth/types';
 
 export interface DashboardRoleResult {
@@ -9,6 +13,12 @@ export interface DashboardRoleResult {
   isMerchant: boolean;
   isAdmin: boolean;
   isModerator: boolean;
+  canManageCategories: boolean;
+  canReviewCategorySuggestions: boolean;
+  canManageAuctions: boolean;
+  canManageGroupBuying: boolean;
+  canManageListings: boolean;
+  can: (capability: DashboardCapability) => boolean;
 }
 
 export function useDashboardRole(): DashboardRoleResult {
@@ -18,10 +28,21 @@ export function useDashboardRole(): DashboardRoleResult {
     return extractDashboardRoleFromToken(Cookies.get('access'));
   }, [router.asPath, router.isReady]);
 
+  const can = useMemo(
+    () => (capability: DashboardCapability) => hasDashboardCapability(role, capability),
+    [role],
+  );
+
   return {
     role,
     isMerchant: role === 'merchant',
     isAdmin: role === 'admin',
     isModerator: role === 'product_moderator',
+    canManageCategories: can('categories.manage'),
+    canReviewCategorySuggestions: can('categories.reviewSuggestions'),
+    canManageAuctions: can('auctions.manage'),
+    canManageGroupBuying: can('groupBuying.manage'),
+    canManageListings: can('listings.manage'),
+    can,
   };
 }

@@ -5,6 +5,14 @@
     ar: "تحقق نماذج الفئات"
   entries:
     - description:
+        en: "Access denied no longer redirects to the dashboard; you stay on the current page with a toast and message."
+        ar: "عند رفض الوصول لم يعد يتم التحويل إلى لوحة التحكم؛ تبقى في نفس الصفحة مع تنبيه ورسالة."
+      type: improved
+    - description:
+        en: "Action buttons (create, edit, delete) now follow role capabilities so analysts and moderators no longer see admin-only controls."
+        ar: "أزرار الإجراءات (إنشاء، تعديل، حذف) تتبع الآن صلاحيات الدور؛ لم يعد المحللون والمراجعون يرون عناصر تحكم خاصة بالمسؤول."
+      type: fixed
+    - description:
         en: "Unified category form validation with field-level error messages on create, edit, suggest, and reject."
         ar: "توحيد التحقق في نماذج الفئات مع رسائل أخطاء على مستوى الحقل عند الإنشاء والتعديل والاقتراح والرفض."
       type: improved

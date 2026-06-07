@@ -27,15 +27,19 @@ import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useGetCategory, useDeleteCategoryMutation } from '../hooks';
 import type { Category } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
+import { CategoryEditModal } from '../components/CategoryEditModal';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 
 /**
  * CategoryDetailPage - Category details view
  */
 export function CategoryDetailPage() {
   const { t, dir, language } = useLanguage();
+  const { canManageCategories } = useDashboardRole();
   const router = useRouter();
   const { id } = router.query;
   const [isClient, setIsClient] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   useEffect(() => {
@@ -121,20 +125,25 @@ export function CategoryDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <AmberButton
-            variant="secondary"
-            className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center hover:text-danger active:scale-95 transition-all"
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="w-5 h-5 text-zinc-muted" />
-          </AmberButton>
-          <AmberButton className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all" onClick={() => router.push(`/categories/${category.id}/edit`)}>
+        {canManageCategories ? (
+          <div className="flex items-center gap-3 shrink-0">
+            <AmberButton
+              variant="secondary"
+              className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center hover:text-danger active:scale-95 transition-all"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="w-5 h-5 text-zinc-muted" />
+            </AmberButton>
+            <AmberButton
+              className="h-12 bg-white text-black font-black uppercase tracking-widest rounded-xl px-8 hover:bg-zinc-200 active:scale-95 transition-all"
+              onClick={() => setEditModalOpen(true)}
+            >
               <Edit className="w-4 h-4 me-2" />
               {t('common.edit') || 'Edit'}
-          </AmberButton>
-        </div>
+            </AmberButton>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -280,7 +289,7 @@ export function CategoryDetailPage() {
               <AmberButton
                   variant="secondary"
                   className="w-full gap-2 font-black uppercase tracking-widest text-[11px] h-10 bg-obsidian-panel border-border active:scale-95 transition-all"
-                  onClick={() => router.push(`/categories/${category.id}/edit`)}
+                  onClick={() => setEditModalOpen(true)}
               >
                   <Edit className="w-4 h-4" />
                   {t('common.edit') || 'Edit Category'}
@@ -338,6 +347,11 @@ export function CategoryDetailPage() {
       </AmberCard>
 
       <ConfirmModal />
+      <CategoryEditModal
+        category={category}
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+      />
     </div>
   );
 }

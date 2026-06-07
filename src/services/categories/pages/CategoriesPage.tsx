@@ -637,8 +637,7 @@ function SortableTreeRow({
 
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
-  const { isAdmin, isModerator } = useDashboardRole();
-  const canManageCategories = !isModerator;
+  const { canManageCategories, canReviewCategorySuggestions } = useDashboardRole();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
@@ -785,17 +784,17 @@ export function CategoriesPage() {
     const tabs: { key: PageTab; labelKey: string; icon: typeof LayoutGrid }[] = [
       { key: 'categories', labelKey: 'category.title', icon: LayoutGrid },
     ];
-    if (isAdmin || isModerator) {
+    if (canReviewCategorySuggestions) {
       tabs.push({ key: 'suggestions', labelKey: 'category.suggestions', icon: MessageSquare });
     }
     return tabs;
-  }, [isAdmin, isModerator]);
+  }, [canReviewCategorySuggestions]);
 
   useEffect(() => {
-    if (!isAdmin && !isModerator && pageTab === 'suggestions') {
+    if (!canReviewCategorySuggestions && pageTab === 'suggestions') {
       setPageTab('categories');
     }
-  }, [isAdmin, isModerator, pageTab]);
+  }, [canReviewCategorySuggestions, pageTab]);
 
   if (!isClient) return null;
 
