@@ -5,15 +5,45 @@
     ar: "اختيار فئات أذكى"
   entries:
     - description:
-        en: "Trusted merchants can choose Publish Directly (skip moderation) or Submit for Review when creating listings; backend enforces the choice."
-        ar: "التجار الموثوقون يمكنهم اختيار النشر المباشر (تخطي المراجعة) أو الإرسال للمراجعة عند إنشاء المنتجات؛ الخادم يطبّق الاختيار."
-      type: added
+        en: "Fixed listing publish wizard for trusted merchants: channel selection and deploy steps now appear after direct publish instead of a blank page with a non-functional Next button."
+        ar: "إصلاح معالج نشر المنتج للتجار الموثوقين: خطوات اختيار القناة والنشر تظهر الآن بعد النشر المباشر بدلاً من صفحة فارغة مع زر التالي الذي لا يعمل."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Fixed listing wizard image step: files with missing MIME types (common on Linux) are accepted, max size aligned to 10MB, and upload sends correct image content-type to the attachment API."
+        ar: "إصلاح خطوة صور معالج المنتج: قبول الملفات بدون MIME (شائع على Linux)، توحيد الحد الأقصى 10 ميجابايت، وإرسال content-type صحيح لـ attachment API."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Trusted merchants see Publish Directly or Save & exit when submitting listings (not both publish options); regular merchants still submit for review only."
+        ar: "التجار الموثوقون يرون النشر المباشر أو حفظ والخروج عند إرسال المنتجات (وليس خياري نشر معاً)؛ التجار العاديون يرسلون للمراجعة فقط."
+      type: changed
+      sidebarPath: /listings
+    - description:
+        en: "Amazon import shows a full progress overlay while images transfer, prefetches the listing for faster edit page load, and displays an imported banner on the editor."
+        ar: "استيراد أمازون يعرض شاشة تقدم أثناء نقل الصور، ويحمّل المنتج مسبقاً لفتح صفحة التعديل أسرع، مع شريط يوضح أن المنتج مستورد."
+      type: improved
       sidebarPath: /listings
     - description:
         en: "Listing wizard, quick add, and group buying forms now use a searchable hierarchical category picker with icons, suggest-category, and add-category shortcuts instead of a flat dropdown."
         ar: "معالج المنتج والإضافة السريعة ونماذج الشراء الجماعي تستخدم الآن منتقي فئات هرمي قابل للبحث مع أيقونات واقتراح فئة واختصار إضافة فئة بدلاً من قائمة منسدلة مسطّحة."
       type: improved
       sidebarPath: /listings
+    - description:
+        en: "Category picker search now opens a dropdown list on focus with filtered results and parent › child hierarchy; chip selection remains below."
+        ar: "بحث منتقي الفئات يفتح الآن قائمة منسدلة عند التركيز مع نتائج مفلترة وتسلسل الفئة الرئيسية › الفرعية؛ اختيار الشرائح يبقى أسفل الحقل."
+      type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Categories admin page detects messy rows (empty names, test data, product-like titles, duplicates, orphans) with an Issues filter and badges; picker hides unsafe categories."
+        ar: "صفحة إدارة الفئات تكشف الصفوف المشوشة (أسماء فارغة، بيانات اختبار، عناوين تشبه المنتجات، تكرار، أيتام) مع فلتر مشاكل وشارات؛ المنتقي يخفي الفئات غير الآمنة."
+      type: improved
+      sidebarPath: /categories
+    - description:
+        en: "Categories page Issues tab shows a count badge and context banner; category picker uses search-first flow with collapsible browse chips and clearer selection state."
+        ar: "تبويب مشاكل صفحة الفئات يعرض شارة بعدد المشاكل وشريط سياق؛ منتقي الفئات يعتمد البحث أولاً مع شرائح تصفح قابلة للطي وحالة اختيار أوضح."
+      type: improved
+      sidebarPath: /categories
 
 - version: "1.5.9"
   date: "2026-06-01"

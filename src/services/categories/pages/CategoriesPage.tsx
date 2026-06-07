@@ -17,6 +17,7 @@ import {
   Folder,
   FolderOpen,
   MessageSquare,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   DndContext,
@@ -48,10 +49,12 @@ import {
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
   useReorderCategories,
-  useCategoryTree,
+  useCategoryHealthReport,
 } from '../hooks';
 import type { Category, CategoryTreeNode } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
+import { buildCategoryTreeFromFlat, type CategoryIssue } from '../lib';
+import { CategoryIssueBadges } from '../components/CategoryIssueBadges';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
@@ -63,7 +66,7 @@ import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
 import { SuggestionReview } from '../components/SuggestionReview';
 
-type StatusTab = 'all' | 'active' | 'inactive';
+type StatusTab = 'all' | 'active' | 'inactive' | 'issues';
 type PageTab = 'categories' | 'suggestions';
 
 function nodeMatchesStatus(node: CategoryTreeNode, statusFilter: StatusTab): boolean {
@@ -98,6 +101,28 @@ function filterCategoryTree(
       nodeMatchesStatus(node, statusFilter) && nodeMatchesSearch(node, language, search.trim());
 
     if (!selfMatches && filteredChildren.length === 0) return null;
+
+    return {
+      ...node,
+      children: filteredChildren,
+    };
+  };
+
+  return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
+}
+
+function filterIssuesTree(
+  nodes: CategoryTreeNode[],
+  issuesByCategoryId: Map<string, CategoryIssue[]>,
+): CategoryTreeNode[] {
+  const filterNode = (node: CategoryTreeNode): CategoryTreeNode | null => {
+    const filteredChildren = (node.children ?? [])
+      .map(filterNode)
+      .filter((child): child is CategoryTreeNode => child !== null);
+
+    const selfHasIssues = (issuesByCategoryId.get(String(node.id))?.length ?? 0) > 0;
+
+    if (!selfHasIssues && filteredChildren.length === 0) return null;
 
     return {
       ...node,
@@ -232,6 +257,7 @@ interface TreeNodeSharedProps {
   canReorder?: boolean;
   isLastSibling?: boolean;
   ancestorContinues?: boolean[];
+  issuesByCategoryId?: Map<string, CategoryIssue[]>;
 }
 
 function CategoryRowActions({
@@ -257,6 +283,7 @@ function CategoryRowActions({
         onClick={() => onEdit(node)}
         className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
         title={t('common.edit') || 'Edit'}
+        aria-label={t('common.edit') || 'Edit'}
       >
         <Edit className="w-4 h-4" />
       </button>
@@ -270,6 +297,11 @@ function CategoryRowActions({
             : 'text-zinc-muted hover:text-success hover:bg-success/10',
         )}
         title={
+          node.isActive
+            ? t('category.deactivate') || 'Deactivate'
+            : t('category.activate') || 'Activate'
+        }
+        aria-label={
           node.isActive
             ? t('category.deactivate') || 'Deactivate'
             : t('category.activate') || 'Activate'
@@ -289,6 +321,7 @@ function CategoryRowActions({
         }}
         className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
         title={t('common.delete') || 'Delete'}
+        aria-label={t('common.delete') || 'Delete'}
       >
         <Trash2 className="w-4 h-4" />
       </button>
@@ -309,10 +342,12 @@ function TreeCategoryCard({
   t,
   isLastSibling = true,
   ancestorContinues = [],
+  issuesByCategoryId,
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = Boolean(node.children?.length);
   const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
+  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
   return (
     <div className="space-y-2">
@@ -378,6 +413,9 @@ function TreeCategoryCard({
                   <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest truncate mt-0.5">
                     {node.slug || '-'}
                   </p>
+                  {nodeIssues.length > 0 && (
+                    <CategoryIssueBadges issues={nodeIssues} t={t} className="mt-2" />
+                  )}
                 </div>
               </div>
               <StatusBadge
@@ -433,6 +471,7 @@ function TreeCategoryCard({
             onDelete={onDelete}
             openConfirm={openConfirm}
             t={t}
+            issuesByCategoryId={issuesByCategoryId}
           />
         ))}
     </div>
@@ -453,10 +492,12 @@ function SortableTreeRow({
   t,
   isLastSibling = true,
   ancestorContinues = [],
+  issuesByCategoryId,
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const Icon = resolveCategoryTreeIcon(node, Boolean(hasChildren), expanded);
+  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
   const {
     attributes,
@@ -566,6 +607,9 @@ function SortableTreeRow({
                 {node.children!.length}
               </span>
             )}
+            {nodeIssues.length > 0 && (
+              <CategoryIssueBadges issues={nodeIssues} t={t} compact />
+            )}
           </div>
         </td>
         {/* Slug */}
@@ -627,6 +671,7 @@ function SortableTreeRow({
               onDelete={onDelete}
               openConfirm={openConfirm}
               t={t}
+              issuesByCategoryId={issuesByCategoryId}
             />
           ))}
         </SortableContext>
@@ -647,17 +692,35 @@ export function CategoriesPage() {
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const {
-    data: treeData,
+    categories: flatCategories,
+    report: healthReport,
     isPending: treeLoading,
     isFetching: treeFetching,
     error: treeError,
     refetch: refetchTree,
-  } = useCategoryTree();
+  } = useCategoryHealthReport(language);
+
+  const categoryTree = useMemo(
+    () => buildCategoryTreeFromFlat(flatCategories, language),
+    [flatCategories, language],
+  );
 
   const filteredTree = useMemo(() => {
-    const roots = treeData?.tree ?? [];
-    return filterCategoryTree(roots, language, statusFilter, debouncedSearch ?? '');
-  }, [treeData?.tree, language, statusFilter, debouncedSearch]);
+    if (statusFilter === 'issues') {
+      let tree = filterIssuesTree(categoryTree, healthReport.issuesByCategoryId);
+      const search = (debouncedSearch ?? '').trim();
+      if (search) {
+        tree = filterCategoryTree(tree, language, 'all', search);
+      }
+      return tree;
+    }
+    return filterCategoryTree(
+      categoryTree,
+      language,
+      statusFilter,
+      debouncedSearch ?? '',
+    );
+  }, [categoryTree, language, statusFilter, debouncedSearch, healthReport.issuesByCategoryId]);
 
   const hasActiveFilters =
     statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
@@ -675,9 +738,9 @@ export function CategoriesPage() {
   useEffect(() => {
     if (isSavingOrder) return;
     if (canReorder) {
-      setLocalTree(treeData?.tree ?? []);
+      setLocalTree(categoryTree);
     }
-  }, [treeData?.tree, canReorder, isSavingOrder]);
+  }, [categoryTree, canReorder, isSavingOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -698,12 +761,12 @@ export function CategoriesPage() {
       try {
         await reorderMutation.mutateAsync(orderedIds);
       } catch {
-        setLocalTree(treeData?.tree ?? []);
+        setLocalTree(categoryTree);
       } finally {
         setIsSavingOrder(false);
       }
     },
-    [reorderMutation, treeData?.tree],
+    [reorderMutation, categoryTree],
   );
 
   const handleDragEnd = useCallback(
@@ -778,6 +841,9 @@ export function CategoriesPage() {
     { key: 'all', labelKey: 'common.all' },
     { key: 'active', labelKey: 'status.active' },
     { key: 'inactive', labelKey: 'status.inactive' },
+    ...(canManageCategories
+      ? [{ key: 'issues' as StatusTab, labelKey: 'category.health.tab' }]
+      : []),
   ];
 
   const pageTabs = useMemo(() => {
@@ -828,10 +894,18 @@ export function CategoriesPage() {
         { label: t('category.total') || 'Total Categories', value: stats?.total ?? 0, icon: LayoutGrid, color: 'warning' },
         { label: t('category.active') || 'Active', value: stats?.active ?? 0, icon: Activity, color: 'success' },
         { label: t('category.inactive') || 'Inactive', value: stats?.inactive ?? 0, icon: Ban, color: 'danger' },
-        { label: t('category.main') || 'Main Categories', value: stats?.withParent ?? 0, icon: Layers, color: 'info' },
+        { label: t('category.main') || 'Main Categories', value: stats?.withoutParent ?? 0, icon: Layers, color: 'info' },
+        ...(canManageCategories && healthReport.totalAffected > 0
+          ? [{
+              label: t('category.health.stat') || 'Need review',
+              value: healthReport.totalAffected,
+              icon: AlertTriangle,
+              color: 'warning' as const,
+            }]
+          : []),
       ]}
       tabs={
-        <div className="flex items-center gap-2 md:gap-4 overflow-x-auto scrollbar-hide">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4">
           {/* Page Tabs */}
           <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
             {pageTabs.map((tab) => {
@@ -864,11 +938,28 @@ export function CategoriesPage() {
                   className={cn(
                     'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap',
                     statusFilter === tab.key
-                      ? 'bg-[var(--color-brand)] text-black shadow-sm'
+                      ? tab.key === 'issues'
+                        ? 'bg-warning text-black shadow-sm'
+                        : 'bg-[var(--color-brand)] text-black shadow-sm'
                       : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
                   )}
                 >
+                  {tab.key === 'issues' && (
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  )}
                   {t(tab.labelKey)}
+                  {tab.key === 'issues' && healthReport.totalAffected > 0 && (
+                    <span
+                      className={cn(
+                        'min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-[10px] font-black tabular-nums leading-none',
+                        statusFilter === 'issues'
+                          ? 'bg-black/15 text-black'
+                          : 'bg-warning/20 text-warning',
+                      )}
+                    >
+                      {healthReport.totalAffected}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -907,7 +998,7 @@ export function CategoriesPage() {
                 {t('common.retry') || 'Retry'}
               </AmberButton>
             </div>
-          ) : !treeData?.tree?.length ? (
+          ) : !categoryTree.length ? (
             <EmptyState
               icon={LayoutGrid}
               title={t('category.empty') || 'No Categories'}
@@ -917,18 +1008,63 @@ export function CategoriesPage() {
             />
           ) : filteredTree.length === 0 ? (
             <EmptyState
-              icon={LayoutGrid}
-              title={t('category.no_results') || 'No Categories'}
+              icon={statusFilter === 'issues' ? AlertTriangle : LayoutGrid}
+              title={
+                statusFilter === 'issues'
+                  ? t('category.health.empty') || 'No issues found'
+                  : t('category.no_results') || 'No Categories'
+              }
               description={
-                hasActiveFilters
-                  ? t('category.no_results') || 'No categories match your filters.'
-                  : t('category.empty_description') || 'No categories found.'
+                statusFilter === 'issues'
+                  ? t('category.health.empty_desc') ||
+                    'All categories look healthy.'
+                  : hasActiveFilters
+                    ? t('category.no_results') || 'No categories match your filters.'
+                    : t('category.empty_description') || 'No categories found.'
               }
             />
           ) : (
             <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
               {treeFetching && <FetchingOverlay />}
-              <div className="flex flex-col bg-obsidian-panel border border-white/5 rounded-lg shadow-sm">
+              {canManageCategories && healthReport.totalAffected > 0 && (
+                <div
+                  className={cn(
+                    'flex items-start gap-3 px-4 py-3 border-b',
+                    statusFilter === 'issues'
+                      ? 'border-warning/25 bg-warning/[0.08]'
+                      : 'border-warning/20 bg-warning/5',
+                  )}
+                >
+                  <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-zinc-text">
+                      {statusFilter === 'issues'
+                        ? t('category.health.issues_context') ||
+                          'Showing categories flagged for review.'
+                        : (t('category.health.banner_title') || '{count} categories need review').replace(
+                            '{count}',
+                            String(healthReport.totalAffected),
+                          )}
+                    </p>
+                    {statusFilter !== 'issues' && (
+                      <>
+                        <p className="text-xs text-zinc-muted mt-0.5">
+                          {t('category.health.banner_desc') ||
+                            'Detected duplicates, test data, product-like names, or missing metadata.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setStatusFilter('issues')}
+                          className="mt-2 text-xs font-bold text-brand hover:underline"
+                        >
+                          {t('category.health.tab') || 'View issues'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col">
                 {/* Mobile: card tree */}
                 <div className="md:hidden p-3 space-y-2 min-h-[200px]">
                   {displayTree.map((node, index) => (
@@ -946,6 +1082,7 @@ export function CategoriesPage() {
                       onDelete={handleDelete}
                       openConfirm={openConfirm}
                       t={t}
+                      issuesByCategoryId={healthReport.issuesByCategoryId}
                     />
                   ))}
                 </div>
@@ -1006,6 +1143,7 @@ export function CategoriesPage() {
                               onDelete={handleDelete}
                               openConfirm={openConfirm}
                               t={t}
+                              issuesByCategoryId={healthReport.issuesByCategoryId}
                             />
                           ))}
                         </SortableContext>

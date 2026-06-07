@@ -3,7 +3,9 @@ import { useQuery, useMutation, keepPreviousData } from '@tanstack/react-query';
 import { useMutationContext } from '@core/hooks/useMutationContext';
 import { createCrudService } from '@core/services';
 import * as api from '../api/categories';
+import { useMemo } from 'react';
 import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters, CategoriesResponse, SuggestCategoryInput, ReviewSuggestionInput } from '../types';
+import { analyzeCategoryHealth } from '../lib/categoryHealth';
 
 const categoryService = createCrudService<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   name: 'categories',
@@ -196,4 +198,14 @@ export function useMySuggestions() {
     queryKey: api.categoryKeys.mySuggestions(),
     queryFn: ({ signal }) => api.getMySuggestions(signal),
   });
+}
+
+/** Flat list + derived health report for admin cleanup UI. */
+export function useCategoryHealthReport(language = 'en') {
+  const query = useGetCategories({ limit: 500 } as CategoryFilters);
+  const report = useMemo(
+    () => analyzeCategoryHealth(query.data?.categories ?? [], language),
+    [query.data?.categories, language],
+  );
+  return { ...query, report, categories: query.data?.categories ?? [] };
 }

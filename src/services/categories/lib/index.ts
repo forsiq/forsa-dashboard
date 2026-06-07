@@ -23,3 +23,14 @@ export {
   toSuggestCategoryPayload,
   mapCategoryApiError,
 } from './category.validation';
+
+export {
+  analyzeCategoryHealth,
+  isCategoryPickerSafe,
+  categoryHasIssues,
+  type CategoryIssue,
+  type CategoryIssueType,
+  type CategoryHealthReport,
+} from './categoryHealth';
+
+export { buildCategoryTreeFromFlat } from './buildCategoryTree';

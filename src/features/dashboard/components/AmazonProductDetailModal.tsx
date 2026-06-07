@@ -12,11 +12,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { useAmazonProduct } from '@services/amazon/hooks/useAmazonSearch';
-import { useCreateListing } from '@features/listings/api/listing-hooks';
+import { useCreateListing, listingKeys } from '@features/listings/api/listing-hooks';
 import { collectAmazonProductImages } from '@services/amazon/utils/amazon-images';
 import type { ListingSpec } from '../../../types/services/listings.types';
 import { useRouter } from 'next/router';
@@ -27,6 +28,8 @@ interface AmazonProductDetailModalProps {
   onClose: () => void;
 }
 
+type ImportPhase = 'idle' | 'creating' | 'redirecting';
+
 export function AmazonProductDetailModal({
   asin,
   isOpen,
@@ -35,15 +38,26 @@ export function AmazonProductDetailModal({
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createMutation = useCreateListing();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImporting, setIsImporting] = useState(false);
+  const [importPhase, setImportPhase] = useState<ImportPhase>('idle');
+  const [importImageCount, setImportImageCount] = useState(0);
+
+  const isImporting = importPhase !== 'idle';
 
   const { data, isLoading, error } = useAmazonProduct(asin || '', {
     enabled: isOpen && !!asin,
   });
 
   const product = data?.product;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setImportPhase('idle');
+      setImportImageCount(0);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -62,11 +76,11 @@ export function AmazonProductDetailModal({
   const handleImport = async () => {
     if (!product) return;
 
-    setIsImporting(true);
-    try {
-      // Server-side ImageTransferService downloads Amazon URLs (browser fetch hits CORS).
-      const imageUrls = collectAmazonProductImages(product);
+    const imageUrls = collectAmazonProductImages(product);
+    setImportImageCount(imageUrls.length);
+    setImportPhase('creating');
 
+    try {
       // Convert Amazon specifications to ListingSpec[] format
       const specs: ListingSpec[] = product.specifications
         ? Object.entries(product.specifications)
@@ -96,19 +110,36 @@ export function AmazonProductDetailModal({
       };
 
       const result = await createMutation.mutateAsync(payload);
+      const listing = (result as any)?.data ?? result;
+      const listingId = listing?.id;
+
+      if (listingId && listing) {
+        queryClient.setQueryData(listingKeys.detail(listingId), listing);
+      }
+
+      setImportPhase('redirecting');
       onClose();
-      const listingId = (result as any)?.data?.id || (result as any)?.id;
+
       if (listingId) {
-        router.push(`/listings/${listingId}/edit`);
+        await router.push({
+          pathname: `/listings/${listingId}/edit`,
+          query: { imported: '1', step: '1' },
+        });
       } else {
-        router.push('/listings');
+        await router.push('/listings');
       }
     } catch {
       // Error handled by mutation
-    } finally {
-      setIsImporting(false);
+      setImportPhase('idle');
     }
   };
+
+  const importStatusMessage =
+    importPhase === 'redirecting'
+      ? t('amazon.import_redirecting')
+      : importImageCount > 0
+        ? t('amazon.importing_images', { count: importImageCount })
+        : t('amazon.importing');
 
   const allImages = product ? collectAmazonProductImages(product) : [];
 
@@ -117,7 +148,7 @@ export function AmazonProductDetailModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={isImporting ? undefined : onClose}
       />
 
       {/* Modal */}
@@ -126,13 +157,34 @@ export function AmazonProductDetailModal({
         'bg-obsidian-card border border-white/5 rounded-2xl shadow-2xl',
         'animate-in zoom-in-95 duration-200'
       )}>
+        {isImporting && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-obsidian-card/95 backdrop-blur-sm rounded-2xl">
+            <Loader2 className="w-12 h-12 animate-spin text-brand" />
+            <div className="text-center space-y-2 px-6 max-w-md">
+              <p className="text-base font-black text-zinc-text uppercase tracking-tight">
+                {t('amazon.importing_title')}
+              </p>
+              <p className="text-sm font-bold text-zinc-muted">
+                {importStatusMessage}
+              </p>
+              {importImageCount > 0 && importPhase === 'creating' && (
+                <p className="text-xs text-zinc-muted/70">
+                  {t('amazon.importing_hint')}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Close Button */}
         <button
           onClick={onClose}
+          disabled={isImporting}
           className={cn(
             'absolute top-4 z-10 w-10 h-10 rounded-xl',
             'bg-obsidian-outer border border-white/5 flex items-center justify-center',
             'text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all',
+            'disabled:opacity-40 disabled:pointer-events-none',
             isRTL ? 'left-4' : 'right-4'
           )}
         >
@@ -324,7 +376,9 @@ export function AmazonProductDetailModal({
                   ) : (
                     <Download className="w-5 h-5" />
                   )}
-                  {t('amazon.import_as_listing') || 'Import as Listing'}
+                  {isImporting
+                    ? t('amazon.importing')
+                    : t('amazon.import_as_listing') || 'Import as Listing'}
                 </AmberButton>
 
                 {product.link && (
@@ -335,7 +389,8 @@ export function AmazonProductDetailModal({
                     className={cn(
                       'h-12 px-4 rounded-xl flex items-center gap-2',
                       'border border-white/10 text-zinc-muted hover:text-zinc-text hover:border-white/20',
-                      'transition-all text-xs font-bold'
+                      'transition-all text-xs font-bold',
+                      isImporting && 'pointer-events-none opacity-40',
                     )}
                   >
                     <ExternalLink className="w-4 h-4" />

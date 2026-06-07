@@ -118,11 +118,16 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
+  const isPublishFlow = wizardMode === 'publish-only';
+
   const { isMerchant, isTrustedMerchant, isAdmin } = useDashboardRole();
+  /** Merchant catalog wizard is 2 steps; publish deploy flow needs channel + pricing steps. */
+  const useMerchantWizardLayout = isMerchant && !isPublishFlow;
+
   const { isMobile } = useIsMobile();
   const wizardLayout = useMemo(
-    () => getWizardLayout(isMobile, { merchant: isMerchant }),
-    [isMobile, isMerchant],
+    () => getWizardLayout(isMobile, { merchant: useMerchantWizardLayout }),
+    [isMobile, useMerchantWizardLayout],
   );
   const step = wizardLayout.step;
   const fullLayoutStep = useMemo(
@@ -131,20 +136,20 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   );
   const prevIsMobileRef = useRef<boolean | null>(null);
 
-  const maxStep = isMerchant
+  const maxStep = useMerchantWizardLayout
     ? wizardLayout.totalSteps
     : maxStepProp ?? (wizardMode === 'edit' ? step.MEDIA : wizardLayout.totalSteps);
 
   const initialStep = useMemo(() => {
     if (queryStep) {
       const normalized = normalizeWizardStepFromQuery(queryStep, maxStep, isMobile, {
-        merchant: isMerchant,
+        merchant: useMerchantWizardLayout,
       });
       if (normalized >= 1 && normalized <= maxStep) return normalized;
     }
     if (wizardMode === 'publish-only') return fullLayoutStep.CHANNEL;
     return step.PRODUCT;
-  }, [queryStep, wizardMode, maxStep, isMobile, isMerchant, fullLayoutStep.CHANNEL, step.PRODUCT]);
+  }, [queryStep, wizardMode, maxStep, isMobile, useMerchantWizardLayout, fullLayoutStep.CHANNEL, step.PRODUCT]);
 
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [listingId, setListingId] = useState<number | undefined>(routeId);
@@ -208,6 +213,22 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
 
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
+  const [showImportedBanner, setShowImportedBanner] = useState(false);
+
+  const importedFromAmazon = router.query.imported === '1';
+
+  useEffect(() => {
+    if (!router.isReady || wizardMode !== 'edit') return;
+    if (router.query.imported === '1') {
+      setShowImportedBanner(true);
+      const { imported: _removed, ...rest } = router.query;
+      router.replace(
+        { pathname: router.pathname, query: rest },
+        undefined,
+        { shallow: true },
+      );
+    }
+  }, [router.isReady, router.query.imported, wizardMode, router.pathname, router]);
 
   useEffect(() => {
     setIsClient(true);
@@ -225,12 +246,12 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     if (prevIsMobileRef.current === isMobile) return;
     setCurrentStep((prev) => {
       const remapped = remapWizardStep(prev, prevIsMobileRef.current!, isMobile, {
-        merchant: isMerchant,
+        merchant: useMerchantWizardLayout,
       });
       return Math.max(step.PRODUCT, Math.min(maxStep, remapped));
     });
     prevIsMobileRef.current = isMobile;
-  }, [isMobile, maxStep, step.PRODUCT, isMerchant]);
+  }, [isMobile, maxStep, step.PRODUCT, useMerchantWizardLayout]);
 
   useEffect(() => {
     if (!router.isReady || !isMerchant || wizardMode !== 'create') return;
@@ -287,13 +308,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             ? `/listings/${listingId}/edit`
             : '/listings/new';
       const query: Record<string, string> = { step: String(step) };
-      if (!isMerchant) {
+      if (!useMerchantWizardLayout) {
         if (deployChannel === 'auction') query.type = 'auction';
         if (deployChannel === 'group_buy') query.type = 'group-buy';
       }
       router.replace({ pathname: base, query }, undefined, { shallow: true });
     },
-    [router, wizardMode, listingId, deployChannel, isMerchant],
+    [router, wizardMode, listingId, deployChannel, useMerchantWizardLayout],
   );
 
   const goToStep = (step: number) => {
@@ -369,6 +390,26 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         },
       },
     );
+  };
+
+  const handleSaveAndExit = async () => {
+    setSubmitError(null);
+    setFieldErrors({});
+    try {
+      let id = listingId;
+      if (isMerchant || isMobile) {
+        id = await saveCatalog();
+        setListingId(id);
+      }
+      if (!id) {
+        setSubmitError(t('common.error_occurred') || 'Error');
+        return;
+      }
+      await saveMedia(id);
+      router.push(`/listings/${id}`);
+    } catch (err) {
+      setSubmitError(mapApiError(err));
+    }
   };
 
   useFormUX({
@@ -448,7 +489,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         return;
       }
 
-      if (!isMerchant && currentStep === fullLayoutStep.CHANNEL) {
+      if ((!isMerchant || isPublishFlow) && currentStep === fullLayoutStep.CHANNEL) {
         if (!deployChannel) {
           setSubmitError(t('listing.wizard.channel_required') || 'Select a sales channel');
           return;
@@ -630,7 +671,16 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   if (!isClient) return null;
 
   if (listingId && listingLoading && wizardMode !== 'create') {
-    return <AmberFormSkeleton fields={6} header actions layout="grid" />;
+    return (
+      <div className="space-y-4 p-6 max-w-[1200px] mx-auto">
+        {(importedFromAmazon || showImportedBanner) && (
+          <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl">
+            <p className="text-sm font-bold text-zinc-text">{t('amazon.import_redirecting')}</p>
+          </div>
+        )}
+        <AmberFormSkeleton fields={6} header actions layout="grid" />
+      </div>
+    );
   }
 
   if (wizardMode === 'publish-only' && listingId && !existingListing && !listingLoading) {
@@ -638,7 +688,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   }
 
   const listingCoverUrl = existingListing ?? null;
-  const showPublishSteps = isAdmin && maxStep > step.MEDIA;
+  const showPublishSteps = (isAdmin || isPublishFlow) && maxStep > step.MEDIA;
   const pageTitle =
     wizardMode === 'create'
       ? t('listing.wizard.title_create')
@@ -648,6 +698,21 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
   return (
     <div className="space-y-4 md:space-y-8 p-3 md:p-6 max-w-[1200px] mx-auto animate-in fade-in duration-700" dir={dir}>
+      {showImportedBanner && (
+        <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
+          <p className="text-sm font-bold text-zinc-text flex-1">{t('listing.wizard.imported_banner')}</p>
+          <button
+            type="button"
+            onClick={() => setShowImportedBanner(false)}
+            className="text-zinc-muted hover:text-zinc-text shrink-0"
+            aria-label={t('common.close') || 'Close'}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
@@ -690,12 +755,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 </AmberButton>
                 <AmberButton
                   variant="outline"
-                  className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                  disabled={submitForReviewMutation.isPending}
-                  onClick={() => submitListing('review', listingId)}
+                  className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
+                  disabled={isBusy}
+                  onClick={() => void handleSaveAndExit()}
                 >
-                  <SendHorizonal className="w-4 h-4" />
-                  {t('approval.actions.submit')}
+                  {t('listing.wizard.save_and_exit')}
                 </AmberButton>
               </>
             ) : (
@@ -712,13 +776,15 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 {t('approval.actions.submit')}
               </AmberButton>
             )}
-            <AmberButton
-              variant="outline"
-              className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
-              onClick={() => router.push(`/listings/${listingId}`)}
-            >
-              {t('listing.form.save') || 'Save Draft'}
-            </AmberButton>
+            {!isTrustedMerchant && (
+              <AmberButton
+                variant="outline"
+                className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
+                onClick={() => router.push(`/listings/${listingId}`)}
+              >
+                {t('listing.form.save') || 'Save Draft'}
+              </AmberButton>
+            )}
           </div>
         </div>
       )}
@@ -1286,6 +1352,17 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           isTrustedMerchant ? (
             <div className="flex flex-wrap gap-3 justify-end">
               <AmberButton
+                variant="outline"
+                className="h-11 border-border font-bold rounded-xl px-6"
+                disabled={isBusy}
+                onClick={() => void handleSaveAndExit()}
+              >
+                {isBusy ? (
+                  <div className="w-4 h-4 border-2 border-zinc-text border-t-transparent rounded-full animate-spin" />
+                ) : null}
+                {t('listing.wizard.save_and_exit')}
+              </AmberButton>
+              <AmberButton
                 className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
                 disabled={isBusy}
                 onClick={() => {
@@ -1303,21 +1380,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 )}
                 {t('approval.actions.direct_publish')}
                 <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-              </AmberButton>
-              <AmberButton
-                variant="outline"
-                className="h-11 border-border font-bold rounded-xl px-6 gap-2"
-                disabled={isBusy}
-                onClick={() => {
-                  if (!listingId) {
-                    void handleNext();
-                    return;
-                  }
-                  submitListing('review', listingId);
-                }}
-              >
-                <SendHorizonal className="w-4 h-4" />
-                {t('approval.actions.submit')}
               </AmberButton>
             </div>
           ) : (

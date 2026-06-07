@@ -13,6 +13,7 @@
 
 import axios from 'axios';
 import { createClient } from '@core/services/ApiClientFactory';
+import { resolveImageContentType } from '@core/lib/utils/imageFile';
 
 import { getApiOrigin } from '@config/api';
 import { getProjectServiceBaseUrl } from '../../../lib/api-config';
@@ -256,8 +257,9 @@ export async function uploadAttachmentAndGetId(
     const presignedResponse = await client.post('/attachment/presigned-url/', {
       file_name: file.name,
       file_size: file.size,
-      content_type: file.type || 'application/octet-stream',
+      content_type: resolveImageContentType(file),
       file_hash: fileHash,
+      entity_type: 'listing',
     });
 
     const payload = presignedResponse.data;
