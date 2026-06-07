@@ -99,7 +99,7 @@ function SuggestionCard({
   const onRejectValid = (data: RejectSuggestionFormData) => {
     onReview(suggestion.id, {
       status: 'rejected',
-      rejectionReason: data.rejectionReason.trim(),
+      rejectionReason: (data.rejectionReason ?? '').trim(),
     });
     setShowRejectForm(false);
     resetRejectForm();

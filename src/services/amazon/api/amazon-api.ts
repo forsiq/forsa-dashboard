@@ -34,7 +34,10 @@ export interface AmazonProduct {
   asin: string;
   title?: string;
   image?: string;
-  images?: { link: string }[];
+  main_image?: { link?: string; variant?: string };
+  images?: { link: string; variant?: string }[];
+  images_flat?: string;
+  images_count?: number;
   videos?: { url: string }[];
   price?: {
     value?: number;

@@ -3,7 +3,7 @@ import { ListingWizardPage } from '../../../features/listings/pages/ListingWizar
 
 export default function PublishListingPage() {
   return (
-    <RoleGuard allowedRoles={['admin']}>
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
       <ListingWizardPage mode="publish-only" />
     </RoleGuard>
   );

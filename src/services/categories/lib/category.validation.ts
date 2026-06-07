@@ -89,7 +89,8 @@ export type RejectSuggestionFormData = z.infer<typeof rejectSuggestionSchema>;
  * lowercase, replace spaces & slashes with hyphens, slice to SLUG_MAX.
  */
 export function slugifyCategoryName(name: string): string {
-  return name
+  return (name ?? '')
+    .trim()
     .toLowerCase()
     .replace(/ /g, '-')
     .replace(/\//g, '-')
@@ -117,7 +118,7 @@ export function toCreateCategoryPayload(
   const slug = options?.existingSlug ?? slugifyCategoryName(data.name);
 
   const payload: Record<string, unknown> = {
-    name: data.name.trim(),
+    name: (data.name ?? '').trim(),
     slug: slug || undefined,
     description: data.description?.trim() || undefined,
     icon: data.icon?.trim() || undefined,
@@ -157,7 +158,7 @@ export function toUpdateCategoryPayload(
  */
 export function toSuggestCategoryPayload(data: SuggestCategoryFormData) {
   return {
-    name: data.name.trim(),
+    name: (data.name ?? '').trim(),
     description: data.description?.trim() || undefined,
     parentId: data.parentId ? Number(data.parentId) : undefined,
   };

@@ -13,6 +13,25 @@
         ar: "أزرار الإجراءات (إنشاء، تعديل، حذف) تتبع الآن صلاحيات الدور؛ لم يعد المحللون والمراجعون يرون عناصر تحكم خاصة بالمسؤول."
       type: fixed
     - description:
+        en: "Amazon import product images load again (EU and other regional Amazon CDN hostnames allowed for next/image)."
+        ar: "عودة تحميل صور منتجات استيراد أمازون (السماح بعناوين CDN الإقليمية لـ next/image)."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Amazon import now transfers all product images server-side (fixes CORS skipping extra images on listing create)."
+        ar: "استيراد أمازون ينقل الآن كل صور المنتج من الخادم (إصلاح تخطي الصور الإضافية بسبب CORS عند الإنشاء)."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Listing detail media gallery shows all product images with thumbnails, arrows, and lightbox (merged attachment + direct URLs)."
+        ar: "معرض الوسائط في تفاصيل المنتج يعرض كل الصور مع مصغرات وأسهم وتكبير (دمج روابط المرفقات والروابط المباشرة)."
+      type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Fixed validation crash when saving listings or categories with missing text fields (trim on undefined)."
+        ar: "إصلاح تعطل التحقق عند حفظ المنتجات أو الفئات عند غياب حقول نصية (trim على undefined)."
+      type: fixed
+    - description:
         en: "Unified category form validation with field-level error messages on create, edit, suggest, and reject."
         ar: "توحيد التحقق في نماذج الفئات مع رسائل أخطاء على مستوى الحقل عند الإنشاء والتعديل والاقتراح والرفض."
       type: improved

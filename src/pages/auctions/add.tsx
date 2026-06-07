@@ -8,7 +8,7 @@ import { cn } from '@core/lib/utils/cn';
 
 export default function AuctionAddPage() {
   return (
-    <RoleGuard allowedRoles={['admin']}>
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
       <AuctionAddPageContent />
     </RoleGuard>
   );

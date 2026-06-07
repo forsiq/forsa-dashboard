@@ -20,9 +20,9 @@ const CAPABILITY_ROLES: Record<DashboardCapability, readonly UserRole[]> = {
   'categories.manage': ['admin', 'merchant'],
   'categories.reviewSuggestions': ['admin', 'product_moderator'],
   'auctions.view': ['admin', 'merchant', 'product_analyst'],
-  'auctions.manage': ['admin'],
+  'auctions.manage': ['admin', 'merchant'],
   'groupBuying.view': ['admin', 'merchant', 'product_analyst'],
-  'groupBuying.manage': ['admin'],
+  'groupBuying.manage': ['admin', 'merchant'],
   'listings.manage': ['admin', 'merchant'],
   'moderation.access': ['admin'],
 };

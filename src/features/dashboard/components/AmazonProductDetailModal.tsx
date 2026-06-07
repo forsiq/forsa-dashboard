@@ -17,7 +17,7 @@ import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { useAmazonProduct } from '@services/amazon/hooks/useAmazonSearch';
 import { useCreateListing } from '@features/listings/api/listing-hooks';
-import { uploadAttachmentAndGetId } from '@features/auctions/utils/auction-utils';
+import { collectAmazonProductImages } from '@services/amazon/utils/amazon-images';
 import type { ListingSpec } from '../../../types/services/listings.types';
 import { useRouter } from 'next/router';
 
@@ -54,17 +54,6 @@ export function AmazonProductDetailModal({
 
   if (!isOpen || typeof window === 'undefined') return null;
 
-  const getAllImages = () => {
-    const images: string[] = [];
-    if (product?.image) images.push(product.image);
-    if (product?.images) {
-      product.images.forEach((img) => {
-        if (img.link) images.push(img.link);
-      });
-    }
-    return images.length > 0 ? images : [];
-  };
-
   const formatPrice = () => {
     if (!product?.price) return null;
     return product.price.display || (product.price.value ? `${product.price.value}` : null);
@@ -75,44 +64,34 @@ export function AmazonProductDetailModal({
 
     setIsImporting(true);
     try {
-      const imageUrls = getAllImages();
-
-      // Upload Amazon images as attachments
-      const attachmentIds: number[] = [];
-      for (const url of imageUrls) {
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          const fileName = url.split('/').pop() || `amazon-${product.asin}-${attachmentIds.length}.jpg`;
-          const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
-          const attachmentId = await uploadAttachmentAndGetId(file);
-          attachmentIds.push(attachmentId);
-        } catch {
-          // Skip images that fail to upload
-        }
-      }
+      // Server-side ImageTransferService downloads Amazon URLs (browser fetch hits CORS).
+      const imageUrls = collectAmazonProductImages(product);
 
       // Convert Amazon specifications to ListingSpec[] format
       const specs: ListingSpec[] = product.specifications
-        ? Object.entries(product.specifications).map(([key, value]) => ({
-            label: key,
-            value: typeof value === 'object' ? String((value as any).value || '') : String(value),
-          }))
+        ? Object.entries(product.specifications)
+            .map(([key, value]) => ({
+              label: String(key ?? '').trim(),
+              value:
+                typeof value === 'object' && value !== null
+                  ? String((value as { value?: unknown }).value ?? '').trim()
+                  : String(value ?? '').trim(),
+            }))
+            .filter((s) => s.label || s.value)
         : [];
 
       const payload: any = {
-        title: product.title || '',
+        title: String(product.title ?? '').trim() || 'Untitled',
         description: product.description || product.feature_bullets?.join('\n') || '',
-        images: imageUrls,
+        images: imageUrls.length > 0 ? imageUrls : undefined,
         brand: product.brand || '',
         sku: product.asin,
         specs: specs.length > 0 ? specs : undefined,
-        attachmentIds: attachmentIds.length > 0 ? attachmentIds : undefined,
-        mainAttachmentId: attachmentIds.length > 0 ? attachmentIds[0] : undefined,
         metadata: {
           source: 'amazon',
           asin: product.asin,
           originalImageUrls: imageUrls,
+          imagesCount: imageUrls.length,
         },
       };
 
@@ -131,7 +110,7 @@ export function AmazonProductDetailModal({
     }
   };
 
-  const allImages = getAllImages();
+  const allImages = product ? collectAmazonProductImages(product) : [];
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">

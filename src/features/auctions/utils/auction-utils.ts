@@ -29,6 +29,7 @@ function isAllowedImageHostname(hostname: string): boolean {
   if (ALLOWED_IMAGE_HOSTNAMES.includes(hostname)) return true;
   if (hostname.endsWith('.amazonaws.com')) return true;
   if (hostname.endsWith('.cloudfront.net')) return true;
+  if (hostname.endsWith('.ssl-images-amazon.com')) return true;
   return false;
 }
 

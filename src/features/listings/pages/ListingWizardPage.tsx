@@ -86,11 +86,15 @@ export interface ListingWizardPageProps {
 type DeployChannel = 'auction' | 'group_buy' | null;
 
 function filterSpecs(specs: ListingSpec[]): ListingSpec[] {
-  return specs.filter((s) => s.label.trim() || s.value.trim());
+  return specs.filter(
+    (s) => (s.label?.trim() ?? '') !== '' || (s.value?.trim() ?? '') !== '',
+  );
 }
 
 function filterSources(sources: ListingSource[]): ListingSource[] {
-  return sources.filter((s) => s.label.trim() || s.url.trim());
+  return sources.filter(
+    (s) => (s.label?.trim() ?? '') !== '' || (s.url?.trim() ?? '') !== '',
+  );
 }
 
 export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
@@ -313,7 +317,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   };
 
   const buildCatalogPayload = (): CreateListingInput => ({
-    title: catalog.title.trim(),
+    title: (catalog.title ?? '').trim(),
     description: catalog.description,
     categoryId: catalog.categoryId,
     brand: catalog.brand || undefined,
@@ -338,8 +342,17 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   };
 
   const saveMedia = async (id: number) => {
-    const newAttachmentIds =
-      imageUpload.pendingFiles.length > 0 ? await uploadMultiple(imageUpload.pendingFiles) : [];
+    const pendingFiles = imageUpload.pendingFiles;
+    if (pendingFiles.length === 0 && retainedAttachmentIds.length === 0) return;
+
+    let newAttachmentIds: number[] = [];
+    if (pendingFiles.length > 0) {
+      newAttachmentIds = await uploadMultiple(pendingFiles);
+      if (newAttachmentIds.length === 0 && pendingFiles.length > 0) {
+        throw new Error('Image upload failed — no attachment IDs returned from server');
+      }
+    }
+
     const allAttachmentIds = [...retainedAttachmentIds, ...newAttachmentIds];
     if (allAttachmentIds.length > 0) {
       await updateMutation.mutateAsync({

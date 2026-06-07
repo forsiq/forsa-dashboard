@@ -37,6 +37,7 @@ import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import {
   getListingAttachmentIds,
   getListingImageGalleryUrls,
+  mergeListingGalleryUrls,
 } from '../utils/listing-media';
 import { ListingPhotoGallery } from '../components/ListingPhotoGallery';
 import { getCountdown } from '@core/utils/countdown';
@@ -167,25 +168,20 @@ export const ListingDetailPage: React.FC = () => {
     [listing],
   );
   const { data: attachmentUrlMap, isPending: imagesResolving } = useAttachmentUrls(
-    directImageUrls.length === 0 ? attachmentIds : [],
+    attachmentIds.length > 0 ? attachmentIds : [],
   );
   const allImages = useMemo(() => {
-    if (directImageUrls.length > 0) return directImageUrls;
-    if (attachmentIds.length === 0) return [];
-    if (!attachmentUrlMap) return [];
-    const resolved = attachmentIds
-      .map((id) => attachmentUrlMap.get(id))
-      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+    const merged = mergeListingGalleryUrls(directImageUrls, attachmentIds, attachmentUrlMap);
     if (process.env.NODE_ENV === 'development') {
       console.log('[ListingDetailPage] image resolution', {
         directImageUrls,
         attachmentIds,
-        batchResolved: Object.fromEntries(attachmentUrlMap),
-        finalImages: resolved,
+        batchResolved: attachmentUrlMap ? Object.fromEntries(attachmentUrlMap) : {},
+        finalImages: merged,
         raw: { imageUrl: listing?.imageUrl, images: listing?.images },
       });
     }
-    return resolved;
+    return merged;
   }, [directImageUrls, attachmentUrlMap, attachmentIds, listing]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
@@ -299,7 +295,7 @@ export const ListingDetailPage: React.FC = () => {
               </div>
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.media')}</h3>
             </div>
-            {imagesResolving && attachmentIds.length > 0 && directImageUrls.length === 0 ? (
+            {imagesResolving && attachmentIds.length > 0 && allImages.length === 0 ? (
               <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
                 <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
               </div>

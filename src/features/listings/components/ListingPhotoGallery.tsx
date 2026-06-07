@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
-import { AmberImageGallery } from '@core/components/AmberImageGallery';
+import { AmberLightbox } from '@core/components/AmberLightbox';
 import { AmberButton } from '@core/components/AmberButton';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { useUpdateListing } from '../api/listing-hooks';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { Loader2, Check, Pencil, X, Package } from 'lucide-react';
+import { Loader2, Check, Pencil, X, Package, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { cn } from '@core/lib/utils/cn';
 
 interface ListingPhotoGalleryProps {
@@ -22,7 +22,8 @@ export function ListingPhotoGallery({
   initialAttachmentIds,
   listingTitle,
 }: ListingPhotoGalleryProps) {
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
+  const isRTL = dir === 'rtl';
   const updateListing = useUpdateListing();
   const imageUpload = usePendingImageFiles(initialImages);
   const { uploadMultiple, isUploading, progress: uploadProgress, error: uploadError } = useFileUpload();
@@ -32,7 +33,7 @@ export function ListingPhotoGallery({
   const [isEditing, setIsEditing] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset when listing data changes
+  // Reset when listing data changes or when exiting edit mode
   useEffect(() => {
     if (!isEditing) {
       imageUpload.resetFromServer(initialImages);
@@ -61,9 +62,10 @@ export function ListingPhotoGallery({
         } as any,
       });
 
-      // Update retained IDs to include newly uploaded ones
+      // Update local state so the grid stays in sync until server data arrives
+      setRetainedAttachmentIds(allAttachmentIds);
       if (newAttachmentIds.length > 0) {
-        setRetainedAttachmentIds(allAttachmentIds);
+        // Clear pending files — previews now come from the server via props
         imageUpload.resetFromServer(imageUpload.previewUrls);
       }
 
@@ -124,18 +126,99 @@ export function ListingPhotoGallery({
   }, [imageUpload, retainedAttachmentIds, savePhotos]);
 
   const isSaving = saveStatus === 'saving' || isUploading;
+  const [viewIndex, setViewIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // View mode: large gallery with lightbox + edit button
+  useEffect(() => {
+    setViewIndex(0);
+  }, [initialImages]);
+
+  const navigateView = useCallback((delta: number) => {
+    setViewIndex((prev) => {
+      const len = initialImages.length;
+      if (len <= 1) return 0;
+      let next = prev + delta;
+      if (next < 0) next = len - 1;
+      if (next >= len) next = 0;
+      return next;
+    });
+  }, [initialImages.length]);
+
+  // View mode: main image + thumbnail strip + lightbox + edit button
   if (!isEditing) {
+    const hasMultiple = initialImages.length > 1;
+    const currentUrl = initialImages[viewIndex] ?? initialImages[0];
+
     return (
       <div className="space-y-3">
         {initialImages.length > 0 ? (
-          <AmberImageGallery
-            images={initialImages}
-            alt={listingTitle}
-            height="h-[220px] md:h-[280px] lg:h-[360px]"
-            className="rounded-lg border border-white/5"
-          />
+          <>
+            <div className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-lg border border-white/5 bg-black overflow-hidden group">
+              <img
+                src={currentUrl}
+                alt={`${listingTitle} ${viewIndex + 1}`}
+                className="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+              />
+              {hasMultiple && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => navigateView(isRTL ? 1 : -1)}
+                    className="absolute start-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-all"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateView(isRTL ? -1 : 1)}
+                    className="absolute end-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-all"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+                  </button>
+                  <div className="absolute start-2 bottom-2 z-10 px-2 py-0.5 rounded-md bg-black/50 text-white text-[10px] font-bold">
+                    {viewIndex + 1} / {initialImages.length}
+                  </div>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="absolute end-2 bottom-2 z-10 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-all"
+                aria-label="Zoom image"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+            </div>
+            {hasMultiple && (
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                {initialImages.map((src, i) => (
+                  <button
+                    key={`${src}-${i}`}
+                    type="button"
+                    onClick={() => setViewIndex(i)}
+                    className={cn(
+                      'aspect-square rounded-md overflow-hidden border-2 transition-all',
+                      i === viewIndex
+                        ? 'border-brand ring-1 ring-brand/40'
+                        : 'border-white/10 opacity-70 hover:opacity-100 hover:border-white/25',
+                    )}
+                  >
+                    <img src={src} alt={`${listingTitle} thumb ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            {lightboxOpen && (
+              <AmberLightbox
+                images={initialImages}
+                initialIndex={viewIndex}
+                onClose={() => setLightboxOpen(false)}
+                alt={listingTitle}
+              />
+            )}
+          </>
         ) : (
           <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
             <Package className="w-10 h-10 text-zinc-muted/30" />

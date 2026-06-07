@@ -30,6 +30,33 @@ export function getListingPrimaryImageUrl(listing: ListingMediaLike): string | n
   return all[0] ?? null;
 }
 
+/**
+ * Merge direct image URLs with attachment-resolved URLs (deduped, attachment order first).
+ */
+export function mergeListingGalleryUrls(
+  directUrls: string[],
+  attachmentIds: number[],
+  attachmentUrlMap: Map<number, string> | undefined,
+): string[] {
+  const fromAttachments = attachmentIds
+    .map((id) => attachmentUrlMap?.get(id))
+    .filter((url): url is string => typeof url === 'string' && url.length > 0);
+
+  const seen = new Set<string>();
+  const merged: string[] = [];
+
+  const push = (url: string) => {
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    merged.push(url);
+  };
+
+  for (const url of fromAttachments) push(url);
+  for (const url of directUrls) push(url);
+
+  return merged;
+}
+
 /** Attachment IDs for use with useAttachmentUrls (main ID first, deduped). */
 export function getListingAttachmentIds(listing: ListingMediaLike): number[] {
   const raw = listing as ListingMediaLike & {

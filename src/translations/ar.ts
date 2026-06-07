@@ -219,6 +219,7 @@ export const ar: Record<string, string> = {
   "common.expand": "توسيع",
   "common.collapse": "طي",
   "common.image_upload_hint": "PNG أو JPG حتى 10 ميجابايت. اسحب لإعادة الترتيب — الصورة الأولى هي صورة الغلاف.",
+  "common.saved": "تم الحفظ",
   "common.authenticity_copy": "نسخة / مقلّد",
   "common.authenticity_high_copy": "نسخة عالية الجودة",
   "common.authenticity_original": "أصلي / موثّق",
@@ -459,6 +460,8 @@ export const ar: Record<string, string> = {
   // Listing detail
   "listing.detail.product_info": "تفاصيل المنتج",
   "listing.detail.media": "الوسائط",
+  "listing.edit_photos": "إدارة الصور",
+  "listing.editing_photos": "تعديل الصور",
   "listing.detail.deployed_sales": "المنشورات",
   "listing.detail.deploy_auction": "نشر كمزاد",
   "listing.detail.deploy_group_buy": "نشر كصفقة جماعية",

@@ -221,6 +221,7 @@ export const en: Record<string, string> = {
   "common.expand": "Expand",
   "common.collapse": "Collapse",
   "common.image_upload_hint": "PNG, JPG up to 10MB. Drag to reorder — the first image is the cover.",
+  "common.saved": "Saved",
   "common.authenticity_copy": "Replica / copy",
   "common.authenticity_high_copy": "High-quality replica",
   "common.authenticity_original": "Original / authentic",
@@ -461,6 +462,8 @@ export const en: Record<string, string> = {
   // Listing detail
   "listing.detail.product_info": "Product Details",
   "listing.detail.media": "Media",
+  "listing.edit_photos": "Manage Photos",
+  "listing.editing_photos": "Editing Photos",
   "listing.detail.deployed_sales": "Deployed Sales",
   "listing.detail.deploy_auction": "Deploy as Auction",
   "listing.detail.deploy_group_buy": "Deploy as Group Buy",
