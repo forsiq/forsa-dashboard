@@ -7,7 +7,7 @@ import { FormBuilder } from '@core/components/Form/FormBuilder';
 import { CategoryPicker } from '@services/categories/components/CategoryPicker';
 import { useCreateListing } from '../api/listing-hooks';
 import type { FormFieldConfig } from '@core/services/types';
-import type { ProductListing } from '../../../types/services/listings.types';
+import type { ProductListing, CreateListingInput } from '../../../types/services/listings.types';
 
 const HISTORY_KEY = 'history_listing';
 
@@ -60,7 +60,7 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     try {
-      const payload: Record<string, unknown> = {
+      const payload: CreateListingInput = {
         title: data.title as string,
         categoryId: categoryId ? Number(categoryId) : undefined,
       };
