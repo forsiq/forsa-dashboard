@@ -34,10 +34,8 @@ import { isSafePathResourceId } from '@core/utils/safeRouteId';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
-import {
-  getListingAttachmentIds,
-  buildListingGalleryImages,
-} from '../utils/listing-media';
+import { getListingAttachmentIds } from '../utils/listing-media';
+import { buildListingGalleryImages } from '../utils/listing-gallery';
 import { ListingPhotoGallery } from '../components/ListingPhotoGallery';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';

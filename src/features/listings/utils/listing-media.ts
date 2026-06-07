@@ -80,36 +80,6 @@ export function mergeListingGalleryUrls(
   return merged;
 }
 
-/**
- * Full gallery for listing detail / wizard preview: attachment-resolved URLs,
- * direct API URLs, then Amazon-import metadata fallbacks when still incomplete.
- */
-export function buildListingGalleryImages(
-  listing: ListingMediaLike,
-  attachmentUrlMap: Map<number, string> | undefined,
-): string[] {
-  const directUrls = getListingImageGalleryUrls(listing);
-  const attachmentIds = getListingAttachmentIds(listing);
-  const merged = mergeListingGalleryUrls(directUrls, attachmentIds, attachmentUrlMap);
-
-  const metaFallback = filterImageUrls(collectImportFallbackUrls(listing));
-  if (merged.length === 0 && metaFallback.length > 0) {
-    return metaFallback;
-  }
-
-  if (attachmentIds.length > merged.length && metaFallback.length > 0) {
-    const seen = new Set(merged);
-    for (const url of metaFallback) {
-      if (!seen.has(url)) {
-        merged.push(url);
-        seen.add(url);
-      }
-    }
-  }
-
-  return merged;
-}
-
 /** Attachment IDs for use with useAttachmentUrls (main ID first, deduped). */
 export function getListingAttachmentIds(listing: ListingMediaLike): number[] {
   const raw = listing as ListingMediaLike & {
@@ -281,3 +251,5 @@ export function reorderRetainedAttachmentIds(
 
   return reordered;
 }
+
+export { buildListingGalleryImages } from './listing-gallery';

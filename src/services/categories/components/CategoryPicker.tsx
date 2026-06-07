@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/router';
 import { Lightbulb, Loader2, Check, X, Search, Plus, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
@@ -31,6 +30,7 @@ import {
   NAME_MAX,
   DESC_MAX,
 } from '../lib';
+import { CategoryAddModal } from './CategoryAddModal';
 
 interface CategoryPickerProps {
   value?: number;
@@ -127,12 +127,12 @@ export function CategoryPicker({
   showManageLink = true,
 }: CategoryPickerProps) {
   const { t, language, dir, isRTL } = useLanguage();
-  const router = useRouter();
   const { canManageCategories } = useDashboardRole();
   const [selectedMainId, setSelectedMainId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [suggestSuccess, setSuggestSuccess] = useState(false);
   const [browseExpanded, setBrowseExpanded] = useState(!value);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -593,7 +593,7 @@ export function CategoryPicker({
         {showManageLink && canManageCategories && (
           <button
             type="button"
-            onClick={() => router.push('/categories/new')}
+            onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 text-sm font-medium text-zinc-muted hover:text-brand transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -601,6 +601,23 @@ export function CategoryPicker({
           </button>
         )}
       </div>
+
+      {canManageCategories && (
+        <CategoryAddModal
+          open={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          defaultParentId={resolvedMainId}
+          onSuccess={(category) => {
+            if (category.parentId) {
+              setSelectedMainId(String(category.parentId));
+            } else {
+              setSelectedMainId(String(category.id));
+            }
+            onChange(Number(category.id));
+            setBrowseExpanded(false);
+          }}
+        />
+      )}
 
       {showSuggest && showSuggestForm && (
         <div className="p-5 rounded-xl bg-obsidian-card border border-border space-y-4">

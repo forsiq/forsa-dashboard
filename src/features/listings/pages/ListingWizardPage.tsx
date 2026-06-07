@@ -78,12 +78,12 @@ import {
 } from '../validation/deployListingSchemas';
 import {
   buildUrlToAttachmentIdMap,
-  buildListingGalleryImages,
   getListingAttachmentIds,
   lookupAttachmentIdForPreviewUrl,
   reorderRetainedAttachmentIds,
   resolveListingMediaSave,
 } from '../utils/listing-media';
+import { buildListingGalleryImages } from '../utils/listing-gallery';
 
 export type ListingWizardMode = 'create' | 'edit' | 'publish-only';
 

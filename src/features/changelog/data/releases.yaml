@@ -5,6 +5,11 @@
     ar: "اختيار فئات أذكى"
   entries:
     - description:
+        en: "Category picker add shortcut opens an inline modal to create a main or sub category (name + parent), refreshes the tree, and auto-selects the new category — no redirect to /categories/new."
+        ar: "اختصار إضافة فئة في منتقي الفئات يفتح نافذة لإنشاء فئة رئيسية أو فرعية (الاسم + الأب)، يحدّث الشجرة، ويختار الفئة الجديدة تلقائياً — دون الانتقال إلى /categories/new."
+      type: improved
+      sidebarPath: /listings
+    - description:
         en: "Amazon import suggests a main category from browse data, lets you pick parent + sub (create short subcategory or match existing), and assigns categoryId on the listing — never the full product title as a top-level category."
         ar: "استيراد أمازون يقترح فئة رئيسية من بيانات التصفح، ويتيح اختيار الأب + الفرعية (إنشاء اسم قصير أو مطابقة موجودة)، ويربط categoryId بالمنتج — دون استخدام عنوان المنتج الكامل كفئة عليا."
       type: added
