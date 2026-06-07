@@ -33,7 +33,7 @@ const nextConfig = {
   // Limit static-generation workers when BUILD_SAFE=1 (avoids saturating all CPU cores).
   ...(isSafeBuild ? { experimental: { cpus: 1 } } : {}),
 
-  transpilePackages: ['@yousef2001/core-ui'],
+  transpilePackages: ['@yousef2001/core-ui', 'lucide-react'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'file.zonevast.com' },

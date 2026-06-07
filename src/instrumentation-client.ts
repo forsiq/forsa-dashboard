@@ -1,6 +1,10 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
+import {
+  dropSentryExampleTestEvents,
+  sentryExampleIgnoreErrors,
+} from '../sentryExampleFilters';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -20,6 +24,9 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   sendDefaultPii: false,
+
+  ignoreErrors: sentryExampleIgnoreErrors,
+  beforeSend: dropSentryExampleTestEvents,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
