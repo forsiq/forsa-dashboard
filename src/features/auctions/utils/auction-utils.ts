@@ -31,6 +31,8 @@ function isAllowedImageHostname(hostname: string): boolean {
   if (hostname.endsWith('.amazonaws.com')) return true;
   if (hostname.endsWith('.cloudfront.net')) return true;
   if (hostname.endsWith('.ssl-images-amazon.com')) return true;
+  // Rainforest / Amazon product CDN (e.g. m.media-amazon.com/images/I/…)
+  if (hostname.endsWith('.media-amazon.com') || hostname === 'media-amazon.com') return true;
   return false;
 }
 
@@ -109,7 +111,11 @@ export async function calculateFileHash(file: File): Promise<string> {
 export function parseAttachmentIds(
   attachmentIds: string | string[] | number[] | null | undefined,
 ): number[] {
-  if (!attachmentIds) return [];
+  if (attachmentIds == null) return [];
+
+  if (typeof attachmentIds === 'number') {
+    return attachmentIds > 0 && !isNaN(attachmentIds) ? [attachmentIds] : [];
+  }
 
   if (Array.isArray(attachmentIds)) {
     return attachmentIds
@@ -117,16 +123,28 @@ export function parseAttachmentIds(
       .filter((id): id is number => !isNaN(id) && id > 0);
   }
 
+  const trimmed = attachmentIds.trim();
+  if (!trimmed) return [];
+
   try {
-    const parsed = JSON.parse(attachmentIds);
-    return Array.isArray(parsed)
-      ? parsed
-          .map((id: any) => parseInt(id, 10))
-          .filter((id: number): id is number => !isNaN(id) && id > 0)
-      : [];
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((id: unknown) => parseInt(String(id), 10))
+        .filter((id: number): id is number => !isNaN(id) && id > 0);
+    }
+    if (typeof parsed === 'number' && parsed > 0) return [parsed];
   } catch {
-    return [];
+    // Comma-separated fallback: "123,456"
+    if (/^\d+(,\d+)*$/.test(trimmed)) {
+      return trimmed
+        .split(',')
+        .map((id) => parseInt(id, 10))
+        .filter((id): id is number => !isNaN(id) && id > 0);
+    }
   }
+
+  return [];
 }
 
 /**

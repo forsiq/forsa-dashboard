@@ -80,6 +80,7 @@ import {
   buildUrlToAttachmentIdMap,
   getListingAttachmentIds,
   getListingImageGalleryUrls,
+  lookupAttachmentIdForPreviewUrl,
   mergeListingGalleryUrls,
   reorderRetainedAttachmentIds,
   resolveListingMediaSave,
@@ -262,9 +263,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     () => (existingListing ? getListingAttachmentIds(existingListing) : []),
     [existingListing],
   );
-  const { data: listingAttachmentUrlMap } = useAttachmentUrls(
-    listingAttachmentIds.length > 0 ? listingAttachmentIds : [],
-  );
+  const { data: listingAttachmentUrlMap, isPending: listingAttachmentsLoading } =
+    useAttachmentUrls(listingAttachmentIds.length > 0 ? listingAttachmentIds : []);
 
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
   const [showImportedBanner, setShowImportedBanner] = useState(false);
@@ -396,29 +396,54 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     const ids = getListingAttachmentIds(existingListing);
     const direct = getListingImageGalleryUrls(existingListing);
 
-    if (ids.length > 0 && !listingAttachmentUrlMap) return;
+    if (ids.length > 0 && listingAttachmentsLoading) return;
 
     const merged = mergeListingGalleryUrls(direct, ids, listingAttachmentUrlMap);
     const previewUrls = merged.length > 0 ? merged : direct;
 
-    if (listingMediaSyncedIdRef.current === existingListing.id && previewUrls.length === 0) {
+    if (previewUrls.length === 0) {
+      if (ids.length > 0 && listingAttachmentsLoading) return;
+      if (listingMediaSyncedIdRef.current === existingListing.id) return;
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ListingWizardPage] no preview URLs resolved', {
+          listingId: existingListing.id,
+          direct,
+          attachmentIds: ids,
+          batchResolved: listingAttachmentUrlMap
+            ? Object.fromEntries(listingAttachmentUrlMap)
+            : undefined,
+          raw: {
+            imageUrl: existingListing.imageUrl,
+            images: existingListing.images,
+            attachmentIds: existingListing.attachmentIds,
+          },
+        });
+      }
       return;
     }
 
-    if (previewUrls.length > 0 || ids.length > 0) {
-      imageUpload.resetFromServer(previewUrls);
-      const urlMap = buildUrlToAttachmentIdMap(ids, listingAttachmentUrlMap, previewUrls);
-      urlToAttachmentIdRef.current = urlMap;
-      const orderedIds = previewUrls
-        .map((url) => urlMap.get(url))
-        .filter((id): id is number => id != null);
-      setRetainedAttachmentIds(orderedIds.length > 0 ? orderedIds : ids);
-      listingMediaSyncedIdRef.current = existingListing.id;
+    if (
+      listingMediaSyncedIdRef.current === existingListing.id &&
+      imageUpload.previewUrls.length === previewUrls.length &&
+      imageUpload.previewUrls.every((url, i) => url === previewUrls[i])
+    ) {
+      return;
     }
+
+    imageUpload.resetFromServer(previewUrls);
+    const urlMap = buildUrlToAttachmentIdMap(ids, listingAttachmentUrlMap, previewUrls);
+    urlToAttachmentIdRef.current = urlMap;
+    const orderedIds = previewUrls
+      .map((url) => lookupAttachmentIdForPreviewUrl(url, urlMap))
+      .filter((id): id is number => id != null);
+    setRetainedAttachmentIds(orderedIds.length > 0 ? orderedIds : ids);
+    listingMediaSyncedIdRef.current = existingListing.id;
   }, [
     existingListing,
     listingAttachmentUrlMap,
+    listingAttachmentsLoading,
     imageUpload.pendingFiles.length,
+    imageUpload.previewUrls,
     imageUpload.resetFromServer,
   ]);
 

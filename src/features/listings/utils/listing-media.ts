@@ -22,7 +22,19 @@ export type ListingMediaLike = {
   main_attachment_id?: number | null;
   attachmentIds?: string | string[] | number[] | null;
   attachment_ids?: string | string[] | number[] | null;
+  metadata?: Record<string, unknown> | null;
 };
+
+function collectImportFallbackUrls(listing: ListingMediaLike): string[] {
+  const meta = listing.metadata;
+  if (!meta || typeof meta !== 'object') return [];
+
+  const fromMeta = meta.originalImageUrls ?? meta.original_image_urls;
+  if (Array.isArray(fromMeta)) {
+    return filterImageUrls(fromMeta);
+  }
+  return [];
+}
 
 export function getListingImageGalleryUrls(listing: ListingMediaLike): string[] {
   const urls: string[] = [];
@@ -31,6 +43,7 @@ export function getListingImageGalleryUrls(listing: ListingMediaLike): string[] 
     urls.push(...filterImageUrls([direct.trim()]));
   }
   urls.push(...filterImageUrls(normalizeImageUrlList(listing.images)));
+  urls.push(...collectImportFallbackUrls(listing));
   return [...new Set(urls)];
 }
 
