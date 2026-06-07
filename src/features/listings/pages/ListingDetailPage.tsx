@@ -36,8 +36,7 @@ import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import {
   getListingAttachmentIds,
-  getListingImageGalleryUrls,
-  mergeListingGalleryUrls,
+  buildListingGalleryImages,
 } from '../utils/listing-media';
 import { ListingPhotoGallery } from '../components/ListingPhotoGallery';
 import { getCountdown } from '@core/utils/countdown';
@@ -161,10 +160,6 @@ export const ListingDetailPage: React.FC = () => {
     return null;
   }, [auctions, deals]);
 
-  const directImageUrls = useMemo(
-    () => (listing ? getListingImageGalleryUrls(listing) : []),
-    [listing],
-  );
   const attachmentIds = useMemo(
     () => (listing ? getListingAttachmentIds(listing) : []),
     [listing],
@@ -173,10 +168,10 @@ export const ListingDetailPage: React.FC = () => {
     attachmentIds.length > 0 ? attachmentIds : [],
   );
   const allImages = useMemo(() => {
-    const merged = mergeListingGalleryUrls(directImageUrls, attachmentIds, attachmentUrlMap);
+    if (!listing) return [];
+    const merged = buildListingGalleryImages(listing, attachmentUrlMap);
     if (process.env.NODE_ENV === 'development') {
       console.log('[ListingDetailPage] image resolution', {
-        directImageUrls,
         attachmentIds,
         batchResolved: attachmentUrlMap ? Object.fromEntries(attachmentUrlMap) : {},
         finalImages: merged,
@@ -184,7 +179,7 @@ export const ListingDetailPage: React.FC = () => {
       });
     }
     return merged;
-  }, [directImageUrls, attachmentUrlMap, attachmentIds, listing]);
+  }, [listing, attachmentUrlMap, attachmentIds]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
 

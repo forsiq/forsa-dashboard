@@ -60,21 +60,52 @@ export function mergeListingGalleryUrls(
   attachmentIds: number[],
   attachmentUrlMap: Map<number, string> | undefined,
 ): string[] {
-  const fromAttachments = attachmentIds
-    .map((id) => attachmentUrlMap?.get(id))
-    .filter((url): url is string => typeof url === 'string' && url.length > 0);
-
   const seen = new Set<string>();
   const merged: string[] = [];
 
   const push = (url: string) => {
-    if (!url || seen.has(url)) return;
+    if (!url || !isValidImageUrl(url) || seen.has(url)) return;
     seen.add(url);
     merged.push(url);
   };
 
-  for (const url of fromAttachments) push(url);
+  // Attachment IDs are the source of truth for gallery order when resolvable.
+  for (const id of attachmentIds) {
+    const resolved = attachmentUrlMap?.get(id);
+    if (resolved) push(resolved);
+  }
+
   for (const url of directUrls) push(url);
+
+  return merged;
+}
+
+/**
+ * Full gallery for listing detail / wizard preview: attachment-resolved URLs,
+ * direct API URLs, then Amazon-import metadata fallbacks when still incomplete.
+ */
+export function buildListingGalleryImages(
+  listing: ListingMediaLike,
+  attachmentUrlMap: Map<number, string> | undefined,
+): string[] {
+  const directUrls = getListingImageGalleryUrls(listing);
+  const attachmentIds = getListingAttachmentIds(listing);
+  const merged = mergeListingGalleryUrls(directUrls, attachmentIds, attachmentUrlMap);
+
+  const metaFallback = filterImageUrls(collectImportFallbackUrls(listing));
+  if (merged.length === 0 && metaFallback.length > 0) {
+    return metaFallback;
+  }
+
+  if (attachmentIds.length > merged.length && metaFallback.length > 0) {
+    const seen = new Set(merged);
+    for (const url of metaFallback) {
+      if (!seen.has(url)) {
+        merged.push(url);
+        seen.add(url);
+      }
+    }
+  }
 
   return merged;
 }
@@ -164,6 +195,8 @@ export type ResolveListingMediaSaveInput = {
   pendingFiles: File[];
   urlToAttachmentId: Map<string, number>;
   uploadFile: (file: File) => Promise<number | null>;
+  /** Server-side attachment IDs aligned with existing (non-blob) preview slots */
+  retainedAttachmentIds?: number[];
 };
 
 export type ResolveListingMediaSaveResult = {
@@ -180,13 +213,21 @@ export type ResolveListingMediaSaveResult = {
 export async function resolveListingMediaSave(
   input: ResolveListingMediaSaveInput,
 ): Promise<ResolveListingMediaSaveResult> {
-  const { previewUrls, pendingFiles, urlToAttachmentId, uploadFile } = input;
+  const {
+    previewUrls,
+    pendingFiles,
+    urlToAttachmentId,
+    uploadFile,
+    retainedAttachmentIds = [],
+  } = input;
   const attachmentIds: number[] = [];
   const externalUrlsForServerTransfer: string[] = [];
+  const existingCount = previewUrls.length - pendingFiles.length;
   let pendingFileIndex = 0;
   let hasPendingUploads = pendingFiles.length > 0;
 
-  for (const url of previewUrls) {
+  for (let index = 0; index < previewUrls.length; index++) {
+    const url = previewUrls[index];
     if (url.startsWith('blob:')) {
       const file = pendingFiles[pendingFileIndex++];
       if (!file) continue;
@@ -200,6 +241,14 @@ export async function resolveListingMediaSave(
     if (knownId) {
       attachmentIds.push(knownId);
       continue;
+    }
+
+    if (index < existingCount) {
+      const retainedId = retainedAttachmentIds[index];
+      if (retainedId && retainedId > 0) {
+        attachmentIds.push(retainedId);
+        continue;
+      }
     }
 
     if (isExternalImportImageUrl(url)) {

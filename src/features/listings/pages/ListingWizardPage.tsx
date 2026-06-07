@@ -24,6 +24,7 @@ import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
+import { AmberImageGallery } from '@core/components/AmberImageGallery';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormSection } from '@core/components/FormSection';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
@@ -45,7 +46,7 @@ import {
 } from '@core/utils/listingDeployPrices';
 import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
 import type { FormFieldConfig } from '@core/services/types';
-import type { ListingSpec, ListingSource, CreateListingInput, ProductListing } from '../../../types/services/listings.types';
+import type { ListingSpec, ListingSource, CreateListingInput, UpdateListingInput, ProductListing } from '../../../types/services/listings.types';
 import {
   useCreateListing,
   useUpdateListing,
@@ -60,7 +61,6 @@ import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
 import { FieldHelpHint } from '../components/FieldHelpHint';
-import { ListingImage } from '../components/ListingImage';
 import {
   getWizardLayout,
   normalizeWizardStepFromQuery,
@@ -78,10 +78,9 @@ import {
 } from '../validation/deployListingSchemas';
 import {
   buildUrlToAttachmentIdMap,
+  buildListingGalleryImages,
   getListingAttachmentIds,
-  getListingImageGalleryUrls,
   lookupAttachmentIdForPreviewUrl,
-  mergeListingGalleryUrls,
   reorderRetainedAttachmentIds,
   resolveListingMediaSave,
 } from '../utils/listing-media';
@@ -394,12 +393,14 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     if (imageUpload.pendingFiles.length > 0) return;
 
     const ids = getListingAttachmentIds(existingListing);
-    const direct = getListingImageGalleryUrls(existingListing);
+    const direct = buildListingGalleryImages(existingListing, listingAttachmentUrlMap);
+    if (ids.length > 0 && listingAttachmentsLoading && direct.length === 0) return;
 
-    if (ids.length > 0 && listingAttachmentsLoading) return;
-
-    const merged = mergeListingGalleryUrls(direct, ids, listingAttachmentUrlMap);
-    const previewUrls = merged.length > 0 ? merged : direct;
+    const previewUrls = direct.length > 0
+      ? direct
+      : imageUpload.previewUrls.length > 0
+        ? imageUpload.previewUrls
+        : [];
 
     if (previewUrls.length === 0) {
       if (ids.length > 0 && listingAttachmentsLoading) return;
@@ -433,10 +434,14 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     imageUpload.resetFromServer(previewUrls);
     const urlMap = buildUrlToAttachmentIdMap(ids, listingAttachmentUrlMap, previewUrls);
     urlToAttachmentIdRef.current = urlMap;
-    const orderedIds = previewUrls
-      .map((url) => lookupAttachmentIdForPreviewUrl(url, urlMap))
-      .filter((id): id is number => id != null);
-    setRetainedAttachmentIds(orderedIds.length > 0 ? orderedIds : ids);
+    const alignedIds: number[] = [];
+    for (let i = 0; i < previewUrls.length; i++) {
+      const mapped = lookupAttachmentIdForPreviewUrl(previewUrls[i], urlMap);
+      const fallback = ids[i];
+      const id = mapped ?? fallback;
+      if (id && id > 0) alignedIds.push(id);
+    }
+    setRetainedAttachmentIds(alignedIds.length > 0 ? alignedIds : ids);
     listingMediaSyncedIdRef.current = existingListing.id;
   }, [
     existingListing,
@@ -507,52 +512,48 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         pendingFiles,
         urlToAttachmentId: urlToAttachmentIdRef.current,
         uploadFile: (file) => upload(file),
+        retainedAttachmentIds,
       });
-
-    if (externalUrlsForServerTransfer.length > 0) {
-      await updateMutation.mutateAsync({
-        id,
-        data: {
-          images: previewUrls.filter((url) => !url.startsWith('blob:')),
-        },
-      });
-    }
-
-    if (attachmentIds.length > 0) {
-      await updateMutation.mutateAsync({
-        id,
-        data: {
-          mainAttachmentId: attachmentIds[0],
-          attachmentIds,
-        },
-      });
-      setRetainedAttachmentIds(attachmentIds);
-      urlToAttachmentIdRef.current = buildUrlToAttachmentIdMap(
-        attachmentIds,
-        listingAttachmentUrlMap,
-        previewUrls,
-      );
-      if (hasPendingUploads) {
-        imageUpload.resetFromServer(previewUrls);
-      }
-      return;
-    }
-
-    if (externalUrlsForServerTransfer.length > 0) return;
 
     const originalIds = existingListing ? getListingAttachmentIds(existingListing) : [];
     const orderChanged =
       retainedAttachmentIds.length > 0 &&
       JSON.stringify(retainedAttachmentIds) !== JSON.stringify(originalIds);
 
-    if (orderChanged) {
-      await updateMutation.mutateAsync({
-        id,
-        data: {
-          mainAttachmentId: retainedAttachmentIds[0],
-          attachmentIds: retainedAttachmentIds,
-        },
-      });
+    const idsToSave =
+      attachmentIds.length > 0
+        ? attachmentIds
+        : orderChanged
+          ? retainedAttachmentIds
+          : [];
+
+    if (idsToSave.length === 0 && externalUrlsForServerTransfer.length === 0) {
+      return;
+    }
+
+    const data: UpdateListingInput = {};
+    if (externalUrlsForServerTransfer.length > 0) {
+      data.images = previewUrls.filter((url) => !url.startsWith('blob:'));
+    }
+    if (idsToSave.length > 0) {
+      data.mainAttachmentId = idsToSave[0];
+      data.attachmentIds = idsToSave;
+    }
+
+    const updated = await updateMutation.mutateAsync({ id, data });
+    const savedIds = getListingAttachmentIds(updated);
+    if (savedIds.length > 0) {
+      setRetainedAttachmentIds(savedIds);
+      const gallery = buildListingGalleryImages(updated, listingAttachmentUrlMap);
+      urlToAttachmentIdRef.current = buildUrlToAttachmentIdMap(
+        savedIds,
+        listingAttachmentUrlMap,
+        gallery.length > 0 ? gallery : previewUrls,
+      );
+    }
+    if (hasPendingUploads) {
+      const gallery = buildListingGalleryImages(updated, listingAttachmentUrlMap);
+      imageUpload.resetFromServer(gallery.length > 0 ? gallery : previewUrls);
     }
   };
 
@@ -881,6 +882,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     });
   }, [isPublishFlow, wizardLayout.stepLabelKeys, fullLayoutStep.CHANNEL, fullLayoutStep.PUBLISH]);
 
+  const wizardGalleryImages = useMemo(() => {
+    if (imageUpload.previewUrls.length > 0) return imageUpload.previewUrls;
+    if (!existingListing) return [] as string[];
+    return buildListingGalleryImages(existingListing, listingAttachmentUrlMap);
+  }, [imageUpload.previewUrls, existingListing, listingAttachmentUrlMap]);
 
   if (!isClient || !router.isReady) {
     return <WizardLoadingShell t={t} banner={importedBanner} />;
@@ -935,7 +941,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     );
   }
 
-  const listingCoverUrl = existingListing ?? null;
   const showPublishSteps = (isAdmin || isPublishFlow) && maxStep > step.MEDIA;
   const pageTitle =
     wizardMode === 'create'
@@ -1355,9 +1360,10 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               )}
             >
               <div className="w-14 h-14 rounded-lg bg-obsidian-panel border border-white/5 overflow-hidden shrink-0">
-                {existingListing.images?.[0] || existingListing.imageUrl ? (
-                  <ListingImage
-                    listing={existingListing}
+                {wizardGalleryImages[0] ? (
+                  <img
+                    src={wizardGalleryImages[0]}
+                    alt={existingListing.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -1594,8 +1600,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && (
         <FormSection icon={<Rocket className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.publish')}>
           <div className="space-y-6 text-sm">
-            {listingCoverUrl && (
-              <ListingImage listing={listingCoverUrl} className="w-20 h-20 rounded-lg object-cover border border-white/10" fallbackClassName="w-8 h-8 text-zinc-muted/40" />
+            {wizardGalleryImages.length > 0 && (
+              <AmberImageGallery
+                images={wizardGalleryImages}
+                alt={catalog.title}
+                height="h-[180px] md:h-[220px]"
+                thumbnailCols="grid-cols-5 sm:grid-cols-6"
+              />
             )}
             <div>
               <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.title')}</p>
