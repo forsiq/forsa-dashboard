@@ -206,7 +206,7 @@ export const ListingsListPage: React.FC = () => {
       align: 'center',
     },
     ...(canViewApprovalStatus ? [{
-      key: 'approvalStatus' as const,
+      key: 'approvalStatus',
       label: t('listing.table.approval_status') || 'Review Status',
       cardBadge: true,
       render: (listing: ProductListing) => renderApprovalBadge(listing),
@@ -440,8 +440,8 @@ export const ListingsListPage: React.FC = () => {
             icon={Package}
             title={t('listing.empty.title') || 'No Listings'}
             description={t('listing.empty.description')}
-            actionLabel={t('listing.add_product') || t('listing.empty.create') || 'Add Product'}
-            onAction={() => router.push('/listings/new')}
+            actionLabel={canManageListings ? (t('listing.add_product') || t('listing.empty.create') || 'Add Product') : undefined}
+            onAction={canManageListings ? () => router.push('/listings/new') : undefined}
           />
         ) : isMobile ? (
           <>

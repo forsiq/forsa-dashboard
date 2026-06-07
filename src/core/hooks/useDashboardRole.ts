@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
-import { extractDashboardRoleFromToken } from '@core/auth/dashboardRole';
+import { extractDashboardRoleFromToken, isTrustedMerchantFromToken } from '@core/auth/dashboardRole';
 import {
   hasDashboardCapability,
   type DashboardCapability,
@@ -11,6 +11,7 @@ import type { UserRole } from '@features/auth/types';
 export interface DashboardRoleResult {
   role: UserRole;
   isMerchant: boolean;
+  isTrustedMerchant: boolean;
   isAdmin: boolean;
   isModerator: boolean;
   canManageCategories: boolean;
@@ -30,6 +31,11 @@ export function useDashboardRole(): DashboardRoleResult {
     return extractDashboardRoleFromToken(Cookies.get('access'));
   }, [router.asPath, router.isReady]);
 
+  const isTrustedMerchant = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return isTrustedMerchantFromToken(Cookies.get('access'));
+  }, [router.asPath, router.isReady]);
+
   const can = useMemo(
     () => (capability: DashboardCapability) => hasDashboardCapability(role, capability),
     [role],
@@ -38,6 +44,7 @@ export function useDashboardRole(): DashboardRoleResult {
   return {
     role,
     isMerchant: role === 'merchant',
+    isTrustedMerchant,
     isAdmin: role === 'admin',
     isModerator: role === 'product_moderator',
     canManageCategories: can('categories.manage'),

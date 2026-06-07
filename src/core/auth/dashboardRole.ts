@@ -102,6 +102,26 @@ export function extractDashboardRoleFromToken(token: string | undefined | null):
   return extractDashboardRole(decodeJwtPayload(token));
 }
 
+/** Raw JWT business_role before dashboard alias mapping (e.g. trusted_merchant). */
+export function extractRawBusinessRole(payload: JwtPayload | null): string | null {
+  const raw = payload?.business_role?.trim().toLowerCase();
+  if (raw) return raw;
+  const role = payload?.role?.trim().toLowerCase();
+  return role || null;
+}
+
+export function isTrustedMerchantFromPayload(payload: JwtPayload | null): boolean {
+  if (!payload) return false;
+  if (payload.business_role?.trim().toLowerCase() === 'trusted_merchant') return true;
+  if (payload.role?.trim().toLowerCase() === 'trusted_merchant') return true;
+  return false;
+}
+
+export function isTrustedMerchantFromToken(token: string | undefined | null): boolean {
+  if (!token) return false;
+  return isTrustedMerchantFromPayload(decodeJwtPayload(token));
+}
+
 /** Whether a dashboard role is allowed for a protected route list. */
 export function isDashboardRoleAllowed(
   allowedRoles: readonly string[],

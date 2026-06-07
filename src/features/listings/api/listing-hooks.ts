@@ -189,15 +189,24 @@ export function useDeployAsGroupBuy() {
   });
 }
 
+export type SubmitListingVariables = {
+  id: number;
+  mode?: 'review' | 'direct';
+};
+
 export function useSubmitListingForReview() {
   const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
   return useMutation({
-    mutationFn: (id: number) => listingApi.submitForReview(id),
-    onSuccess: (_, id) => {
+    mutationFn: ({ id, mode }: SubmitListingVariables) => listingApi.submitForReview(id, mode),
+    onSuccess: (_, { id, mode }) => {
       queryClient.invalidateQueries({ queryKey: listingKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
-      toast.success(t('approval.messages.submitted'));
+      if (mode === 'direct') {
+        toast.success(t('approval.messages.approved_direct'));
+      } else {
+        toast.success(t('approval.messages.submitted'));
+      }
     },
     onError: (error: unknown) => {
       toast.error(getErrorDetail(error), 8000);

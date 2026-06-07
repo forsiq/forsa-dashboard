@@ -38,8 +38,7 @@ import {
 } from '../api';
 
 import { useList as useInventoryList } from '../../../services/inventory/hooks';
-import { useList as useCategories } from '../../../services/categories/hooks';
-import { getLocalizedName } from '../../../services/categories/types';
+import { CategoryPicker } from '@services/categories/components/CategoryPicker';
 import type { GroupBuyingCreateInput, GroupBuyingUpdateInput } from '../types';
 
 const HISTORY_KEY = 'history_group_buying';
@@ -55,7 +54,7 @@ function readGroupBuyingHistory(): Record<string, any> | null {
 }
 
 export const GroupBuyingFormPage: React.FC = () => {
-  const { t, dir, language } = useLanguage();
+  const { t, dir } = useLanguage();
   const mapApiError = useMapApiValidationError();
   const router = useRouter();
   const { id } = router.query;
@@ -70,12 +69,7 @@ export const GroupBuyingFormPage: React.FC = () => {
   const campaignId = id as string;
   const { data: existingCampaign, isLoading: campaignLoading } = useGetGroupBuying(campaignId || '', isEdit);
   const { data: inventoryData } = useInventoryList();
-  const { data: categoriesData } = useCategories({ limit: 100 });
   const inventoryItems = (inventoryData as any)?.items || [];
-  const categoryOptions = (categoriesData as any)?.categories?.map((c: any) => ({
-    label: getLocalizedName(c, language) || c.name || c.slug,
-    value: String(c.id)
-  })) || [];
 
   const createMutation = useCreateGroupBuying();
   const updateMutation = useUpdateGroupBuying();
@@ -362,13 +356,9 @@ export const GroupBuyingFormPage: React.FC = () => {
                         </div>
                         <div className="space-y-3">
                             <label className={`text-[11px] font-black text-zinc-muted uppercase tracking-[0.2em] px-1 text-start block`}>{t('groupBuying.form.tactical_division')}</label>
-                            <AmberDropdown 
-                                options={[
-                                    { label: t('groupBuying.form.manual_select') || 'Select Category...', value: '' },
-                                    ...categoryOptions
-                                ]}
-                                value={formData.categoryId || ''}
-                                onChange={(val) => handleChange('categoryId', val)}
+                            <CategoryPicker
+                                value={formData.categoryId ? Number(formData.categoryId) : undefined}
+                                onChange={(id) => handleChange('categoryId', id ? String(id) : '')}
                             />
                         </div>
                     </div>

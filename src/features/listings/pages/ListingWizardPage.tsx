@@ -41,8 +41,7 @@ import {
   parseOptionalListingPrice,
   parseRequiredListingPrice,
 } from '@core/utils/listingDeployPrices';
-import { useList as useCategories } from '../../../services/categories/hooks';
-import { getLocalizedName } from '../../../services/categories/types';
+import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
 import type { FormFieldConfig } from '@core/services/types';
 import type { ListingSpec, ListingSource, CreateListingInput, ProductListing } from '../../../types/services/listings.types';
 import {
@@ -101,7 +100,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   mode: modeProp,
   maxStep: maxStepProp,
 }) => {
-  const { t, dir, language } = useLanguage();
+  const { t, dir } = useLanguage();
   const router = useRouter();
   const mapApiError = useMapApiValidationError();
   const mapApiFieldErrors = useMapApiValidationFieldErrors();
@@ -119,7 +118,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         ? 'edit'
         : 'create');
 
-  const { isMerchant, isAdmin } = useDashboardRole();
+  const { isMerchant, isTrustedMerchant, isAdmin } = useDashboardRole();
   const { isMobile } = useIsMobile();
   const wizardLayout = useMemo(
     () => getWizardLayout(isMobile, { merchant: isMerchant }),
@@ -198,7 +197,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     listingId!,
     !!listingId && wizardMode !== 'create',
   );
-  const { data: categoriesData } = useCategories({ limit: 100 });
   const createMutation = useCreateListing();
   const updateMutation = useUpdateListing();
   const deployAuctionMutation = useDeployAsAuction();
@@ -210,18 +208,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
 
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
-
-  const categoryOptions = useMemo(
-    () =>
-      (categoriesData as { categories?: unknown[] })?.categories?.map((c: unknown) => {
-        const cat = c as { id: string | number; name?: string; slug?: string };
-        return {
-          label: getLocalizedName(cat as never, language) || cat.name || cat.slug || String(cat.id),
-          value: String(cat.id),
-        };
-      }) || [],
-    [categoriesData, language],
-  );
 
   useEffect(() => {
     setIsClient(true);
@@ -372,6 +358,18 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     deployAuctionMutation.isPending ||
     deployGroupBuyMutation.isPending ||
     submitForReviewMutation.isPending;
+
+  const submitListing = (mode: 'review' | 'direct', id: number) => {
+    submitForReviewMutation.mutate(
+      { id, mode },
+      {
+        onSuccess: () => {
+          setShowSubmitSuccess(false);
+          router.push(mode === 'direct' ? `/listings/${id}/publish` : `/listings/${id}`);
+        },
+      },
+    );
+  };
 
   useFormUX({
     values: catalog,
@@ -541,15 +539,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         placeholder: t('listing.form.title_placeholder'),
         required: true,
       },
-      {
-        name: 'categoryId',
-        label: t('listing.form.category') || 'Category',
-        type: 'select',
-        placeholder: t('common.select'),
-        options: categoryOptions,
-      },
     ],
-    [t, categoryOptions],
+    [t],
   );
 
   const advancedFields: FormFieldConfig[] = useMemo(
@@ -618,19 +609,23 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     [catalog],
   );
 
-  const handleCatalogChange = (data: Record<string, unknown>, field: string, value: unknown) => {
-    setCatalog((prev) => ({
-      ...prev,
-      [field]: field === 'categoryId' ? (value ? Number(value) : undefined) : value,
-    }));
-    if (fieldErrors[field]) {
+  const handleCatalogChange = useCallback((data: Record<string, unknown>, field: string, value: unknown) => {
+    // FormBuilder calls onChange inside its own setState updater, so we must
+    // defer our setState to avoid "Cannot update component while rendering
+    // a different component" errors.
+    React.startTransition(() => {
+      setCatalog((prev) => ({
+        ...prev,
+        [field]: field === 'categoryId' ? (value ? Number(value) : undefined) : value,
+      }));
       setFieldErrors((prev) => {
+        if (!prev[field]) return prev;
         const next = { ...prev };
         delete next[field];
         return next;
       });
-    }
-  };
+    });
+  }, []);
 
   if (!isClient) return null;
 
@@ -671,29 +666,52 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             </div>
             <div>
               <p className="text-lg font-black text-zinc-text uppercase">{t('listing.wizard.saved') || 'Product Saved'}</p>
-              <p className="text-sm text-zinc-muted">{t('listing.wizard.submit_prompt') || 'Your product has been saved. Submit it for review to get approved.'}</p>
+              <p className="text-sm text-zinc-muted">
+                {isTrustedMerchant
+                  ? t('listing.wizard.trusted_submit_prompt')
+                  : t('listing.wizard.submit_prompt')}
+              </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <AmberButton
-              className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-              disabled={submitForReviewMutation.isPending}
-              onClick={() => {
-                submitForReviewMutation.mutate(listingId, {
-                  onSuccess: () => {
-                    setShowSubmitSuccess(false);
-                    router.push(`/listings/${listingId}`);
-                  },
-                });
-              }}
-            >
-              {submitForReviewMutation.isPending ? (
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <SendHorizonal className="w-4 h-4" />
-              )}
-              {t('approval.actions.submit') || 'Submit for Review'}
-            </AmberButton>
+            {isTrustedMerchant ? (
+              <>
+                <AmberButton
+                  className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+                  disabled={submitForReviewMutation.isPending}
+                  onClick={() => submitListing('direct', listingId)}
+                >
+                  {submitForReviewMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Rocket className="w-4 h-4" />
+                  )}
+                  {t('approval.actions.direct_publish')}
+                </AmberButton>
+                <AmberButton
+                  variant="outline"
+                  className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all"
+                  disabled={submitForReviewMutation.isPending}
+                  onClick={() => submitListing('review', listingId)}
+                >
+                  <SendHorizonal className="w-4 h-4" />
+                  {t('approval.actions.submit')}
+                </AmberButton>
+              </>
+            ) : (
+              <AmberButton
+                className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+                disabled={submitForReviewMutation.isPending}
+                onClick={() => submitListing('review', listingId)}
+              >
+                {submitForReviewMutation.isPending ? (
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <SendHorizonal className="w-4 h-4" />
+                )}
+                {t('approval.actions.submit')}
+              </AmberButton>
+            )}
             <AmberButton
               variant="outline"
               className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
@@ -738,6 +756,27 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       {currentStep === step.PRODUCT && (
         <div className="space-y-8">
           <FormSection icon={<Package className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.product')}>
+            <div className="mb-6 space-y-2">
+              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('listing.form.category') || 'Category'}
+              </label>
+              <CategoryPicker
+                value={catalog.categoryId}
+                onChange={(id) => {
+                  setCatalog((prev) => ({ ...prev, categoryId: id || undefined }));
+                  if (fieldErrors.categoryId) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.categoryId;
+                      return next;
+                    });
+                  }
+                }}
+              />
+              {fieldErrors.categoryId ? (
+                <p className="text-[13px] text-danger font-medium px-1">{fieldErrors.categoryId}</p>
+              ) : null}
+            </div>
             <FormBuilder
               fields={isMobile ? essentialFields : basicFields}
               initialValues={catalogFormValues}
@@ -1244,30 +1283,64 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           {t('listing.wizard.back')}
         </AmberButton>
         {currentStep === step.MEDIA && isMerchant ? (
-          <AmberButton
-            className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-            disabled={isBusy}
-            onClick={() => {
-              if (!listingId) {
-                void handleNext();
-                return;
-              }
-              submitForReviewMutation.mutate(listingId, {
-                onSuccess: () => {
-                  setShowSubmitSuccess(false);
-                  router.push(`/listings/${listingId}`);
-                },
-              });
-            }}
-          >
-            {submitForReviewMutation.isPending ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <SendHorizonal className="w-4 h-4" />
-            )}
-            {t('approval.actions.submit') || 'Submit for Review'}
-            <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-          </AmberButton>
+          isTrustedMerchant ? (
+            <div className="flex flex-wrap gap-3 justify-end">
+              <AmberButton
+                className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
+                disabled={isBusy}
+                onClick={() => {
+                  if (!listingId) {
+                    void handleNext();
+                    return;
+                  }
+                  submitListing('direct', listingId);
+                }}
+              >
+                {submitForReviewMutation.isPending ? (
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Rocket className="w-4 h-4" />
+                )}
+                {t('approval.actions.direct_publish')}
+                <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+              </AmberButton>
+              <AmberButton
+                variant="outline"
+                className="h-11 border-border font-bold rounded-xl px-6 gap-2"
+                disabled={isBusy}
+                onClick={() => {
+                  if (!listingId) {
+                    void handleNext();
+                    return;
+                  }
+                  submitListing('review', listingId);
+                }}
+              >
+                <SendHorizonal className="w-4 h-4" />
+                {t('approval.actions.submit')}
+              </AmberButton>
+            </div>
+          ) : (
+            <AmberButton
+              className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
+              disabled={isBusy}
+              onClick={() => {
+                if (!listingId) {
+                  void handleNext();
+                  return;
+                }
+                submitListing('review', listingId);
+              }}
+            >
+              {submitForReviewMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <SendHorizonal className="w-4 h-4" />
+              )}
+              {t('approval.actions.submit')}
+              <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+            </AmberButton>
+          )
         ) : currentStep < fullLayoutStep.PUBLISH || !showPublishSteps ? (
           <AmberButton
             className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"

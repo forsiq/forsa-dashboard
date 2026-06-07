@@ -89,9 +89,15 @@ export const listingApi = {
     return response.data.data || [];
   },
 
-  submitForReview: async (id: number): Promise<ProductListing> => {
+  submitForReview: async (
+    id: number,
+    mode?: 'review' | 'direct',
+  ): Promise<ProductListing> => {
     const client = listingBaseApi.getInstance();
-    const response = await client.post(`/listings/${id}/submit`);
+    const response = await client.post(
+      `/listings/${id}/submit`,
+      mode ? { mode } : {},
+    );
     return response.data.data;
   },
 

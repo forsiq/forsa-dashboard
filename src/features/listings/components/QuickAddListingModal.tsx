@@ -1,18 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AmberSlideOver } from '@core/components/AmberSlideOver';
 import { AmberButton } from '@core/components/AmberButton';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
+import { CategoryPicker } from '@services/categories/components/CategoryPicker';
 import { useCreateListing } from '../api/listing-hooks';
-import { useList as useCategories } from '../../../services/categories/hooks';
-import { getLocalizedName } from '../../../services/categories/types';
 import type { FormFieldConfig } from '@core/services/types';
 import type { ProductListing } from '../../../types/services/listings.types';
 
 const HISTORY_KEY = 'history_listing';
 
-function readListingHistory(): Record<string, any> | null {
+function readListingHistory(): Record<string, unknown> | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -22,7 +21,7 @@ function readListingHistory(): Record<string, any> | null {
   }
 }
 
-function saveListingHistory(data: Record<string, any>) {
+function saveListingHistory(data: Record<string, unknown>) {
   try {
     const existing = readListingHistory() || {};
     const updated = { ...existing };
@@ -42,16 +41,12 @@ interface QuickAddListingModalProps {
 }
 
 export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddListingModalProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const createMutation = useCreateListing();
-  const { data: categoriesData } = useCategories({ limit: 100 });
-
-  const categoryOptions = useMemo(() =>
-    (categoriesData as any)?.categories?.map((c: any) => ({
-      label: getLocalizedName(c, language) || c.name || c.slug,
-      value: String(c.id),
-    })) || []
-  , [categoriesData, language]);
+  const listingHistory = useMemo(() => readListingHistory(), []);
+  const [categoryId, setCategoryId] = useState<number | undefined>(
+    listingHistory?.categoryId ? Number(listingHistory.categoryId) : undefined,
+  );
 
   const fields: FormFieldConfig[] = useMemo(() => [
     {
@@ -61,33 +56,24 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
       placeholder: t('listing.form.title_placeholder') || 'Enter product title',
       required: true,
     },
-    {
-      name: 'categoryId',
-      label: t('listing.form.category') || 'Category',
-      type: 'select',
-      placeholder: t('common.select') || 'Select category...',
-      options: categoryOptions,
-    },
-  ], [t, categoryOptions]);
+  ], [t]);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         title: data.title as string,
-        categoryId: data.categoryId ? Number(data.categoryId) : undefined,
+        categoryId: categoryId ? Number(categoryId) : undefined,
       };
-      saveListingHistory(data);
+      saveListingHistory({ ...data, categoryId });
       const result = await createMutation.mutateAsync(payload);
       onClose();
       if (onSuccess) {
-        onSuccess((result as any)?.data || result);
+        onSuccess((result as { data?: ProductListing })?.data || (result as ProductListing));
       }
     } catch {
       // Error handled by mutation
     }
   };
-
-  const listingHistory = useMemo(() => readListingHistory(), []);
 
   return (
     <AmberSlideOver
@@ -122,13 +108,24 @@ export function QuickAddListingModal({ isOpen, onClose, onSuccess }: QuickAddLis
         </div>
       }
     >
-      <FormBuilder
-        fields={fields}
-        initialValues={{ title: '', categoryId: listingHistory?.categoryId ?? '' }}
-        onSubmit={handleSubmit}
-        isLoading={createMutation.isPending}
-        showActions={false}
-      />
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+            {t('listing.form.category') || 'Category'}
+          </label>
+          <CategoryPicker
+            value={categoryId}
+            onChange={(id) => setCategoryId(id || undefined)}
+          />
+        </div>
+        <FormBuilder
+          fields={fields}
+          initialValues={{ title: '' }}
+          onSubmit={handleSubmit}
+          isLoading={createMutation.isPending}
+          showActions={false}
+        />
+      </div>
     </AmberSlideOver>
   );
 }
