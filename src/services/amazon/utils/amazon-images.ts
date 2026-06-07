@@ -1,5 +1,8 @@
 import type { AmazonProduct } from '../api/amazon-api';
 
+// Mirror of backend dedup logic in auction-service/src/common/services/image-transfer.service.ts `dedupeExternalUrls()`.
+// Keep regex patterns in sync: /\/images\/I\/([^._/?]+)/i and /\._[A-Z]{2,3}\d+_\./i
+
 /** Extract stable Amazon image id (e.g. 71dK3j8eArL) for deduplication across size variants. */
 export function amazonImageKey(url: string): string {
   const match = url.match(/\/images\/I\/([^._/?]+)/i);

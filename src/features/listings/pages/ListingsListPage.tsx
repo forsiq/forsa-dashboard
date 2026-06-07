@@ -32,6 +32,7 @@ import {
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useFilterState } from '@core/hooks/useFilterState';
+import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import { useGetListings, useDeleteListing } from '../api/listing-hooks';
 import { EmptyState } from '@core/components/EmptyState';
 import type { ProductListing } from '../../../types/services/listings.types';
@@ -53,6 +54,7 @@ export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
   const router = useRouter();
   const { isMobile } = useIsMobile();
+  const { canManageListings, canDeleteListings, canViewApprovalStatus } = useDashboardRole();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
@@ -152,7 +154,7 @@ export const ListingsListPage: React.FC = () => {
   );
 
   // Table columns
-  const columns: Column<ProductListing>[] = [
+  const columns: Column<ProductListing>[] = useMemo(() => [
     {
       key: 'title',
       label: t('listing.table.title') || 'Title',
@@ -203,13 +205,13 @@ export const ListingsListPage: React.FC = () => {
       ),
       align: 'center',
     },
-    {
-      key: 'approvalStatus',
+    ...(canViewApprovalStatus ? [{
+      key: 'approvalStatus' as const,
       label: t('listing.table.approval_status') || 'Review Status',
       cardBadge: true,
-      render: (listing) => renderApprovalBadge(listing),
-      align: 'center',
-    },
+      render: (listing: ProductListing) => renderApprovalBadge(listing),
+      align: 'center' as const,
+    }] : []),
     {
       key: 'metadata',
       label: t('listing.table.auction_count') || 'Auctions',
@@ -232,9 +234,9 @@ export const ListingsListPage: React.FC = () => {
       ),
       align: 'center',
     },
-  ];
+  ], [t, canViewApprovalStatus, renderApprovalBadge]);
 
-  const rowActions: Action<ProductListing>[] = [
+  const rowActions: Action<ProductListing>[] = useMemo(() => [
     {
       label: t('listing.view') || 'View',
       icon: Eye,
@@ -245,29 +247,31 @@ export const ListingsListPage: React.FC = () => {
       icon: Edit,
       onClick: (listing) => router.push(`/listings/${listing.id}/edit`),
     },
-    {
-      label: t('listing.detail.deploy_auction') || 'Deploy as Auction',
-      icon: Gavel,
-      onClick: (listing) => router.push(`/listings/${listing.id}/publish?type=auction`),
-      variant: 'success',
-    },
-    {
-      label: t('listing.detail.deploy_group_buy') || 'Deploy as Group Buy',
-      icon: Users,
-      onClick: (listing) => router.push(`/listings/${listing.id}/publish?type=group-buy`),
-    },
-    {
+    ...(canManageListings ? [
+      {
+        label: t('listing.detail.deploy_auction') || 'Deploy as Auction',
+        icon: Gavel,
+        onClick: (listing: ProductListing) => router.push(`/listings/${listing.id}/publish?type=auction`),
+        variant: 'success' as const,
+      },
+      {
+        label: t('listing.detail.deploy_group_buy') || 'Deploy as Group Buy',
+        icon: Users,
+        onClick: (listing: ProductListing) => router.push(`/listings/${listing.id}/publish?type=group-buy`),
+      },
+    ] : []),
+    ...(canDeleteListings ? [{
       label: t('common.delete') || 'Delete',
       icon: Trash2,
-      variant: 'danger',
-      onClick: (listing) => openConfirm({
+      variant: 'danger' as const,
+      onClick: (listing: ProductListing) => openConfirm({
         title: t('listing.delete') || 'Delete Listing',
         message: t('listing.delete_confirm') || 'Are you sure?',
         onConfirm: () => deleteMutation.mutate(listing.id),
         variant: 'danger',
       }),
-    },
-  ];
+    }] : []),
+  ], [t, router, canManageListings, canDeleteListings, openConfirm, deleteMutation]);
 
   const renderListingCard = React.useCallback(
     (listing: ProductListing) => (
@@ -315,9 +319,11 @@ export const ListingsListPage: React.FC = () => {
           </p>
 
           {/* Approval status (mobile card footer) */}
-          <div className="flex items-center">
-            {renderApprovalBadge(listing)}
-          </div>
+          {canViewApprovalStatus && (
+            <div className="flex items-center">
+              {renderApprovalBadge(listing)}
+            </div>
+          )}
 
           {/* Stats Row */}
           <div className="flex items-center gap-3 pt-1.5 border-t border-white/5">
@@ -342,7 +348,7 @@ export const ListingsListPage: React.FC = () => {
         </div>
       </div>
     ),
-    [router, renderApprovalBadge],
+    [router, renderApprovalBadge, canViewApprovalStatus],
   );
 
   if (!isClient) return null;
@@ -363,13 +369,15 @@ export const ListingsListPage: React.FC = () => {
             <ShoppingBag className="w-5 h-5" />
             <span className="hidden md:inline">{t('listing.import_amazon')}</span>
           </AmberButton>
-          <AmberButton
-            className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8"
-            onClick={() => router.push('/listings/new')}
-          >
-            <Plus className="w-5 h-5" />
-            <span>{t('listing.add_product') || t('listing.create')}</span>
-          </AmberButton>
+          {canManageListings && (
+            <AmberButton
+              className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8"
+              onClick={() => router.push('/listings/new')}
+            >
+              <Plus className="w-5 h-5" />
+              <span>{t('listing.add_product') || t('listing.create')}</span>
+            </AmberButton>
+          )}
         </div>
       }
       stats={[

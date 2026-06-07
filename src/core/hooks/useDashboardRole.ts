@@ -18,6 +18,8 @@ export interface DashboardRoleResult {
   canManageAuctions: boolean;
   canManageGroupBuying: boolean;
   canManageListings: boolean;
+  canDeleteListings: boolean;
+  canViewApprovalStatus: boolean;
   can: (capability: DashboardCapability) => boolean;
 }
 
@@ -43,6 +45,8 @@ export function useDashboardRole(): DashboardRoleResult {
     canManageAuctions: can('auctions.manage'),
     canManageGroupBuying: can('groupBuying.manage'),
     canManageListings: can('listings.manage'),
+    canDeleteListings: can('listings.delete'),
+    canViewApprovalStatus: can('listings.viewApproval'),
     can,
   };
 }

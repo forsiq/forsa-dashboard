@@ -13,6 +13,8 @@ export type DashboardCapability =
   | 'groupBuying.view'
   | 'groupBuying.manage'
   | 'listings.manage'
+  | 'listings.delete'
+  | 'listings.viewApproval'
   | 'moderation.access';
 
 const CAPABILITY_ROLES: Record<DashboardCapability, readonly UserRole[]> = {
@@ -24,6 +26,8 @@ const CAPABILITY_ROLES: Record<DashboardCapability, readonly UserRole[]> = {
   'groupBuying.view': ['admin', 'merchant', 'product_analyst'],
   'groupBuying.manage': ['admin', 'merchant'],
   'listings.manage': ['admin', 'merchant'],
+  'listings.delete': ['admin'],
+  'listings.viewApproval': ['admin'],
   'moderation.access': ['admin'],
 };
 
