@@ -204,30 +204,38 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
-            <AmberButton
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting || updateMutation.isPending}
-              className="h-10 px-5 rounded-xl border-border font-bold text-xs"
+          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+            <a
+              href={`/categories/${category.id}/edit`}
+              className="text-[11px] font-black text-zinc-muted uppercase tracking-widest hover:text-brand transition-colors"
             >
-              {t('common.cancel')}
-            </AmberButton>
-            <AmberButton
-              type="submit"
-              disabled={isSubmitting || updateMutation.isPending}
-              className="h-10 px-6 bg-brand text-black font-bold rounded-xl border-none text-xs"
-            >
-              {isSubmitting || updateMutation.isPending ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  {t('common.saving')}
-                </span>
-              ) : (
-                t('common.update')
-              )}
-            </AmberButton>
+              {t('category.advanced_edit') || 'Advanced edit'} →
+            </a>
+            <div className="flex items-center gap-3">
+              <AmberButton
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting || updateMutation.isPending}
+                className="h-10 px-5 rounded-xl border-border font-bold text-xs"
+              >
+                {t('common.cancel')}
+              </AmberButton>
+              <AmberButton
+                type="submit"
+                disabled={isSubmitting || updateMutation.isPending}
+                className="h-10 px-6 bg-brand text-black font-bold rounded-xl border-none text-xs"
+              >
+                {isSubmitting || updateMutation.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    {t('common.saving')}
+                  </span>
+                ) : (
+                  t('common.update')
+                )}
+              </AmberButton>
+            </div>
           </div>
         </form>
       </div>

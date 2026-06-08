@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, AlertCircle, ChevronDown, X } from 'lucide-react';
+import { Loader2, AlertCircle, ChevronDown, X, Lock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberInput } from '@core/components/AmberInput';
@@ -37,6 +37,10 @@ export function CategoryAddModal({
   const [showSecondaryLang, setShowSecondaryLang] = useState(false);
   const [suggestedName, setSuggestedName] = useState<string | null>(null);
   const { data: mainCategories } = useMainCategories();
+
+  const lockedParent = defaultParentId
+    ? (mainCategories || []).find((c: Category) => String(c.id) === defaultParentId)
+    : null;
 
   const parentOptions = useMemo(() => {
     const cats = mainCategories || [];
@@ -121,11 +125,14 @@ export function CategoryAddModal({
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-lg font-black text-zinc-text uppercase tracking-tight">
-              {t('category.add_new') || 'Add new category'}
+              {lockedParent
+                ? t('category.add_subcategory') || 'Add subcategory'
+                : t('category.add_new') || 'Add new category'}
             </h2>
             <p className="text-xs text-zinc-muted mt-1">
-              {t('category.add_modal_desc') ||
-                'Create a category without leaving this form'}
+              {lockedParent
+                ? `${t('category.add_modal_desc') || 'Create a category without leaving this form'} — ${getLocalizedName(lockedParent, language)}`
+                : t('category.add_modal_desc') || 'Create a category without leaving this form'}
             </p>
           </div>
           <button
@@ -194,19 +201,31 @@ export function CategoryAddModal({
             />
           )}
 
-          <Controller
-            name="parentId"
-            control={control}
-            render={({ field }) => (
-              <AmberDropdown
-                label={t('category.parent') || 'Parent category'}
-                options={parentOptions}
-                value={field.value || ''}
-                onChange={field.onChange}
-                placeholder={t('category.select_parent') || 'Select parent...'}
-              />
-            )}
-          />
+          {lockedParent ? (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02]">
+              <Lock className="w-3.5 h-3.5 text-zinc-muted shrink-0" />
+              <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('category.parent') || 'Parent'}:
+              </span>
+              <span className="text-xs font-bold text-zinc-text">
+                {getLocalizedName(lockedParent, language)}
+              </span>
+            </div>
+          ) : (
+            <Controller
+              name="parentId"
+              control={control}
+              render={({ field }) => (
+                <AmberDropdown
+                  label={t('category.parent') || 'Parent category'}
+                  options={parentOptions}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  placeholder={t('category.select_parent') || 'Select parent...'}
+                />
+              )}
+            />
+          )}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
             <AmberButton

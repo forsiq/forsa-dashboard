@@ -5,6 +5,11 @@
     ar: "اختيار فئات أذكى"
   entries:
     - description:
+        en: "Category management is now tree-first: add, edit, and add subcategories directly from the categories tree page using inline modals — no more full-page navigation for basic operations."
+        ar: "إدارة الفئات أصبحت مبنية على الشجرة: إضافة، تعديل، وإضافة فئات فرعية مباشرة من صفحة شجرة الفئات باستخدام نوافذ منبثقة — بدون انتقال لصفحات كاملة للعمليات الأساسية."
+      type: improved
+      sidebarPath: /categories
+    - description:
         en: "Category picker add shortcut opens an inline modal to create a main or sub category (name + parent), refreshes the tree, and auto-selects the new category — no redirect to /categories/new."
         ar: "اختصار إضافة فئة في منتقي الفئات يفتح نافذة لإنشاء فئة رئيسية أو فرعية (الاسم + الأب)، يحدّث الشجرة، ويختار الفئة الجديدة تلقائياً — دون الانتقال إلى /categories/new."
       type: improved

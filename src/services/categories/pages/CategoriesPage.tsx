@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import {
   Plus,
   Search,
@@ -55,6 +56,8 @@ import type { Category, CategoryTreeNode } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
 import { buildCategoryTreeFromFlat, type CategoryIssue } from '../lib';
 import { CategoryIssueBadges } from '../components/CategoryIssueBadges';
+import { CategoryAddModal } from '../components/CategoryAddModal';
+import { CategoryEditModal } from '../components/CategoryEditModal';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
@@ -259,6 +262,8 @@ interface TreeNodeSharedProps {
   onEdit: (category: Category) => void;
   onToggleStatus: (category: Category) => void;
   onDelete: (id: string) => void;
+  onAddChild?: (node: CategoryTreeNode) => void;
+  onAddSibling?: (node: CategoryTreeNode) => void;
   openConfirm: (options: {
     title: string;
     message: string;
@@ -281,17 +286,43 @@ function CategoryRowActions({
   onEdit,
   onToggleStatus,
   onDelete,
+  onAddChild,
+  onAddSibling,
   openConfirm,
   t,
   className,
 }: Pick<
   TreeNodeSharedProps,
-  'node' | 'language' | 'canManage' | 'onEdit' | 'onToggleStatus' | 'onDelete' | 'openConfirm' | 't'
+  'node' | 'language' | 'canManage' | 'onEdit' | 'onToggleStatus' | 'onDelete' | 'onAddChild' | 'onAddSibling' | 'openConfirm' | 't'
 > & { className?: string }) {
   if (!canManage) return null;
 
+  const isMain = !node.parentId;
+
   return (
     <div className={cn('flex items-center gap-1', className)}>
+      {isMain && onAddChild && (
+        <button
+          type="button"
+          onClick={() => onAddChild(node)}
+          className="p-2 rounded-lg text-zinc-muted hover:text-success hover:bg-success/10 transition-all"
+          title={t('category.add_subcategory') || 'Add subcategory'}
+          aria-label={t('category.add_subcategory') || 'Add subcategory'}
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      )}
+      {!isMain && onAddSibling && (
+        <button
+          type="button"
+          onClick={() => onAddSibling(node)}
+          className="p-2 rounded-lg text-zinc-muted hover:text-info hover:bg-info/10 transition-all"
+          title={t('category.add_sibling') || 'Add sibling'}
+          aria-label={t('category.add_sibling') || 'Add sibling'}
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+      )}
       <button
         type="button"
         onClick={() => onEdit(node)}
@@ -352,6 +383,8 @@ function TreeCategoryCard({
   onEdit,
   onToggleStatus,
   onDelete,
+  onAddChild,
+  onAddSibling,
   openConfirm,
   t,
   isLastSibling = true,
@@ -416,14 +449,15 @@ function TreeCategoryCard({
                   />
                 </div>
                 <div className="min-w-0">
-                  <p
+                  <Link
+                    href={`/categories/${node.id}`}
                     className={cn(
-                      'text-sm tracking-tight truncate',
+                      'text-sm tracking-tight truncate block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
                       level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
                     )}
                   >
                     {getLocalizedName(node, language)}
-                  </p>
+                  </Link>
                   <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest truncate mt-0.5">
                     {node.slug || '-'}
                   </p>
@@ -460,6 +494,8 @@ function TreeCategoryCard({
                 onEdit={onEdit}
                 onToggleStatus={onToggleStatus}
                 onDelete={onDelete}
+                onAddChild={onAddChild}
+                onAddSibling={onAddSibling}
                 openConfirm={openConfirm}
                 t={t}
               />
@@ -483,6 +519,8 @@ function TreeCategoryCard({
             onEdit={onEdit}
             onToggleStatus={onToggleStatus}
             onDelete={onDelete}
+            onAddChild={onAddChild}
+            onAddSibling={onAddSibling}
             openConfirm={openConfirm}
             t={t}
             issuesByCategoryId={issuesByCategoryId}
@@ -503,6 +541,8 @@ function SortableTreeRow({
   onEdit,
   onToggleStatus,
   onDelete,
+  onAddChild,
+  onAddSibling,
   openConfirm,
   t,
   isLastSibling = true,
@@ -610,14 +650,15 @@ function SortableTreeRow({
                 )}
               />
             </div>
-            <span
+            <Link
+              href={`/categories/${node.id}`}
               className={cn(
-                'text-sm tracking-tight break-words whitespace-normal min-w-0 flex-1',
+                'text-sm tracking-tight break-words whitespace-normal min-w-0 flex-1 hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
                 level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
               )}
             >
               {getLocalizedName(node, language)}
-            </span>
+            </Link>
             {hasChildren && (
               <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full shrink-0 tabular-nums">
                 {node.children!.length}
@@ -659,6 +700,8 @@ function SortableTreeRow({
             onEdit={onEdit}
             onToggleStatus={onToggleStatus}
             onDelete={onDelete}
+            onAddChild={onAddChild}
+            onAddSibling={onAddSibling}
             openConfirm={openConfirm}
             t={t}
             className="justify-center"
@@ -686,6 +729,8 @@ function SortableTreeRow({
               onEdit={onEdit}
               onToggleStatus={onToggleStatus}
               onDelete={onDelete}
+              onAddChild={onAddChild}
+              onAddSibling={onAddSibling}
               openConfirm={openConfirm}
               t={t}
               issuesByCategoryId={issuesByCategoryId}
@@ -839,9 +884,45 @@ export function CategoriesPage() {
     deleteMutation.mutate(id);
   };
 
-  const handleEdit = (category: Category) => {
-    router.push(`/categories/${category.id}/edit`);
-  };
+  // --- Modal state ---
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addDefaultParentId, setAddDefaultParentId] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  const handleEdit = useCallback((category: Category) => {
+    setEditCategory(category);
+    setEditModalOpen(true);
+  }, []);
+
+  const handleAddChild = useCallback((node: CategoryTreeNode) => {
+    setAddDefaultParentId(String(node.id));
+    setAddModalOpen(true);
+  }, []);
+
+  const handleAddSibling = useCallback((node: CategoryTreeNode) => {
+    setAddDefaultParentId(node.parentId ? String(node.parentId) : null);
+    setAddModalOpen(true);
+  }, []);
+
+  // Handle query params (?add=1, ?edit=:id) for deep links
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.add === '1') {
+      setAddDefaultParentId(null);
+      setAddModalOpen(true);
+      void router.replace('/categories', undefined, { shallow: true });
+    } else if (router.query.edit && typeof router.query.edit === 'string') {
+      const found = flatCategories.find(
+        (c) => String(c.id) === router.query.edit,
+      );
+      if (found) {
+        setEditCategory(found);
+        setEditModalOpen(true);
+      }
+      void router.replace('/categories', undefined, { shallow: true });
+    }
+  }, [router.isReady, router.query.add, router.query.edit]);
 
   const handleToggleStatus = (category: Category) => {
     const newStatus = !category.isActive;
@@ -904,7 +985,7 @@ export function CategoriesPage() {
           )}
           <AmberButton
             className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none"
-            onClick={() => router.push('/categories/new')}
+            onClick={() => { setAddDefaultParentId(null); setAddModalOpen(true); }}
           >
             <span className="hidden md:inline">{t('category.add_new') || 'إضافة فئة جديدة'}</span>
             <Plus className="w-5 h-5" />
@@ -1103,6 +1184,8 @@ export function CategoriesPage() {
                       onEdit={handleEdit}
                       onToggleStatus={handleToggleStatus}
                       onDelete={handleDelete}
+                      onAddChild={canManageCategories ? handleAddChild : undefined}
+                      onAddSibling={canManageCategories ? handleAddSibling : undefined}
                       openConfirm={openConfirm}
                       t={t}
                       issuesByCategoryId={healthReport.issuesByCategoryId}
@@ -1165,6 +1248,8 @@ export function CategoriesPage() {
                               onEdit={handleEdit}
                               onToggleStatus={handleToggleStatus}
                               onDelete={handleDelete}
+                              onAddChild={canManageCategories ? handleAddChild : undefined}
+                              onAddSibling={canManageCategories ? handleAddSibling : undefined}
                               openConfirm={openConfirm}
                               t={t}
                               issuesByCategoryId={healthReport.issuesByCategoryId}
@@ -1182,6 +1267,22 @@ export function CategoriesPage() {
       </div>
 
       <ConfirmModal />
+
+      {canManageCategories && (
+        <CategoryAddModal
+          open={addModalOpen}
+          onClose={() => { setAddModalOpen(false); setAddDefaultParentId(null); }}
+          defaultParentId={addDefaultParentId}
+          onSuccess={() => { void refetchTree(); setAddModalOpen(false); setAddDefaultParentId(null); }}
+        />
+      )}
+      {editCategory && (
+        <CategoryEditModal
+          category={editCategory}
+          open={editModalOpen}
+          onClose={() => { setEditModalOpen(false); setEditCategory(null); }}
+        />
+      )}
     </AdminListPageShell>
   );
 }
