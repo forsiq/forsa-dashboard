@@ -619,7 +619,10 @@ export const ListingsListPage: React.FC = () => {
           </div>
 
           <div className="pt-8 space-y-3">
-            <AmberButton className="w-full h-12 bg-zinc-text text-black font-black uppercase tracking-widest active:scale-95 transition-all" onClick={() => setIsFilterOpen(false)}>
+            <AmberButton
+              className="w-full h-12 bg-brand hover:bg-brand/90 text-black font-black uppercase tracking-widest active:scale-95 transition-all border-none rounded-xl"
+              onClick={() => setIsFilterOpen(false)}
+            >
               {t('common.apply') || 'Apply'}
             </AmberButton>
             <AmberButton

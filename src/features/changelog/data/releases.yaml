@@ -1,9 +1,14 @@
 - version: "1.6.0"
   date: "2026-06-08"
   title:
-    en: "Smarter category picker"
-    ar: "اختيار فئات أذكى"
+    en: "Smarter category picker & faster saves"
+    ar: "اختيار فئات أذكى وحفظ أسرع"
   entries:
+    - description:
+        en: "Image uploads now run in parallel (3 at a time) instead of one-by-one, making listing save and publish significantly faster when attaching multiple photos."
+        ar: "رفع الصور أصبح متوازياً (3 صور في نفس الوقت) بدلاً من واحدة تلو الأخرى، مما يجعل حفظ ونشر المنتجات أسرع بكثير عند إرفاق عدة صور."
+      type: improved
+      sidebarPath: /listings
     - description:
         en: "Category management is now tree-first: add, edit, and add subcategories directly from the categories tree page using inline modals — no more full-page navigation for basic operations."
         ar: "إدارة الفئات أصبحت مبنية على الشجرة: إضافة، تعديل، وإضافة فئات فرعية مباشرة من صفحة شجرة الفئات باستخدام نوافذ منبثقة — بدون انتقال لصفحات كاملة للعمليات الأساسية."

@@ -4,6 +4,7 @@ import {
   normalizeImageUrlList,
   parseAttachmentIds,
 } from '@features/auctions/utils/auction-utils';
+import { uploadWithConcurrency } from '@core/utils/uploadWithConcurrency';
 
 const OWN_IMAGE_HOSTS = [
   'file.zonevast.com',
@@ -178,7 +179,7 @@ export type ResolveListingMediaSaveResult = {
 
 /**
  * Walk preview URLs in display order and produce attachment IDs for save.
- * Blob previews consume pendingFiles; known URLs reuse attachment IDs; external URLs defer to server transfer.
+ * Blob previews consume pendingFiles (uploaded concurrently); known URLs reuse attachment IDs; external URLs defer to server transfer.
  */
 export async function resolveListingMediaSave(
   input: ResolveListingMediaSaveInput,
@@ -193,15 +194,43 @@ export async function resolveListingMediaSave(
   const attachmentIds: number[] = [];
   const externalUrlsForServerTransfer: string[] = [];
   const existingCount = previewUrls.length - pendingFiles.length;
-  let pendingFileIndex = 0;
   let hasPendingUploads = pendingFiles.length > 0;
+
+  // Collect blob slots so we can upload them concurrently
+  const blobSlots: { previewIndex: number; fileIndex: number }[] = [];
+  let pendingFileIndex = 0;
 
   for (let index = 0; index < previewUrls.length; index++) {
     const url = previewUrls[index];
     if (url.startsWith('blob:')) {
-      const file = pendingFiles[pendingFileIndex++];
-      if (!file) continue;
-      const id = await uploadFile(file);
+      blobSlots.push({ previewIndex: index, fileIndex: pendingFileIndex++ });
+    }
+  }
+
+  // Upload all pending files concurrently (max 3 parallel)
+  const blobResults = blobSlots.length > 0
+    ? await uploadWithConcurrency<File, number>(
+        blobSlots.map((s) => pendingFiles[s.fileIndex]).filter(Boolean),
+        (file) => uploadFile(file),
+        { concurrency: 3 },
+      )
+    : [];
+
+  // Build a map from previewIndex → uploaded attachment ID
+  const blobIdByPreviewIndex = new Map<number, number>();
+  blobSlots.forEach((slot, i) => {
+    const id = blobResults[i];
+    if (id !== undefined) {
+      blobIdByPreviewIndex.set(slot.previewIndex, id);
+    }
+  });
+
+  // Second pass: walk preview URLs in order and collect IDs
+  for (let index = 0; index < previewUrls.length; index++) {
+    const url = previewUrls[index];
+
+    if (url.startsWith('blob:')) {
+      const id = blobIdByPreviewIndex.get(index);
       if (id) attachmentIds.push(id);
       hasPendingUploads = true;
       continue;

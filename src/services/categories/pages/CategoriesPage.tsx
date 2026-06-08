@@ -817,11 +817,7 @@ export function CategoriesPage() {
     }),
   );
 
-  const reorderMutation = useReorderCategories({
-    onSuccess: () => {
-      void refetchTree();
-    },
-  });
+  const reorderMutation = useReorderCategories();
 
   const persistSiblingOrder = useCallback(
     async (orderedIds: string[]) => {
@@ -870,9 +866,6 @@ export function CategoriesPage() {
 
   // Delete mutation
   const deleteMutation = useDeleteCategoryMutation({
-    onSuccess: () => {
-      void refetchTree();
-    },
     onError: (err) => {
       alert(err.message || t('category.delete_error') || 'Failed to delete category');
     },
@@ -1108,7 +1101,7 @@ export function CategoriesPage() {
               title={t('category.empty') || 'No Categories'}
               description={t('category.empty_description') || 'No categories found.'}
               actionLabel={canManageCategories ? (t('category.add_new') || 'Add Category') : undefined}
-              onAction={canManageCategories ? () => router.push('/categories/new') : undefined}
+              onAction={canManageCategories ? () => { setAddDefaultParentId(null); setAddModalOpen(true); } : undefined}
             />
           ) : filteredTree.length === 0 ? (
             <EmptyState
@@ -1273,7 +1266,7 @@ export function CategoriesPage() {
           open={addModalOpen}
           onClose={() => { setAddModalOpen(false); setAddDefaultParentId(null); }}
           defaultParentId={addDefaultParentId}
-          onSuccess={() => { void refetchTree(); setAddModalOpen(false); setAddDefaultParentId(null); }}
+          onSuccess={() => { setAddModalOpen(false); setAddDefaultParentId(null); }}
         />
       )}
       {editCategory && (

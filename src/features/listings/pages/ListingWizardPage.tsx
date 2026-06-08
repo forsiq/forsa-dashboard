@@ -45,6 +45,7 @@ import {
   parseRequiredListingPrice,
 } from '@core/utils/listingDeployPrices';
 import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
+import { useQueryClient } from '@tanstack/react-query';
 import type { FormFieldConfig } from '@core/services/types';
 import type { ListingSpec, ListingSource, CreateListingInput, UpdateListingInput, ProductListing } from '../../../types/services/listings.types';
 import {
@@ -55,6 +56,7 @@ import {
   useDeployAsGroupBuy,
   useSubmitListingForReview,
   useLookupByBarcode,
+  listingKeys,
 } from '../api/listing-hooks';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
@@ -146,6 +148,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const isClient = useIsClient();
   const mapApiError = useMapApiValidationError();
   const mapApiFieldErrors = useMapApiValidationFieldErrors();
+  const queryClient = useQueryClient();
   const isRTL = dir === 'rtl';
 
   const routeId = router.query.id ? Number(router.query.id) : undefined;
@@ -494,11 +497,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const saveCatalog = async (): Promise<number> => {
     const payload = buildCatalogPayload();
     if (listingId) {
-      await updateMutation.mutateAsync({ id: listingId, data: payload });
+      const updated = await updateMutation.mutateAsync({ id: listingId, data: payload });
+      if (updated) queryClient.setQueryData(listingKeys.detail(listingId), updated);
       return listingId;
     }
     const created = await createMutation.mutateAsync(payload);
     setListingId(created.id);
+    if (created?.id) queryClient.setQueryData(listingKeys.detail(created.id), created);
     return created.id;
   };
 
@@ -541,6 +546,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     }
 
     const updated = await updateMutation.mutateAsync({ id, data });
+    if (updated) queryClient.setQueryData(listingKeys.detail(id), updated);
     const savedIds = getListingAttachmentIds(updated);
     if (savedIds.length > 0) {
       setRetainedAttachmentIds(savedIds);
@@ -743,6 +749,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           },
         });
         const auctionId = auction?.id;
+        if (listingId) queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) });
         router.push(
           auctionId ? `/auctions/${auctionId}` : `/listings/${listingId}`,
         );
@@ -758,6 +765,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           },
         });
         const dealId = deal?.id;
+        if (listingId) queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) });
         router.push(
           dealId ? `/group-buying/${dealId}` : `/listings/${listingId}`,
         );

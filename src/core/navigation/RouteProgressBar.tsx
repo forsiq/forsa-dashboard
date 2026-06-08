@@ -28,7 +28,7 @@ export function RouteProgressBar() {
           }
         }
         .animate-route-progress {
-          animation: route-progress 2s ease-out forwards;
+          animation: route-progress 600ms ease-out forwards;
         }
       `}</style>
     </div>
