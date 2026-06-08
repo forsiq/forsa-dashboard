@@ -628,8 +628,8 @@ function SortableTreeRow({
           </div>
         </td>
         {/* Name */}
-        <td className="px-4 py-5 align-top">
-          <div className="flex items-start gap-2 min-w-0">
+        <td className="px-4 py-5 align-top min-w-[220px] w-[32%]">
+          <div className="flex items-start gap-2 w-full min-w-0">
             <CategoryTreeGuides
               level={level}
               isLastSibling={isLastSibling}
@@ -637,7 +637,7 @@ function SortableTreeRow({
             />
             <div
               className={cn(
-                'p-1.5 rounded-lg border shrink-0 mt-0.5',
+                'p-1.5 rounded-lg border shrink-0',
                 hasChildren
                   ? 'bg-brand/10 border-brand/20'
                   : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
@@ -650,23 +650,27 @@ function SortableTreeRow({
                 )}
               />
             </div>
-            <Link
-              href={`/categories/${node.id}`}
-              className={cn(
-                'text-sm tracking-tight break-words whitespace-normal min-w-0 flex-1 hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
-                level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <Link
+                  href={`/categories/${node.id}`}
+                  className={cn(
+                    'text-sm tracking-tight break-words whitespace-normal min-w-0 hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
+                    level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
+                  )}
+                >
+                  {getLocalizedName(node, language)}
+                </Link>
+                {hasChildren && (
+                  <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full shrink-0 tabular-nums">
+                    {node.children!.length}
+                  </span>
+                )}
+              </div>
+              {nodeIssues.length > 0 && (
+                <CategoryIssueBadges issues={nodeIssues} t={t} compact />
               )}
-            >
-              {getLocalizedName(node, language)}
-            </Link>
-            {hasChildren && (
-              <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full shrink-0 tabular-nums">
-                {node.children!.length}
-              </span>
-            )}
-            {nodeIssues.length > 0 && (
-              <CategoryIssueBadges issues={nodeIssues} t={t} compact />
-            )}
+            </div>
           </div>
         </td>
         {/* Slug */}
@@ -1199,12 +1203,12 @@ export function CategoriesPage() {
                           'امسح البحث واختر «الكل» لإعادة ترتيب الفئات'}
                       </p>
                     )}
-                    <table className="w-full text-start border-collapse min-w-[800px]">
+                    <table className="w-full text-start border-collapse min-w-[800px] table-fixed">
                       <thead className="bg-obsidian-outer/50 border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                         <tr>
                           {canReorderCategories && <th className="px-3 py-5 w-10" />}
                           <th className="px-3 py-5 w-10" />
-                          <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
+                          <th className="px-6 py-5 min-w-[220px] w-[32%] text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">
                             {t('category.name') || 'Name'}
                           </th>
                           <th className="px-6 py-5 text-[11px] font-black text-zinc-muted uppercase tracking-widest select-none group text-start">

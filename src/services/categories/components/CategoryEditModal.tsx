@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, AlertCircle, ChevronDown, X } from 'lucide-react';
@@ -61,6 +62,15 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
     reValidateMode: 'onChange',
   });
 
+  useEffect(() => {
+    if (!open) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [open]);
+
   const handleFormSubmit = async (data: CategoryFormData) => {
     try {
       const payload = toUpdateCategoryPayload(data, {
@@ -78,20 +88,29 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
     }
   };
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+  return ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div
         className={cn(
-          'relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl',
-          'bg-obsidian-card border border-white/10 shadow-2xl',
+          'relative flex w-full max-w-lg flex-col',
+          'max-h-[min(90dvh,calc(100vh-2rem))]',
+          'rounded-2xl bg-obsidian-card border border-white/10 shadow-2xl',
         )}
         dir={dir}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/5 p-6">
           <div>
             <h2 className="text-lg font-black text-zinc-text uppercase tracking-tight">
               {t('common.edit') || 'Edit'} {getLocalizedName(category, language)}
@@ -109,7 +128,8 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 min-h-0 space-y-5 overflow-y-auto overscroll-contain p-6">
           {formErrors.root?.message && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-danger/10 border border-danger/20">
               <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
@@ -203,8 +223,10 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
             />
           </div>
 
+          </div>
+
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+          <div className="flex shrink-0 items-center justify-between border-t border-white/5 p-6 pt-4">
             <a
               href={`/categories/${category.id}/edit`}
               className="text-[11px] font-black text-zinc-muted uppercase tracking-widest hover:text-brand transition-colors"
@@ -239,6 +261,7 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
