@@ -46,7 +46,7 @@ import { getLocalizedName } from '@services/categories/types';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
-import type { GroupBuying } from '../types';
+import type { GroupBuying, GroupBuyingFilters } from '../types';
 
 /**
  * GroupBuyingListPage - Campaign Management with DataTable
@@ -81,7 +81,7 @@ export const GroupBuyingListPage: React.FC = () => {
     search: debouncedSearch || undefined,
     page,
     limit,
-    sortBy,
+    sortBy: sortBy as GroupBuyingFilters['sortBy'],
     sortOrder,
   });
 

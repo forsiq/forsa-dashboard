@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   Package,
@@ -161,20 +162,26 @@ export const ListingsListPage: React.FC = () => {
       label: t('listing.table.title') || 'Title',
       cardTitle: true,
       render: (listing) => (
-        <div className="flex min-w-0 items-center gap-4">
+        <Link
+          href={`/listings/${listing.id}`}
+          className="flex min-w-0 items-center gap-4 rounded-lg -mx-1 px-1 py-0.5 transition-colors hover:bg-white/[0.03] group/link"
+        >
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
             <ListingImage listing={listing} className="w-full h-full object-cover" fallbackClassName="w-5 h-5 text-zinc-muted/40" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <DataTableEntityTitle text={listing.title} />
+              <DataTableEntityTitle
+                text={listing.title}
+                className="group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors"
+              />
               <ListingReadinessBadge listing={listing} />
             </div>
             <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
               {listing.sku || listing.brand || '—'}
             </p>
           </div>
-        </div>
+        </Link>
       ),
       sortable: true,
     },
@@ -276,10 +283,10 @@ export const ListingsListPage: React.FC = () => {
 
   const renderListingCard = React.useCallback(
     (listing: ProductListing) => (
-      <div
+      <Link
         key={listing.id}
-        className="group relative rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden hover:border-white/10 hover:shadow-md cursor-pointer active:scale-[0.98]"
-        onClick={() => router.push(`/listings/${listing.id}`)}
+        href={`/listings/${listing.id}`}
+        className="group relative block rounded-xl border border-white/5 bg-[var(--color-obsidian-card)] transition-all duration-300 overflow-hidden hover:border-white/10 hover:shadow-md active:scale-[0.98]"
       >
         {/* Image Section */}
         <div className="relative h-36 bg-obsidian-outer/50 overflow-hidden">
@@ -310,7 +317,7 @@ export const ListingsListPage: React.FC = () => {
         {/* Content Section */}
         <div className="p-3 space-y-2">
           {/* Title */}
-          <h3 className="text-sm font-bold text-zinc-text truncate leading-tight">
+          <h3 className="text-sm font-bold text-zinc-text truncate leading-tight group-hover:text-brand group-hover:underline underline-offset-2 decoration-brand/50 transition-colors">
             {listing.title}
           </h3>
 
@@ -347,9 +354,9 @@ export const ListingsListPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      </Link>
     ),
-    [router, renderApprovalBadge, canViewApprovalStatus],
+    [renderApprovalBadge, canViewApprovalStatus],
   );
 
   if (!isClient) return null;
@@ -481,7 +488,6 @@ export const ListingsListPage: React.FC = () => {
               data={filteredListings}
               keyField="id"
               rowActions={rowActions}
-              onRowClick={(row) => router.push(`/listings/${row.id}`)}
               pagination
               pageSize={limit}
               currentPage={page}

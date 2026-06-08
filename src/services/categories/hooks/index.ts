@@ -8,6 +8,8 @@ import type { Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilter
 import { analyzeCategoryHealth } from '../lib/categoryHealth';
 import { resolveCategoryErrorMessage } from '../lib';
 
+const EMPTY_CATEGORIES: Category[] = [];
+
 const categoryService = createCrudService<Category, CreateCategoryInput, UpdateCategoryInput, CategoryFilters>({
   name: 'categories',
   endpoint: '/categories',
@@ -207,9 +209,10 @@ export function useMySuggestions() {
 /** Flat list + derived health report for admin cleanup UI. */
 export function useCategoryHealthReport(language = 'en') {
   const query = useGetCategories({ limit: 500 } as CategoryFilters);
+  const categories = query.data?.categories ?? EMPTY_CATEGORIES;
   const report = useMemo(
-    () => analyzeCategoryHealth(query.data?.categories ?? [], language),
-    [query.data?.categories, language],
+    () => analyzeCategoryHealth(categories, language),
+    [categories, language],
   );
-  return { ...query, report, categories: query.data?.categories ?? [] };
+  return { ...query, report, categories };
 }

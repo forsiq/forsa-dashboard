@@ -111,6 +111,19 @@ function filterCategoryTree(
   return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
 }
 
+/** Stable signature for tree order — avoids redundant localTree syncs. */
+function getCategoryTreeSignature(nodes: CategoryTreeNode[]): string {
+  const parts: string[] = [];
+  const walk = (list: CategoryTreeNode[]) => {
+    for (const node of list) {
+      parts.push(`${node.id}:${node.sortOrder ?? 0}`);
+      if (node.children?.length) walk(node.children);
+    }
+  };
+  walk(nodes);
+  return parts.join(',');
+}
+
 function filterIssuesTree(
   nodes: CategoryTreeNode[],
   issuesByCategoryId: Map<string, CategoryIssue[]>,
@@ -737,14 +750,20 @@ export function CategoriesPage() {
   const [localTree, setLocalTree] = useState<CategoryTreeNode[]>([]);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
 
+  const categoryTreeSignature = useMemo(
+    () => getCategoryTreeSignature(categoryTree),
+    [categoryTree],
+  );
+
   const displayTree = canReorder ? localTree : filteredTree;
 
   useEffect(() => {
-    if (isSavingOrder) return;
-    if (canReorder) {
-      setLocalTree(categoryTree);
-    }
-  }, [categoryTree, canReorder, isSavingOrder]);
+    if (isSavingOrder || !canReorder) return;
+    setLocalTree((prev) => {
+      if (getCategoryTreeSignature(prev) === categoryTreeSignature) return prev;
+      return categoryTree;
+    });
+  }, [categoryTree, categoryTreeSignature, canReorder, isSavingOrder]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
