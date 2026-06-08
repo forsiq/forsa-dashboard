@@ -575,8 +575,8 @@ function SortableTreeRow({
           </div>
         </td>
         {/* Name */}
-        <td className="px-4 py-5 align-middle">
-          <div className="flex items-center gap-2 min-w-0">
+        <td className="px-4 py-5 align-top">
+          <div className="flex items-start gap-2 min-w-0">
             <CategoryTreeGuides
               level={level}
               isLastSibling={isLastSibling}
@@ -584,7 +584,7 @@ function SortableTreeRow({
             />
             <div
               className={cn(
-                'p-1.5 rounded-lg border shrink-0',
+                'p-1.5 rounded-lg border shrink-0 mt-0.5',
                 hasChildren
                   ? 'bg-brand/10 border-brand/20'
                   : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
@@ -599,7 +599,7 @@ function SortableTreeRow({
             </div>
             <span
               className={cn(
-                'text-sm tracking-tight truncate',
+                'text-sm tracking-tight break-words whitespace-normal min-w-0 flex-1',
                 level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
               )}
             >

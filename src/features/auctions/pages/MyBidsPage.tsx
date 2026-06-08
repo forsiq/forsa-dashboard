@@ -69,12 +69,14 @@ export const MyBidsPage: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
+  const [page, setPage] = useState(1);
+  const bidsLimit = 10;
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const { data: bidsData, isLoading } = useGetMyBids();
+  const { data: bidsData, isLoading } = useGetMyBids(page, bidsLimit);
 
   const bids: BidRow[] = useMemo(() => {
     const raw = (bidsData?.data || []) as any[];
@@ -251,7 +253,10 @@ export const MyBidsPage: React.FC = () => {
             keyField="id"
             onRowClick={handleRowClick}
             pagination
-            pageSize={10}
+            pageSize={bidsLimit}
+            currentPage={page}
+            totalItems={bidsData?.total || filteredBids.length}
+            onPageChange={(newPage) => setPage(newPage)}
             showViewToggle
             viewMode={isMobile ? 'grid' : 'table'}
             gridCols={2}

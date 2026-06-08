@@ -49,7 +49,13 @@ export function useApproveListing() {
       toast.success(t('approval.messages.approved'));
     },
     onError: (error: unknown) => {
-      toast.error(`${t('toast.moderation.listing_approve_failed')}: ${getErrorDetail(error)}`, 8000);
+      const detail = getErrorDetail(error);
+      if (detail.includes('already approved')) {
+        queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
+        toast.success(t('approval.messages.approved'));
+      } else {
+        toast.error(`${t('toast.moderation.listing_approve_failed')}: ${detail}`, 8000);
+      }
     },
   });
 }
@@ -97,10 +103,12 @@ export function useApproveAuction() {
     },
     onError: (error: unknown) => {
       const detail = getErrorDetail(error);
-      const friendly = detail.includes('already approved')
-        ? t('moderation.approval.error_already_approved')
-        : detail;
-      toast.error(`${t('moderation.approval.error_approve_auction')}: ${friendly}`, 8000);
+      if (detail.includes('already approved')) {
+        queryClient.invalidateQueries({ queryKey: moderationKeys.pending() });
+        toast.success(t('approval.messages.approved'));
+      } else {
+        toast.error(`${t('moderation.approval.error_approve_auction')}: ${detail}`, 8000);
+      }
     },
   });
 }

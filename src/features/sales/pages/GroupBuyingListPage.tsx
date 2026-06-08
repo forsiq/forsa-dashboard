@@ -79,6 +79,10 @@ export const GroupBuyingListPage: React.FC = () => {
     status: statusFilter === 'all' ? undefined : statusFilter,
     categoryId: categoryIdFilter === 'all' ? undefined : categoryIdFilter,
     search: debouncedSearch || undefined,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
   });
 
   const { data: stats } = useGetGroupBuyingStats();

@@ -1,0 +1,54 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "ZoneVast Logo" [ref=e9]
+        - generic [ref=e15]:
+          - generic [ref=e16]: ZONEVAST
+          - generic [ref=e17]: FORSA
+      - generic [ref=e18]:
+        - button "Switch to Dark Mode" [ref=e19] [cursor=pointer]:
+          - img [ref=e20]
+        - button "EN" [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+          - generic [ref=e28]: EN
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - heading "Sign In" [level=1] [ref=e32]
+        - paragraph [ref=e33]: Welcome back! Enter your credentials to continue.
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - generic [ref=e40]: Email or Username *
+              - generic [ref=e41]:
+                - generic:
+                  - img
+                - textbox "Email or Username" [ref=e42]
+            - generic [ref=e43]:
+              - generic [ref=e44]:
+                - generic [ref=e46]: Password *
+                - generic [ref=e47]:
+                  - generic:
+                    - img
+                  - textbox "Password" [ref=e48]
+                  - button [ref=e50] [cursor=pointer]:
+                    - img [ref=e51]
+              - link "Forgot Password?" [ref=e55] [cursor=pointer]:
+                - /url: /forgot-password
+          - generic [ref=e59] [cursor=pointer]: Remember Me
+          - button "Login" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]:
+              - generic [ref=e62]: Login
+              - img [ref=e63]
+        - paragraph [ref=e67]:
+          - text: Don't have an account?
+          - link "Create Account" [ref=e68] [cursor=pointer]:
+            - /url: /register
+      - generic [ref=e70]:
+        - paragraph [ref=e73]: Secure Connection
+        - generic [ref=e74]: "|"
+        - paragraph [ref=e75]: © 2026 ZoneVast
+  - button "Open Next.js Dev Tools" [ref=e81] [cursor=pointer]:
+    - img [ref=e82]
+  - alert [ref=e85]

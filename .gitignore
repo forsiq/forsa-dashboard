@@ -49,3 +49,4 @@ auction2.code-workspace
 
 # PWA auto-generated files
 public/sw.js.map
+.playwright-mcp/console-2026-06-08T14-51-28-482Z.log

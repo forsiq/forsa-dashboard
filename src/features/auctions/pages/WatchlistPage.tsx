@@ -31,6 +31,7 @@ export const WatchlistPage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'title');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'asc');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     setIsClient(true);
@@ -142,6 +143,9 @@ export const WatchlistPage: React.FC = () => {
             onRowClick={(row) => router.push(`/auctions/${row.id}`)}
             pagination
             pageSize={10}
+            currentPage={page}
+            totalItems={auctions.length}
+            onPageChange={(newPage) => setPage(newPage)}
             showViewToggle
             viewMode={isMobile ? 'grid' : 'table'}
             gridCols={2}
