@@ -13,6 +13,29 @@ export const REJECTION_REASON_MAX = 500;
 /** Backend MAX_CATEGORY_LEVEL = 1 (root + one child) */
 export const MAX_CATEGORY_LEVEL = 1;
 
+/** Reserved names that should never be used as categories. */
+const RESERVED_CATEGORY_NAMES = [
+  'test', 'demo', 'temp', 'sample', 'permission', 'mock', 'dummy',
+  'مزاد', 'صفقة جماعية', 'اختبار', 'إذن', 'تجربة',
+];
+const RESERVED_CATEGORY_NAME_PATTERN = new RegExp(
+  `^(?:${RESERVED_CATEGORY_NAMES.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`,
+  'i',
+);
+
+/** Check if a name looks like a product listing title rather than a category. */
+export function isProductLikeName(name: string): boolean {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed) return false;
+  if (trimmed.length >= 40) return true;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length >= 6 && /\d/.test(trimmed)) return true;
+  const PRODUCT_PATTERN =
+    /\b(dash\s*cam|instax|series|proffesional|professional|a800s|mini\s*\d|model\s*#?\d{2,})\b|\d{3,}[a-z]{2,}|[a-z]{2,}\d{3,}/i;
+  if (PRODUCT_PATTERN.test(trimmed)) return true;
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Zod Schemas
 // ---------------------------------------------------------------------------
@@ -26,10 +49,23 @@ export const categoryFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'category.validation.name_required')
-    .max(NAME_MAX, 'category.validation.name_max'),
+    .min(2, 'category.validation.name_required')
+    .max(NAME_MAX, 'category.validation.name_max')
+    .refine(
+      (val) => !RESERVED_CATEGORY_NAME_PATTERN.test(val),
+      'category.validation.reserved_name',
+    )
+    .refine(
+      (val) => !isProductLikeName(val),
+      'category.validation.product_like_name',
+    ),
   nameAr: z
     .string()
     .max(NAME_AR_MAX, 'category.validation.name_max')
+    .refine(
+      (val) => !val || !isProductLikeName(val),
+      'category.validation.product_like_name',
+    )
     .optional()
     .or(z.literal('')),
   description: z
@@ -95,6 +131,12 @@ export function slugifyCategoryName(name: string): string {
     .replace(/ /g, '-')
     .replace(/\//g, '-')
     .slice(0, SLUG_MAX);
+}
+
+/** Check if a slug contains non-ASCII characters (guidance to use EN names). */
+export function hasNonAsciiSlug(name: string): boolean {
+  const slug = slugifyCategoryName(name);
+  return /[^\x00-\x7F]/.test(slug);
 }
 
 // ---------------------------------------------------------------------------

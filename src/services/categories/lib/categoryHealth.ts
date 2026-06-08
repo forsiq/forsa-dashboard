@@ -11,7 +11,8 @@ export type CategoryIssueType =
   | 'orphan_parent'
   | 'missing_icon'
   | 'unused_empty'
-  | 'level_mismatch';
+  | 'level_mismatch'
+  | 'missing_db_name';
 
 export type CategoryIssueSeverity = 'error' | 'warning';
 
@@ -45,7 +46,12 @@ function displayName(category: Category, language = 'en'): string {
 }
 
 function hasEmptyName(category: Category): boolean {
-  return !displayName(category, 'en') && !displayName(category, 'ar');
+  const hasEn = Boolean((category.name ?? '').trim());
+  const hasAr = Boolean(
+    (category.nameAr ?? '').trim() ||
+    (category.translations?.ar?.name ?? '').trim(),
+  );
+  return !hasEn && !hasAr;
 }
 
 function isTestLike(category: Category): boolean {
@@ -62,11 +68,18 @@ function isTestLike(category: Category): boolean {
 
 function isProductLike(category: Category): boolean {
   const name = category.name?.trim() ?? '';
+  const arName = (category.nameAr ?? '').trim() || (category.translations?.ar?.name ?? '').trim();
+  // Check EN name
   if (name.length >= 40) return true;
   if (PRODUCT_LIKE_PATTERN.test(name)) return true;
-  // Many words + digits often means a product listing title
   const words = name.split(/\s+/).filter(Boolean);
   if (words.length >= 6 && /\d/.test(name)) return true;
+  // Check AR name
+  if (arName.length >= 40) return true;
+  if (arName && /\d/.test(arName)) {
+    const arWords = arName.split(/\s+/).filter(Boolean);
+    if (arWords.length >= 6) return true;
+  }
   return false;
 }
 
@@ -93,6 +106,7 @@ export function analyzeCategoryHealth(
     missing_icon: 0,
     unused_empty: 0,
     level_mismatch: 0,
+    missing_db_name: 0,
   } satisfies Record<CategoryIssueType, number>;
 
   const idSet = new Set(categories.map((c) => String(c.id)));
@@ -178,6 +192,15 @@ export function analyzeCategoryHealth(
       });
     }
 
+    // missing_db_name: slug is known but DB name is empty
+    if (!(cat.name ?? '').trim() && cat.slug) {
+      pushIssue(id, {
+        type: 'missing_db_name',
+        severity: 'warning',
+        labelKey: 'category.health.missing_db_name',
+      });
+    }
+
     if (cat.parentId != null && !idSet.has(String(cat.parentId))) {
       pushIssue(id, {
         type: 'orphan_parent',
@@ -196,7 +219,8 @@ export function analyzeCategoryHealth(
 
     const hasChildren = childCount(id, categories) > 0;
     const products = cat.productCount ?? 0;
-    if (cat.isActive !== false && products === 0 && !hasChildren) {
+    // Relax unused_empty for root categories — they may be structural placeholders
+    if (cat.isActive !== false && products === 0 && !hasChildren && cat.parentId != null) {
       pushIssue(id, {
         type: 'unused_empty',
         severity: 'warning',

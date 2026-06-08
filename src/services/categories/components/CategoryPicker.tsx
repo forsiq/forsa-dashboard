@@ -351,7 +351,7 @@ export function CategoryPicker({
             <p className="text-[10px] font-black text-brand/80 uppercase tracking-widest mb-0.5">
               {t('category.picker_selected') || 'Selected category'}
             </p>
-            <p className="text-sm font-bold text-zinc-text truncate">
+            <p className="text-sm font-bold text-zinc-text line-clamp-2 break-words">
               {selectedPath.parent ? (
                 <>
                   <span className="text-zinc-muted font-medium">
@@ -443,7 +443,7 @@ export function CategoryPicker({
                         )}
                       >
                         <CategoryIconPreview icon={item.category.icon} />
-                        <span className="min-w-0 flex-1 truncate">
+                        <span className="min-w-0 flex-1 line-clamp-2 break-words">
                           {parentName ? (
                             <>
                               <span className="text-zinc-muted">{parentName}</span>

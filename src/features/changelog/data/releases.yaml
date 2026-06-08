@@ -1,3 +1,34 @@
+- version: "1.7.0"
+  date: "2026-06-08"
+  title:
+    en: "Unified naming & improved category management"
+    ar: "تسميات موحدة وتحسين إدارة الفئات"
+  entries:
+    - description:
+        en: "Unified Group Buy naming to «Group Buy (Deal)» / «صفقة جماعية (لُمّة)» across sidebar, list page, deploy wizard, and mobile navigation."
+        ar: "توحيد تسميات الصفقات الجماعية بصيغة «صفقة جماعية (لُمّة)» في القائمة الجانبية وصفحة القائمة ومعالج النشر والتنقل في الموبايل."
+      type: changed
+      sidebarPath: /deals
+    - description:
+        en: "Fixed category form labels: English name is now the primary required field, Arabic name is a separate optional toggle."
+        ar: "إصلاح تسميات نموذج الفئات: الاسم بالإنجليزية هو الحقل الرئيسي المطلوب، والاسم بالعربية اختياري في قسم منفصل."
+      type: fixed
+      sidebarPath: /categories
+    - description:
+        en: "Added right-click context menu on category rows with Edit, Delete, Add sub/sibling, and Toggle status actions."
+        ar: "إضافة قائمة سياق (كليك يمين) على صفوف الفئات مع خيارات تعديل، حذف، إضافة فرعية/أخت، وتغيير الحالة."
+      type: added
+      sidebarPath: /categories
+    - description:
+        en: "Client-side pagination (20 per page) on the categories tree page and improved name display with line-clamp instead of truncation."
+        ar: "ترقيم صفحات (20 في الصفحة) في صفحة شجرة الفئات وتحسين عرض الأسماء ب,line-clamp بدلاً من القطع."
+      type: improved
+      sidebarPath: /categories
+    - description:
+        en: "Category health checks now detect product-like Arabic names, missing database names, and include listing counts in product totals."
+        ar: "فحوصات صحة الفئات تكشف الآن الأسماء العربية التي تشبه المنتجات، والأسماء المفقودة في قاعدة البيانات، وتشمل عدد القوائم في إجمالي المنتجات."
+      type: improved
+      sidebarPath: /categories
 - version: "1.6.0"
   date: "2026-06-08"
   title:

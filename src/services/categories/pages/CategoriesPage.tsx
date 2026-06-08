@@ -58,6 +58,7 @@ import { buildCategoryTreeFromFlat, type CategoryIssue } from '../lib';
 import { CategoryIssueBadges } from '../components/CategoryIssueBadges';
 import { CategoryAddModal } from '../components/CategoryAddModal';
 import { CategoryEditModal } from '../components/CategoryEditModal';
+import { CategoryRowContextMenu, useContextMenu, type ContextMenuAction } from '../components/CategoryRowContextMenu';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
@@ -277,6 +278,7 @@ interface TreeNodeSharedProps {
   isLastSibling?: boolean;
   ancestorContinues?: boolean[];
   issuesByCategoryId?: Map<string, CategoryIssue[]>;
+  onContextMenu?: (e: React.MouseEvent, node: CategoryTreeNode) => void;
 }
 
 function CategoryRowActions({
@@ -390,6 +392,7 @@ function TreeCategoryCard({
   isLastSibling = true,
   ancestorContinues = [],
   issuesByCategoryId,
+  onContextMenu,
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = Boolean(node.children?.length);
@@ -397,7 +400,7 @@ function TreeCategoryCard({
   const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" onContextMenu={(e) => onContextMenu?.(e, node)}>
       <AmberCard className="!p-4 bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm">
         <div className="flex items-start gap-1 min-w-0">
           <CategoryTreeGuides
@@ -452,13 +455,13 @@ function TreeCategoryCard({
                   <Link
                     href={`/categories/${node.id}`}
                     className={cn(
-                      'text-sm tracking-tight truncate block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
+                      'text-sm tracking-tight line-clamp-2 break-words block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
                       level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
                     )}
                   >
                     {getLocalizedName(node, language)}
                   </Link>
-                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest truncate mt-0.5">
+                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest line-clamp-2 break-words mt-0.5">
                     {node.slug || '-'}
                   </p>
                   {nodeIssues.length > 0 && (
@@ -524,6 +527,7 @@ function TreeCategoryCard({
             openConfirm={openConfirm}
             t={t}
             issuesByCategoryId={issuesByCategoryId}
+            onContextMenu={onContextMenu}
           />
         ))}
     </div>
@@ -548,6 +552,7 @@ function SortableTreeRow({
   isLastSibling = true,
   ancestorContinues = [],
   issuesByCategoryId,
+  onContextMenu,
 }: TreeNodeSharedProps) {
   const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
@@ -577,6 +582,12 @@ function SortableTreeRow({
       <tr
         ref={setNodeRef}
         style={rowStyle}
+        onContextMenu={(e) => {
+          // Exclude drag handle from triggering context menu
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-dnd-handle]')) return;
+          onContextMenu?.(e, node);
+        }}
         className={cn(
           'group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]',
           level > 0 && 'bg-white/[0.015]',
@@ -587,6 +598,7 @@ function SortableTreeRow({
           <td className="px-3 py-5 align-middle w-10">
             <div
               ref={setActivatorNodeRef}
+              data-dnd-handle=""
               {...(canReorder ? { ...attributes, ...listeners } : {})}
               className={cn(
                 'flex items-center justify-center w-8 h-8 text-zinc-muted/30 transition-colors',
@@ -738,6 +750,7 @@ function SortableTreeRow({
               openConfirm={openConfirm}
               t={t}
               issuesByCategoryId={issuesByCategoryId}
+              onContextMenu={onContextMenu}
             />
           ))}
         </SortableContext>
@@ -753,6 +766,8 @@ export function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [pageTab, setPageTab] = useState<PageTab>('categories');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 20;
   const debouncedSearch = useDebounce(searchQuery, 300);
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
@@ -791,6 +806,11 @@ export function CategoriesPage() {
   const hasActiveFilters =
     statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, debouncedSearch]);
+
   const canReorder =
     canReorderCategories &&
     statusFilter === 'all' &&
@@ -805,6 +825,14 @@ export function CategoriesPage() {
   );
 
   const displayTree = canReorder ? localTree : filteredTree;
+
+  // Client-side pagination on root nodes
+  const totalRoots = displayTree.length;
+  const totalPages = Math.max(1, Math.ceil(totalRoots / PAGE_SIZE));
+  const hidePagination = statusFilter === 'issues' || Boolean((debouncedSearch ?? '').trim());
+  const paginatedTree = hidePagination
+    ? displayTree
+    : displayTree.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   useEffect(() => {
     if (isSavingOrder || !canReorder) return;
@@ -887,6 +915,8 @@ export function CategoriesPage() {
   const [editCategory, setEditCategory] = useState<Category | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
+  const { contextMenu, openContextMenu, closeContextMenu } = useContextMenu();
+
   const handleEdit = useCallback((category: Category) => {
     setEditCategory(category);
     setEditModalOpen(true);
@@ -946,6 +976,67 @@ export function CategoriesPage() {
       ? [{ key: 'issues' as StatusTab, labelKey: 'category.health.tab' }]
       : []),
   ];
+
+  const buildContextMenuActions = useCallback(
+    (node: CategoryTreeNode): ContextMenuAction[] => {
+      if (!canManageCategories) return [];
+      const isMain = !node.parentId;
+      return [
+        {
+          key: 'edit',
+          label: t('common.edit') || 'Edit',
+          icon: <Edit className="w-4 h-4" />,
+          onClick: () => handleEdit(node),
+        },
+        {
+          key: 'toggle',
+          label: node.isActive
+            ? t('category.deactivate') || 'Deactivate'
+            : t('category.activate') || 'Activate',
+          icon: node.isActive
+            ? <PowerOff className="w-4 h-4" />
+            : <Power className="w-4 h-4" />,
+          onClick: () => handleToggleStatus(node),
+        },
+        ...(isMain
+          ? [{
+              key: 'add-sub',
+              label: t('category.add_subcategory') || 'Add subcategory',
+              icon: <Plus className="w-4 h-4" />,
+              onClick: () => handleAddChild(node),
+            }]
+          : []),
+        {
+          key: 'add-sibling',
+          label: t('category.add_sibling') || 'Add sibling',
+          icon: <Plus className="w-3.5 h-3.5" />,
+          onClick: () => handleAddSibling(node),
+        },
+        {
+          key: 'delete',
+          label: t('common.delete') || 'Delete',
+          icon: <Trash2 className="w-4 h-4" />,
+          onClick: () => {
+            openConfirm({
+              title: t('category.delete') || 'Delete Category',
+              message: `${t('category.delete_confirm') || 'Are you sure?'}\n\n"${getLocalizedName(node, language)}"`,
+              variant: 'destructive',
+              onConfirm: () => handleDelete(node.id),
+            });
+          },
+          variant: 'danger' as const,
+        },
+      ];
+    },
+    [canManageCategories, t, language, handleEdit, handleToggleStatus, handleAddChild, handleAddSibling, handleDelete, openConfirm],
+  );
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, node: CategoryTreeNode) => {
+      openContextMenu(e, buildContextMenuActions(node));
+    },
+    [openContextMenu, buildContextMenuActions],
+  );
 
   const pageTabs = useMemo(() => {
     const tabs: { key: PageTab; labelKey: string; icon: typeof LayoutGrid }[] = [
@@ -1168,12 +1259,12 @@ export function CategoriesPage() {
               <div className="flex flex-col">
                 {/* Mobile: card tree */}
                 <div className="md:hidden p-3 space-y-2 min-h-[200px]">
-                  {displayTree.map((node, index) => (
+                  {paginatedTree.map((node, index) => (
                     <TreeCategoryCard
                       key={node.id}
                       node={node}
                       level={0}
-                      isLastSibling={index === displayTree.length - 1}
+                      isLastSibling={index === paginatedTree.length - 1}
                       ancestorContinues={[]}
                       language={language}
                       dir={dir}
@@ -1186,6 +1277,7 @@ export function CategoriesPage() {
                       openConfirm={openConfirm}
                       t={t}
                       issuesByCategoryId={healthReport.issuesByCategoryId}
+                      onContextMenu={canManageCategories ? handleContextMenu : undefined}
                     />
                   ))}
                 </div>
@@ -1227,15 +1319,15 @@ export function CategoriesPage() {
                       </thead>
                       <tbody className="divide-y divide-white/[0.03]">
                         <SortableContext
-                          items={displayTree.map((n) => n.id)}
+                          items={paginatedTree.map((n) => n.id)}
                           strategy={verticalListSortingStrategy}
                         >
-                          {displayTree.map((node, index) => (
+                          {paginatedTree.map((node, index) => (
                             <SortableTreeRow
                               key={node.id}
                               node={node}
                               level={0}
-                              isLastSibling={index === displayTree.length - 1}
+                              isLastSibling={index === paginatedTree.length - 1}
                               ancestorContinues={[]}
                               language={language}
                               dir={dir}
@@ -1250,6 +1342,7 @@ export function CategoriesPage() {
                               openConfirm={openConfirm}
                               t={t}
                               issuesByCategoryId={healthReport.issuesByCategoryId}
+                              onContextMenu={canManageCategories ? handleContextMenu : undefined}
                             />
                           ))}
                         </SortableContext>
@@ -1257,6 +1350,28 @@ export function CategoriesPage() {
                     </table>
                   </DndContext>
                 </div>
+                {/* Pagination */}
+                {!hidePagination && totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 px-6 py-4 border-t border-white/5">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage <= 1}
+                      className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                    >
+                      {t('common.prev') || 'Prev'}
+                    </button>
+                    <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                    >
+                      {t('common.next') || 'Next'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -1278,6 +1393,14 @@ export function CategoriesPage() {
           category={editCategory}
           open={editModalOpen}
           onClose={() => { setEditModalOpen(false); setEditCategory(null); }}
+        />
+      )}
+      {contextMenu && (
+        <CategoryRowContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          actions={contextMenu.actions}
+          onClose={closeContextMenu}
         />
       )}
     </AdminListPageShell>

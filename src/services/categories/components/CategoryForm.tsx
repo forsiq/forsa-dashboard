@@ -177,8 +177,8 @@ export function CategoryForm({
         </h3>
 
         <AmberInput
-          label={t('category.name')}
-          placeholder={t('category.name')}
+          label={t('category.name_en') || 'Name (English)'}
+          placeholder={t('category.name_en') || 'Name (English)'}
           error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
           required
           {...register('name')}
@@ -195,7 +195,7 @@ export function CategoryForm({
           className="mt-4 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors"
         >
           <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest text-start">
-            {t('category.add_english_name')}
+            {t('category.add_arabic_name') || 'Add Arabic name'}
           </span>
           <ChevronDown
             className={cn(
@@ -208,8 +208,8 @@ export function CategoryForm({
         {showSecondaryLang && (
           <div className="mt-4">
             <AmberInput
-              label={t('category.name_en')}
-              placeholder="Category name"
+              label={t('category.name_ar') || 'Arabic name'}
+              placeholder="Category name in Arabic"
               error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
               {...register('nameAr')}
             />

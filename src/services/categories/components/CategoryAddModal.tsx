@@ -188,8 +188,8 @@ export function CategoryAddModal({
           )}
 
           <AmberInput
-            label={t('category.name') || 'Name'}
-            placeholder={t('category.name') || 'Name'}
+            label={t('category.name_en') || 'Name (English)'}
+            placeholder={t('category.name_en') || 'Name (English)'}
             error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
             required
             {...register('name')}
@@ -202,7 +202,7 @@ export function CategoryAddModal({
             className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors"
           >
             <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-              {t('category.add_english_name') || 'Add English name'}
+              {t('category.add_arabic_name') || 'Add Arabic name'}
             </span>
             <ChevronDown
               className={cn(
@@ -214,8 +214,8 @@ export function CategoryAddModal({
 
           {showSecondaryLang && (
             <AmberInput
-              label={t('category.name_en') || 'Name (English)'}
-              placeholder="Category name"
+              label={t('category.name_ar') || 'Arabic name'}
+              placeholder={language === 'ar' ? (t('category.name_ar') || 'الاسم بالعربية') : 'Category name in Arabic'}
               error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
               {...register('nameAr')}
             />
