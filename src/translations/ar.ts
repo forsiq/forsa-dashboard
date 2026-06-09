@@ -549,6 +549,8 @@ export const ar: Record<string, string> = {
   "listing.wizard.saved": "تم حفظ المنتج",
   "listing.wizard.submit_prompt": "تم حفظ منتجك. أرسله للمراجعة للحصول على الموافقة.",
   "listing.wizard.trusted_submit_prompt": "تم حفظ منتجك. يمكنك النشر مباشرة أو الحفظ والخروج.",
+  "listing.wizard.already_approved_prompt": "تمت الموافقة على هذا المنتج مسبقاً — تابع إلى خطوة النشر.",
+  "listing.wizard.continue_to_publish": "متابعة النشر",
   "listing.wizard.save_and_exit": "حفظ والخروج",
   "listing.wizard.imported_banner": "تم استيراد المنتج من أمازون. راجع التفاصيل وأضف الفئة قبل النشر.",
   "listing.wizard.pick_from_inventory": "اختر من منتجاتي",

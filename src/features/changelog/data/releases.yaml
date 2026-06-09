@@ -1,3 +1,15 @@
+- version: "1.7.1"
+  date: "2026-06-09"
+  title:
+    en: "Direct publish flow fix"
+    ar: "إصلاح مسار النشر المباشر"
+  entries:
+    - description:
+        en: "Fixed «Publish Directly» showing a validation error when the listing was already approved — now redirects to the publish step instead."
+        ar: "إصلاح ظهور خطأ تحقق عند «نشر مباشر» للمنتجات المعتمدة مسبقاً — يتم الآن التوجيه إلى خطوة النشر بدلاً من رسالة الخطأ."
+      type: fixed
+      sidebarPath: /listings
+
 - version: "1.7.0"
   date: "2026-06-08"
   title:

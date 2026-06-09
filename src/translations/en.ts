@@ -551,6 +551,8 @@ export const en: Record<string, string> = {
   "listing.wizard.saved": "Product Saved",
   "listing.wizard.submit_prompt": "Your product has been saved. Submit it for review to get approved.",
   "listing.wizard.trusted_submit_prompt": "Your product has been saved. Publish directly or save and exit.",
+  "listing.wizard.already_approved_prompt": "This product is already approved. Continue to the publish step.",
+  "listing.wizard.continue_to_publish": "Continue to publish",
   "listing.wizard.save_and_exit": "Save & exit",
   "listing.wizard.imported_banner": "Product imported from Amazon. Review details and add a category before publishing.",
   "listing.wizard.pick_from_inventory": "Add product from my products",

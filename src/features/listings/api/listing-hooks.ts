@@ -194,6 +194,20 @@ export type SubmitListingVariables = {
   mode?: 'review' | 'direct';
 };
 
+export function isListingSubmitIdempotentError(
+  detail: string,
+  mode?: 'review' | 'direct',
+): boolean {
+  const normalized = detail.toLowerCase();
+  if (mode === 'direct' && normalized.includes('already approved')) {
+    return true;
+  }
+  if (mode === 'review' && normalized.includes('already pending review')) {
+    return true;
+  }
+  return false;
+}
+
 export function useSubmitListingForReview() {
   const { queryClient, toast, t, getErrorDetail } = useMutationContext();
 
@@ -208,8 +222,19 @@ export function useSubmitListingForReview() {
         toast.success(t('approval.messages.submitted'));
       }
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorDetail(error), 8000);
+    onError: (error: unknown, { id, mode }) => {
+      const detail = getErrorDetail(error);
+      if (isListingSubmitIdempotentError(detail, mode)) {
+        queryClient.invalidateQueries({ queryKey: listingKeys.detail(id) });
+        queryClient.invalidateQueries({ queryKey: listingKeys.lists() });
+        if (mode === 'direct') {
+          toast.success(t('approval.messages.approved_direct'));
+        } else {
+          toast.success(t('approval.messages.submitted'));
+        }
+        return;
+      }
+      toast.error(detail, 8000);
     },
   });
 }

@@ -55,6 +55,7 @@ import {
   useDeployAsAuction,
   useDeployAsGroupBuy,
   useSubmitListingForReview,
+  isListingSubmitIdempotentError,
   useLookupByBarcode,
   listingKeys,
 } from '../api/listing-hooks';
@@ -589,6 +590,17 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     deployGroupBuyMutation.isPending ||
     submitForReviewMutation.isPending;
 
+  const approvalStatus = existingListing?.approvalStatus ?? 'draft';
+  const isListingApproved = approvalStatus === 'approved';
+
+  const goToPublishFlow = useCallback(
+    (id: number) => {
+      setShowSubmitSuccess(false);
+      router.push(`/listings/${id}/publish`);
+    },
+    [router],
+  );
+
   const submitListing = (mode: 'review' | 'direct', id: number) => {
     submitForReviewMutation.mutate(
       { id, mode },
@@ -596,6 +608,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         onSuccess: () => {
           setShowSubmitSuccess(false);
           router.push(mode === 'direct' ? `/listings/${id}/publish` : `/listings/${id}`);
+        },
+        onError: (error: unknown) => {
+          const detail = mapApiError(error) || (error instanceof Error ? error.message : '');
+          if (isListingSubmitIdempotentError(detail, mode)) {
+            setShowSubmitSuccess(false);
+            router.push(mode === 'direct' ? `/listings/${id}/publish` : `/listings/${id}`);
+          }
         },
       },
     );
@@ -1009,7 +1028,9 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               <p className="text-lg font-black text-zinc-text uppercase">{t('listing.wizard.saved') || 'Product Saved'}</p>
               <p className="text-sm text-zinc-muted">
                 {isTrustedMerchant
-                  ? t('listing.wizard.trusted_submit_prompt')
+                  ? isListingApproved
+                    ? t('listing.wizard.already_approved_prompt')
+                    : t('listing.wizard.trusted_submit_prompt')
                   : t('listing.wizard.submit_prompt')}
               </p>
             </div>
@@ -1017,18 +1038,29 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           <div className="flex flex-wrap gap-3">
             {isTrustedMerchant ? (
               <>
-                <AmberButton
-                  className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                  disabled={submitForReviewMutation.isPending}
-                  onClick={() => submitListing('direct', listingId)}
-                >
-                  {submitForReviewMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  ) : (
+                {isListingApproved ? (
+                  <AmberButton
+                    className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+                    disabled={isBusy}
+                    onClick={() => goToPublishFlow(listingId)}
+                  >
                     <Rocket className="w-4 h-4" />
-                  )}
-                  {t('approval.actions.direct_publish')}
-                </AmberButton>
+                    {t('listing.wizard.continue_to_publish')}
+                  </AmberButton>
+                ) : (
+                  <AmberButton
+                    className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+                    disabled={submitForReviewMutation.isPending}
+                    onClick={() => submitListing('direct', listingId)}
+                  >
+                    {submitForReviewMutation.isPending ? (
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Rocket className="w-4 h-4" />
+                    )}
+                    {t('approval.actions.direct_publish')}
+                  </AmberButton>
+                )}
                 <AmberButton
                   variant="outline"
                   className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
@@ -1680,25 +1712,43 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 ) : null}
                 {t('listing.wizard.save_and_exit')}
               </AmberButton>
-              <AmberButton
-                className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-                disabled={isBusy}
-                onClick={() => {
-                  if (!listingId) {
-                    void handleNext();
-                    return;
-                  }
-                  submitListing('direct', listingId);
-                }}
-              >
-                {submitForReviewMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
+              {isListingApproved ? (
+                <AmberButton
+                  className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
+                  disabled={isBusy}
+                  onClick={() => {
+                    if (!listingId) {
+                      void handleNext();
+                      return;
+                    }
+                    goToPublishFlow(listingId);
+                  }}
+                >
                   <Rocket className="w-4 h-4" />
-                )}
-                {t('approval.actions.direct_publish')}
-                <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-              </AmberButton>
+                  {t('listing.wizard.continue_to_publish')}
+                  <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+                </AmberButton>
+              ) : (
+                <AmberButton
+                  className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
+                  disabled={isBusy}
+                  onClick={() => {
+                    if (!listingId) {
+                      void handleNext();
+                      return;
+                    }
+                    submitListing('direct', listingId);
+                  }}
+                >
+                  {submitForReviewMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Rocket className="w-4 h-4" />
+                  )}
+                  {t('approval.actions.direct_publish')}
+                  <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+                </AmberButton>
+              )}
             </div>
           ) : (
             <AmberButton
