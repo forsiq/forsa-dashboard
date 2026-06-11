@@ -6,7 +6,7 @@ import { queryClient } from '@core/query/queryClient';
 import { RouteProgressProvider, RouteProgressBar } from '@core/navigation';
 import { FeatureProvider } from '@core/contexts/FeatureContext';
 import { LanguageProvider } from '@core/contexts/LanguageContext';
-import { ThemeProvider } from '@core/contexts/ThemeContext';
+import { ThemeProvider, type Theme } from '@core/contexts/ThemeContext';
 import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
@@ -27,17 +27,24 @@ import { migrateAuthCookiesToSharedDomain } from '../lib/auth-cookies';
 import '@styles/globals.css';
 
 const LANGUAGE_COOKIE = 'zv_language';
+const THEME_COOKIE = 'zv_theme';
 
 function languageFromCookie(value: string | undefined): Language {
   if (value === 'ar' || value === 'ku' || value === 'en') return value;
   return 'en';
 }
 
+function themeFromCookie(value: string | undefined): Theme {
+  if (value === 'light' || value === 'dark') return value;
+  return 'dark';
+}
+
 type ForsaAppProps = AppProps & {
   initialLanguage: Language;
+  initialTheme: Theme;
 };
 
-function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
+function MyApp({ Component, pageProps, initialLanguage, initialTheme }: ForsaAppProps) {
   const router = useRouter();
 
   const isPublicRoute = ['/login', '/register', '/otp', '/forgot-password', '/404'].includes(router.pathname);
@@ -72,7 +79,7 @@ function MyApp({ Component, pageProps, initialLanguage }: ForsaAppProps) {
             initialLanguage={initialLanguage}
           >
             <ToastProvider>
-              <ThemeProvider>
+              <ThemeProvider initialTheme={initialTheme}>
                 <NavigationProvider>
                   <ProjectProvider>
                     <TimerProvider>
@@ -122,8 +129,12 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   const initialLanguage = languageFromCookie(
     typeof cookieLang === 'string' ? cookieLang : undefined,
   );
+  const cookieTheme = reqWithCookies?.cookies?.[THEME_COOKIE];
+  const initialTheme = themeFromCookie(
+    typeof cookieTheme === 'string' ? cookieTheme : undefined,
+  );
 
-  return { ...parent, initialLanguage };
+  return { ...parent, initialLanguage, initialTheme };
 };
 
 export default MyApp;
