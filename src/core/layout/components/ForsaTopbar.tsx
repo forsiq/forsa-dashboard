@@ -7,13 +7,15 @@ import { useDashboardRole } from '@core/hooks/useDashboardRole';
 
 type ForsaTopbarProps = Omit<ComponentProps<typeof AmberTopbar>, 'showSystemSettings'>;
 
-/** Role-aware topbar: hides system settings link when the role lacks `/settings` access. */
+/** Role-aware topbar: hides system settings and billing links when the role lacks access. */
 export function ForsaTopbar(props: ForsaTopbarProps) {
   const { role } = useDashboardRole();
+  const canAccessSettings = isPathAllowedForRole('/settings', role);
   return (
     <AmberTopbar
       {...props}
-      showSystemSettings={isPathAllowedForRole('/settings', role)}
+      showSystemSettings={canAccessSettings}
+      showBilling={canAccessSettings}
     />
   );
 }
