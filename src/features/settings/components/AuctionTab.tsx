@@ -1,7 +1,8 @@
 'use client';
 
 import { CheckCircle, Sun, Moon } from 'lucide-react';
-import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
+import { useLanguage } from '@yousef2001/core-ui/contexts';
+import { useTheme } from '@core/contexts/ThemeContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard } from '@core/components/AmberCard';
 

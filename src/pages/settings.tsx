@@ -31,7 +31,8 @@ import {
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
-import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
+import { useLanguage } from '@yousef2001/core-ui/contexts';
+import { useTheme } from '@core/contexts/ThemeContext';
 import { cn } from '@core/lib/utils/cn';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 import { useToast } from '@core/contexts/ToastContext';

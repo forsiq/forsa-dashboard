@@ -8,8 +8,9 @@
 
 import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/router';
-import { AmberTopbar } from '@yousef2001/core-ui/layout/components/Topbar';
-import { useLanguage, useTheme } from '@yousef2001/core-ui/contexts';
+import { ForsaTopbar } from './components/ForsaTopbar';
+import { useLanguage } from '@yousef2001/core-ui/contexts';
+import { useTheme } from '@core/contexts/ThemeContext';
 import type { MenuSection } from '@config/navigation';
 import { ForsaSidebar } from './components/ForsaSidebar';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
@@ -158,7 +159,7 @@ export const AmberDashboardLayout: React.FC<AmberDashboardLayoutProps> = ({
   return (
     <>
     <div className="min-h-screen flex flex-col" dir={dir} suppressHydrationWarning>
-      <AmberTopbar
+      <ForsaTopbar
         onOpenSidebar={() => setIsSidebarOpen(true)}
         isPortalPage={isPortalPage}
         language={language}

@@ -17,7 +17,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFeatureConfig, useTheme } from '@yousef2001/core-ui/contexts';
+import { useFeatureConfig } from '@yousef2001/core-ui/contexts';
+import { useTheme } from '@core/contexts/ThemeContext';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { isPathAllowedForRole } from '@core/auth/navRoleAccess';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
