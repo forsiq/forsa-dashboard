@@ -1,3 +1,35 @@
+- version: "1.7.3"
+  date: "2026-06-12"
+  title:
+    en: "Language-aware categories & listing fixes"
+    ar: "فئات حسب اللغة وإصلاحات القوائم"
+  entries:
+    - description:
+        en: "Category add/edit forms now follow dashboard language — Arabic UI asks for Arabic name first (auto-translated to English); English UI keeps English as primary."
+        ar: "نماذج إضافة/تعديل الفئة تتبع لغة لوحة التحكم — الواجهة العربية تطلب الاسم بالعربية أولاً (يُترجم تلقائياً للإنجليزية)، والإنجليزية تبقى الأساس عند الواجهة الإنجليزية."
+      type: changed
+      sidebarPath: /categories
+    - description:
+        en: "Category picker always shows the sub-category step after choosing a main category — with suggest/add options when none exist, instead of silently auto-selecting the main category."
+        ar: "منتقي الفئات يعرض دائماً خطوة الفئة الفرعية بعد اختيار الرئيسية — مع خيارات اقتراح/إضافة عند عدم وجود فرعيات، بدلاً من اختيار الرئيسية تلقائياً بصمت."
+      type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Auction, watchlist, and group-buy lists now show the correct category name from categoryId instead of a generic fallback label on every row."
+        ar: "قوائم المزادات والمتابعة والصفقات الجماعية تعرض الآن اسم الفئة الصحيح من categoryId بدلاً من نص افتراضي متكرر في كل صف."
+      type: fixed
+      sidebarPath: /auctions
+    - description:
+        en: "Brand field on listing create/edit uses autocomplete with cached suggestions — dropdown opens even when the API has no prior brands yet."
+        ar: "حقل العلامة التجارية في إنشاء/تعديل المنتج يستخدم إكمالاً تلقائياً مع اقتراحات محفوظة — القائمة تظهر حتى لو لم يُرجع الـ API علامات سابقة."
+      type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Role dashboard stat cards (pending reviews, submissions, resolved today) now read from live API counts instead of always showing 0."
+        ar: "بطاقات إحصائيات لوحة التحكم حسب الدور (مراجعات معلقة، طلبات، محلولة اليوم) تعرض الآن أرقاماً من الـ API بدلاً من الصفر الثابت."
+      type: fixed
+      sidebarPath: /dashboard
+
 - version: "1.7.2"
   date: "2026-06-12"
   title:
