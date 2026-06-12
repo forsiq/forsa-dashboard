@@ -18,6 +18,8 @@ export {
   type FieldErrors,
   // Helpers
   slugifyCategoryName,
+  resolveCategoryNamesForApi,
+  isPrimarilyArabic,
   toCreateCategoryPayload,
   toUpdateCategoryPayload,
   toSuggestCategoryPayload,

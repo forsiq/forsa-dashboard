@@ -40,47 +40,78 @@ export function isProductLikeName(name: string): boolean {
 // Zod Schemas
 // ---------------------------------------------------------------------------
 
+const optionalNameField = z
+  .string()
+  .max(NAME_MAX, 'category.validation.name_max')
+  .optional()
+  .or(z.literal(''));
+
+const optionalNameArField = z
+  .string()
+  .max(NAME_AR_MAX, 'category.validation.name_max')
+  .optional()
+  .or(z.literal(''));
+
+function validateCategoryNameValue(
+  value: string,
+  ctx: z.RefinementCtx,
+  path: 'name' | 'nameAr',
+) {
+  if (!value) return;
+  if (RESERVED_CATEGORY_NAME_PATTERN.test(value)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'category.validation.reserved_name',
+      path: [path],
+    });
+  }
+  if (isProductLikeName(value)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'category.validation.product_like_name',
+      path: [path],
+    });
+  }
+}
+
 /**
  * Create / edit category form schema.
- * `name` is required after trim(); all other fields optional with limits.
+ * At least one of `name` or `nameAr` is required (min 2 chars after trim).
  */
-export const categoryFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, 'category.validation.name_required')
-    .min(2, 'category.validation.name_required')
-    .max(NAME_MAX, 'category.validation.name_max')
-    .refine(
-      (val) => !RESERVED_CATEGORY_NAME_PATTERN.test(val),
-      'category.validation.reserved_name',
-    )
-    .refine(
-      (val) => !isProductLikeName(val),
-      'category.validation.product_like_name',
-    ),
-  nameAr: z
-    .string()
-    .max(NAME_AR_MAX, 'category.validation.name_max')
-    .refine(
-      (val) => !val || !isProductLikeName(val),
-      'category.validation.product_like_name',
-    )
-    .optional()
-    .or(z.literal('')),
-  description: z
-    .string()
-    .max(DESC_MAX, 'category.validation.description_max')
-    .optional()
-    .or(z.literal('')),
-  icon: z
-    .string()
-    .max(ICON_MAX, 'category.validation.icon_max')
-    .optional()
-    .or(z.literal('')),
-  isActive: z.boolean().optional(),
-  parentId: z.string().optional(),
-});
+export const categoryFormSchema = z
+  .object({
+    name: optionalNameField,
+    nameAr: optionalNameArField,
+    description: z
+      .string()
+      .max(DESC_MAX, 'category.validation.description_max')
+      .optional()
+      .or(z.literal('')),
+    icon: z
+      .string()
+      .max(ICON_MAX, 'category.validation.icon_max')
+      .optional()
+      .or(z.literal('')),
+    isActive: z.boolean().optional(),
+    parentId: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const name = (data.name ?? '').trim();
+    const nameAr = (data.nameAr ?? '').trim();
+
+    if (name.length < 2 && nameAr.length < 2) {
+      const issue = {
+        code: z.ZodIssueCode.custom,
+        message: 'category.validation.name_required',
+      };
+      ctx.addIssue({ ...issue, path: ['name'] });
+      ctx.addIssue({ ...issue, path: ['nameAr'] });
+      return;
+    }
+
+    validateCategoryNameValue(name, ctx, 'name');
+    validateCategoryNameValue(nameAr, ctx, 'nameAr');
+  });
 
 export type CategoryFormData = z.infer<typeof categoryFormSchema>;
 
@@ -139,6 +170,41 @@ export function hasNonAsciiSlug(name: string): boolean {
   return /[^\x00-\x7F]/.test(slug);
 }
 
+/** True when most characters are Arabic script (dashboard Arabic-primary flow). */
+export function isPrimarilyArabic(text: string): boolean {
+  const trimmed = (text ?? '').trim();
+  if (!trimmed) return false;
+  const arabicChars = (trimmed.match(/[\u0600-\u06FF]/g) || []).length;
+  return arabicChars / trimmed.length >= 0.4;
+}
+
+/**
+ * Map form fields to API `name` / `nameAr` based on dashboard language.
+ * Arabic UI: `nameAr` is primary; English can be customized in secondary field.
+ */
+export function resolveCategoryNamesForApi(
+  data: CategoryFormData,
+  primaryLanguage = 'en',
+): { name: string; nameAr?: string } {
+  const name = (data.name ?? '').trim();
+  const nameAr = (data.nameAr ?? '').trim();
+  const arabicPrimary = primaryLanguage === 'ar';
+
+  if (arabicPrimary) {
+    const arabicName = nameAr || name;
+    const englishName = name;
+    return {
+      name: englishName || arabicName,
+      nameAr: arabicName,
+    };
+  }
+
+  return {
+    name: name || nameAr,
+    nameAr: nameAr || undefined,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Payload Mappers
 // ---------------------------------------------------------------------------
@@ -155,12 +221,15 @@ export interface PayloadOptions {
  */
 export function toCreateCategoryPayload(
   data: CategoryFormData,
-  options?: PayloadOptions,
+  options?: PayloadOptions & { primaryLanguage?: string },
 ) {
-  const slug = options?.existingSlug ?? slugifyCategoryName(data.name);
+  const { primaryLanguage = 'en', ...payloadOptions } = options ?? {};
+  const resolved = resolveCategoryNamesForApi(data, primaryLanguage);
+  const slug =
+    payloadOptions?.existingSlug ?? slugifyCategoryName(resolved.name);
 
   const payload: Record<string, unknown> = {
-    name: (data.name ?? '').trim(),
+    name: resolved.name,
     slug: slug || undefined,
     description: data.description?.trim() || undefined,
     icon: data.icon?.trim() || undefined,
@@ -168,12 +237,12 @@ export function toCreateCategoryPayload(
     parentId: data.parentId ? Number(data.parentId) : null,
   };
 
-  if (options?.sortOrder !== undefined) {
-    payload.sortOrder = options.sortOrder;
+  if (payloadOptions?.sortOrder !== undefined) {
+    payload.sortOrder = payloadOptions.sortOrder;
   }
 
-  if (data.nameAr?.trim()) {
-    payload.nameAr = data.nameAr.trim();
+  if (resolved.nameAr?.trim()) {
+    payload.nameAr = resolved.nameAr.trim();
   }
 
   return payload;
@@ -185,11 +254,12 @@ export function toCreateCategoryPayload(
  */
 export function toUpdateCategoryPayload(
   data: CategoryFormData,
-  options: PayloadOptions & { id: string },
+  options: PayloadOptions & { id: string; primaryLanguage?: string },
 ) {
   const payload = toCreateCategoryPayload(data, {
     existingSlug: options.existingSlug,
     sortOrder: options.sortOrder,
+    primaryLanguage: options.primaryLanguage,
   });
 
   return { ...payload, id: options.id };

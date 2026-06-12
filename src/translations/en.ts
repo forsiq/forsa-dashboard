@@ -893,6 +893,7 @@ export const en: Record<string, string> = {
   "category.customize_arabic": "Customize Arabic name",
   "category.add_arabic_name": "Add Arabic name",
   "category.add_english_name": "Add English name",
+  "category.auto_translate_hint_from_ar": "Name is auto-translated to English. Add English name below to customize.",
   "category.section_content": "Content",
   "category.section_placement": "Placement in list",
   "category.section_visibility": "Visibility",

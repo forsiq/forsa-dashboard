@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, AlertCircle, ChevronDown, X } from 'lucide-react';
+import { Loader2, AlertCircle, X } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberInput } from '@core/components/AmberInput';
@@ -19,6 +19,7 @@ import {
   toUpdateCategoryPayload,
   mapCategoryApiError,
 } from '../lib';
+import { CategoryNameFields } from './CategoryNameFields';
 
 interface CategoryEditModalProps {
   category: Category;
@@ -29,9 +30,12 @@ interface CategoryEditModalProps {
 export function CategoryEditModal({ category, open, onClose }: CategoryEditModalProps) {
   const { t, dir, language } = useLanguage();
   const updateMutation = useUpdate();
-  const [showSecondaryLang, setShowSecondaryLang] = useState(
-    Boolean(category.nameAr?.trim() || category.translations?.ar?.name?.trim()),
-  );
+  const [showSecondaryLang, setShowSecondaryLang] = useState(() => {
+    const hasAr = Boolean(category.nameAr?.trim() || category.translations?.ar?.name?.trim());
+    const hasEn = Boolean(category.name?.trim());
+    if (language === 'ar') return hasEn;
+    return hasAr;
+  });
   const { data: mainCategories } = useMainCategories();
 
   const parentOptions = (mainCategories || [])
@@ -77,6 +81,7 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
         id: category.id,
         existingSlug: category.slug,
         sortOrder: category.sortOrder ?? 0,
+        primaryLanguage: language,
       });
       await updateMutation.mutateAsync(payload as UpdateCategoryInput);
       onClose();
@@ -137,36 +142,15 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
             </div>
           )}
 
-          <AmberInput
-            label={t('category.name_en') || 'Name (English)'}
-            placeholder={t('category.name_en') || 'Name (English)'}
-            error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
-            required
-            {...register('name')}
-          />
-
-          <button
-            type="button"
+          <CategoryNameFields
+            language={language}
             dir={dir}
-            onClick={() => setShowSecondaryLang((v) => !v)}
-            className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors"
-          >
-            <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-              {t('category.add_arabic_name') || 'Add Arabic name'}
-            </span>
-            <ChevronDown
-              className={cn('w-4 h-4 shrink-0 text-zinc-muted transition-transform', showSecondaryLang && 'rotate-180')}
-            />
-          </button>
-
-          {showSecondaryLang && (
-            <AmberInput
-              label={t('category.name_ar') || 'Arabic name'}
-              placeholder="Category name in Arabic"
-              error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
-              {...register('nameAr')}
-            />
-          )}
+            t={t}
+            register={register}
+            formErrors={formErrors}
+            showSecondaryLang={showSecondaryLang}
+            setShowSecondaryLang={setShowSecondaryLang}
+          />
 
           <AmberInput
             label={t('category.description')}

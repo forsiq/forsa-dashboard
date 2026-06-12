@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, AlertCircle, ChevronDown } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberInput } from '@core/components/AmberInput';
@@ -22,14 +22,16 @@ import {
   toUpdateCategoryPayload,
   mapCategoryApiError,
 } from '../lib';
+import { CategoryNameFields } from './CategoryNameFields';
 
 // --- Helpers ---
 
-function hasManualSecondaryName(category?: Category): boolean {
+function hasSecondaryLangContent(category: Category | undefined, language: string): boolean {
   if (!category) return false;
-  return Boolean(
-    category.nameAr?.trim() || category.translations?.ar?.name?.trim(),
-  );
+  const hasAr = Boolean(category.nameAr?.trim() || category.translations?.ar?.name?.trim());
+  const hasEn = Boolean(category.name?.trim());
+  if (language === 'ar') return hasEn;
+  return hasAr;
 }
 
 function buildFormValues(category?: Category): CategoryFormData {
@@ -73,7 +75,7 @@ export function CategoryForm({
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [showSecondaryLang, setShowSecondaryLang] = useState(() =>
-    hasManualSecondaryName(initialData),
+    hasSecondaryLangContent(initialData, language),
   );
 
   const { data: mainCategories } = useMainCategories();
@@ -104,8 +106,8 @@ export function CategoryForm({
   }, []);
 
   useEffect(() => {
-    setShowSecondaryLang(hasManualSecondaryName(initialData));
-  }, [initialData]);
+    setShowSecondaryLang(hasSecondaryLangContent(initialData, language));
+  }, [initialData, language]);
 
   const {
     register,
@@ -136,10 +138,11 @@ export function CategoryForm({
           id: initialData.id,
           existingSlug: initialData.slug,
           sortOrder: initialData.sortOrder ?? 0,
+          primaryLanguage: language,
         });
         await onSubmit(payload as UpdateCategoryInput);
       } else {
-        const payload = toCreateCategoryPayload(data);
+        const payload = toCreateCategoryPayload(data, { primaryLanguage: language });
         await onSubmit(payload as unknown as CreateCategoryInput);
       }
     } catch (err: any) {
@@ -176,45 +179,15 @@ export function CategoryForm({
           {t('category.section_content')}
         </h3>
 
-        <AmberInput
-          label={t('category.name_en') || 'Name (English)'}
-          placeholder={t('category.name_en') || 'Name (English)'}
-          error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
-          required
-          {...register('name')}
-        />
-
-        <p className="text-[13px] text-zinc-muted mt-2">
-          {t('category.auto_translate_hint')}
-        </p>
-
-        <button
-          type="button"
+        <CategoryNameFields
+          language={language}
           dir={dir}
-          onClick={() => setShowSecondaryLang((open) => !open)}
-          className="mt-4 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors"
-        >
-          <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest text-start">
-            {t('category.add_arabic_name') || 'Add Arabic name'}
-          </span>
-          <ChevronDown
-            className={cn(
-              'w-4 h-4 shrink-0 text-zinc-muted transition-transform',
-              showSecondaryLang && 'rotate-180',
-            )}
-          />
-        </button>
-
-        {showSecondaryLang && (
-          <div className="mt-4">
-            <AmberInput
-              label={t('category.name_ar') || 'Arabic name'}
-              placeholder="Category name in Arabic"
-              error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
-              {...register('nameAr')}
-            />
-          </div>
-        )}
+          t={t}
+          register={register}
+          formErrors={formErrors}
+          showSecondaryLang={showSecondaryLang}
+          setShowSecondaryLang={setShowSecondaryLang}
+        />
 
         <div className="mt-6">
           <AmberInput

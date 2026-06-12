@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, AlertCircle, ChevronDown, X, Lock } from 'lucide-react';
+import { Loader2, AlertCircle, X, Lock } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberInput } from '@core/components/AmberInput';
@@ -18,7 +18,9 @@ import {
   mapCategoryApiError,
   classifyCategoryApiError,
   suggestAlternativeCategoryName,
+  resolveCategoryNamesForApi,
 } from '../lib';
+import { CategoryNameFields } from './CategoryNameFields';
 
 interface CategoryAddModalProps {
   open: boolean;
@@ -101,7 +103,7 @@ export function CategoryAddModal({
 
   const handleFormSubmit = async (data: CategoryFormData) => {
     try {
-      const payload = toCreateCategoryPayload(data);
+      const payload = toCreateCategoryPayload(data, { primaryLanguage: language });
       const created = await createMutation.mutateAsync(
         payload as unknown as CreateCategoryInput,
       );
@@ -113,12 +115,15 @@ export function CategoryAddModal({
         setError(field as keyof CategoryFormData, { type: 'server', message });
       }
       if (classifyCategoryApiError(err) === 'slug_conflict') {
-        setSuggestedName(suggestAlternativeCategoryName(data.name));
+        const resolved = resolveCategoryNamesForApi(data, language);
+        setSuggestedName(suggestAlternativeCategoryName(resolved.name));
       } else {
         setSuggestedName(null);
       }
     }
   };
+
+  const primaryNameField = language === 'ar' ? 'nameAr' : 'name';
 
   if (!open || typeof document === 'undefined') return null;
 
@@ -175,7 +180,7 @@ export function CategoryAddModal({
                   <button
                     type="button"
                     onClick={() => {
-                      setValue('name', suggestedName, { shouldValidate: true });
+                      setValue(primaryNameField, suggestedName, { shouldValidate: true });
                       setSuggestedName(null);
                     }}
                     className="text-xs font-bold text-brand hover:underline"
@@ -187,39 +192,15 @@ export function CategoryAddModal({
             </div>
           )}
 
-          <AmberInput
-            label={t('category.name_en') || 'Name (English)'}
-            placeholder={t('category.name_en') || 'Name (English)'}
-            error={formErrors.name?.message ? t(formErrors.name.message) : undefined}
-            required
-            {...register('name')}
-          />
-
-          <button
-            type="button"
+          <CategoryNameFields
+            language={language}
             dir={dir}
-            onClick={() => setShowSecondaryLang((v) => !v)}
-            className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors"
-          >
-            <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-              {t('category.add_arabic_name') || 'Add Arabic name'}
-            </span>
-            <ChevronDown
-              className={cn(
-                'w-4 h-4 shrink-0 text-zinc-muted transition-transform',
-                showSecondaryLang && 'rotate-180',
-              )}
-            />
-          </button>
-
-          {showSecondaryLang && (
-            <AmberInput
-              label={t('category.name_ar') || 'Arabic name'}
-              placeholder={language === 'ar' ? (t('category.name_ar') || 'الاسم بالعربية') : 'Category name in Arabic'}
-              error={formErrors.nameAr?.message ? t(formErrors.nameAr.message) : undefined}
-              {...register('nameAr')}
-            />
-          )}
+            t={t}
+            register={register}
+            formErrors={formErrors}
+            showSecondaryLang={showSecondaryLang}
+            setShowSecondaryLang={setShowSecondaryLang}
+          />
 
           {lockedParent ? (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02]">

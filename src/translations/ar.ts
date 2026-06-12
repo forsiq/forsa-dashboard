@@ -894,6 +894,7 @@ export const ar: Record<string, string> = {
   "category.customize_arabic": "تخصيص الاسم بالعربية",
   "category.add_arabic_name": "إضافة الاسم بالعربية",
   "category.add_english_name": "إضافة الاسم بالإنجليزية",
+  "category.auto_translate_hint_from_ar": "يُترجم الاسم تلقائياً للإنجليزية. أضف الاسم بالإنجليزية أدناه لتخصيصه.",
   "category.section_content": "المحتوى",
   "category.section_placement": "الموضع في القائمة",
   "category.section_visibility": "الظهور",
