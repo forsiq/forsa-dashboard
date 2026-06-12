@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useToast } from '@core/contexts/ToastContext';
@@ -61,14 +62,15 @@ export function MerchantDetailPage() {
       description={t('merchant.detail.subtitle') || 'Merchant account details and activity'}
       icon={Store}
       headerActions={
-        <AmberButton
-          variant="outline"
-          className="h-9 px-4 text-xs font-bold uppercase tracking-wider"
-          onClick={() => router.push('/merchants')}
-        >
-          <ArrowLeft className="w-3.5 h-3.5 me-1.5" />
-          {t('common.back') || 'Back'}
-        </AmberButton>
+        <Link href="/merchants">
+          <AmberButton
+            variant="outline"
+            className="h-9 px-4 text-xs font-bold uppercase tracking-wider"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 me-1.5" />
+            {t('common.back') || 'Back'}
+          </AmberButton>
+        </Link>
       }
       stats={[
         {

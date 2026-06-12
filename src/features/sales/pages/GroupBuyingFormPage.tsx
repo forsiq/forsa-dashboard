@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { 
   Users, 
   Clock, 
@@ -288,9 +289,11 @@ export const GroupBuyingFormPage: React.FC = () => {
       {/* Strategic Header Cluster */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <AmberButton variant="secondary" className="p-0 w-12 h-12 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border shadow-lg" onClick={() => router.push('/group-buying')}>
+          <Link href="/group-buying">
+          <AmberButton variant="secondary" className="p-0 w-12 h-12 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border shadow-lg">
                 <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
           </AmberButton>
+          </Link>
           <div>
             <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {isEdit ? t('groupBuying.form.authorize_mod') : t('groupBuying.form.init_consolidation')}
@@ -301,13 +304,14 @@ export const GroupBuyingFormPage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-3">
+           <Link href="/group-buying">
            <AmberButton 
                 variant="outline" 
                 className="h-12 border-border font-bold rounded-xl px-6 hover:bg-obsidian-hover active:scale-95 transition-all uppercase text-xs tracking-widest"
-                onClick={() => router.push('/group-buying')}
            >
                 {t('common.cancel')}
            </AmberButton>
+           </Link>
            <AmberButton 
                 className="h-12 bg-brand hover:bg-brand text-black font-black rounded-xl px-10 shadow-[0_10px_40px_rgba(245,196,81,0.1)] border-none active:scale-95 transition-all gap-3"
                 onClick={handleSubmit}
@@ -559,13 +563,14 @@ export const GroupBuyingFormPage: React.FC = () => {
                     <span className="group-hover:tracking-[0.4em] transition-all duration-500">{t('groupBuying.form.commence_execution')}</span>
                 </AmberButton>
                 
+                <Link href="/group-buying">
                 <AmberButton 
                     variant="secondary" 
                     className="w-full h-10 md:h-14 bg-obsidian-card font-black uppercase tracking-widest rounded-2xl border border-white/5 active:scale-95 transition-all opacity-80 hover:opacity-100"
-                    onClick={() => router.push('/group-buying')}
                 >
                     {t('common.cancel')}
                 </AmberButton>
+                </Link>
             </div>
         </div>
       </form>

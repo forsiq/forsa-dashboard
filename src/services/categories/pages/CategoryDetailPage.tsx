@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   ArrowLeft,
@@ -89,9 +90,11 @@ export function CategoryDetailPage() {
         <p className="text-sm text-zinc-muted">
           {t('category.not_found_desc') || 'The category you are looking for does not exist.'}
         </p>
-        <AmberButton onClick={() => router.push('/categories')}>
-          {t('common.back') || 'Back to Categories'}
-        </AmberButton>
+        <Link href="/categories">
+          <AmberButton>
+            {t('common.back') || 'Back to Categories'}
+          </AmberButton>
+        </Link>
       </div>
     );
   }
@@ -103,12 +106,13 @@ export function CategoryDetailPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4 w-full">
-          <button
-            onClick={() => router.push('/categories')}
-            className="w-12 h-12 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
-          >
-            <ArrowLeft className={cn('w-5 h-5', isRTL && 'rotate-180')} />
-          </button>
+          <Link href="/categories">
+            <button
+              className="w-12 h-12 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
+            >
+              <ArrowLeft className={cn('w-5 h-5', isRTL && 'rotate-180')} />
+            </button>
+          </Link>
           <div>
             <div className="flex items-center gap-3">
               <span className="text-[11px] font-black text-brand uppercase tracking-widest">
@@ -317,13 +321,14 @@ export function CategoryDetailPage() {
               )}
             </div>
           </div>
-          <AmberButton
-            className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-xl px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
-            onClick={() => void router.push(`/auctions?category=${category.id}`)}
-          >
-            {t('category.view_auctions') || 'View Auctions'}
-            <ArrowRight className={cn('w-3.5 h-3.5', isRTL && 'rotate-180')} />
-          </AmberButton>
+          <Link href={`/auctions?category=${category.id}`}>
+            <AmberButton
+              className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-xl px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
+            >
+              {t('category.view_auctions') || 'View Auctions'}
+              <ArrowRight className={cn('w-3.5 h-3.5', isRTL && 'rotate-180')} />
+            </AmberButton>
+          </Link>
         </div>
 
         <div className="flex items-center justify-center py-8">
@@ -334,14 +339,15 @@ export function CategoryDetailPage() {
             <p className="text-sm font-bold text-zinc-muted">
               {t('category.auctions_desc') || 'Browse all auctions listed under this category'}
             </p>
-            <AmberButton
-              variant="outline"
-              className="font-bold uppercase tracking-wider text-xs gap-2 h-9 mt-2"
-              onClick={() => void router.push(`/auctions?category=${category.id}`)}
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              {t('category.browse_auctions') || 'Browse All'}
-            </AmberButton>
+            <Link href={`/auctions?category=${category.id}`}>
+              <AmberButton
+                variant="outline"
+                className="font-bold uppercase tracking-wider text-xs gap-2 h-9 mt-2"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                {t('category.browse_auctions') || 'Browse All'}
+              </AmberButton>
+            </Link>
           </div>
         </div>
       </AmberCard>

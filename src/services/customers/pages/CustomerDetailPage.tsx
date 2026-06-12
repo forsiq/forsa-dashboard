@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { AmberCard as Card } from '@core/components/AmberCard';
@@ -53,9 +54,11 @@ export function CustomerDetailPage() {
         <p className="text-[var(--color-danger)] font-black uppercase tracking-widest">
           {t('customer.error_not_found') || 'IDENTITY NOT FOUND IN REGISTRY'}
         </p>
-        <AmberButton variant="outline" onClick={() => router.push('/customers')}>
-          {t('customer.back_to_list') || 'Return to Registry'}
-        </AmberButton>
+        <Link href="/customers">
+          <AmberButton variant="outline">
+            {t('customer.back_to_list') || 'Return to Registry'}
+          </AmberButton>
+        </Link>
       </div>
     );
   }
@@ -127,13 +130,14 @@ export function CustomerDetailPage() {
       {/* Dynamic Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 text-start">
         <div className="flex items-start gap-6">
-          <AmberButton
-            variant="ghost"
-            onClick={() => router.push('/customers')}
-            className="group p-2.5 h-11 w-11 border-[var(--color-border)] rounded-xl hover:bg-[var(--color-obsidian-hover)]"
-          >
-            <ArrowLeft className={cn("w-5 h-5 transition-transform group-hover:-translate-x-1", isRTL && "rotate-180 group-hover:translate-x-1")} />
-          </AmberButton>
+          <Link href="/customers">
+            <AmberButton
+              variant="ghost"
+              className="group p-2.5 h-11 w-11 border-[var(--color-border)] rounded-xl hover:bg-[var(--color-obsidian-hover)]"
+            >
+              <ArrowLeft className={cn("w-5 h-5 transition-transform group-hover:-translate-x-1", isRTL && "rotate-180 group-hover:translate-x-1")} />
+            </AmberButton>
+          </Link>
 
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <AmberAvatar
@@ -161,10 +165,12 @@ export function CustomerDetailPage() {
           </div>
         </div>
 
-        <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push(`/customers/${customerId}/edit`)}>
-          <Edit3 className="w-4 h-4" />
-          <span>{t('customer.modify_identity') || 'Modify Identity'}</span>
-        </AmberButton>
+        <Link href={`/customers/${customerId}/edit`}>
+          <AmberButton className="gap-2 px-8 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95">
+            <Edit3 className="w-4 h-4" />
+            <span>{t('customer.modify_identity') || 'Modify Identity'}</span>
+          </AmberButton>
+        </Link>
       </div>
 
       {/* Activity Summary Cards */}

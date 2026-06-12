@@ -133,9 +133,47 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
 export const RoleDashboardStats: React.FC = () => {
   const { role } = useDashboardRole();
   const { t } = useLanguage();
-  const { data: stats } = useDashboardStats();
+  const { data: stats, isLoading, isError, partialError } = useDashboardStats();
 
   const configs = ROLE_STATS[role] ?? ROLE_STATS.admin;
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {configs.map((cfg) => (
+          <div
+            key={cfg.id}
+            className="rounded-xl border border-white/5 bg-obsidian-card p-4 space-y-3 animate-pulse"
+          >
+            <div className="h-3 bg-white/5 rounded w-2/3" />
+            <div className="h-7 bg-white/5 rounded w-1/2" />
+            <div className="h-1 bg-white/5 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {configs.map((cfg) => (
+          <div
+            key={cfg.id}
+            className="rounded-xl border border-warning/20 bg-obsidian-card p-4 space-y-2"
+          >
+            <p className="text-[10px] font-black text-zinc-muted/60 uppercase tracking-widest">
+              {t(cfg.titleKey) || cfg.titleKey}
+            </p>
+            <p className="text-2xl font-black text-warning/60">—</p>
+            <p className="text-[9px] text-warning/40 font-semibold">
+              {t('common.error_occurred') || 'Failed to load'}
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const cards: StatCardType[] = configs.map((cfg) => ({
     id: cfg.id,
@@ -146,6 +184,13 @@ export const RoleDashboardStats: React.FC = () => {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {partialError && (
+        <div className="col-span-2 lg:col-span-4 mb-2">
+          <p className="text-[10px] text-warning/50 font-semibold uppercase tracking-widest">
+            {t('dash.partial_data_warning') || 'Some data may be incomplete'}
+          </p>
+        </div>
+      )}
       {cards.map((stat) => (
         <StatsCard key={stat.id} stat={stat} />
       ))}

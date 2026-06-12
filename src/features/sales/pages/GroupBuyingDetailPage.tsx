@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -112,9 +113,11 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <h2 className="text-2xl font-black text-zinc-text uppercase tracking-tighter">{t('groupBuying.node_desync')}</h2>
           <p className="text-zinc-muted font-bold uppercase tracking-tight text-sm">{t('groupBuying.node_desync_desc')}</p>
         </div>
-        <AmberButton onClick={() => router.push('/group-buying')} variant="secondary" className="px-8 h-12 uppercase font-black">
-          {t('common.back') || 'Back'}
-        </AmberButton>
+        <Link href="/group-buying">
+          <AmberButton variant="secondary" className="px-8 h-12 uppercase font-black">
+            {t('common.back') || 'Back'}
+          </AmberButton>
+        </Link>
       </Card>
     );
   }
@@ -137,12 +140,13 @@ export const GroupBuyingDetailPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
         <div className="flex items-center gap-4 w-full">
-          <button
-            onClick={() => router.push('/group-buying')}
-            className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
-          >
-            <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
-          </button>
+          <Link href="/group-buying">
+            <button
+              className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
+            >
+              <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
+            </button>
+          </Link>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <StatusBadge
@@ -213,9 +217,11 @@ export const GroupBuyingDetailPage: React.FC = () => {
           <button className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>
-          <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs" onClick={() => router.push(`/group-buying/${campaign.id}/edit`)}>
-              {t('common.edit') || 'Edit'}
-          </AmberButton>
+          <Link href={`/group-buying/${campaign.id}/edit`}>
+            <AmberButton className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs">
+                {t('common.edit') || 'Edit'}
+            </AmberButton>
+          </Link>
         </div>
       </div>
 

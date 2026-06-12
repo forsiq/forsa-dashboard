@@ -5,6 +5,7 @@
  */
 
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useGetUser, useCreateUser, useUpdateUser } from '../api';
 
@@ -302,14 +303,15 @@ export function UserFormPage() {
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-white/5">
+            <Link href="/users">
             <AmberButton
               type="button"
               variant="outline"
-              onClick={() => router.push('/users')}
               disabled={createMutation.isPending || updateMutation.isPending}
             >
               {t('common.cancel')}
             </AmberButton>
+            </Link>
             <AmberButton
               type="submit"
               variant="primary"

@@ -64,6 +64,8 @@ import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
 import { FieldHelpHint } from '../components/FieldHelpHint';
+import { useBrands } from '../hooks/useBrands';
+import { AmberAutocomplete } from '@core/components/AmberAutocomplete';
 import {
   getWizardLayout,
   normalizeWizardStepFromQuery,
@@ -259,6 +261,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const submitForReviewMutation = useSubmitListingForReview();
 
   const lookupByBarcodeMutation = useLookupByBarcode();
+  const { data: brands = [] } = useBrands();
   const [barcodeFoundListing, setBarcodeFoundListing] = useState<ProductListing | null>(null);
   const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
 
@@ -829,12 +832,6 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const advancedFields: FormFieldConfig[] = useMemo(
     () => [
       {
-        name: 'brand',
-        label: t('listing.form.brand') || 'Brand',
-        type: 'text',
-        placeholder: t('listing.form.brand_placeholder'),
-      },
-      {
         name: 'model',
         label: t('listing.form.model') || 'Model',
         type: 'text',
@@ -1171,6 +1168,25 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               layout="vertical"
               onChange={handleCatalogChange}
             />
+            {!isMobile && (
+              <AmberAutocomplete
+                label={t('listing.form.brand') || 'Brand'}
+                placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
+                value={catalog.brand}
+                onChange={(val) => {
+                  setCatalog((prev) => ({ ...prev, brand: val }));
+                  if (fieldErrors.brand) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.brand;
+                      return next;
+                    });
+                  }
+                }}
+                suggestions={brands}
+                dir={dir}
+              />
+            )}
             <div className="mt-6 space-y-2">
               <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                 {t('listing.form.description')}
@@ -1305,6 +1321,23 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
                 {showMoreDetails && (
                   <div className="mt-4 pt-4 border-t border-white/5">
+                    <AmberAutocomplete
+                      label={t('listing.form.brand') || 'Brand'}
+                      placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
+                      value={catalog.brand}
+                      onChange={(val) => {
+                        setCatalog((prev) => ({ ...prev, brand: val }));
+                        if (fieldErrors.brand) {
+                          setFieldErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.brand;
+                            return next;
+                          });
+                        }
+                      }}
+                      suggestions={brands}
+                      dir={dir}
+                    />
                     <FormBuilder
                       fields={advancedFields}
                       initialValues={catalogFormValues}

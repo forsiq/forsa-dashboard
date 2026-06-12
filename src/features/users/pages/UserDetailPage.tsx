@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useGetUser } from '../api';
 import { formatPhone } from '@core/lib/utils/formatPhone';
 
@@ -15,7 +15,6 @@ import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useIsClient } from '@core/hooks/useIsClient';
 
 export function UserDetailPage() {
-  const router = useRouter();
   const [userId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const { t, dir } = useLanguage();
   const toast = useToast();
@@ -40,9 +39,11 @@ export function UserDetailPage() {
         <h3 className="text-lg font-semibold text-zinc-text mb-2">
           {t('user.not_found')}
         </h3>
-        <AmberButton variant="outline" onClick={() => router.push('/users')} className="mt-4">
-          {t('user.back_to_list')}
-        </AmberButton>
+        <Link href="/users">
+          <AmberButton variant="outline" className="mt-4">
+            {t('user.back_to_list')}
+          </AmberButton>
+        </Link>
       </div>
     );
   }
@@ -78,14 +79,15 @@ export function UserDetailPage() {
         showBackButton
         backHref="/users"
         actions={
-          <AmberButton
-            variant="primary"
-            onClick={() => router.push(`/users/${userId}/edit`)}
-            className="gap-2"
-          >
-            <Edit className="h-4 w-4" />
-            {t('user.edit')}
-          </AmberButton>
+          <Link href={`/users/${userId}/edit`}>
+            <AmberButton
+              variant="primary"
+              className="gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              {t('user.edit')}
+            </AmberButton>
+          </Link>
         }
       />
 

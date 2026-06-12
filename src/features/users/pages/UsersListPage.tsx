@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useGetUsers, useGetUserStats, useDeleteUser, useUpdateUserStatus } from '../api';
 
@@ -268,10 +269,12 @@ export function UsersListPage() {
         { label: t('user.stats.admins'), value: stats?.admins || 0, icon: Shield, color: 'primary' },
       ]}
       headerActions={
-        <AmberButton variant="primary" onClick={() => router.push('/users/new')} className="gap-2 h-11 bg-brand text-black font-black rounded-xl px-4 md:px-6">
-          <Plus className="h-4 w-4" />
-          <span className="hidden md:inline">{t('user.add')}</span>
-        </AmberButton>
+        <Link href="/users/new">
+          <AmberButton variant="primary" className="gap-2 h-11 bg-brand text-black font-black rounded-xl px-4 md:px-6">
+            <Plus className="h-4 w-4" />
+            <span className="hidden md:inline">{t('user.add')}</span>
+          </AmberButton>
+        </Link>
       }
       toolbar={
         <ListPageToolbar

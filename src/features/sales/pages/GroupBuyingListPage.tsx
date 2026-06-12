@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -290,10 +291,12 @@ export const GroupBuyingListPage: React.FC = () => {
       className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
         canManageGroupBuying ? (
-        <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8" onClick={() => router.push('/group-buying/new')}>
-          <Plus className="w-5 h-5" />
-          <span className="hidden md:inline">{t('groupBuying.create') || 'Create Campaign'}</span>
-        </AmberButton>
+        <Link href="/group-buying/new">
+          <AmberButton className="gap-2 h-11 bg-brand hover:bg-brand text-black font-black rounded-xl shadow-sm transition-all border-none active:scale-95 px-4 md:px-8">
+            <Plus className="w-5 h-5" />
+            <span className="hidden md:inline">{t('groupBuying.create') || 'Create Campaign'}</span>
+          </AmberButton>
+        </Link>
         ) : undefined
       }
       stats={[

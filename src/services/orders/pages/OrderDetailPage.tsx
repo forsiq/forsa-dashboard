@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
 import { getOrder, updateOrderStatus, updateOrderPaymentStatus, orderKeys } from '../api/orders';
@@ -44,7 +44,6 @@ function hasAddressContent(addr: Order['shippingAddress']): boolean {
 }
 
 export const OrderDetailPage = () => {
-  const router = useRouter();
   const [orderId, paramReady] = useRouteParam('id', { parse: 'string', safe: true });
   const queryClient = useQueryClient();
   const isClient = useIsClient();
@@ -122,13 +121,14 @@ export const OrderDetailPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <AmberButton
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/orders')}
-          >
-            <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
-          </AmberButton>
+          <Link href="/orders">
+            <AmberButton
+              variant="ghost"
+              size="sm"
+            >
+              <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
+            </AmberButton>
+          </Link>
           <div>
             <h1 className="text-2xl font-bold text-zinc-text">{order.orderNumber}</h1>
             <p className="text-zinc-muted mt-1">

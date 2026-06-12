@@ -132,6 +132,12 @@ export const AuctionsList: React.FC = () => {
 
     const { data: stats } = useGetAuctionStats();
     const { data: categoriesData } = useCategories({ limit: 100 });
+
+    const categoryMap = useMemo(() => {
+      const cats = categoriesData?.categories || [];
+      return new Map(cats.map((c) => [String(c.id), getLocalizedName(c, language)]));
+    }, [categoriesData, language]);
+
     const { mutate: deleteAuction } = useDeleteAuction();
     const cancelAuction = useCancelAuction();
     const startAuction = useStartAuction();
@@ -234,7 +240,7 @@ export const AuctionsList: React.FC = () => {
             </div>
             <div className="min-w-0">
               <DataTableEntityTitle text={auction.title} />
-              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{auction.categoryName || t('common.general_asset')}</p>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('common.general_asset')}</p>
             </div>
           </div>
         ),
@@ -491,6 +497,7 @@ export const AuctionsList: React.FC = () => {
                 <MobileAuctionGrid
                   auctions={auctions}
                   onAuctionClick={(auction) => router.push(`/auctions/${auction.id}`)}
+                  categoryMap={categoryMap}
                 />
                 {/* Mobile Pagination */}
                 {(auctionsData?.total || 0) > limit && (

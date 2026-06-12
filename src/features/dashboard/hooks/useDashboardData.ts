@@ -66,6 +66,7 @@ export interface QuickCounts {
 interface AllStatsData {
   stats: DashboardStats;
   quickCounts: QuickCounts;
+  partialError: boolean;
 }
 
 // ============================================================================
@@ -174,10 +175,24 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
     queryFn: async (): Promise<AllStatsData> => {
+      let failedCount = 0;
+
       const [auctionStatsRes, groupBuyingStatsRes, ordersRes] = await Promise.all([
-        auctionBaseApi.getStats().catch((err) => { console.warn('[Dashboard] auction-stats fetch failed:', err?.message); return { data: {} }; }),
-        groupBuyingBaseApi.getStats().catch((err) => { console.warn('[Dashboard] group-buying-stats fetch failed:', err?.message); return { data: {} }; }),
-        orderBaseApi.getStats().catch((err) => { console.warn('[Dashboard] order-stats fetch failed:', err?.message); return { data: {} }; }),
+        auctionBaseApi.getStats().catch((err) => {
+          console.warn('[Dashboard] auction-stats fetch failed:', err?.message);
+          failedCount++;
+          return { data: {} };
+        }),
+        groupBuyingBaseApi.getStats().catch((err) => {
+          console.warn('[Dashboard] group-buying-stats fetch failed:', err?.message);
+          failedCount++;
+          return { data: {} };
+        }),
+        orderBaseApi.getStats().catch((err) => {
+          console.warn('[Dashboard] order-stats fetch failed:', err?.message);
+          failedCount++;
+          return { data: {} };
+        }),
       ]);
 
       const auctionStats = (auctionStatsRes as any).data || {};
@@ -187,11 +202,11 @@ export const useDashboardStats = () => {
       return {
         stats: {
           totalRevenue: orderStats.total_revenue || auctionStats.totalRevenue || 0,
-          revenueChange: 0,
+          revenueChange: orderStats.revenue_change || auctionStats.revenueChange || 0,
           totalOrders: orderStats.total || 0,
-          ordersChange: 0,
+          ordersChange: orderStats.orders_change || 0,
           totalProducts: (auctionStats.totalAuctions || 0) + (groupStats.active_campaigns || 0),
-          productsChange: 0,
+          productsChange: auctionStats.productsChange || 0,
           totalCustomers: (groupStats.total_participants || 0) + (auctionStats.totalAuctions || 0),
           customersChange: 0,
         },
@@ -202,6 +217,7 @@ export const useDashboardStats = () => {
           pendingOrders: orderStats.pending || 0,
           totalParticipants: groupStats.total_participants || 0,
         },
+        partialError: failedCount > 0,
       };
     },
     staleTime: 1000 * 60 * 5,
@@ -391,33 +407,34 @@ export const useDashboardData = () => {
 
   const stats = allStatsData?.stats;
   const quickCounts = allStatsData?.quickCounts;
+  const statsPartialError = allStatsData?.partialError ?? false;
 
   const dashboardStats: StatCard[] = [
     {
       id: 'revenue',
       title: t('stats.revenue') || 'Total Revenue',
-      value: formatCurrency(stats?.totalRevenue),
+      value: stats ? formatCurrency(stats.totalRevenue) : '—',
       change: stats?.revenueChange,
       color: 'brand',
     },
     {
       id: 'orders',
       title: t('dash.total_orders') || 'Total Orders',
-      value: (stats?.totalOrders || 0).toString(),
+      value: stats ? (stats.totalOrders).toString() : '—',
       change: stats?.ordersChange,
       color: 'success',
     },
     {
       id: 'total',
       title: t('dash.total_items') || 'Auctions & Deals',
-      value: (stats?.totalProducts || 0).toString(),
+      value: stats ? (stats.totalProducts).toString() : '—',
       change: stats?.productsChange,
       color: 'warning',
     },
     {
       id: 'participants',
       title: t('dash.participants') || 'Total Participants',
-      value: (stats?.totalCustomers || 0).toString(),
+      value: stats ? (stats.totalCustomers).toString() : '—',
       change: stats?.customersChange,
       color: 'info',
     },
@@ -454,6 +471,7 @@ export const useDashboardData = () => {
     isLoading: statsLoading || activitiesLoading,
     isDeferredLoading: statsLoading || activitiesLoading || topProductsLoading || categoriesLoading || salesLoading,
     isError: statsError || activitiesError,
+    partialError: statsPartialError,
     refetch: () => {
       refetchStats();
       refetchActivities();

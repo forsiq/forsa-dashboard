@@ -17,11 +17,13 @@ import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { FormBuilder } from '@core/components/Form/FormBuilder';
 import { FormSection } from '@core/components/FormSection';
+import { AmberAutocomplete } from '@core/components/AmberAutocomplete';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
+import { useBrands } from '../hooks/useBrands';
 import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
@@ -47,6 +49,7 @@ export const ListingFormPage: React.FC = () => {
   const { id } = router.query;
   const isEdit = !!id;
   const isRTL = dir === 'rtl';
+  const { data: brands = [] } = useBrands();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => { setIsClient(true); }, []);
@@ -142,12 +145,6 @@ export const ListingFormPage: React.FC = () => {
       label: t('listing.form.description') || 'Description',
       type: 'textarea',
       placeholder: t('listing.form.description_placeholder') || 'Describe your product',
-    },
-    {
-      name: 'brand',
-      label: t('listing.form.brand') || 'Brand',
-      type: 'text',
-      placeholder: t('listing.form.brand_placeholder') || 'Brand name',
     },
     {
       name: 'model',
@@ -367,6 +364,15 @@ export const ListingFormPage: React.FC = () => {
               showActions={false}
               layout="vertical"
               onChange={handleFormChange}
+            />
+
+            <AmberAutocomplete
+              label={t('listing.form.brand') || 'Brand'}
+              placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
+              value={formData.brand || ''}
+              onChange={(val) => setFormData((prev) => ({ ...prev, brand: val }))}
+              suggestions={brands}
+              dir={dir}
             />
           </FormSection>
         </div>

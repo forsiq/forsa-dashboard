@@ -23,9 +23,10 @@ const STATUS_VARIANT_MAP: Record<string, StatusVariant> = {
 interface MobileAuctionCardProps {
   auction: Auction;
   onClick?: () => void;
+  categoryMap?: Map<string, string>;
 }
 
-export const MobileAuctionCard: React.FC<MobileAuctionCardProps> = ({ auction, onClick }) => {
+export const MobileAuctionCard: React.FC<MobileAuctionCardProps> = ({ auction, onClick, categoryMap }) => {
   const { t, dir } = useLanguage();
   const countdownLabel = useCountdown(auction.endTime);
   const isLive = auction.status === 'active';
@@ -84,9 +85,9 @@ export const MobileAuctionCard: React.FC<MobileAuctionCardProps> = ({ auction, o
         </h3>
 
         {/* Category */}
-        {auction.categoryName && (
+        {(categoryMap?.get(String(auction.categoryId)) || auction.categoryName) && (
           <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
-            {auction.categoryName}
+            {categoryMap?.get(String(auction.categoryId)) || auction.categoryName}
           </p>
         )}
 

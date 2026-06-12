@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   Clock,
@@ -32,6 +33,8 @@ import { AmberInput } from '@core/components/AmberInput';
 import { IqdPriceInput } from '@core/components/IqdPriceInput';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { useGetAuction, useGetAuctionBids, usePlaceBid, useCancelAuction, useWatchedAuctions } from '../api';
+import { useList as useCategories } from '@services/categories/hooks';
+import { getLocalizedName } from '@services/categories/types';
 import { WatchlistToggleButton } from '../components/WatchlistToggleButton';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { AuctionImage } from '../components/AuctionImage';
@@ -65,7 +68,7 @@ const AuctionCountdownDisplay = React.memo(({ endTime, t, isEndingSoon }: Auctio
 
 export const AuctionDetails: React.FC = () => {
   const router = useRouter();
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const isRTL = dir === 'rtl';
   const { isMobile } = useIsMobile();
   const [isActionsOpen, setIsActionsOpen] = useState(false);
@@ -78,6 +81,12 @@ export const AuctionDetails: React.FC = () => {
   const cancelAuction = useCancelAuction();
   const { data: watchedAuctions } = useWatchedAuctions();
   const { openConfirm, ConfirmModal } = useConfirmModal();
+
+  const { data: categoriesData } = useCategories({ limit: 100 });
+  const categoryMap = useMemo(() => {
+    const cats = categoriesData?.categories || [];
+    return new Map(cats.map((c) => [String(c.id), getLocalizedName(c, language)]));
+  }, [categoriesData, language]);
 
   const [bidAmount, setBidAmount] = useState<number>(0);
 
@@ -112,7 +121,7 @@ export const AuctionDetails: React.FC = () => {
       { icon: Calendar, label: t('auction.detail.temporal_start') || 'Start', value: new Date(auction.startTime).toLocaleString() },
       { icon: Clock, label: t('auction.detail.node_termination') || 'End', value: new Date(auction.endTime).toLocaleString() },
       { icon: TrendingUp, label: t('auction.detail.progression_delta') || 'Bid Increment', value: formatCurrency(bidIncrement) },
-      { icon: Tag, label: t('auction.detail.category'), value: auction.categoryName || t('auction.detail.general') },
+      { icon: Tag, label: t('auction.detail.category'), value: categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general') },
       { icon: User, label: t('auction.detail.winner'), value: auction.winnerName || t('auction.detail.no_winner') },
     ];
 
@@ -159,9 +168,11 @@ export const AuctionDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-zinc-text tracking-tighter">{t('auction.detail.node_not_found')}</h2>
           <p className="text-zinc-muted font-semibold tracking-tight text-sm">{t('auction.detail.not_found_text')}</p>
         </div>
-        <AmberButton onClick={() => router.push('/auctions')} variant="secondary" className="px-8 h-12 uppercase font-bold">
-          {t('common.back') || 'Back'}
-        </AmberButton>
+        <Link href="/auctions">
+          <AmberButton variant="secondary" className="px-8 h-12 uppercase font-bold">
+            {t('common.back') || 'Back'}
+          </AmberButton>
+        </Link>
       </Card>
     );
   }
@@ -171,13 +182,14 @@ export const AuctionDetails: React.FC = () => {
       {/* Header */}
       <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex min-w-0 w-full flex-1 items-center gap-4">
-          <button
-            type="button"
-            onClick={() => router.push('/auctions')}
-            className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
-          >
-            <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
-          </button>
+          <Link href="/auctions">
+            <button
+              type="button"
+              className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
+            >
+              <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
+            </button>
+          </Link>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <StatusBadge
@@ -256,13 +268,14 @@ export const AuctionDetails: React.FC = () => {
           ) : (
             <>
               {auction.listingId && (
-                <AmberButton
-                  className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5"
-                  onClick={() => void router.push(`/listings/${auction.listingId}`)}
-                >
-                  <PackageOpen className="w-3.5 h-3.5" />
-                  {t('auction.detail.view_product') || 'View Product'}
-                </AmberButton>
+                <Link href={`/listings/${auction.listingId}`}>
+                  <AmberButton
+                    className="h-10 bg-obsidian-card border border-white/10 text-zinc-muted font-bold uppercase tracking-wider rounded-lg px-6 hover:text-brand hover:border-brand/30 active:scale-95 transition-all text-xs gap-1.5"
+                  >
+                    <PackageOpen className="w-3.5 h-3.5" />
+                    {t('auction.detail.view_product') || 'View Product'}
+                  </AmberButton>
+                </Link>
               )}
               {auction.listingId && ['ended', 'cancelled', 'sold'].includes(auction.status) && (
                 <AmberButton
@@ -302,7 +315,7 @@ export const AuctionDetails: React.FC = () => {
                   </div>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <span className="text-[11px] font-semibold text-brand tracking-widest">{auction.categoryName || t('auction.detail.general')}</span>
+                  <span className="text-[11px] font-semibold text-brand tracking-widest">{categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general')}</span>
                   <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
                 </div>
               </>

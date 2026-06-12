@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { X, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -206,13 +207,14 @@ export const AuctionFormPage: React.FC = () => {
               )}
               {isClone ? (t('auction.form.action.clone') || 'Clone Auction') : isEdit ? t('auction.form.authorize_sync') : t('auction.form.execute_deployment')}
             </AmberButton>
-            <AmberButton
-              variant="secondary"
-              className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
-              onClick={() => router.push('/auctions')}
-            >
-              {t('auction.form.cancel')}
-            </AmberButton>
+            <Link href="/auctions">
+              <AmberButton
+                variant="secondary"
+                className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
+              >
+                {t('auction.form.cancel')}
+              </AmberButton>
+            </Link>
           </div>
         </div>
       </form>

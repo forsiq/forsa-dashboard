@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, Save, AlertCircle, X } from 'lucide-react';
@@ -86,9 +87,11 @@ export const OrderFormPage = () => {
       )}
 
       <div className="flex items-center gap-4">
-        <AmberButton variant="ghost" size="sm" onClick={() => router.push(`/orders/${id}`)}>
+        <Link href={`/orders/${id}`}>
+        <AmberButton variant="ghost" size="sm">
           <ArrowLeft size={18} className={isRTL ? 'rotate-180' : ''} />
         </AmberButton>
+        </Link>
         <div>
           <h1 className="text-2xl font-bold text-zinc-text">{t('orders.editOrder') || 'تعديل الطلب'}</h1>
           <p className="text-zinc-muted mt-1">{order?.orderNumber}</p>
@@ -109,9 +112,11 @@ export const OrderFormPage = () => {
         </AmberCard>
 
         <div className="flex items-center justify-end gap-3">
-          <AmberButton type="button" variant="secondary" onClick={() => router.push(`/orders/${id}`)}>
+          <Link href={`/orders/${id}`}>
+          <AmberButton type="button" variant="secondary">
             {t('orders.cancel') || 'إلغاء'}
           </AmberButton>
+          </Link>
           <AmberButton
             type="submit"
             variant="primary"

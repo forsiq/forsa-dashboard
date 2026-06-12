@@ -17,6 +17,8 @@ import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column } from '@core/components/Data/DataTable';
 import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
 import { useWatchedAuctions } from '../api';
+import { useList as useCategories } from '@services/categories/hooks';
+import { getLocalizedName } from '@services/categories/types';
 import { useFilterState } from '@core/hooks/useFilterState';
 import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
@@ -25,7 +27,7 @@ import { ListPageSkeleton } from '@core/loading';
 import type { Auction } from '../types/auction.types';
 
 export const WatchlistPage: React.FC = () => {
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const router = useRouter();
   const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
@@ -38,6 +40,12 @@ export const WatchlistPage: React.FC = () => {
   }, []);
 
   const { data: auctions, isLoading } = useWatchedAuctions();
+
+  const { data: categoriesData } = useCategories({ limit: 100 });
+  const categoryMap = useMemo(() => {
+    const cats = categoriesData?.categories || [];
+    return new Map(cats.map((c) => [String(c.id), getLocalizedName(c, language)]));
+  }, [categoriesData, language]);
 
   const handleSortChange = (key: string, direction: 'asc' | 'desc') => {
     setSortBy(key);
@@ -57,7 +65,7 @@ export const WatchlistPage: React.FC = () => {
           <div className="min-w-0">
             <DataTableEntityTitle text={auction.title} />
             <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
-              {auction.categoryName || t('auction.detail.general')}
+              {categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general')}
             </p>
           </div>
         </div>

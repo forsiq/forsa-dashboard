@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   ArrowLeft,
@@ -147,9 +148,11 @@ export const ProductDetailPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-zinc-text tracking-tighter">{t('inventory.detail.not_found') || 'Product Not Found'}</h2>
           <p className="text-zinc-muted font-semibold tracking-tight text-sm">{t('inventory.detail.not_found_text') || 'The product you are looking for does not exist or has been removed.'}</p>
         </div>
-        <AmberButton onClick={() => router.push('/inventory')} variant="secondary" className="px-8 h-12 uppercase font-bold">
-          {t('common.back') || 'Back'}
-        </AmberButton>
+        <Link href="/inventory">
+          <AmberButton variant="secondary" className="px-8 h-12 uppercase font-bold">
+            {t('common.back') || 'Back'}
+          </AmberButton>
+        </Link>
       </Card>
     );
   }
@@ -159,13 +162,14 @@ export const ProductDetailPage: React.FC = () => {
       {/* Header */}
       <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex min-w-0 w-full flex-1 items-center gap-4">
-          <button
-            type="button"
-            onClick={() => router.push('/inventory')}
-            className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
-          >
-            <ArrowLeft className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-          </button>
+          <Link href="/inventory">
+            <button
+              type="button"
+              className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
+            >
+              <ArrowLeft className={cn('w-4 h-4', isRTL && 'rotate-180')} />
+            </button>
+          </Link>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <StatusBadge
@@ -208,13 +212,14 @@ export const ProductDetailPage: React.FC = () => {
             )}
             {t('common.delete') || 'Delete'}
           </AmberButton>
-          <AmberButton
-            className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
-            onClick={() => router.push(`/inventory/edit/${product.id}`)}
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            {t('common.edit') || 'Edit'}
-          </AmberButton>
+          <Link href={`/inventory/edit/${product.id}`}>
+            <AmberButton
+              className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-lg px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              {t('common.edit') || 'Edit'}
+            </AmberButton>
+          </Link>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -64,9 +65,11 @@ export function CategoryEditPage() {
         <p className="text-sm text-zinc-muted">
           {t('category.not_found_desc') || 'The category you are looking for does not exist.'}
         </p>
-        <AmberButton onClick={() => router.push('/categories')}>
-          {t('common.back') || 'Back to Categories'}
-        </AmberButton>
+        <Link href="/categories">
+          <AmberButton>
+            {t('common.back') || 'Back to Categories'}
+          </AmberButton>
+        </Link>
       </div>
     );
   }
@@ -75,13 +78,13 @@ export function CategoryEditPage() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-zinc-muted">
-        <span onClick={() => router.push('/categories')} className="hover:text-zinc-text cursor-pointer">
+        <Link href="/categories" className="hover:text-zinc-text cursor-pointer">
           {t('category.categories') || 'Categories'}
-        </span>
+        </Link>
         <span>/</span>
-        <span onClick={() => router.push(`/categories/${category.id}`)} className="hover:text-zinc-text cursor-pointer">
+        <Link href={`/categories/${category.id}`} className="hover:text-zinc-text cursor-pointer">
           {category.name}
-        </span>
+        </Link>
         <span>/</span>
         <span className="text-zinc-text">{t('common.edit') || 'Edit'}</span>
       </div>
