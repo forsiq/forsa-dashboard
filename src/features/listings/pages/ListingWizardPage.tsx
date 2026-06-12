@@ -1631,18 +1631,30 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               label={t('listing.deploy.min_participants')}
               type="number"
               value={groupBuyPricing.minParticipants}
-              onChange={(e) =>
-                setGroupBuyPricing((p) => ({ ...p, minParticipants: Number(e.target.value) }))
-              }
+              onChange={(e) => {
+                setFieldErrors((p) => {
+                  const n = { ...p };
+                  delete n.minParticipants;
+                  delete n.maxParticipants;
+                  return n;
+                });
+                setGroupBuyPricing((p) => ({ ...p, minParticipants: Number(e.target.value) }));
+              }}
               error={fieldErrors.minParticipants}
             />
             <AmberInput
               label={t('listing.deploy.max_participants')}
               type="number"
               value={groupBuyPricing.maxParticipants}
-              onChange={(e) =>
-                setGroupBuyPricing((p) => ({ ...p, maxParticipants: Number(e.target.value) }))
-              }
+              onChange={(e) => {
+                setFieldErrors((p) => {
+                  const n = { ...p };
+                  delete n.minParticipants;
+                  delete n.maxParticipants;
+                  return n;
+                });
+                setGroupBuyPricing((p) => ({ ...p, maxParticipants: Number(e.target.value) }));
+              }}
               error={fieldErrors.maxParticipants}
             />
           </div>

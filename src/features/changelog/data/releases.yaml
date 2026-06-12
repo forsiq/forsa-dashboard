@@ -10,8 +10,13 @@
       type: fixed
       sidebarPath: /listings
     - description:
-        en: "Clearer two-step category picker — main category first, then sub-category, with suggest/add when no sub-categories exist."
-        ar: "تنظيم أوضح لاختيار الفئة — رئيسية ثم فرعية، مع اقتراح أو إضافة فئة فرعية عند عدم وجودها."
+        en: "Fixed validation errors on listing publish fields showing a red border without explaining the problem."
+        ar: "إصلاح ظهور إطار أحمر للتحقق في حقول النشر دون عرض رسالة توضّح المشكلة."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Simplified category picker — main category then sub-category in two clear sections."
+        ar: "تبسيط اختيار الفئة — رئيسية ثم فرعية في قسمين واضحين."
       type: improved
       sidebarPath: /listings
     - description:
