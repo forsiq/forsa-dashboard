@@ -7,9 +7,6 @@ export interface ReportChartFrameProps {
   heightClass?: string;
 }
 
-/**
- * Defers Recharts mount until after client paint to avoid ResponsiveContainer DOM conflicts.
- */
 export function ReportChartFrame({
   children,
   className,

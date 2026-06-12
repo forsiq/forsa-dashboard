@@ -1,16 +1,10 @@
 import { RoleGuard } from '@core/components/RoleGuard';
-import dynamic from 'next/dynamic';
-import { ListPageSkeleton } from '@core/loading';
+import { createClientReportPage } from '@services/reports/utils/createClientReportPage';
 
-const GroupBuyingAnalyticsPage = dynamic(
-  () =>
-    import('@services/reports/pages/GroupBuyingAnalyticsPage').then((mod) => ({
-      default: mod.GroupBuyingAnalyticsPage,
-    })),
-  {
-    ssr: false,
-    loading: () => <ListPageSkeleton count={4} columns={2} />,
-  },
+const GroupBuyingAnalyticsPage = createClientReportPage(() =>
+  import('@services/reports/pages/GroupBuyingAnalyticsPage').then((mod) => ({
+    default: mod.GroupBuyingAnalyticsPage,
+  })),
 );
 
 export default function GroupBuyingAnalyticsReport() {

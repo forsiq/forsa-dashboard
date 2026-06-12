@@ -1,16 +1,10 @@
 import { RoleGuard } from '@core/components/RoleGuard';
-import dynamic from 'next/dynamic';
-import { ListPageSkeleton } from '@core/loading';
+import { createClientReportPage } from '@services/reports/utils/createClientReportPage';
 
-const AuctionPerformancePage = dynamic(
-  () =>
-    import('@services/reports/pages/AuctionPerformancePage').then((mod) => ({
-      default: mod.AuctionPerformancePage,
-    })),
-  {
-    ssr: false,
-    loading: () => <ListPageSkeleton count={4} columns={2} />,
-  },
+const AuctionPerformancePage = createClientReportPage(() =>
+  import('@services/reports/pages/AuctionPerformancePage').then((mod) => ({
+    default: mod.AuctionPerformancePage,
+  })),
 );
 
 export default function AuctionPerformanceReport() {

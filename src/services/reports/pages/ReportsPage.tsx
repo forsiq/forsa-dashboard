@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { BarChart3, ShoppingCart, DollarSign, Users, FileText } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -24,11 +24,6 @@ export function ReportsPage() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
   const { data: report } = useGetReports();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const reportCards: {
     title: string;
@@ -106,8 +101,6 @@ export function ReportsPage() {
       iconWrap: 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',
     },
   ];
-
-  if (!isClient) return null;
 
   return (
     <div className={reportPageClass} dir={dir}>

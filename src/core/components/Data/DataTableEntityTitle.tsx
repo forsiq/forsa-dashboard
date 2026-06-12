@@ -11,12 +11,16 @@ export type DataTableEntityTitleProps = {
 const baseClassName =
   'min-w-0 text-sm font-black text-zinc-text tracking-tight line-clamp-2 break-words';
 
-const linkClassName =
-  'block w-full min-w-0 hover:text-brand hover:underline underline-offset-2 decoration-brand/50 transition-colors cursor-pointer';
+export const dataTableLinkClass =
+  'hover:text-brand hover:underline underline-offset-2 decoration-brand/50 transition-colors cursor-pointer';
+
+export const dataTableLinkInGroupClass =
+  'group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors';
+
+const linkClassName = `block w-full min-w-0 ${dataTableLinkClass}`;
 
 /**
  * Entity title inside DataTable cells: two-line clamp, ellipsis overflow, stable row height.
- * Pass `href` to make the title a clickable link.
  */
 export function DataTableEntityTitle({ text, className, href }: DataTableEntityTitleProps) {
   if (href) {

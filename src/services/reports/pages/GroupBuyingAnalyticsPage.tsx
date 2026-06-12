@@ -94,11 +94,11 @@ export function GroupBuyingAnalyticsPage() {
     },
   ];
 
-  const statusData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    deals.forEach((d: GroupBuying) => {
-      counts[d.status] = (counts[d.status] || 0) + 1;
-    });
+  const dealsByStatus = useMemo(() => {
+    const counts = deals.reduce<Record<string, number>>((acc, d) => {
+      acc[d.status] = (acc[d.status] || 0) + 1;
+      return acc;
+    }, {});
     return Object.entries(counts).map(([status, value]) => ({
       status,
       name: resolveStatusLabel(status, t, `groupBuying.status.${status.toLowerCase()}`),
@@ -106,19 +106,7 @@ export function GroupBuyingAnalyticsPage() {
     }));
   }, [deals, t]);
 
-  const pieData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    deals.forEach((d: GroupBuying) => {
-      counts[d.status] = (counts[d.status] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .filter(([, value]) => value > 0)
-      .map(([status, value]) => ({
-        status,
-        name: resolveStatusLabel(status, t, `groupBuying.status.${status.toLowerCase()}`),
-        value,
-      }));
-  }, [deals, t]);
+  const pieData = dealsByStatus.filter((row) => row.value > 0);
 
   const topDeals = useMemo(
     () =>
@@ -128,7 +116,7 @@ export function GroupBuyingAnalyticsPage() {
     [deals]
   );
 
-  const hasStatusChartData = hasChartValues(statusData, ['value']);
+  const hasStatusChartData = hasChartValues(dealsByStatus, ['value']);
   const hasPieData = pieData.length > 0;
 
   return (
@@ -176,7 +164,7 @@ export function GroupBuyingAnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
-                    data={statusData}
+                    data={dealsByStatus}
                     margin={{ ...chartMargin, left: 4, right: 16 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} horizontal={false} />

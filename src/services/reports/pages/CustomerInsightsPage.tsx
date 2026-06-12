@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Users, MapPin, Repeat, Crown } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
@@ -17,11 +17,6 @@ export function CustomerInsightsPage() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
   const { data, isLoading } = useGetSalesReport();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const topCustomers = data?.topCustomers || [];
   const retentionRate = topCustomers.length > 0
@@ -32,8 +27,6 @@ export function CustomerInsightsPage() {
   const concentration = topCustomers.length > 0
     ? new Set(topCustomers.map((c: any) => c.city).filter(Boolean)).size
     : 0;
-
-  if (!isClient) return null;
 
   return (
     <div className={reportPageClass} dir={dir}>

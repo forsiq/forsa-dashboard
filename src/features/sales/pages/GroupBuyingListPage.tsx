@@ -26,7 +26,10 @@ import { AmberSlideOver } from '@core/components';
 import { AmberProgress } from '@core/components/AmberProgress';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { DataTable, Column, Action } from '@core/components/Data/DataTable';
-import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
+import {
+  DataTableEntityTitle,
+  dataTableLinkInGroupClass,
+} from '@core/components/Data/DataTableEntityTitle';
 import {
   AdminListPageShell,
   ListPageToolbar,
@@ -143,10 +146,7 @@ export const GroupBuyingListPage: React.FC = () => {
             />
           </div>
           <div className="min-w-0 flex-1">
-            <DataTableEntityTitle
-              text={campaign.title}
-              className="group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors"
-            />
+            <DataTableEntityTitle text={campaign.title} className={dataTableLinkInGroupClass} />
             <p className="text-[11px] font-bold text-zinc-muted truncate mt-0.5">
               {categoryMap.get(String(campaign.categoryId)) || campaign.category?.name || '—'}
             </p>

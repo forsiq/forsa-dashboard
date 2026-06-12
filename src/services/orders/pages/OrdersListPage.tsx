@@ -33,11 +33,9 @@ import {
 } from '@core/components/Layout';
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
+import { dataTableLinkClass } from '@core/components/Data/DataTableEntityTitle';
 
 type StatusTab = 'all' | 'pending' | 'processing' | 'delivered' | 'cancelled';
-
-const tableLinkClass =
-  'hover:text-brand hover:underline underline-offset-2 decoration-brand/50 transition-colors cursor-pointer';
 
 const orderDetailHref = (order: Order) => `/orders/${order.id}`;
 
@@ -147,7 +145,7 @@ export const OrdersListPage = () => {
       render: (order) => (
         <Link
           href={orderDetailHref(order)}
-          className={cn('font-bold text-zinc-text tabular-nums', tableLinkClass)}
+          className={cn('font-bold text-zinc-text tabular-nums', dataTableLinkClass)}
           onClick={(e) => e.stopPropagation()}
         >
           #{order.orderNumber}
@@ -164,7 +162,7 @@ export const OrdersListPage = () => {
         <div className="space-y-0.5 min-w-0">
           <Link
             href={customerDetailHref(order)}
-            className={cn('block text-sm font-bold text-zinc-text truncate', tableLinkClass)}
+            className={cn('block text-sm font-bold text-zinc-text truncate', dataTableLinkClass)}
             onClick={(e) => e.stopPropagation()}
           >
             {formatOrderCustomerName(order.customerName, t)}
@@ -345,7 +343,7 @@ export const OrdersListPage = () => {
           <div className="flex items-start justify-between gap-2">
             <Link
               href={orderDetailHref(order)}
-              className={cn('text-[11px] font-black text-brand uppercase tracking-wider truncate', tableLinkClass)}
+              className={cn('text-[11px] font-black text-brand uppercase tracking-wider truncate', dataTableLinkClass)}
               onClick={(e) => e.stopPropagation()}
             >
               #{order.orderNumber}
@@ -362,7 +360,7 @@ export const OrdersListPage = () => {
 
           <Link
             href={customerDetailHref(order)}
-            className={cn('text-sm font-bold text-zinc-text truncate leading-tight block', tableLinkClass)}
+            className={cn('text-sm font-bold text-zinc-text truncate leading-tight block', dataTableLinkClass)}
             onClick={(e) => e.stopPropagation()}
           >
             {formatOrderCustomerName(order.customerName, t)}
