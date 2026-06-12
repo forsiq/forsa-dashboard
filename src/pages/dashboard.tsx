@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { TimerProvider } from '@core/contexts/TimerContext';
 import { ListPageSkeleton } from '@core/loading';
 
 const DashboardHomePage = dynamic(
@@ -10,5 +11,9 @@ const DashboardHomePage = dynamic(
 );
 
 export default function Dashboard() {
-  return <DashboardHomePage />;
+  return (
+    <TimerProvider>
+      <DashboardHomePage />
+    </TimerProvider>
+  );
 }

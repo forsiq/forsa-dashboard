@@ -174,7 +174,6 @@ export default async function handler(
 
   try {
     const ip = await resolveIp();
-    console.log(`[Amazon Proxy] ${rainforestParams.type} → ${ip}: ${url.toString().replace(RAINFOREST_API_KEY, '***')}`);
 
     const { status, data } = await httpsGet(url.toString(), ip);
 

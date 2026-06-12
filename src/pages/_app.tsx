@@ -11,7 +11,6 @@ import { NavigationProvider } from '@core/contexts/NavigationContext';
 import { ProjectProvider } from '@core/contexts/ProjectContext';
 import { ToastProvider } from '@core/contexts/ToastContext';
 import { CoreUIProvider } from '@core/contexts/CoreUIConfigContext';
-import { TimerProvider } from '@core/contexts/TimerContext';
 import { PwaInstallProvider } from '@core/contexts/PwaInstallContext';
 import { Toast } from '@core/components/Feedback/Toast';
 import { SessionExpiredDialog } from '@core/components/Feedback/SessionExpiredDialog';
@@ -82,7 +81,6 @@ function MyApp({ Component, pageProps, initialLanguage, initialTheme }: ForsaApp
               <ThemeProvider initialTheme={initialTheme}>
                 <NavigationProvider>
                   <ProjectProvider>
-                    <TimerProvider>
                     <PwaInstallProvider>
                     <Toast />
                     {!isPublicRoute && <SessionExpiredDialog />}
@@ -103,7 +101,6 @@ function MyApp({ Component, pageProps, initialLanguage, initialTheme }: ForsaApp
                       </AuthGuard>
                     )}
                     </PwaInstallProvider>
-                    </TimerProvider>
                   </ProjectProvider>
                 </NavigationProvider>
               </ThemeProvider>

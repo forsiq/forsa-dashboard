@@ -102,7 +102,6 @@ async function fetchWithTimeout(
  */
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const normalized = normalizeCredentials(credentials);
-  console.log('[authApi] Attempting login for:', normalized.username);
 
   const response = await fetchWithTimeout(buildAuthUrl('token/'), {
     method: 'POST',
@@ -130,7 +129,6 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   }
 
   const data = await response.json();
-  console.log('[authApi] Login successful, tokens received');
 
   // Return immediately with fallback user data
   const result: AuthResponse = {
@@ -160,7 +158,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
       username: userData.username || credentials.username,
       email: userData.email || '',
     });
-    console.log('[authApi] Background profile fetch succeeded:', userData.username);
+    // Profile fetched successfully — user state updated via setUser above
   }).catch(err => {
     console.warn('[authApi] Background profile fetch failed:', err);
   });
@@ -198,7 +196,7 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
  */
 export const logout = async (): Promise<void> => {
   // Can be expanded to call sign-out endpoint if necessary
-  console.log('[authApi] Logging out user...');
+  // Logout — local state cleared by caller
 };
 
 /**

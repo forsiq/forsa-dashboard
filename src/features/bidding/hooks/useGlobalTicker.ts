@@ -167,6 +167,25 @@ export const useGlobalTicker = ({
     return () => disconnect();
   }, [connect, disconnect]);
 
+  // Pause WebSocket when tab is hidden, reconnect when visible
+  useEffect(() => {
+    if (!enabled) return;
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          reconnectAttempts.current = 0;
+          connect();
+        }
+      } else {
+        disconnect();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [enabled, connect, disconnect]);
+
   return {
     events,
     isConnected,

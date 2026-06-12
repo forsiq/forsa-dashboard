@@ -86,16 +86,6 @@ export const ListingImage: React.FC<ListingImageProps> = ({
     return null;
   }, [hasError, directUrl, firstAttachmentId, attachmentUrlMap]);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[ListingImage]', {
-      directUrl,
-      firstAttachmentId,
-      hasAttachmentMap: !!attachmentUrlMap,
-      resolvedUrl: firstAttachmentId && attachmentUrlMap ? attachmentUrlMap.get(firstAttachmentId) : undefined,
-      finalImageUrl: imageUrl,
-      raw: { imageUrl: listing.imageUrl, image_url: listing.image_url, attachmentIds: listing.attachmentIds, attachment_ids: listing.attachment_ids },
-    });
-  }
 
   if (children && imageUrl) {
     return <>{children(imageUrl)}</>;

@@ -71,10 +71,6 @@ async function fetchAttachmentUrlsWithFallback(ids: number[]): Promise<Map<numbe
 
     const results = response.data?.results || response.data?.data?.results || {};
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[useAttachmentUrls] batch response', { ids, results, raw: response.data });
-    }
-
     for (const id of ids) {
       const item: BatchAttachmentResult | undefined = results[String(id)];
       if (item?.file_url) {

@@ -147,6 +147,26 @@ export const ListingDetailPage: React.FC = () => {
     [deals]
   );
 
+  const auctionStatusCounts = useMemo(() => {
+    let active = 0, scheduled = 0, ended = 0;
+    for (const a of sortedAuctions) {
+      if (a.status === 'active') active++;
+      else if (a.status === 'scheduled' || a.status === 'draft') scheduled++;
+      else if (a.status === 'ended' || a.status === 'cancelled') ended++;
+    }
+    return { active, scheduled, ended };
+  }, [sortedAuctions]);
+
+  const dealStatusCounts = useMemo(() => {
+    let active = 0, scheduled = 0, ended = 0;
+    for (const d of sortedDeals) {
+      if (d.status === 'active') active++;
+      else if (d.status === 'scheduled' || d.status === 'draft') scheduled++;
+      else if (d.status === 'ended' || d.status === 'cancelled') ended++;
+    }
+    return { active, scheduled, ended };
+  }, [sortedDeals]);
+
   // Compute next schedule info for Quick Deploy Card context
   const nextScheduleInfo = useMemo(() => {
     const activeAuction = auctions.find((a: any) => a.status === 'active');
@@ -167,16 +187,7 @@ export const ListingDetailPage: React.FC = () => {
   );
   const allImages = useMemo(() => {
     if (!listing) return [];
-    const merged = buildListingGalleryImages(listing, attachmentUrlMap);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[ListingDetailPage] image resolution', {
-        attachmentIds,
-        batchResolved: attachmentUrlMap ? Object.fromEntries(attachmentUrlMap) : {},
-        finalImages: merged,
-        raw: { imageUrl: listing?.imageUrl, images: listing?.images },
-      });
-    }
-    return merged;
+    return buildListingGalleryImages(listing, attachmentUrlMap);
   }, [listing, attachmentUrlMap, attachmentIds]);
 
   if (!isClient || !listingId || isPending) return <DetailPageSkeleton />;
@@ -425,9 +436,9 @@ export const ListingDetailPage: React.FC = () => {
                     <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                       {sortedAuctions.length > 0
                         ? [
-                            sortedAuctions.filter((a: any) => a.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'active').length)) : '',
-                            sortedAuctions.filter((a: any) => a.status === 'scheduled' || a.status === 'draft').length > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'scheduled' || a.status === 'draft').length)) : '',
-                            sortedAuctions.filter((a: any) => a.status === 'ended' || a.status === 'cancelled').length > 0 ? t('listing.channels.ended_count').replace('{count}', String(sortedAuctions.filter((a: any) => a.status === 'ended' || a.status === 'cancelled').length)) : '',
+                            auctionStatusCounts.active > 0 ? t('listing.channels.active_count').replace('{count}', String(auctionStatusCounts.active)) : '',
+                            auctionStatusCounts.scheduled > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(auctionStatusCounts.scheduled)) : '',
+                            auctionStatusCounts.ended > 0 ? t('listing.channels.ended_count').replace('{count}', String(auctionStatusCounts.ended)) : '',
                           ].filter(Boolean).join(' · ')
                         : t('listing.channels.not_published')
                       }
@@ -517,9 +528,9 @@ export const ListingDetailPage: React.FC = () => {
                     <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
                       {sortedDeals.length > 0
                         ? [
-                            sortedDeals.filter((d: any) => d.status === 'active').length > 0 ? t('listing.channels.active_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'active').length)) : '',
-                            sortedDeals.filter((d: any) => d.status === 'scheduled' || d.status === 'draft').length > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'scheduled' || d.status === 'draft').length)) : '',
-                            sortedDeals.filter((d: any) => d.status === 'ended' || d.status === 'cancelled').length > 0 ? t('listing.channels.ended_count').replace('{count}', String(sortedDeals.filter((d: any) => d.status === 'ended' || d.status === 'cancelled').length)) : '',
+                            dealStatusCounts.active > 0 ? t('listing.channels.active_count').replace('{count}', String(dealStatusCounts.active)) : '',
+                            dealStatusCounts.scheduled > 0 ? t('listing.channels.scheduled_count').replace('{count}', String(dealStatusCounts.scheduled)) : '',
+                            dealStatusCounts.ended > 0 ? t('listing.channels.ended_count').replace('{count}', String(dealStatusCounts.ended)) : '',
                           ].filter(Boolean).join(' · ')
                         : t('listing.channels.not_published')
                       }
