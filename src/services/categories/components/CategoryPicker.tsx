@@ -105,7 +105,11 @@ export function CategoryPicker({
     return String(selectedCategoryDetail.id);
   }, [selectedMainId, selectedCategoryDetail, value]);
 
-  const { data: children, isLoading: loadingChildren } = useCategoryChildren(
+  const {
+    data: children,
+    isLoading: loadingChildren,
+    error: childrenError,
+  } = useCategoryChildren(
     resolvedMainId || null,
     !!resolvedMainId,
   );
@@ -125,25 +129,6 @@ export function CategoryPicker({
   const handleSelectMain = (category: Category) => {
     const mainId = String(category.id);
     setSelectedMainId(mainId);
-    const tree = categoryTree?.tree || [];
-    const hasChildren = mainHasChildren(tree, mainId);
-
-    if (!hasChildren) {
-      onChange(Number(category.id));
-      return;
-    }
-
-    if (!value) return;
-
-    const currentIsMain = String(value) === mainId;
-    const mainInTree = tree.find((item) => String(item.id) === mainId);
-    const currentIsChildOfMain = (mainInTree?.children || []).some(
-      (child) => String(child.id) === String(value),
-    );
-
-    if (!currentIsMain && !currentIsChildOfMain) {
-      onChange(0);
-    }
   };
 
   const handleSelectChild = (category: Category) => {
@@ -207,6 +192,13 @@ export function CategoryPicker({
     return total;
   }, [categoryTree?.tree, healthReport]);
 
+  const hiddenChildrenCount = useMemo(() => {
+    if (!resolvedMainId) return 0;
+    return (children || []).filter(
+      (cat) => !isCategoryPickerSafe(String(cat.id), healthReport),
+    ).length;
+  }, [children, healthReport, resolvedMainId]);
+
   const selectedMainCategory = useMemo(() => {
     if (!resolvedMainId) return null;
     return (
@@ -216,22 +208,57 @@ export function CategoryPicker({
     );
   }, [resolvedMainId, safeMainCategories, categoryTree?.tree]);
 
-  const mainHasSubs = useMemo(
-    () => (resolvedMainId ? mainHasChildren(categoryTree?.tree || [], resolvedMainId) : false),
-    [resolvedMainId, categoryTree?.tree],
-  );
+  const mainHasSubs = useMemo(() => {
+    if (!resolvedMainId) return false;
+    return (
+      mainHasChildren(categoryTree?.tree || [], resolvedMainId) ||
+      (children?.length ?? 0) > 0
+    );
+  }, [resolvedMainId, categoryTree?.tree, children]);
 
   const isSelectionComplete = useMemo(() => {
     if (!value || !resolvedMainId) return false;
-    if (!mainHasSubs) return String(value) === resolvedMainId;
-    return String(value) !== resolvedMainId;
-  }, [value, resolvedMainId, mainHasSubs]);
+    const selectedIsMain = String(value) === resolvedMainId;
+    if (mainHasSubs) {
+      // If value is a child of the resolved main, selection is complete.
+      // If value is the main itself (user clicked "Use main category"), also complete.
+      // But NOT complete just because mainHasSubs is true and value happens to be set
+      // from a previous selection of a different main.
+      if (selectedIsMain) return true; // "Use main category" was clicked
+      // Check if value is a child of resolvedMainId
+      const isChildInTree = (categoryTree?.tree || [])
+        .find((item) => String(item.id) === resolvedMainId)
+        ?.children?.some((child) => String(child.id) === String(value));
+      const isChildInApi = (children || []).some(
+        (child) => String(child.id) === String(value),
+      );
+      return isChildInTree || isChildInApi;
+    }
+    return selectedIsMain;
+  }, [value, resolvedMainId, mainHasSubs, categoryTree?.tree, children]);
 
   useEffect(() => {
     if (!value) {
       setSelectedMainId(null);
     }
   }, [value]);
+
+  // Validate current value when switching main categories or children load
+  useEffect(() => {
+    if (!resolvedMainId || !selectedMainId) return;
+    if (loadingChildren) return;
+    if (value && String(value) !== resolvedMainId) {
+      const isChildInTree = (categoryTree?.tree || [])
+        .find((item) => String(item.id) === resolvedMainId)
+        ?.children?.some((child) => String(child.id) === String(value));
+      const isChildInApi = (children || []).some(
+        (child) => String(child.id) === String(value),
+      );
+      if (!isChildInTree && !isChildInApi) {
+        onChange(0);
+      }
+    }
+  }, [resolvedMainId, selectedMainId, loadingChildren, children, categoryTree?.tree]);
 
   const openSuggestSubCategory = () => {
     if (!resolvedMainId) return;
@@ -367,7 +394,7 @@ export function CategoryPicker({
           )}
         </section>
 
-        {resolvedMainId && selectedMainCategory && mainHasSubs && (
+        {resolvedMainId && selectedMainCategory && !loadingChildren && (
           <section className="px-4 py-4 border-t border-white/5 space-y-3">
             <div>
               <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
@@ -388,27 +415,63 @@ export function CategoryPicker({
                   {t('common.loading') || 'Loading...'}
                 </span>
               </div>
+            ) : childrenError ? (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3">
+                <p className="text-sm text-red-400">
+                  {t('category.picker_children_error') ||
+                    'Failed to load sub-categories. You can still use the main category.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onChange(Number(resolvedMainId))}
+                  className="mt-2 text-xs font-bold text-brand hover:text-brand/80"
+                >
+                  {t('category.use_main_category') || 'Use main category'}
+                </button>
+              </div>
             ) : safeChildren.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {safeChildren.map((cat) => {
-                  const isSelected = String(value) === String(cat.id);
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => handleSelectChild(cat)}
-                      className={cn(
-                        'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
-                        isSelected
-                          ? 'bg-brand/20 text-brand border-brand/40'
-                          : 'bg-white/[0.02] text-zinc-text border-white/[0.06] hover:border-brand/30 hover:bg-brand/[0.03]',
-                      )}
-                    >
-                      <CategoryIconPreview icon={cat.icon} />
-                      {getLocalizedName(cat, language)}
-                    </button>
-                  );
-                })}
+              <div className="space-y-3">
+                {hiddenChildrenCount > 0 && (
+                  <p className="text-xs text-amber-600 dark:text-warning/80">
+                    {(t('category.picker_hidden_subs') || '{count} sub-category(ies) hidden due to quality issues.').replace(
+                      '{count}',
+                      String(hiddenChildrenCount),
+                    )}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {safeChildren.map((cat) => {
+                    const isSelected = String(value) === String(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => handleSelectChild(cat)}
+                        className={cn(
+                          'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
+                          isSelected
+                            ? 'bg-brand/20 text-brand border-brand/40'
+                            : 'bg-white/[0.02] text-zinc-text border-white/[0.06] hover:border-brand/30 hover:bg-brand/[0.03]',
+                        )}
+                      >
+                        <CategoryIconPreview icon={cat.icon} />
+                        {getLocalizedName(cat, language)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onChange(Number(resolvedMainId))}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
+                    String(value) === resolvedMainId
+                      ? 'bg-brand/20 text-brand border-brand/40'
+                      : 'text-zinc-muted border-dashed border-white/[0.06] hover:border-brand/30 hover:text-brand',
+                  )}
+                >
+                  {t('category.use_main_category') || 'Use main category'}
+                </button>
               </div>
             ) : (
               <div className="rounded-lg border border-dashed border-border bg-white/[0.02] px-4 py-5 space-y-4">
@@ -417,6 +480,18 @@ export function CategoryPicker({
                     'No sub-categories are available under this main category yet.'}
                 </p>
                 <div className="flex flex-wrap items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => onChange(Number(resolvedMainId))}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
+                      String(value) === resolvedMainId
+                        ? 'bg-brand/20 text-brand border-brand/40'
+                        : 'text-zinc-muted border-dashed border-white/[0.06] hover:border-brand/30 hover:text-brand',
+                    )}
+                  >
+                    {t('category.use_main_category') || 'Use main category'}
+                  </button>
                   {showSuggest && (
                     <button
                       type="button"

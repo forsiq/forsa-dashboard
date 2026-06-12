@@ -64,7 +64,7 @@ import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
 import { FieldHelpHint } from '../components/FieldHelpHint';
-import { useBrands } from '../hooks/useBrands';
+import { useBrands, saveBrandToLocalStorage } from '../hooks/useBrands';
 import { AmberAutocomplete } from '@core/components/AmberAutocomplete';
 import {
   getWizardLayout,
@@ -890,20 +890,15 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   );
 
   const handleCatalogChange = useCallback((data: Record<string, unknown>, field: string, value: unknown) => {
-    // FormBuilder calls onChange inside its own setState updater, so we must
-    // defer our setState to avoid "Cannot update component while rendering
-    // a different component" errors.
-    React.startTransition(() => {
-      setCatalog((prev) => ({
-        ...prev,
-        [field]: field === 'categoryId' ? (value ? Number(value) : undefined) : value,
-      }));
-      setFieldErrors((prev) => {
-        if (!prev[field]) return prev;
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
+    setCatalog((prev) => ({
+      ...prev,
+      [field]: field === 'categoryId' ? (value ? Number(value) : undefined) : value,
+    }));
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
     });
   }, []);
 
@@ -1175,6 +1170,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 value={catalog.brand}
                 onChange={(val) => {
                   setCatalog((prev) => ({ ...prev, brand: val }));
+                  saveBrandToLocalStorage(val);
                   if (fieldErrors.brand) {
                     setFieldErrors((prev) => {
                       const next = { ...prev };
@@ -1327,6 +1323,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                       value={catalog.brand}
                       onChange={(val) => {
                         setCatalog((prev) => ({ ...prev, brand: val }));
+                        saveBrandToLocalStorage(val);
                         if (fieldErrors.brand) {
                           setFieldErrors((prev) => {
                             const next = { ...prev };

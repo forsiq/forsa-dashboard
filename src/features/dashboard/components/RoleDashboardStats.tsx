@@ -30,7 +30,7 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
     {
       id: 'pending-reviews',
       titleKey: 'dash.admin.pending_reviews',
-      getValue: () => '0',
+      getValue: (d) => (d?.quickCounts?.pendingOrders || 0).toString(),
       color: 'warning',
     },
     {
@@ -68,7 +68,7 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
     {
       id: 'pending-submissions',
       titleKey: 'dash.merchant.pending_submissions',
-      getValue: () => '0',
+      getValue: (d) => (d?.quickCounts?.pendingOrders || 0).toString(),
       color: 'warning',
     },
   ],
@@ -94,7 +94,7 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
     {
       id: 'resolved-today',
       titleKey: 'dash.support.resolved_today',
-      getValue: () => '0',
+      getValue: (d) => (d?.quickCounts?.activeDeals || 0).toString(),
       color: 'success',
     },
   ],
@@ -133,7 +133,9 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
 export const RoleDashboardStats: React.FC = () => {
   const { role } = useDashboardRole();
   const { t } = useLanguage();
-  const { data: stats, isLoading, isError, partialError } = useDashboardStats();
+  const { data: statsData, isLoading, isError } = useDashboardStats();
+  const stats = statsData;
+  const partialError = statsData?.partialError ?? false;
 
   const configs = ROLE_STATS[role] ?? ROLE_STATS.admin;
 

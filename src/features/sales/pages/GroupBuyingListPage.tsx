@@ -92,6 +92,11 @@ export const GroupBuyingListPage: React.FC = () => {
   const cancelDeal = useCancelGroupBuying();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
+  const categoryMap = useMemo(() => {
+    const cats = categoriesData?.categories || [];
+    return new Map(cats.map((c) => [String(c.id), getLocalizedName(c, language)]));
+  }, [categoriesData, language]);
+
   const campaigns = campaignsData?.groupBuyings || [];
 
   const getStatusVariant = (status: string): any => {
@@ -135,7 +140,7 @@ export const GroupBuyingListPage: React.FC = () => {
           <div className="min-w-0">
             <DataTableEntityTitle text={campaign.title} />
             <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
-              {campaign.category?.name || 'GENERAL'}
+              {categoryMap.get(String(campaign.categoryId)) || campaign.category?.name || '—'}
             </p>
           </div>
         </div>

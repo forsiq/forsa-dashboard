@@ -23,7 +23,7 @@ import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
 import { useFileUpload } from '@core/hooks/useFileUpload';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
 import { useCreateListing, useUpdateListing, useGetListing } from '../api/listing-hooks';
-import { useBrands } from '../hooks/useBrands';
+import { useBrands, saveBrandToLocalStorage } from '../hooks/useBrands';
 import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
@@ -370,7 +370,10 @@ export const ListingFormPage: React.FC = () => {
               label={t('listing.form.brand') || 'Brand'}
               placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
               value={formData.brand || ''}
-              onChange={(val) => setFormData((prev) => ({ ...prev, brand: val }))}
+              onChange={(val) => {
+                setFormData((prev) => ({ ...prev, brand: val }));
+                saveBrandToLocalStorage(val);
+              }}
               suggestions={brands}
               dir={dir}
             />

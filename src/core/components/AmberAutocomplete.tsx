@@ -10,6 +10,7 @@ interface AmberAutocompleteProps {
   className?: string;
   dir?: 'rtl' | 'ltr';
   error?: string;
+  emptyHint?: string;
 }
 
 export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
@@ -21,6 +22,7 @@ export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
   className,
   dir,
   error,
+  emptyHint,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -34,7 +36,8 @@ export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
     s.toLowerCase().includes(value.toLowerCase()),
   );
 
-  const showDropdown = isOpen && filteredSuggestions.length > 0;
+  // Show dropdown when focused, even with no matching suggestions (shows empty hint)
+  const showDropdown = isOpen;
 
   const handleSelect = useCallback(
     (suggestion: string) => {
@@ -68,7 +71,7 @@ export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) {
-      if (e.key === 'ArrowDown' && filteredSuggestions.length > 0) {
+      if (e.key === 'ArrowDown' && suggestions.length > 0) {
         setIsOpen(true);
         setHighlightedIndex(0);
         e.preventDefault();
@@ -150,9 +153,7 @@ export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
             setHighlightedIndex(-1);
           }}
           onFocus={() => {
-            if (filteredSuggestions.length > 0) {
-              setIsOpen(true);
-            }
+            setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
         />
@@ -166,29 +167,35 @@ export const AmberAutocomplete: React.FC<AmberAutocompleteProps> = ({
             )}
             role="listbox"
           >
-            {filteredSuggestions.map((suggestion, index) => (
-              <li
-                key={suggestion}
-                role="option"
-                aria-selected={index === highlightedIndex}
-                className={cn(
-                  'px-4 py-3 cursor-pointer text-sm transition-colors',
-                  index === highlightedIndex
-                    ? 'bg-white/5 text-zinc-text'
-                    : 'text-zinc-text hover:bg-white/5',
-                  index === 0 && 'rounded-t-xl',
-                  index === filteredSuggestions.length - 1 && 'rounded-b-xl',
-                )}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                onMouseLeave={() => setHighlightedIndex(-1)}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSelect(suggestion);
-                }}
-              >
-                {highlightMatch(suggestion)}
+            {filteredSuggestions.length > 0 ? (
+              filteredSuggestions.map((suggestion, index) => (
+                <li
+                  key={suggestion}
+                  role="option"
+                  aria-selected={index === highlightedIndex}
+                  className={cn(
+                    'px-4 py-3 cursor-pointer text-sm transition-colors',
+                    index === highlightedIndex
+                      ? 'bg-white/5 text-zinc-text'
+                      : 'text-zinc-text hover:bg-white/5',
+                    index === 0 && 'rounded-t-xl',
+                    index === filteredSuggestions.length - 1 && 'rounded-b-xl',
+                  )}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  onMouseLeave={() => setHighlightedIndex(-1)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(suggestion);
+                  }}
+                >
+                  {highlightMatch(suggestion)}
+                </li>
+              ))
+            ) : (
+              <li className="px-4 py-3 text-sm text-zinc-muted select-none">
+                {emptyHint || 'No suggestions — type to add a new value'}
               </li>
-            ))}
+            )}
           </ul>
         )}
       </div>
