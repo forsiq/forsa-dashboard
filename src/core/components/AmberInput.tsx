@@ -2,14 +2,13 @@ import React from 'react';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
 
-interface AmberInputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
+interface AmberInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   multiline?: boolean;
   icon?: React.ReactNode;
   rightElement?: React.ReactNode;
   rows?: number;
-  /** Controls border radius. 'rounded' = rounded-xl (default), 'square' = rounded-sm */
   shape?: 'rounded' | 'square';
 }
 
@@ -22,14 +21,27 @@ export const AmberInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElemen
       multiline,
       icon,
       rightElement,
+      rows,
       shape = 'rounded',
       ...props
     },
     ref,
   ) => {
     const { isRTL } = useLanguage();
-    const InputComponent = multiline ? 'textarea' : 'input';
     const radiusClass = shape === 'square' ? 'rounded-sm' : 'rounded-xl';
+
+    const sharedClass = cn(
+      'w-full bg-white dark:bg-obsidian-card border text-base font-medium text-zinc-text outline-none transition-all placeholder:text-zinc-muted/40 shadow-sm',
+      radiusClass,
+      multiline ? 'p-4 resize-none' : 'h-14 px-4',
+      icon && !multiline ? (isRTL ? 'pr-11' : 'pl-11') : '',
+      icon && multiline ? (isRTL ? 'pr-11' : 'pl-11') : '',
+      rightElement && !multiline ? (isRTL ? 'pl-11' : 'pr-11') : '',
+      error
+        ? 'border-danger focus:border-danger bg-danger/[0.03]'
+        : 'border-zinc-200 dark:border-white/5 focus:border-brand/40 dark:focus:bg-obsidian-hover',
+      className,
+    );
 
     return (
       <div className="space-y-1.5 w-full">
@@ -61,22 +73,20 @@ export const AmberInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElemen
               {icon}
             </div>
           )}
-          <InputComponent
-            ref={ref as React.Ref<HTMLInputElement & HTMLTextAreaElement>}
-            className={cn(
-              'w-full bg-white dark:bg-obsidian-card border text-base font-medium text-zinc-text outline-none transition-all placeholder:text-zinc-muted/40 shadow-sm',
-              radiusClass,
-              multiline ? 'p-4 resize-none' : 'h-14 px-4',
-              icon && !multiline ? (isRTL ? 'pr-11' : 'pl-11') : '',
-              icon && multiline ? (isRTL ? 'pr-11' : 'pl-11') : '',
-              rightElement && !multiline ? (isRTL ? 'pl-11' : 'pr-11') : '',
-              error
-                ? 'border-danger focus:border-danger bg-danger/[0.03]'
-                : 'border-zinc-200 dark:border-white/5 focus:border-brand/40 dark:focus:bg-obsidian-hover',
-              className,
-            )}
-            {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
-          />
+          {multiline ? (
+            <textarea
+              ref={ref as React.Ref<HTMLTextAreaElement>}
+              rows={rows}
+              className={sharedClass}
+              {...(props as unknown as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+            />
+          ) : (
+            <input
+              ref={ref as React.Ref<HTMLInputElement>}
+              className={sharedClass}
+              {...props}
+            />
+          )}
           {rightElement && (
             <div
               className={cn(
