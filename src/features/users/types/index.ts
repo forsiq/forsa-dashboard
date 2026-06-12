@@ -11,6 +11,9 @@ export interface User {
   role: 'admin' | 'manager' | 'user';
   isActive: boolean;
   isTempPass: boolean;
+  points?: number;
+  level?: number;
+  bonusPoints?: number;
   createdAt?: string;
   updatedAt?: string;
 }

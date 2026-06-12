@@ -9,6 +9,7 @@ import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { Edit, Shield, Mail, Phone, Calendar, UserCheck, UserX } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useIsClient } from '@core/hooks/useIsClient';
@@ -191,6 +192,31 @@ export function UserDetailPage() {
                 </div>
               )}
             </div>
+          </AmberCard>
+
+          {/* Engagement Stats Card */}
+          <AmberCard className="p-3 md:p-6">
+            <h3 className="text-base md:text-lg font-semibold text-zinc-text mb-3 md:mb-4 flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-400" />
+              Engagement
+            </h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-brand-50 rounded-lg p-3">
+                <p className="text-2xl font-bold text-brand-600">-</p>
+                <p className="text-xs text-zinc-500 mt-1">Points</p>
+              </div>
+              <div className="bg-amber-50 rounded-lg p-3">
+                <p className="text-2xl font-bold text-amber-600">-</p>
+                <p className="text-xs text-zinc-500 mt-1">Level</p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-3">
+                <p className="text-2xl font-bold text-purple-600">-</p>
+                <p className="text-xs text-zinc-500 mt-1">Rewards</p>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-400 mt-3 text-center">
+              Connect rewards API to see live engagement data
+            </p>
           </AmberCard>
         </>
       ) : null}
