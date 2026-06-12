@@ -27,7 +27,7 @@ export interface AnalyticsData {
 export interface SalesReportData {
   products: { name: string; sales: number; revenue: number }[];
   categories: { name: string; sales: number; revenue: number }[];
-  topCustomers: { name: string; email: string; spent: number }[];
+  topCustomers: { name: string; email: string; spent: number; orders?: number; city?: string }[];
   grossSales: number;
   grossSalesChange: string;
   netProfit: number;

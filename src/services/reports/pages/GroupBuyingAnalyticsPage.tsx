@@ -47,7 +47,10 @@ export function GroupBuyingAnalyticsPage() {
   const { data: stats, isLoading: statsLoading } = useGetGroupBuyingStats();
   const { data: dealsData, isLoading: dealsLoading } = useGetGroupBuyings({ limit: 100 });
 
-  const deals = dealsData?.groupBuyings || [];
+  const deals = useMemo(
+    () => dealsData?.groupBuyings ?? [],
+    [dealsData?.groupBuyings],
+  );
 
   const isLoading = statsLoading || dealsLoading;
 

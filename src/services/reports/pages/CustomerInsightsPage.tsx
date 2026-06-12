@@ -12,20 +12,23 @@ import {
   reportKpiGridClass,
   reportPageClass,
 } from '../utils/reportLayout';
+import type { SalesReportData } from '../types';
+
+type TopCustomer = SalesReportData['topCustomers'][number];
 
 export function CustomerInsightsPage() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
   const { data, isLoading } = useGetSalesReport();
 
-  const topCustomers = data?.topCustomers || [];
+  const topCustomers: TopCustomer[] = data?.topCustomers ?? [];
   const retentionRate = topCustomers.length > 0
     ? Math.round(
-        (topCustomers.filter((c: any) => (c.orders ?? 0) > 1).length / Math.max(topCustomers.length, 1)) * 100
+        (topCustomers.filter((c) => (c.orders ?? 0) > 1).length / Math.max(topCustomers.length, 1)) * 100
       )
     : 0;
   const concentration = topCustomers.length > 0
-    ? new Set(topCustomers.map((c: any) => c.city).filter(Boolean)).size
+    ? new Set(topCustomers.map((c) => c.city).filter(Boolean)).size
     : 0;
 
   return (
