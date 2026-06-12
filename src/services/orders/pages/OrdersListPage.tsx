@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
@@ -34,6 +35,19 @@ import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
 
 type StatusTab = 'all' | 'pending' | 'processing' | 'delivered' | 'cancelled';
+
+const tableLinkClass =
+  'hover:text-brand hover:underline underline-offset-2 decoration-brand/50 transition-colors cursor-pointer';
+
+const orderDetailHref = (order: Order) => `/orders/${order.id}`;
+
+const customerDetailHref = (order: Order) => {
+  const id = order.customerId?.trim();
+  if (id && /^[\w-]+$/.test(id) && id !== order.customerName?.trim()) {
+    return `/customers/${id}`;
+  }
+  return orderDetailHref(order);
+};
 
 export const OrdersListPage = () => {
   const router = useRouter();
@@ -128,8 +142,16 @@ export const OrdersListPage = () => {
       key: 'orderNumber',
       label: t('orders.table.id') || 'Order #',
       cardTitle: true,
+      width: 'w-[130px]',
+      className: 'whitespace-nowrap',
       render: (order) => (
-        <span className="font-bold text-zinc-text">#{order.orderNumber}</span>
+        <Link
+          href={orderDetailHref(order)}
+          className={cn('font-bold text-zinc-text tabular-nums', tableLinkClass)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          #{order.orderNumber}
+        </Link>
       ),
       sortable: true,
     },
@@ -137,12 +159,19 @@ export const OrdersListPage = () => {
       key: 'customerName',
       label: t('orders.table.customer') || 'Customer',
       cardSubtitle: true,
-      render: (order: any) => (
-        <div className="space-y-0.5">
-          <div className="text-sm font-bold text-zinc-text">
+      className: 'min-w-[180px] max-w-[280px]',
+      render: (order: Order) => (
+        <div className="space-y-0.5 min-w-0">
+          <Link
+            href={customerDetailHref(order)}
+            className={cn('block text-sm font-bold text-zinc-text truncate', tableLinkClass)}
+            onClick={(e) => e.stopPropagation()}
+          >
             {formatOrderCustomerName(order.customerName, t)}
-          </div>
-          {order.customerEmail && <div className="text-xs font-medium text-zinc-muted">{order.customerEmail}</div>}
+          </Link>
+          {order.customerEmail && (
+            <div className="text-xs font-medium text-zinc-muted truncate">{order.customerEmail}</div>
+          )}
         </div>
       ),
       sortable: true,
@@ -150,6 +179,8 @@ export const OrdersListPage = () => {
     {
       key: 'total',
       label: t('orders.table.total') || 'Total',
+      width: 'w-[150px]',
+      className: 'whitespace-nowrap',
       render: (order: any) => (
         <span className="text-zinc-text font-black tabular-nums">
           {formatCurrency(order.total || 0)}
@@ -162,6 +193,7 @@ export const OrdersListPage = () => {
       key: 'status',
       label: t('orders.table.status') || 'Status',
       cardBadge: true,
+      width: 'w-[130px]',
       render: (order: any) => (
           <StatusBadge
             status={order.status}
@@ -183,14 +215,16 @@ export const OrdersListPage = () => {
     {
       key: 'date',
       label: t('orders.table.date') || 'Date',
+      width: 'w-[130px]',
+      className: 'whitespace-nowrap',
       render: (order: any) => {
         const dateStr = order.date || order.createdAt;
         if (!dateStr) return <span className="text-zinc-muted text-sm">-</span>;
         const date = new Date(dateStr);
         const isValid = !isNaN(date.getTime());
         return (
-          <span className="text-zinc-muted text-sm font-medium">
-            {isValid ? date.toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-US') : '-'}
+          <span className="text-zinc-muted text-sm font-medium tabular-nums" dir="ltr">
+            {isValid ? date.toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US') : '-'}
           </span>
         );
       },
@@ -309,9 +343,13 @@ export const OrdersListPage = () => {
       >
         <div className="p-3 space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-[11px] font-black text-brand uppercase tracking-wider truncate">
+            <Link
+              href={orderDetailHref(order)}
+              className={cn('text-[11px] font-black text-brand uppercase tracking-wider truncate', tableLinkClass)}
+              onClick={(e) => e.stopPropagation()}
+            >
               #{order.orderNumber}
-            </span>
+            </Link>
             <StatusBadge
               status={order.status}
               labelKey={orderStatusLabelKey(order.status)}
@@ -322,9 +360,13 @@ export const OrdersListPage = () => {
             />
           </div>
 
-          <p className="text-sm font-bold text-zinc-text truncate leading-tight">
+          <Link
+            href={customerDetailHref(order)}
+            className={cn('text-sm font-bold text-zinc-text truncate leading-tight block', tableLinkClass)}
+            onClick={(e) => e.stopPropagation()}
+          >
             {formatOrderCustomerName(order.customerName, t)}
-          </p>
+          </Link>
 
           <div className="pt-2 border-t border-white/5 space-y-1">
             <p className="text-base font-black text-zinc-text tabular-nums leading-none">
@@ -361,9 +403,16 @@ export const OrdersListPage = () => {
       icon={Package}
       className="p-3 md:p-6 space-y-4 md:space-y-8"
       statsLoading={statsLoading}
+      statsColumns={2}
       stats={[
         { label: t('orders.stat.total'), value: statsData?.total || 0, icon: Package, color: 'brand' },
-        { label: t('orders.stat.revenue'), value: formatCurrency(statsData?.totalRevenue), icon: DollarSign, color: 'success' },
+        {
+          label: t('orders.stat.revenue'),
+          value: formatCurrency(statsData?.totalRevenue),
+          icon: DollarSign,
+          color: 'success',
+          valueClassName: 'text-xl sm:text-2xl break-words leading-tight',
+        },
         { label: t('orders.stat.pending'), value: statsData?.pending || 0, icon: AlertCircle, color: 'warning' },
         {
           label: t('orders.stat.this_month') || t('orders.stat.active'),
@@ -373,13 +422,14 @@ export const OrdersListPage = () => {
         },
       ]}
       tabs={
-        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide min-w-0">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.key}
+              type="button"
               onClick={() => { setStatusFilter(tab.key); setPage(1); }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
+                "flex items-center justify-center gap-2 px-4 py-2.5 min-h-[40px] rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors whitespace-nowrap",
                 statusFilter === tab.key
                   ? "bg-[var(--color-brand)] text-black shadow-sm"
                   : "text-zinc-muted hover:text-zinc-text hover:bg-black/5"
@@ -446,9 +496,10 @@ export const OrdersListPage = () => {
             )}
           </div>
         ) : (
-          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+          <div className="relative min-w-0 overflow-x-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
             {isFetching && <FetchingOverlay />}
             <DataTable
+              className="border-0 shadow-none bg-transparent rounded-none"
               columns={columns}
               data={orders}
               onRowClick={handleRowClick}
@@ -460,8 +511,6 @@ export const OrdersListPage = () => {
               currentPage={page}
               totalItems={ordersData?.total || 0}
               onPageChange={(newPage) => setPage(newPage)}
-              showViewToggle
-              viewMode="table"
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}

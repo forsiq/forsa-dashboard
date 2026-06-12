@@ -63,7 +63,7 @@ export const WatchlistPage: React.FC = () => {
             <Heart className="w-4 h-4 text-danger fill-danger" />
           </div>
           <div className="min-w-0">
-            <DataTableEntityTitle text={auction.title} />
+            <DataTableEntityTitle text={auction.title} href={`/auctions/${auction.id}`} />
             <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">
               {categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general')}
             </p>

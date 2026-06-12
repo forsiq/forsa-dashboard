@@ -7,7 +7,7 @@ import { AmberLightbox } from './AmberLightbox';
 export interface AmberImageGalleryProps {
   images: string[];
   alt?: string;
-  /** Tailwind height classes for the main image area, e.g. "h-[280px]" */
+  /** Optional extra classes for the main image frame */
   height?: string;
   /** Optional overlay nodes rendered on top of the main image */
   overlay?: React.ReactNode;
@@ -19,7 +19,7 @@ export interface AmberImageGalleryProps {
 export function AmberImageGallery({
   images,
   alt = 'Gallery image',
-  height = 'h-[220px] md:h-[280px] lg:h-[320px]',
+  height,
   overlay,
   thumbnailCols = 'grid-cols-4 sm:grid-cols-5',
   className,
@@ -56,24 +56,36 @@ export function AmberImageGallery({
 
   if (images.length === 0) return null;
 
+  const useFixedFrame = Boolean(height);
+
   return (
     <div className={cn('space-y-3', className)}>
       <div
         className={cn(
-          'relative rounded-lg border border-white/5 bg-black overflow-hidden group',
-          height,
+          'relative w-full rounded-lg border border-white/5 bg-obsidian-outer overflow-hidden group',
+          useFixedFrame ? height : 'min-h-[160px] sm:min-h-[200px]',
         )}
       >
         <button
           type="button"
           onClick={openLightbox}
-          className="absolute inset-0 z-0 w-full h-full cursor-zoom-in"
+          className={cn(
+            'z-0 cursor-zoom-in',
+            useFixedFrame
+              ? 'absolute inset-0 w-full h-full'
+              : 'relative flex w-full min-h-[160px] sm:min-h-[200px] max-h-[240px] sm:max-h-[280px] xl:max-h-[320px] items-center justify-center',
+          )}
           aria-label="Open image preview"
         >
           <img
             src={currentUrl}
             alt={`${alt} ${viewIndex + 1}`}
-            className="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+            className={cn(
+              'object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none',
+              useFixedFrame
+                ? 'w-full h-full'
+                : 'max-h-[240px] sm:max-h-[280px] xl:max-h-[320px] max-w-full w-auto h-auto',
+            )}
           />
         </button>
 

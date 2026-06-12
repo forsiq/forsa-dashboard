@@ -200,7 +200,7 @@ export const AuctionDetails: React.FC = () => {
               />
               <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">#{auction.id}</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words lg:truncate">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words">
               {auction.title}
             </h1>
           </div>
@@ -297,47 +297,53 @@ export const AuctionDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6", isMobile && "pb-24")}>
-        {/* Left Column - Image + Bids */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className={cn("grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6", isMobile && "pb-24")}>
+        {/* Main Column - Gallery + Bids */}
+        <div className="xl:col-span-2 space-y-4 md:space-y-6 min-w-0 order-2 xl:order-1">
 
           {/* Image Gallery */}
-          <AmberImageGallery
-            images={allImages}
-            alt={auction.title}
-            height="h-[220px] md:h-[300px] lg:h-[460px]"
-            overlay={
-              <>
-                <div className="absolute top-4 start-4 flex items-center gap-2">
-                  <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                    <Eye className="w-3.5 h-3.5 text-brand" />
-                    <span className="text-xs font-semibold text-white tracking-wider">{t('auction.detail.live_monitoring') || 'Live'}</span>
+          {allImages.length > 0 ? (
+            <AmberImageGallery
+              images={allImages}
+              alt={auction.title}
+              height="h-[220px] sm:h-[280px] md:h-[320px] xl:h-[400px]"
+              overlay={
+                <>
+                  <div className="absolute top-4 start-4 flex items-center gap-2">
+                    <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                      <Eye className="w-3.5 h-3.5 text-brand" />
+                      <span className="text-xs font-semibold text-white tracking-wider">{t('auction.detail.live_monitoring') || 'Live'}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <span className="text-[11px] font-semibold text-brand tracking-widest">{categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general')}</span>
-                  <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
-                </div>
-              </>
-            }
-          />
+                  <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                    <span className="text-[11px] font-semibold text-brand tracking-widest">{categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('auction.detail.general')}</span>
+                    <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{auction.description}</h2>
+                  </div>
+                </>
+              }
+            />
+          ) : (
+            <div className="w-full min-h-[160px] sm:min-h-[200px] max-h-[240px] sm:max-h-[280px] bg-obsidian-outer rounded-xl border border-white/5 flex items-center justify-center">
+              <AuctionImage auction={auction} className="max-h-[240px] max-w-full object-contain rounded-lg" />
+            </div>
+          )}
 
           {/* Bid History */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-4 md:space-y-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/5 pb-3 md:pb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.high_frequency_telemetry') || 'Bid History'}</h3>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="text-end">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <div className="text-start sm:text-end">
                   <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}</span>
                   <p className="text-lg font-bold text-brand leading-none mt-0.5 tabular-nums">{formatCurrency(currentBid || startPrice)}</p>
                 </div>
-                <div className="w-px h-8 bg-white/5" />
-                <div className="text-end">
+                <div className="hidden sm:block w-px h-8 bg-white/5" />
+                <div className="text-start sm:text-end">
                   <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">{t('auction.detail.total_bids')}</span>
                   <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{auction.totalBids || 0}</p>
                 </div>
@@ -455,15 +461,15 @@ export const AuctionDetails: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column - Bidding + Info */}
-        <div className="space-y-6">
+        {/* Sidebar - Bidding + Info */}
+        <div className="space-y-4 md:space-y-6 min-w-0 order-1 xl:order-2">
 
           {/* Bidding Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden min-w-0">
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
-            <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-4 border-b border-white/5">
               <div className="space-y-1 min-w-0 flex-1">
                 <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">
                   {currentBid > 0 ? (t('auction.detail.current_bid') || 'Current Bid') : (t('auction.detail.start_price') || 'Start Price')}
@@ -513,19 +519,19 @@ export const AuctionDetails: React.FC = () => {
           </div>
 
           {/* Info Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-3 md:space-y-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-3 md:space-y-4 min-w-0">
             <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
               <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('auction.detail.infrastructure_logistics') || 'Details'}</h3>
             </div>
 
             <div className="space-y-3.5">
               {detailRows.map((item, i) => (
-                <div key={i} className="flex items-start justify-between gap-3 group/row">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-3 group/row min-w-0">
                   <div className="flex items-center gap-2.5 shrink-0">
                     <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
                     <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
-                  <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
+                  <span className="text-sm font-bold text-zinc-text sm:text-end break-words">{item.value}</span>
                 </div>
               ))}
             </div>

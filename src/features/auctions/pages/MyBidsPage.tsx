@@ -141,7 +141,7 @@ export const MyBidsPage: React.FC = () => {
             )}
           </div>
           <div className="min-w-0">
-            <DataTableEntityTitle text={bid.auctionTitle} />
+            <DataTableEntityTitle text={bid.auctionTitle} href={`/auctions/${bid.auctionId}`} />
             <p className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest mt-0.5">#{bid.auctionId}</p>
           </div>
         </div>

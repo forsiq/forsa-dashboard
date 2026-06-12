@@ -47,12 +47,30 @@ import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
 import { DetailPageSkeleton } from '@core/loading';
 import { useRouteParam } from '@core/hooks/useRouteParam';
 import { useCountdown } from '@core/hooks/useCountdown';
+import { useIsMobile } from '@core/hooks/useIsMobile';
+
+function formatDateTime(dateStr: string, locale: string): string {
+  try {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString(locale === 'ar' ? 'ar-IQ' : 'en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '—';
+  }
+}
 
 export const GroupBuyingDetailPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const isRTL = dir === 'rtl';
+  const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -128,27 +146,28 @@ export const GroupBuyingDetailPage: React.FC = () => {
   const isEndingSoon = new Date(campaign.endTime).getTime() - Date.now() < 1000 * 60 * 30;
 
   const detailRows = [
-    { icon: Calendar, label: t('groupBuying.node_initialization') || 'Start', value: new Date(campaign.startTime).toLocaleString() },
-    { icon: Clock, label: t('groupBuying.temporal_termination') || 'End', value: new Date(campaign.endTime).toLocaleString() },
-    { icon: Package, label: t('groupBuying.asset_identifier') || 'Product ID', value: `#${campaign.productId || 'N/A'}` },
-    { icon: Target, label: t('groupBuying.min_threshold') || 'Min Threshold', value: `${campaign.minParticipants} participants` },
-    ];
+    { icon: Calendar, label: t('groupBuying.node_initialization') || 'Start', value: formatDateTime(campaign.startTime, language), isDate: true },
+    { icon: Clock, label: t('groupBuying.temporal_termination') || 'End', value: formatDateTime(campaign.endTime, language), isDate: true },
+    { icon: Package, label: t('groupBuying.asset_identifier') || 'Product ID', value: campaign.productId ? String(campaign.productId) : '—' },
+    { icon: Target, label: t('groupBuying.min_threshold') || 'Min Threshold', value: `${campaign.minParticipants} ${t('groupBuying.participants_count') || 'participants'}` },
+  ];
 
   return (
     <>
       <div className="max-w-[1600px] mx-auto p-3 md:p-6 space-y-4 md:space-y-6 animate-in fade-in duration-700" dir={dir}>
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
-        <div className="flex items-center gap-4 w-full">
+      <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 w-full flex-1 items-center gap-4">
           <Link href="/group-buying">
             <button
-              className="w-10 h-10 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
+              type="button"
+              className="h-10 w-10 shrink-0 rounded-lg bg-obsidian-card border border-white/5 flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand/30 transition-all active:scale-95"
             >
               <ArrowLeft className={cn("w-4 h-4", isRTL && "rotate-180")} />
             </button>
           </Link>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <StatusBadge
                 status={campaign.status}
                 labelKey={`groupBuying.status.${campaign.status.toLowerCase()}`}
@@ -157,12 +176,16 @@ export const GroupBuyingDetailPage: React.FC = () => {
               />
               <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">#{campaign.id}</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-black text-zinc-text tracking-tight leading-tight mt-1 truncate">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words">
               {campaign.title}
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        <div className={cn(
+          'flex w-full min-w-0 flex-wrap items-center gap-2',
+          isRTL ? 'justify-end' : 'justify-start',
+          'lg:ms-auto lg:w-auto lg:shrink-0',
+        )}>
           {/* Start Campaign - draft/scheduled */}
           {['draft', 'scheduled'].includes(campaign?.status) && (
             <AmberButton
@@ -225,15 +248,16 @@ export const GroupBuyingDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Image + Participants */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className={cn("grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6", isMobile && "pb-24")}>
+        {/* Main Column - Image + Progress + Participants */}
+        <div className="xl:col-span-2 space-y-4 md:space-y-6 min-w-0 order-2 xl:order-1">
 
           {/* Image Gallery */}
+          {campaignImages.length > 0 ? (
           <AmberImageGallery
             images={campaignImages}
             alt={campaign.title}
-            height="h-[220px] md:h-[300px] lg:h-[460px]"
+            height="h-[220px] sm:h-[280px] md:h-[320px] xl:h-[400px]"
             overlay={
               <>
                 <div className="absolute top-4 start-4 flex items-center gap-2">
@@ -251,25 +275,30 @@ export const GroupBuyingDetailPage: React.FC = () => {
               </>
             }
           />
+          ) : (
+            <div className="w-full min-h-[160px] sm:min-h-[200px] max-h-[240px] sm:max-h-[280px] bg-obsidian-outer rounded-xl border border-white/5 flex items-center justify-center">
+              <AuctionImage auction={galleryItem || {}} className="max-h-[240px] max-w-full object-contain rounded-lg" alt={campaign.title} />
+            </div>
+          )}
 
           {/* Progress Section */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-4 md:space-y-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/5 pb-3 md:pb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                   <Target className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participation_progress') || 'Participation Progress'}</h3>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-end">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <div className="text-start sm:text-end">
                   <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.core_nodes') || 'Joined'}</span>
-                  <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{campaign.currentParticipants}</p>
+                  <p className="text-lg font-bold text-zinc-text leading-none mt-0.5 tabular-nums">{campaign.currentParticipants}</p>
                 </div>
-                <div className="w-px h-8 bg-white/5" />
-                <div className="text-end">
+                <div className="hidden sm:block w-px h-8 bg-white/5" />
+                <div className="text-start sm:text-end">
                   <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.target') || 'Target'}</span>
-                  <p className="text-lg font-bold text-brand leading-none mt-0.5">{campaign.maxParticipants}</p>
+                  <p className="text-lg font-bold text-brand leading-none mt-0.5 tabular-nums">{campaign.maxParticipants}</p>
                 </div>
               </div>
             </div>
@@ -320,19 +349,17 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
 
           {/* Participants List */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 md:pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-4 md:space-y-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/5 pb-3 md:pb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <History className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.participants') || 'Participants'}</h3>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-end">
-                  <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.node_participation') || 'Total'}</span>
-                  <p className="text-lg font-bold text-zinc-text leading-none mt-0.5">{participants.length}</p>
-                </div>
+              <div className="text-start sm:text-end">
+                <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.node_participation') || 'Total'}</span>
+                <p className="text-lg font-bold text-zinc-text leading-none mt-0.5 tabular-nums">{participants.length}</p>
               </div>
             </div>
 
@@ -385,22 +412,22 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column - Join + Info */}
-        <div className="space-y-6">
+        {/* Sidebar - Join + Info */}
+        <div className="space-y-4 md:space-y-6 min-w-0 order-1 xl:order-2">
 
           {/* Join Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-4 md:space-y-5 relative overflow-hidden min-w-0">
             {isEndingSoon && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-danger to-transparent" />}
 
             {/* Price + Timer */}
-            <div className="flex flex-row items-end justify-between gap-3 pb-4 border-b border-white/5">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-4 border-b border-white/5">
               <div className="space-y-1 min-w-0 flex-1">
                 <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.deal_price') || 'Deal Price'}</span>
                 <p className="text-2xl sm:text-3xl font-bold text-brand tabular-nums leading-none tracking-tight">
                   {formatCurrency(campaign.dealPrice)}
                 </p>
               </div>
-              <div className="space-y-1 text-end min-w-0 flex-1">
+              <div className="space-y-1 sm:text-end min-w-0 flex-1">
                 <span className="text-[11px] font-bold text-zinc-muted uppercase tracking-widest">{t('groupBuying.original_price') || 'Original'}</span>
                 <p className="text-lg sm:text-xl font-bold text-zinc-muted line-through tabular-nums leading-none tracking-tight mt-1">
                   {formatCurrency(campaign.originalPrice)}
@@ -453,7 +480,7 @@ export const GroupBuyingDetailPage: React.FC = () => {
                 </div>
               </div>
               <AmberButton
-                className="w-full h-11 bg-brand hover:bg-brand text-black font-bold uppercase tracking-wider rounded-xl active:scale-95 transition-all text-xs"
+                className="w-full h-11 bg-brand hover:bg-brand text-black font-bold uppercase tracking-wider rounded-xl active:scale-95 transition-all text-xs whitespace-normal leading-snug px-3"
                 disabled={campaign.status !== 'active' || joinMutation.isPending || (campaign.maxParticipants > 0 && campaign.currentParticipants >= campaign.maxParticipants)}
                 onClick={handleJoin}
               >
@@ -473,9 +500,9 @@ export const GroupBuyingDetailPage: React.FC = () => {
           </div>
 
           {/* Info Panel */}
-          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-3 md:p-6 space-y-3 md:space-y-4">
+          <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-4 md:p-6 space-y-3 md:space-y-4 min-w-0">
             <div className="flex items-center gap-2.5 border-b border-white/5 pb-3 md:pb-4">
-                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                     <Package className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('groupBuying.details') || 'Details'}</h3>
@@ -483,17 +510,25 @@ export const GroupBuyingDetailPage: React.FC = () => {
 
             <div className="space-y-3.5">
               {detailRows.map((item, i) => (
-                <div key={i} className="flex items-start justify-between gap-3 group/row">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-3 group/row min-w-0">
                   <div className="flex items-center gap-2.5 shrink-0">
                     <item.icon className="w-4 h-4 text-zinc-muted group-hover/row:text-brand transition-colors" />
                     <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{item.label}</span>
                   </div>
-                  <span className="text-sm font-bold text-zinc-text text-end break-words">{item.value}</span>
+                  <span
+                    className={cn(
+                      'text-sm font-bold text-zinc-text sm:text-end break-words',
+                      item.isDate && 'tabular-nums',
+                    )}
+                    dir={item.isDate ? 'ltr' : undefined}
+                  >
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
 
-            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/5 active:scale-95 transition-all rounded-xl mt-2">
+            <AmberButton variant="outline" className="w-full gap-2 font-bold uppercase tracking-wider text-xs h-9 bg-obsidian-panel border-white/10 text-zinc-text hover:text-brand active:scale-95 transition-all rounded-xl mt-2">
               {t('groupBuying.download_report') || 'Download Report'}
             </AmberButton>
           </div>

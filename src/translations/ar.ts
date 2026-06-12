@@ -815,6 +815,13 @@ export const ar: Record<string, string> = {
   "report.auction_performance": "أداء المزادات",
   "report.customer_insights": "رؤى العملاء",
   "report.group_buying_analytics": "تحليلات الشراء الجماعي",
+  "report.sales_overview_section": "نظرة عامة على المبيعات",
+  "report.sales_overview_desc": "الإيرادات والطلبات واتجاهات المبيعات",
+  "report.auction_performance_desc": "نشاط المزايدة ومعدلات الإكمال وأفضل المزادات",
+  "report.group_buying_analytics_desc": "معدلات إكمال الصفقات والمشاركة الجماعية",
+  "report.customer_insights_subtitle": "أفضل المشترين والاحتفاظ بالعملاء وأنماط التوصيل",
+  "report.revenue": "الإيرادات",
+  "report.deal_title": "الصفقة",
 
   // Report page
   "report.title": "التقارير",
@@ -1501,6 +1508,7 @@ export const ar: Record<string, string> = {
   "report.avg_final_price": "متوسط السعر النهائي",
   "report.bid_activity": "نشاط المزايدة عبر الزمن",
   "report.bid_count": "المزايدات",
+  "report.bids_per_auction": "مزايدة/مزاد",
   "report.completed_auctions": "المزادات المكتملة",
   "report.completed_deals": "الصفقات المكتملة",
   "report.deal_completion_rate": "معدل إكمال الصفقات",

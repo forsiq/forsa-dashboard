@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,11 +13,25 @@ import {
 } from 'recharts';
 import { ShoppingCart, CheckCircle, Percent, Users } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { formatCurrency } from '@core/lib/utils/formatCurrency';
-import { cn } from '@core/lib/utils/cn';
+import { resolveStatusLabel } from '@core/lib/utils/resolveStatusLabel';
+import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { ReportStatsCard } from '../components/ReportStatsCard';
 import { ReportPanelCard } from '../components/ReportPanelCard';
+import { ReportChartFrame } from '../components/ReportChartFrame';
 import { hasChartValues } from '../utils/chartData';
+import {
+  chartGridStroke,
+  chartMargin,
+  chartTooltipStyle,
+  formatReportMetric,
+  getCategoryYAxisProps,
+  getIntegerXAxisProps,
+  reportChartGridClass,
+  reportHeaderSubtitleClass,
+  reportHeaderTitleClass,
+  reportKpiGridClass,
+  reportPageClass,
+} from '../utils/reportLayout';
 import { useGetGroupBuyings, useGetGroupBuyingStats } from '../../../features/sales/api/group-buying-hooks';
 import type { GroupBuying } from '../../../features/sales/types';
 
@@ -29,11 +43,6 @@ const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 export function GroupBuyingAnalyticsPage() {
   const { t, dir } = useLanguage();
   const isRTL = dir === 'rtl';
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const { data: stats, isLoading: statsLoading } = useGetGroupBuyingStats();
   const { data: dealsData, isLoading: dealsLoading } = useGetGroupBuyings({ limit: 100 });
@@ -61,25 +70,25 @@ export function GroupBuyingAnalyticsPage() {
   const kpis = [
     {
       label: t('report.active_deals') || 'Active Deals',
-      value: activeDeals,
+      value: formatReportMetric(activeDeals, 'number'),
       icon: ShoppingCart,
       color: 'text-brand',
     },
     {
       label: t('report.completed_deals') || 'Completed Deals',
-      value: completedDeals,
+      value: formatReportMetric(completedDeals, 'number'),
       icon: CheckCircle,
       color: 'text-success',
     },
     {
       label: t('report.avg_discount') || 'Average Discount %',
-      value: avgDiscount > 0 ? `${avgDiscount}%` : 'N/A',
+      value: avgDiscount > 0 ? formatReportMetric(avgDiscount, 'percent') : '—',
       icon: Percent,
       color: 'text-warning',
     },
     {
       label: t('report.total_participants') || 'Total Participants',
-      value: totalParticipants,
+      value: formatReportMetric(totalParticipants, 'number'),
       icon: Users,
       color: 'text-info',
     },
@@ -90,19 +99,26 @@ export function GroupBuyingAnalyticsPage() {
     deals.forEach((d: GroupBuying) => {
       counts[d.status] = (counts[d.status] || 0) + 1;
     });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [deals]);
+    return Object.entries(counts).map(([status, value]) => ({
+      status,
+      name: resolveStatusLabel(status, t, `groupBuying.status.${status.toLowerCase()}`),
+      value,
+    }));
+  }, [deals, t]);
 
   const pieData = useMemo(() => {
-    const completed = deals.filter((d: GroupBuying) => d.status === 'completed').length;
-    const expired = deals.filter((d: GroupBuying) => d.status === 'expired').length;
-    const cancelled = deals.filter((d: GroupBuying) => d.status === 'cancelled').length;
-    const result: { name: string; value: number }[] = [];
-    if (completed > 0) result.push({ name: 'Completed', value: completed });
-    if (expired > 0) result.push({ name: 'Expired', value: expired });
-    if (cancelled > 0) result.push({ name: 'Cancelled', value: cancelled });
-    return result;
-  }, [deals]);
+    const counts: Record<string, number> = {};
+    deals.forEach((d: GroupBuying) => {
+      counts[d.status] = (counts[d.status] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .filter(([, value]) => value > 0)
+      .map(([status, value]) => ({
+        status,
+        name: resolveStatusLabel(status, t, `groupBuying.status.${status.toLowerCase()}`),
+        value,
+      }));
+  }, [deals, t]);
 
   const topDeals = useMemo(
     () =>
@@ -115,23 +131,20 @@ export function GroupBuyingAnalyticsPage() {
   const hasStatusChartData = hasChartValues(statusData, ['value']);
   const hasPieData = pieData.length > 0;
 
-  if (!isClient) return null;
-
   return (
-    <div className="space-y-8 p-6 max-w-[1600px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {/* Header */}
-      <div className="space-y-1 text-start">
-        <h1 className="text-4xl font-black text-zinc-text tracking-tight leading-none">
+    <div className={reportPageClass} dir={dir}>
+      <div className="space-y-1 min-w-0 text-start">
+        <h1 className={reportHeaderTitleClass}>
           {t('report.group_buying_analytics') || 'Group Buying Analytics'}
         </h1>
-        <p className="text-base text-zinc-secondary font-bold">
+        <p className={reportHeaderSubtitleClass}>
           {t('report.group_buying_analytics_desc') || 'Track deal performance, participation, and completion rates'}
         </p>
       </div>
 
       {isLoading ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className={reportKpiGridClass}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-24 bg-obsidian-card rounded-xl animate-pulse" />
             ))}
@@ -140,8 +153,7 @@ export function GroupBuyingAnalyticsPage() {
         </div>
       ) : (
         <>
-          {/* KPI Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className={reportKpiGridClass}>
             {kpis.map((kpi, i) => (
               <ReportStatsCard
                 key={i}
@@ -154,101 +166,90 @@ export function GroupBuyingAnalyticsPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className={reportChartGridClass}>
             <ReportPanelCard
               title={t('report.deals_by_status') || 'Deals by Status'}
               isEmpty={!hasStatusChartData}
-              bodyMinHeight="min-h-[350px]"
+              bodyMinHeight="min-h-[300px]"
             >
-              <div className="h-[350px] w-full">
+              <ReportChartFrame heightClass="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={statusData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#3f3f46"
-                      tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#3f3f46"
-                      tick={{ fill: '#71717a', fontSize: 11, fontWeight: 700 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#18181b',
-                        border: '1px solid #27272a',
-                        borderRadius: '12px',
-                      }}
-                    />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                  <BarChart
+                    layout="vertical"
+                    data={statusData}
+                    margin={{ ...chartMargin, left: 4, right: 16 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} horizontal={false} />
+                    <XAxis type="number" {...getIntegerXAxisProps()} />
+                    <YAxis dataKey="name" {...getCategoryYAxisProps(isRTL ? 80 : 72)} />
+                    <Tooltip contentStyle={chartTooltipStyle} />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} maxBarSize={36} />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </ReportChartFrame>
             </ReportPanelCard>
 
             <ReportPanelCard
               title={t('report.deal_completion_rate') || 'Deal Completion Rate'}
               isEmpty={!hasPieData}
-              bodyMinHeight="min-h-[350px]"
+              bodyMinHeight="min-h-[300px]"
             >
-              <div className="h-[350px] w-full flex flex-col items-center">
-                <ResponsiveContainer width="100%" height="80%">
-                  <PieChart>
-                    <Pie data={pieData} innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
-                      {pieData.map((_entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                          stroke="rgba(255,255,255,0.05)"
-                          strokeWidth={2}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#18181b',
-                        border: '1px solid #27272a',
-                        borderRadius: '12px',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="grid grid-cols-3 gap-4 w-full px-4">
+              <ReportChartFrame heightClass="h-[300px]" className="flex flex-col">
+                <div className="flex-1 min-h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} innerRadius={56} outerRadius={92} paddingAngle={4} dataKey="value">
+                        {pieData.map((_entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                            stroke="rgba(255,255,255,0.05)"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={chartTooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full px-1 pt-2 shrink-0">
                   {pieData.map((d, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={d.status} className="flex items-center gap-2 min-w-0">
                       <div
-                        className="w-2 h-2 rounded-full"
+                        className="w-2 h-2 shrink-0 rounded-full"
                         style={{ backgroundColor: COLORS[i % COLORS.length] }}
                       />
-                      <span className="text-[11px] font-black text-zinc-muted uppercase tracking-tight">
+                      <span className="text-[11px] font-black text-zinc-muted tracking-tight truncate">
                         {d.name} ({d.value})
                       </span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </ReportChartFrame>
             </ReportPanelCard>
           </div>
 
           <ReportPanelCard title={t('report.top_deals') || 'Top Deals'}>
-            <div className="overflow-x-auto">
-              <table className="w-full text-start">
+            <div className="overflow-x-auto min-w-0">
+              <table className="w-full min-w-[640px] table-fixed border-collapse text-start">
+                <colgroup>
+                  <col className="w-[42%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[22%]" />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-[var(--color-border)]">
-                    <th className="pb-3 text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                      {t('group_buying.title') || 'Deal'}
+                    <th className="pb-3 pe-3 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-start">
+                      {t('groupBuying.title') || t('report.deal_title') || 'Deal'}
                     </th>
-                    <th className="pb-3 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-end">
+                    <th className="pb-3 px-2 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-center whitespace-nowrap">
                       {t('report.participants') || 'Participants'}
                     </th>
-                    <th className="pb-3 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-end">
+                    <th className="pb-3 px-2 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-center whitespace-nowrap">
                       {t('report.discount_pct') || 'Discount %'}
                     </th>
-                    <th className="pb-3 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-center">
+                    <th className="pb-3 ps-2 text-[11px] font-black text-zinc-muted uppercase tracking-widest text-center whitespace-nowrap">
                       {t('auction.table.state') || 'Status'}
                     </th>
                   </tr>
@@ -269,36 +270,39 @@ export function GroupBuyingAnalyticsPage() {
                       return (
                         <tr
                           key={deal.id}
-                          className="border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors"
+                          className="border-b border-[var(--color-border)] last:border-0 hover:bg-white/[0.02] transition-colors align-middle"
                         >
-                          <td className="py-3">
-                            <span className="text-sm font-bold text-zinc-text">{deal.title}</span>
+                          <td className="py-3 pe-3 min-w-0">
+                            <span className="text-sm font-bold text-zinc-text line-clamp-2 break-words leading-snug" title={deal.title}>
+                              {deal.title}
+                            </span>
                           </td>
-                          <td className="py-3 text-end">
-                            <span className="text-sm font-bold text-zinc-text tabular-nums">
+                          <td className="py-3 px-2 text-center">
+                            <span className="text-sm font-bold text-zinc-text tabular-nums whitespace-nowrap">
                               {deal.currentParticipants || 0}/{deal.minParticipants || 0}
                             </span>
                           </td>
-                          <td className="py-3 text-end">
-                            <span className="text-sm font-black text-success tabular-nums">
-                              {discountPct > 0 ? `${discountPct}%` : 'N/A'}
+                          <td className="py-3 px-2 text-center">
+                            <span className="text-sm font-black text-success tabular-nums whitespace-nowrap">
+                              {discountPct > 0 ? `${discountPct}%` : '—'}
                             </span>
                           </td>
-                          <td className="py-3 text-center">
-                            <span
-                              className={cn(
-                                'inline-flex px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider',
+                          <td className="py-3 ps-2 text-center">
+                            <StatusBadge
+                              status={deal.status}
+                              labelKey={`groupBuying.status.${deal.status.toLowerCase()}`}
+                              variant={
                                 deal.status === 'active'
-                                  ? 'bg-success/10 text-success'
+                                  ? 'success'
                                   : deal.status === 'completed'
-                                    ? 'bg-brand/10 text-brand'
+                                    ? 'warning'
                                     : deal.status === 'expired'
-                                      ? 'bg-warning/10 text-warning'
-                                      : 'bg-zinc-500/10 text-zinc-400'
-                              )}
-                            >
-                              {deal.status}
-                            </span>
+                                      ? 'pending'
+                                      : 'failed'
+                              }
+                              size="sm"
+                              className="font-black"
+                            />
                           </td>
                         </tr>
                       );

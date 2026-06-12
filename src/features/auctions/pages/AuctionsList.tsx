@@ -239,7 +239,7 @@ export const AuctionsList: React.FC = () => {
               />
             </div>
             <div className="min-w-0">
-              <DataTableEntityTitle text={auction.title} />
+              <DataTableEntityTitle text={auction.title} href={`/auctions/${auction.id}`} />
               <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">{categoryMap.get(String(auction.categoryId)) || auction.categoryName || t('common.general_asset')}</p>
             </div>
           </div>

@@ -290,6 +290,73 @@ export const InventoryPage = () => {
     },
   ];
 
+  const hasInventory = data.length > 0;
+
+  const sidebarPanel = (
+    <>
+      {/* Real-time Alerts */}
+      <Card className="!p-4 md:!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden rounded-2xl shadow-sm min-w-0">
+        <div className={cn("absolute top-0 bottom-0 w-1 bg-[var(--color-danger)]", isRTL ? "end-0" : "start-0")} />
+        <div className="flex items-center justify-between gap-3 mb-4 md:mb-6">
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest flex items-center gap-3 min-w-0">
+            <AlertCircle className="w-5 h-5 shrink-0 text-[var(--color-danger)] animate-pulse" />
+            <span className="truncate">{t('inventory.alerts')}</span>
+          </h3>
+          <span className="text-xs font-black text-white bg-[var(--color-danger)] px-2.5 py-1 rounded-full shadow-lg shrink-0 tabular-nums">
+            {lowStockAlerts.length}
+          </span>
+        </div>
+
+        <div className="space-y-4 max-h-[320px] overflow-y-auto custom-scrollbar">
+          {lowStockAlerts.length > 0 ? (
+            lowStockAlerts.map((alert, i) => (
+              <div key={i} className="group p-4 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                   <p className="text-[13px] font-bold text-zinc-text uppercase tracking-tight break-words min-w-0 flex-1">
+                    {alert.name}
+                  </p>
+                  <StatusBadge status="LOW" variant="warning" size="sm" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="h-1.5 bg-obsidian-outer rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-[var(--color-danger)]" style={{ width: `${(alert.stock / 5) * 100}%` }} />
+                    </div>
+                    <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                      {alert.stock} / 5 {t('inventory.units') || 'units'}
+                    </p>
+                  </div>
+                  <ChevronRight className={cn("w-4 h-4 shrink-0 text-zinc-muted opacity-0 group-hover:opacity-100 transition-all", isRTL && "rotate-180")} />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center space-y-2">
+              <Package className="w-10 h-10 text-zinc-muted/30 stroke-1" />
+              <p className="text-xs font-semibold text-zinc-muted leading-relaxed max-w-[240px]">
+                {t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Stats Summary */}
+      <Card className="!p-4 md:!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm min-w-0">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <TrendingUp className="w-5 h-5 shrink-0 text-[var(--color-success)]" />
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
+            {t('inventory.total_value')}
+          </h3>
+        </div>
+        <StatValue value={formatCurrency(totalValue)} className="!text-success" />
+        <p className="text-xs text-zinc-muted mt-2 tabular-nums">
+          {data.length} {t('inventory.items')}
+        </p>
+      </Card>
+    </>
+  );
+
   if (!isClient) return null;
 
   return (
@@ -299,22 +366,23 @@ export const InventoryPage = () => {
       icon={Package}
       className="p-3 md:p-6 space-y-4 md:space-y-8"
       headerActions={
-        <div className="flex flex-wrap gap-3">
-          <AmberButton className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory')}>
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <AmberButton className="gap-2 px-4 md:px-6 h-11 bg-[var(--color-brand)] hover:bg-[var(--color-brand)] text-black font-bold rounded-xl shadow-sm transition-all border-none active:scale-95" onClick={() => router.push('/inventory/new')}>
+              <Plus className="w-5 h-5 shrink-0" />
               <span>{t('inventory.add_item')}</span>
-              <Plus className="w-5 h-5" />
           </AmberButton>
-          <AmberButton variant="outline" className="gap-2 px-6 h-11 border-[var(--color-border)] text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-[var(--color-obsidian-hover)]">
-            <History className="w-4 h-4" />
+          <AmberButton variant="outline" className="gap-2 px-4 md:px-6 h-11 border-[var(--color-border)] text-zinc-text font-bold rounded-xl active:scale-95 transition-all hover:bg-[var(--color-obsidian-hover)]">
+            <History className="w-4 h-4 shrink-0" />
             {t('inventory.transactions')}
           </AmberButton>
         </div>
       }
+      statsColumns={2}
       stats={[
-        { label: t('inventory.total_items'), value: data.length, icon: Package, color: 'brand', description: '' },
+        { label: t('inventory.total_items'), value: data.length, icon: Package, color: 'brand' },
         { label: t('inventory.low_stock'), value: lowStockAlerts.length, icon: AlertCircle, color: 'danger', description: t('inventory.needs_review') },
         { label: t('inventory.warehouses'), value: '1', icon: Warehouse, color: 'info', description: t('inventory.global_dist') },
-        { label: t('inventory.total_value'), value: formatCurrency(totalValue), icon: TrendingUp, color: 'success', description: '' },
+        { label: t('inventory.total_value'), value: formatCurrency(totalValue), icon: TrendingUp, color: 'success' },
       ]}
       toolbar={
         <ListPageToolbar
@@ -325,9 +393,23 @@ export const InventoryPage = () => {
         />
       }
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+      {!hasInventory && !isLoading ? (
+        <div className="space-y-4 md:space-y-6 min-w-0">
+          <EmptyState
+            icon={Package}
+            title={t('inventory.empty') || 'No Items'}
+            description={t('inventory.empty_description') || 'No inventory items found.'}
+            actionLabel={t('inventory.add_item') || 'Add Item'}
+            onAction={() => router.push('/inventory/new')}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 min-w-0">
+            {sidebarPanel}
+          </div>
+        </div>
+      ) : (
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 min-w-0">
         {/* Main Table Area */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="xl:col-span-2 space-y-4 min-w-0 order-2 xl:order-1">
           {isLoading ? (
             <ListPageSkeleton count={10} columns={4} showStats />
           ) : filteredData.length === 0 ? (
@@ -336,10 +418,10 @@ export const InventoryPage = () => {
               title={t('inventory.empty') || 'No Items'}
               description={t('inventory.empty_description') || 'No inventory items found.'}
               actionLabel={t('inventory.add_item') || 'Add Item'}
-              onAction={() => router.push('/inventory')}
+              onAction={() => router.push('/inventory/new')}
             />
           ) : (
-            <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+            <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden min-w-0">
               {isFetching && <FetchingOverlay />}
               <DataTable
                 columns={columns}
@@ -364,66 +446,11 @@ export const InventoryPage = () => {
         </div>
 
         {/* Sidebar Status Info */}
-        <div className="space-y-6">
-          {/* Real-time Alerts */}
-          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] relative overflow-hidden rounded-2xl shadow-sm">
-            <div className={cn("absolute top-0 bottom-0 w-1 bg-[var(--color-danger)]", isRTL ? "end-0" : "start-0")} />
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-[var(--color-danger)] animate-pulse" /> {t('inventory.alerts')}
-              </h3>
-              <span className="text-xs font-black text-white bg-[var(--color-danger)] px-2.5 py-1 rounded-full shadow-lg">
-                {lowStockAlerts.length}
-              </span>
-            </div>
-
-            <div className="space-y-4 max-h-[320px] overflow-y-auto custom-scrollbar">
-              {lowStockAlerts.length > 0 ? (
-                lowStockAlerts.map((alert, i) => (
-                  <div key={i} className="group p-4 bg-[var(--color-obsidian-hover)]/30 border border-[var(--color-border)] rounded-xl hover:border-[var(--color-danger)]/30 transition-all cursor-pointer">
-                    <div className="flex items-center justify-between mb-2">
-                       <p className="text-[13px] font-bold text-zinc-text uppercase tracking-tight truncate pe-4">
-                        {alert.name}
-                      </p>
-                      <StatusBadge status="LOW" variant="warning" size="sm" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 pe-4">
-                        <div className="h-1.5 bg-obsidian-outer rounded-full overflow-hidden mb-2">
-                          <div className="h-full bg-[var(--color-danger)]" style={{ width: `${(alert.stock / 5) * 100}%` }} />
-                        </div>
-                        <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                          {alert.stock} / 5 {t('inventory.units') || 'units'}
-                        </p>
-                      </div>
-                      <ChevronRight className={cn("w-4 h-4 text-zinc-muted opacity-0 group-hover:opacity-100 transition-all", isRTL ? "rotate-180" : "")} />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 opacity-30 text-center">
-                  <Package className="w-10 h-10 mb-2 stroke-1" />
-                  <p className="text-sm font-black uppercase tracking-widest">{t('inventory.all_stocks_nominal') || 'All stocks within nominal parameters'}</p>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Stats Summary */}
-          <Card className="!p-6 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <TrendingUp className="w-5 h-5 text-[var(--color-success)]" />
-              <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-                {t('inventory.total_value')}
-              </h3>
-            </div>
-            <StatValue value={formatCurrency(totalValue)} className="!text-success" />
-            <p className="text-xs text-zinc-muted mt-2">
-              {data.length} {t('inventory.items')}
-            </p>
-          </Card>
+        <div className="space-y-4 md:space-y-6 min-w-0 order-1 xl:order-2">
+          {sidebarPanel}
         </div>
       </div>
+      )}
 
       {/* Filter SlideOver */}
       <AmberSlideOver

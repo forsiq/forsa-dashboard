@@ -134,10 +134,9 @@ export function ListingPhotoGallery({
           <AmberImageGallery
             images={initialImages}
             alt={listingTitle}
-            height="h-[220px] md:h-[280px] lg:h-[320px]"
           />
         ) : (
-          <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
+          <div className="w-full min-h-[160px] sm:min-h-[200px] max-h-[240px] sm:max-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
             <Package className="w-10 h-10 text-zinc-muted/30" />
           </div>
         )}

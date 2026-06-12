@@ -28,6 +28,13 @@ import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useGetCategory, useDeleteCategoryMutation } from '../hooks';
 import type { Category } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
+
+function formatCategoryDate(value?: string | null): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()) || date.getFullYear() < 2000) return '—';
+  return date.toLocaleString();
+}
 import { CategoryEditModal } from '../components/CategoryEditModal';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 
@@ -102,35 +109,35 @@ export function CategoryDetailPage() {
   const isRTL = dir === 'rtl';
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 space-y-8" dir={dir}>
+    <div className="max-w-[1600px] mx-auto p-4 md:p-6 space-y-6 md:space-y-8" dir={dir}>
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4 w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+        <div className="flex items-start gap-3 md:gap-4 w-full min-w-0">
           <Link href="/categories">
             <button
-              className="w-12 h-12 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
+              className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-obsidian-card border border-border flex items-center justify-center text-zinc-muted hover:text-brand hover:border-brand transition-all active:scale-95 shadow-lg"
             >
               <ArrowLeft className={cn('w-5 h-5', isRTL && 'rotate-180')} />
             </button>
           </Link>
-          <div>
-            <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="text-[11px] font-black text-brand uppercase tracking-widest">
                 {t('category.title') || 'Category'}
               </span>
-              <div className="w-1 h-1 rounded-full bg-zinc-muted/30" />
+              <div className="w-1 h-1 rounded-full bg-zinc-muted/30 hidden sm:block" />
               <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                 ID: {category.id}
               </span>
             </div>
-            <h1 className="text-4xl font-black text-zinc-text tracking-tighter uppercase leading-none mt-1">
+            <h1 className="text-2xl sm:text-3xl xl:text-4xl font-black text-zinc-text tracking-tighter uppercase leading-tight mt-1 break-words">
               {getLocalizedName(category, language)}
             </h1>
           </div>
         </div>
 
         {canManageCategories ? (
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
             <AmberButton
               variant="secondary"
               className="p-0 w-12 h-12 rounded-xl bg-obsidian-card border-border flex items-center justify-center hover:text-danger active:scale-95 transition-all"
@@ -150,12 +157,12 @@ export function CategoryDetailPage() {
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="xl:col-span-2 space-y-6 min-w-0 order-1">
           {/* Category Info Card */}
-          <AmberCard className="!p-8 bg-obsidian-card border-border shadow-xl space-y-8">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          <AmberCard className="!p-4 md:!p-6 lg:!p-8 bg-obsidian-card border-border shadow-xl space-y-6 md:space-y-8 min-w-0">
+            <div className="flex flex-wrap items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
               <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
                 <LayoutGrid className="w-5 h-5" />
               </div>
@@ -207,28 +214,28 @@ export function CategoryDetailPage() {
 
               {/* Description */}
               {category.description && (
-                <div className="flex items-start justify-between group">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 group min-w-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <FileText className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors mt-0.5" />
                     <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                       {t('category.description') || 'Description'}
                     </span>
                   </div>
-                  <span className="text-[13px] font-bold text-zinc-text tracking-tight max-w-[60%] text-end">
+                  <span className="text-[13px] font-bold text-zinc-text tracking-tight sm:max-w-[60%] sm:text-end break-words">
                     {getLocalizedDescription(category, language)}
                   </span>
                 </div>
               )}
 
               {/* Sort order — managed from categories list */}
-              <div className="flex items-start justify-between group">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 group min-w-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <SortAsc className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors mt-0.5" />
                   <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('category.order') || 'Order'}
                   </span>
                 </div>
-                <span className="text-[13px] font-bold text-zinc-muted tracking-tight max-w-[60%] text-end">
+                <span className="text-[13px] font-bold text-zinc-muted tracking-tight sm:max-w-[60%] sm:text-end break-words">
                   {t('category.order_from_list')}
                 </span>
               </div>
@@ -245,10 +252,10 @@ export function CategoryDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-6 min-w-0 order-2">
           {/* Status Card */}
-          <AmberCard className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          <AmberCard className="!p-4 md:!p-6 lg:!p-8 bg-obsidian-card border-border shadow-xl space-y-5 md:space-y-6 min-w-0">
+            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
                 {t('category.status_info') || 'Status Info'}
               </h3>
@@ -256,8 +263,8 @@ export function CategoryDetailPage() {
 
             <div className="space-y-5">
               {/* Active Status */}
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 group min-w-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <ToggleLeft className="w-4 h-4 text-zinc-muted group-hover:text-brand transition-colors" />
                   <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                     {t('category.active') || 'Active'}
@@ -274,7 +281,7 @@ export function CategoryDetailPage() {
               <DetailRow
                 icon={<Calendar className="w-4 h-4" />}
                 label={t('category.created_at') || 'Created At'}
-                value={new Date(category.createdAt).toLocaleString()}
+                value={formatCategoryDate(category.createdAt)}
                 isRTL={isRTL}
               />
 
@@ -283,7 +290,7 @@ export function CategoryDetailPage() {
                 <DetailRow
                   icon={<Calendar className="w-4 h-4" />}
                   label={t('category.updated_at') || 'Updated At'}
-                  value={new Date(category.updatedAt).toLocaleString()}
+                  value={formatCategoryDate(category.updatedAt)}
                   isRTL={isRTL}
                 />
               )}
@@ -304,26 +311,26 @@ export function CategoryDetailPage() {
       </div>
 
       {/* Auctions in this Category */}
-      <AmberCard className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-        <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
+      <AmberCard className="!p-4 md:!p-6 lg:!p-8 bg-obsidian-card border-border shadow-xl space-y-5 md:space-y-6 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/[0.03] pb-4 md:pb-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 shrink-0 rounded-lg bg-brand/10 flex items-center justify-center text-brand border border-brand/20">
               <Gavel className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">
                 {t('category.auctions') || 'Auctions in this Category'}
               </h3>
               {category.productCount != null && (
-                <p className="text-[11px] text-zinc-muted mt-1">
+                <p className="text-[11px] text-zinc-muted mt-1 break-words">
                   {t('category.total_products') || '{count} products in this category'.replace('{count}', String(category.productCount))}
                 </p>
               )}
             </div>
           </div>
-          <Link href={`/auctions?category=${category.id}`}>
+          <Link href={`/auctions?category=${category.id}`} className="shrink-0 self-start sm:self-center">
             <AmberButton
-              className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-xl px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
+              className="h-10 bg-brand text-black font-bold uppercase tracking-wider rounded-xl px-4 sm:px-6 hover:bg-brand/90 active:scale-95 transition-all border-none text-xs gap-1.5"
             >
               {t('category.view_auctions') || 'View Auctions'}
               <ArrowRight className={cn('w-3.5 h-3.5', isRTL && 'rotate-180')} />
@@ -362,23 +369,21 @@ export function CategoryDetailPage() {
   );
 }
 
-// Helper component for detail rows
 function DetailRow({
   icon,
   label,
   value,
-  isRTL,
   mono = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  isRTL: boolean;
+  isRTL?: boolean;
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between group">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 group min-w-0">
+      <div className="flex items-center gap-3 shrink-0">
         <span className="text-zinc-muted group-hover:text-brand transition-colors">
           {icon}
         </span>
@@ -388,8 +393,8 @@ function DetailRow({
       </div>
       <span
         className={cn(
-          'text-[13px] font-bold text-zinc-text tracking-tight',
-          mono && 'font-mono'
+          'text-[13px] font-bold text-zinc-text tracking-tight break-words sm:text-end',
+          mono && 'font-mono',
         )}
       >
         {value}

@@ -52,14 +52,14 @@ export const ProductReadinessCard: React.FC<Props> = ({ listing }) => {
     <div
       dir={dir}
       className={cn(
-        'p-5 rounded-2xl border space-y-4',
+        'p-4 md:p-5 rounded-2xl border space-y-4 min-w-0',
         warningCount > 0
           ? 'bg-warning/[0.02] border-warning/10'
           : 'bg-info/[0.02] border-info/10',
       )}
     >
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div
           className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
@@ -84,7 +84,7 @@ export const ProductReadinessCard: React.FC<Props> = ({ listing }) => {
           >
             {t('listing.readiness.title') || 'Product Readiness'}
           </p>
-          <p className="text-[11px] text-zinc-muted font-bold tracking-tight">
+          <p className="text-[11px] text-zinc-muted font-bold tracking-tight break-words">
             {t('listing.readiness.score_label') || 'Score'}:{' '}
             <span className="text-zinc-text">{score}/{total}</span>
             {warningCount > 0 && (
@@ -97,7 +97,7 @@ export const ProductReadinessCard: React.FC<Props> = ({ listing }) => {
         </div>
         <AmberButton
           variant="secondary"
-          className="h-8 text-[11px] font-black rounded-lg px-3 gap-1.5 active:scale-95 transition-all border-border bg-obsidian-card"
+          className="h-8 shrink-0 text-[11px] font-black rounded-lg px-3 gap-1.5 active:scale-95 transition-all border-border bg-obsidian-card"
           onClick={() => router.push(`/listings/${listing.id}/edit`)}
         >
           <Edit className="w-3 h-3" />

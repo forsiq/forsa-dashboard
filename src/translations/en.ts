@@ -814,6 +814,13 @@ export const en: Record<string, string> = {
   "report.auction_performance": "Auction performance",
   "report.customer_insights": "Customer insights",
   "report.group_buying_analytics": "Group buying analytics",
+  "report.sales_overview_section": "Sales Overview",
+  "report.sales_overview_desc": "Revenue, orders, and sales trends",
+  "report.auction_performance_desc": "Bid activity, completion rates, and top auctions",
+  "report.group_buying_analytics_desc": "Deal completion rates and group participation",
+  "report.customer_insights_subtitle": "Top buyers, retention, and delivery patterns",
+  "report.revenue": "Revenue",
+  "report.deal_title": "Deal",
 
   // Report page
   "report.title": "Reports",
@@ -1500,6 +1507,7 @@ export const en: Record<string, string> = {
   "report.avg_final_price": "Avg Final Price",
   "report.bid_activity": "Bid Activity Over Time",
   "report.bid_count": "Bids",
+  "report.bids_per_auction": "bids/auction",
   "report.completed_auctions": "Completed Auctions",
   "report.completed_deals": "Completed Deals",
   "report.deal_completion_rate": "Deal Completion Rate",

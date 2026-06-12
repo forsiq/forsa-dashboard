@@ -211,9 +211,9 @@ export const ListingDetailPage: React.FC = () => {
           <AmberButton variant="secondary" className="p-0 w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-all bg-obsidian-card border-border" onClick={() => router.push('/listings')}>
               <ChevronLeft className={cn("w-5 h-5", isRTL && "rotate-180")} />
           </AmberButton>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h1 className="text-2xl sm:text-3xl font-black text-zinc-text tracking-tighter uppercase leading-tight break-words">
                 {listing.title}
               </h1>
               <StatusBadge
@@ -290,19 +290,19 @@ export const ListingDetailPage: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Images Column */}
-        <div className="lg:col-span-1 space-y-4 md:space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        {/* Sidebar: media, readiness, deploy — full width until lg, then half until xl */}
+        <div className="lg:col-span-1 xl:col-span-1 space-y-4 md:space-y-6 min-w-0">
           {/* Media Card */}
-          <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-xl space-y-4 md:space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-6">
+          <Card className="!p-4 md:!p-6 lg:!p-8 bg-obsidian-card border-border shadow-xl space-y-4 md:space-y-6 min-w-0">
+            <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
               <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info border border-info/20">
                 <ImageIcon className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.detail.media')}</h3>
             </div>
             {imagesResolving && attachmentIds.length > 0 && allImages.length === 0 ? (
-              <div className="aspect-square min-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
+              <div className="w-full min-h-[160px] sm:min-h-[200px] max-h-[240px] sm:max-h-[280px] bg-obsidian-outer rounded-lg flex items-center justify-center border border-white/5">
                 <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
@@ -319,7 +319,7 @@ export const ListingDetailPage: React.FC = () => {
           <ProductReadinessCard listing={listing} />
 
           {/* Quick Deploy Card */}
-          <div className="p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-4">
+          <div className="p-4 md:p-5 rounded-2xl bg-brand/[0.02] border border-brand/10 flex items-start gap-3 md:gap-4 min-w-0">
             <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0">
               <Rocket className="w-4 h-4 text-brand" />
             </div>
@@ -341,8 +341,8 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Details Column */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-8">
+        {/* Details + channels */}
+        <div className="lg:col-span-1 xl:col-span-2 space-y-4 md:space-y-6 min-w-0">
           {/* Product Info Card */}
           <Card className="!p-4 md:!p-8 bg-obsidian-card border-border shadow-xl space-y-6 md:space-y-8">
             <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4 md:pb-6">
@@ -354,7 +354,7 @@ export const ListingDetailPage: React.FC = () => {
 
             <p className="text-zinc-muted text-sm leading-relaxed">{listing.description || t('listing.detail.no_description')}</p>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
               {listing.brand && <DetailField label={t('listing.form.brand')} value={listing.brand} />}
               {listing.model && <DetailField label={t('listing.form.model')} value={listing.model} />}
               {listing.condition && (
@@ -424,7 +424,7 @@ export const ListingDetailPage: React.FC = () => {
               <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('listing.channels.title')}</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
               {/* Auction Channel Card */}
               <Card className="!p-6 bg-obsidian-card border-border shadow-xl space-y-5">
                 <div className="flex items-center gap-3 border-b border-white/[0.03] pb-4">

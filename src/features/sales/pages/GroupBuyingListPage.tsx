@@ -53,7 +53,7 @@ import type { GroupBuying, GroupBuyingFilters } from '../types';
  * GroupBuyingListPage - Campaign Management with DataTable
  */
 export const GroupBuyingListPage: React.FC = () => {
-  const { t, language } = useLanguage();
+  const { t, language, dir } = useLanguage();
   const router = useRouter();
   const { isMobile } = useIsMobile();
   const [isClient, setIsClient] = useState(false);
@@ -122,8 +122,13 @@ export const GroupBuyingListPage: React.FC = () => {
       key: 'title',
       label: t('groupBuying.capital_allocation') || 'Campaign',
       cardTitle: true,
+      className: 'min-w-[240px] max-w-[420px]',
       render: (campaign) => (
-        <div className="flex min-w-0 items-center gap-4">
+        <Link
+          href={`/group-buying/${campaign.id}`}
+          className="flex min-w-0 items-center gap-3 rounded-lg -mx-1 px-1 py-0.5 transition-colors hover:bg-white/[0.03] group/link"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">
             <AuctionImage
               auction={{
@@ -137,13 +142,16 @@ export const GroupBuyingListPage: React.FC = () => {
               fallbackClassName="w-full h-full object-cover"
             />
           </div>
-          <div className="min-w-0">
-            <DataTableEntityTitle text={campaign.title} />
-            <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">
+          <div className="min-w-0 flex-1">
+            <DataTableEntityTitle
+              text={campaign.title}
+              className="group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors"
+            />
+            <p className="text-[11px] font-bold text-zinc-muted truncate mt-0.5">
               {categoryMap.get(String(campaign.categoryId)) || campaign.category?.name || '—'}
             </p>
           </div>
-        </div>
+        </Link>
       ),
       sortable: true,
     },
@@ -151,6 +159,8 @@ export const GroupBuyingListPage: React.FC = () => {
       key: 'status',
       label: t('common.status') || 'Status',
       cardBadge: true,
+      width: 'w-[120px]',
+      className: 'whitespace-nowrap',
       render: (campaign) => (
         <StatusBadge
           status={campaign.status}
@@ -165,13 +175,16 @@ export const GroupBuyingListPage: React.FC = () => {
     {
       key: 'currentParticipants',
       label: t('groupBuying.participants_count') || 'Participants',
+      width: 'w-[150px]',
+      className: 'whitespace-nowrap',
       render: (campaign) => {
-        const progress = campaign.maxParticipants > 0 ? (campaign.currentParticipants / campaign.maxParticipants) * 100 : 0;
+        const goal = campaign.minParticipants > 0 ? campaign.minParticipants : campaign.maxParticipants;
+        const progress = goal > 0 ? Math.min((campaign.currentParticipants / goal) * 100, 100) : 0;
         return (
-          <div className="w-36 space-y-1.5">
+          <div className="w-full max-w-[140px] mx-auto space-y-1.5">
             <AmberProgress value={progress} className="h-1.5" variant={progress >= 100 ? 'success' : 'primary'} />
-            <div className="flex justify-between text-[11px] font-black">
-              <span className="text-zinc-text">{campaign.currentParticipants}/{campaign.maxParticipants}</span>
+            <div className="flex justify-between gap-2 text-[11px] font-black tabular-nums">
+              <span className="text-zinc-text">{campaign.currentParticipants}/{goal}</span>
               <span className="text-zinc-muted">{Math.round(progress)}%</span>
             </div>
           </div>
@@ -182,21 +195,23 @@ export const GroupBuyingListPage: React.FC = () => {
     {
       key: 'dealPrice',
       label: t('groupBuying.consolidate_price') || 'Deal Price',
+      width: 'w-[160px]',
+      className: 'whitespace-nowrap',
       render: (campaign) => {
         const discount = campaign.originalPrice > 0
           ? Math.round(((campaign.originalPrice - campaign.dealPrice) / campaign.originalPrice) * 100)
           : 0;
         return (
-          <div className="text-end">
+          <div className="flex flex-col items-center gap-0.5">
             <span className="text-base font-black text-brand tabular-nums leading-none tracking-tight">
               {formatCurrency(campaign.dealPrice)}
             </span>
-            <div className="flex items-center justify-end gap-1.5 mt-0.5">
-              <p className="text-[11px] font-black text-zinc-muted line-through">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              <p className="text-[11px] font-black text-zinc-muted line-through tabular-nums">
                 {formatCurrency(campaign.originalPrice)}
               </p>
               {discount > 0 && (
-                <span className="text-[11px] font-black text-success bg-success/10 px-1.5 py-0.5 rounded-full">
+                <span className="text-[11px] font-black text-success bg-success/10 px-1.5 py-0.5 rounded-full tabular-nums">
                   -{discount}%
                 </span>
               )}
@@ -205,24 +220,26 @@ export const GroupBuyingListPage: React.FC = () => {
         );
       },
       sortable: true,
-      align: 'right',
+      align: 'center',
     },
     {
       key: 'endTime',
       label: t('groupBuying.end_time') || 'Ends In',
+      width: 'w-[140px]',
+      className: 'whitespace-nowrap',
       render: (campaign) => {
         const raw = getCountdown(campaign.endTime);
         const label = raw === 'ENDED' ? (t('TIME.ENDED') || 'ENDED') : raw;
         return (
-        <div className="flex flex-col items-center gap-1">
-          <div className="inline-flex items-center gap-1.5 text-xs font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
-            <Clock className="w-3 h-3" />
-            {label}
+          <div className="flex flex-col items-center gap-1">
+            <div className="inline-flex items-center gap-1.5 text-xs font-black tabular-nums bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20 whitespace-nowrap">
+              <Clock className="w-3 h-3 shrink-0" />
+              {label}
+            </div>
+            <span className="text-[11px] text-zinc-muted tabular-nums">
+              {new Date(campaign.endTime).toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-US')}
+            </span>
           </div>
-          <span className="text-[11px] text-zinc-muted">
-            {new Date(campaign.endTime).toLocaleDateString()}
-          </span>
-        </div>
         );
       },
       sortable: true,
@@ -232,15 +249,17 @@ export const GroupBuyingListPage: React.FC = () => {
       key: 'engagement',
       label: t('groupBuying.engagement') || 'Engagement',
       hideInCard: true,
+      width: 'w-[100px]',
+      className: 'whitespace-nowrap',
       render: (campaign) => (
         <div className="flex items-center justify-center gap-3">
           <div className="flex items-center gap-1" title={t('groupBuying.favorites') || 'Favorites'}>
-            <Heart className="w-3 h-3 text-rose-400" />
+            <Heart className="w-3 h-3 text-rose-400 shrink-0" />
             <span className="text-xs font-bold text-zinc-text tabular-nums">{campaign.favoritesCount ?? 0}</span>
           </div>
-          <div className="w-px h-3 bg-white/5" />
+          <div className="w-px h-3 bg-white/5 shrink-0" />
           <div className="flex items-center gap-1" title={t('groupBuying.views') || 'Views'}>
-            <Eye className="w-3 h-3 text-blue-400" />
+            <Eye className="w-3 h-3 text-blue-400 shrink-0" />
             <span className="text-xs font-bold text-zinc-text tabular-nums">{campaign.viewCount ?? 0}</span>
           </div>
         </div>
@@ -337,7 +356,7 @@ export const GroupBuyingListPage: React.FC = () => {
             }
           />
         ) : (
-          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
+          <div className="relative min-w-0 overflow-x-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
             {isFetching && <FetchingOverlay />}
             <DataTable
               columns={columns}
@@ -356,6 +375,7 @@ export const GroupBuyingListPage: React.FC = () => {
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}
+              className="border-0 shadow-none rounded-none bg-transparent"
             />
           </div>
         )}
