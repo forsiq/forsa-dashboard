@@ -508,6 +508,20 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     return created.id;
   };
 
+  /** Save catalog (create/update listing) and upload gallery media. Used before finish/submit on the media step. */
+  const persistCatalogAndMedia = async (): Promise<number> => {
+    let id = listingId;
+    if (isMerchant || isMobile) {
+      id = await saveCatalog();
+      setListingId(id);
+    }
+    if (!id) {
+      throw new Error(t('common.error_occurred') || 'Error');
+    }
+    await saveMedia(id);
+    return id;
+  };
+
   const saveMedia = async (id: number) => {
     const { previewUrls, pendingFiles } = imageUpload;
     if (previewUrls.length === 0) return;
@@ -534,6 +548,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           : [];
 
     if (idsToSave.length === 0 && externalUrlsForServerTransfer.length === 0) {
+      if (pendingFiles.length > 0) {
+        throw new Error(
+          uploadError || t('common.upload_failed') || 'Image upload failed. Please try again.',
+        );
+      }
       return;
     }
 
@@ -624,17 +643,19 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     setSubmitError(null);
     setFieldErrors({});
     try {
-      let id = listingId;
-      if (isMerchant || isMobile) {
-        id = await saveCatalog();
-        setListingId(id);
-      }
-      if (!id) {
-        setSubmitError(t('common.error_occurred') || 'Error');
-        return;
-      }
-      await saveMedia(id);
+      const id = await persistCatalogAndMedia();
       router.push(`/listings/${id}`);
+    } catch (err) {
+      setSubmitError(mapApiError(err));
+    }
+  };
+
+  const handleMediaStepAction = async (action: (id: number) => void | Promise<void>) => {
+    setSubmitError(null);
+    setFieldErrors({});
+    try {
+      const id = await persistCatalogAndMedia();
+      await action(id);
     } catch (err) {
       setSubmitError(mapApiError(err));
     }
@@ -699,16 +720,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
       }
 
       if (currentStep === step.MEDIA) {
-        let id = listingId;
-        if (isMerchant || isMobile) {
-          id = await saveCatalog();
-          setListingId(id);
-        }
-        if (!id) {
-          setSubmitError(t('common.error_occurred') || 'Error');
-          return;
-        }
-        await saveMedia(id);
+        await persistCatalogAndMedia();
         if (isMerchant || maxStep <= step.MEDIA) {
           setShowSubmitSuccess(true);
           return;
@@ -1716,13 +1728,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 <AmberButton
                   className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
                   disabled={isBusy}
-                  onClick={() => {
-                    if (!listingId) {
-                      void handleNext();
-                      return;
-                    }
-                    goToPublishFlow(listingId);
-                  }}
+                  onClick={() => void handleMediaStepAction((id) => goToPublishFlow(id))}
                 >
                   <Rocket className="w-4 h-4" />
                   {t('listing.wizard.continue_to_publish')}
@@ -1732,13 +1738,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 <AmberButton
                   className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
                   disabled={isBusy}
-                  onClick={() => {
-                    if (!listingId) {
-                      void handleNext();
-                      return;
-                    }
-                    submitListing('direct', listingId);
-                  }}
+                  onClick={() => void handleMediaStepAction((id) => submitListing('direct', id))}
                 >
                   {submitForReviewMutation.isPending ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -1754,13 +1754,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             <AmberButton
               className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
               disabled={isBusy}
-              onClick={() => {
-                if (!listingId) {
-                  void handleNext();
-                  return;
-                }
-                submitListing('review', listingId);
-              }}
+              onClick={() => void handleMediaStepAction((id) => submitListing('review', id))}
             >
               {submitForReviewMutation.isPending ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />

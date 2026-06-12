@@ -224,47 +224,24 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          {canSubmitForReview && (
-            isTrustedMerchant ? (
-              <AmberButton
-                className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                disabled={submitForReviewMutation.isPending}
-                onClick={() => openConfirm({
-                  title: t('approval.actions.direct_publish'),
-                  message: t('approval.messages.direct_publish_confirm'),
-                  onConfirm: () => submitForReviewMutation.mutate(
-                    { id: Number(listingId), mode: 'direct' },
-                    { onSuccess: () => router.push(`/listings/${listingId}/publish`) },
-                  ),
-                  variant: 'info',
-                })}
-              >
-                {submitForReviewMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Rocket className="w-4 h-4" />
-                )}
-                {t('approval.actions.direct_publish')}
-              </AmberButton>
-            ) : (
-              <AmberButton
-                className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                disabled={submitForReviewMutation.isPending}
-                onClick={() => openConfirm({
-                  title: t('approval.actions.submit'),
-                  message: t('approval.messages.submit_confirm'),
-                  onConfirm: () => submitForReviewMutation.mutate({ id: Number(listingId), mode: 'review' }),
-                  variant: 'info',
-                })}
-              >
-                {submitForReviewMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <SendHorizonal className="w-4 h-4" />
-                )}
-                {t('approval.actions.submit')}
-              </AmberButton>
-            )
+          {canSubmitForReview && !isTrustedMerchant && (
+            <AmberButton
+              className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
+              disabled={submitForReviewMutation.isPending}
+              onClick={() => openConfirm({
+                title: t('approval.actions.submit'),
+                message: t('approval.messages.submit_confirm'),
+                onConfirm: () => submitForReviewMutation.mutate({ id: Number(listingId), mode: 'review' }),
+                variant: 'info',
+              })}
+            >
+              {submitForReviewMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <SendHorizonal className="w-4 h-4" />
+              )}
+              {t('approval.actions.submit')}
+            </AmberButton>
           )}
           <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/edit`)}>
               <Edit className="w-4 h-4" />

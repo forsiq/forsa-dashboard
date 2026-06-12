@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lightbulb, Loader2, Check, X, Search, Plus, ChevronDown } from 'lucide-react';
+import { Lightbulb, Loader2, Check, X, Plus } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import { cn } from '@core/lib/utils/cn';
@@ -20,7 +20,6 @@ import {
   useById,
   useCategoryHealthReport,
 } from '../hooks';
-import type { CategoryHealthReport } from '../lib/categoryHealth';
 import { isCategoryPickerSafe } from '../lib/categoryHealth';
 
 import {
@@ -38,66 +37,6 @@ interface CategoryPickerProps {
   showSuggest?: boolean;
   showManageLink?: boolean;
   language?: string;
-}
-
-interface DropdownCategoryItem {
-  category: Category;
-  parent?: Category;
-  depth: number;
-}
-
-function buildDropdownItems(
-  tree: Category[],
-  query: string,
-  language: string,
-  report?: CategoryHealthReport,
-  parentScopeId?: string | null,
-): DropdownCategoryItem[] {
-  const q = query.trim().toLowerCase();
-  const items: DropdownCategoryItem[] = [];
-  const scopedMains = parentScopeId
-    ? tree.filter((main) => String(main.id) === parentScopeId)
-    : tree;
-
-  for (const main of scopedMains) {
-    if (report && !isCategoryPickerSafe(String(main.id), report)) continue;
-
-    const mainName = getLocalizedName(main, language).toLowerCase();
-    const mainMatches = !q || mainName.includes(q);
-    const safeChildren = (main.children || []).filter(
-      (child) => !report || isCategoryPickerSafe(String(child.id), report),
-    );
-
-    if (parentScopeId) {
-      if (mainMatches || (!q && safeChildren.length > 0)) {
-        items.push({ category: main, depth: 0 });
-      }
-
-      for (const child of safeChildren) {
-        const childName = getLocalizedName(child, language).toLowerCase();
-        const childMatches = !q || childName.includes(q) || mainName.includes(q);
-        if (childMatches) {
-          items.push({ category: child, parent: main, depth: 1 });
-        }
-      }
-      continue;
-    }
-
-    if (mainMatches) {
-      items.push({ category: main, depth: 0 });
-    }
-
-    for (const child of safeChildren) {
-      const childName = getLocalizedName(child, language).toLowerCase();
-      const childMatches = !q || childName.includes(q) || mainName.includes(q);
-
-      if (childMatches) {
-        items.push({ category: child, parent: main, depth: 1 });
-      }
-    }
-  }
-
-  return items;
 }
 
 function mainHasChildren(tree: Category[], mainId: string): boolean {
@@ -126,16 +65,13 @@ export function CategoryPicker({
   showSuggest = true,
   showManageLink = true,
 }: CategoryPickerProps) {
-  const { t, language, dir, isRTL } = useLanguage();
+  const { t, language, dir } = useLanguage();
   const { canManageCategories } = useDashboardRole();
   const [selectedMainId, setSelectedMainId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [suggestSuccess, setSuggestSuccess] = useState(false);
-  const [browseExpanded, setBrowseExpanded] = useState(!value);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [suggestParentLocked, setSuggestParentLocked] = useState(false);
 
   const {
     register: registerSuggest,
@@ -153,7 +89,7 @@ export function CategoryPicker({
   const suggestParentId = watchSuggest('parentId');
 
   const { data: mainCategories, isLoading: loadingMain } = useMainCategories();
-  const { data: categoryTree, isLoading: loadingTree } = useCategoryTree();
+  const { data: categoryTree } = useCategoryTree();
   const { report: healthReport } = useCategoryHealthReport(language);
   const { data: selectedCategoryDetail } = useById(
     value ? String(value) : '',
@@ -194,7 +130,6 @@ export function CategoryPicker({
 
     if (!hasChildren) {
       onChange(Number(category.id));
-      setBrowseExpanded(false);
       return;
     }
 
@@ -213,27 +148,6 @@ export function CategoryPicker({
 
   const handleSelectChild = (category: Category) => {
     onChange(Number(category.id));
-    setBrowseExpanded(false);
-  };
-
-  const handleSelectFromDropdown = (category: Category, parent?: Category) => {
-    if (parent) {
-      setSelectedMainId(String(parent.id));
-      onChange(Number(category.id));
-      setBrowseExpanded(false);
-    } else {
-      const tree = categoryTree?.tree || [];
-      const hasChildren = mainHasChildren(tree, String(category.id));
-      setSelectedMainId(String(category.id));
-      if (!hasChildren) {
-        onChange(Number(category.id));
-        setBrowseExpanded(false);
-      } else if (String(value) !== String(category.id)) {
-        onChange(0);
-      }
-    }
-    setIsDropdownOpen(false);
-    setSearchQuery('');
   };
 
   const selectedPath = useMemo(() => {
@@ -249,31 +163,6 @@ export function CategoryPicker({
     return { parent, category: selectedCategory };
   }, [selectedCategory, categoryTree?.tree]);
 
-  const dropdownItems = useMemo(
-    () =>
-      buildDropdownItems(
-        categoryTree?.tree || [],
-        searchQuery,
-        language,
-        healthReport,
-        resolvedMainId,
-      ),
-    [categoryTree?.tree, searchQuery, language, healthReport, resolvedMainId],
-  );
-
-  const hasCategories = (categoryTree?.tree?.length ?? 0) > 0 || (mainCategories?.length ?? 0) > 0;
-
-  useEffect(() => {
-    if (!isDropdownOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [isDropdownOpen]);
-
   const onSuggestValid = (data: SuggestCategoryFormData) => {
     const input: SuggestCategoryInput = toSuggestCategoryPayload(data);
 
@@ -284,6 +173,7 @@ export function CategoryPicker({
         setTimeout(() => {
           setSuggestSuccess(false);
           setShowSuggestForm(false);
+          setSuggestParentLocked(false);
         }, 3000);
       },
     });
@@ -317,28 +207,53 @@ export function CategoryPicker({
     return total;
   }, [categoryTree?.tree, healthReport]);
 
+  const selectedMainCategory = useMemo(() => {
+    if (!resolvedMainId) return null;
+    return (
+      safeMainCategories.find((cat) => String(cat.id) === resolvedMainId) ??
+      categoryTree?.tree?.find((cat) => String(cat.id) === resolvedMainId) ??
+      null
+    );
+  }, [resolvedMainId, safeMainCategories, categoryTree?.tree]);
+
+  const mainHasSubs = useMemo(
+    () => (resolvedMainId ? mainHasChildren(categoryTree?.tree || [], resolvedMainId) : false),
+    [resolvedMainId, categoryTree?.tree],
+  );
+
+  const isSelectionComplete = useMemo(() => {
+    if (!value || !resolvedMainId) return false;
+    if (!mainHasSubs) return String(value) === resolvedMainId;
+    return String(value) !== resolvedMainId;
+  }, [value, resolvedMainId, mainHasSubs]);
+
   useEffect(() => {
-    setBrowseExpanded(!value);
     if (!value) {
       setSelectedMainId(null);
     }
   }, [value]);
 
-  const handleToggleBrowse = () => {
-    setBrowseExpanded((prev) => {
-      const next = !prev;
-      if (next && value && selectedCategoryDetail?.parentId) {
-        setSelectedMainId(String(selectedCategoryDetail.parentId));
-      } else if (next && value && selectedCategoryDetail && !selectedCategoryDetail.parentId) {
-        setSelectedMainId(String(selectedCategoryDetail.id));
-      }
-      return next;
-    });
+  const openSuggestSubCategory = () => {
+    if (!resolvedMainId) return;
+    resetSuggestForm({ name: '', description: '', parentId: resolvedMainId });
+    setSuggestParentLocked(true);
+    setShowSuggestForm(true);
+  };
+
+  const openSuggestMainCategory = () => {
+    resetSuggestForm({ name: '', description: '', parentId: '' });
+    setSuggestParentLocked(false);
+    setShowSuggestForm(true);
+  };
+
+  const handleClearSelection = () => {
+    onChange(0);
+    setSelectedMainId(null);
   };
 
   return (
     <div className="space-y-4" dir={dir}>
-      {value && selectedCategory && selectedPath && (
+      {isSelectionComplete && selectedCategory && selectedPath && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/10 border border-brand/30 shadow-[0_0_0_1px_rgba(var(--brand-rgb,212,175,55),0.08)]">
           {selectedCategory.icon ? (
             <CategoryIconPreview icon={selectedCategory.icon} size="md" />
@@ -367,10 +282,8 @@ export function CategoryPicker({
           </div>
           <button
             type="button"
-            onClick={() => onChange(0)}
-            className={cn(
-              'p-1.5 rounded-lg hover:bg-white/10 transition-colors shrink-0',
-            )}
+            onClick={handleClearSelection}
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors shrink-0"
             aria-label={t('category.picker_clear') || 'Clear category'}
           >
             <X className="w-4 h-4 text-zinc-muted" />
@@ -378,229 +291,182 @@ export function CategoryPicker({
         </div>
       )}
 
-      <div ref={searchRef} className="relative space-y-1.5">
-        <AmberInput
-          placeholder={t('category.picker_search') || 'Search categories…'}
-          value={searchQuery}
-          onFocus={() => setIsDropdownOpen(true)}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setIsDropdownOpen(true);
-          }}
-          icon={<Search className="w-4 h-4" />}
-          aria-expanded={isDropdownOpen}
-          aria-haspopup="listbox"
-          role="combobox"
-        />
-        <p className="text-xs text-zinc-muted px-1">
-          {resolvedMainId
-            ? t('category.picker_search_hint_scoped') ||
-              'Search within the selected main category, or browse below'
-            : t('category.picker_search_hint') ||
-              'Type to search, or browse categories below'}
-        </p>
+      <div className="rounded-xl border border-border bg-obsidian-card/50 overflow-hidden">
+        {canManageCategories && hiddenCategoryCount > 0 && (
+          <p className="text-xs border-b border-white/5 px-4 py-2.5 text-amber-700 dark:text-warning/90 bg-[var(--color-warning-bg)] border-[var(--color-warning-border)]">
+            {t('category.picker_hidden_note') ||
+              'Some categories are hidden from selection because they need admin review.'}
+          </p>
+        )}
 
-        {isDropdownOpen && hasCategories && (
-          <div
-            role="listbox"
-            className={cn(
-              'absolute top-full z-[80] mt-1.5 w-full max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-obsidian-card shadow-xl',
+        <section className="px-4 py-4 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('category.select_main') || 'Main category'}
+              </p>
+              <p className="text-xs text-zinc-muted mt-1">
+                {t('category.picker_step_main_hint') ||
+                  'Choose the main category that best fits your product'}
+              </p>
+            </div>
+            {resolvedMainId && selectedMainCategory && (
+              <button
+                type="button"
+                onClick={handleClearSelection}
+                className="text-xs font-bold text-brand hover:text-brand/80 shrink-0"
+              >
+                {t('category.picker_change_main') || 'Change'}
+              </button>
             )}
-          >
-            {loadingTree ? (
-              <div className="flex items-center gap-2 px-4 py-3">
+          </div>
+
+          {loadingMain ? (
+            <div className="flex items-center gap-2 py-4">
+              <Loader2 className="w-4 h-4 animate-spin text-zinc-muted" />
+              <span className="text-sm text-zinc-muted">{t('common.loading') || 'Loading...'}</span>
+            </div>
+          ) : safeMainCategories.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border px-4 py-5 space-y-3">
+              <p className="text-sm text-zinc-muted">
+                {t('category.no_results') || 'No categories found'}
+              </p>
+              {showSuggest && (
+                <button
+                  type="button"
+                  onClick={openSuggestMainCategory}
+                  className="flex items-center gap-2 text-sm font-medium text-zinc-secondary hover:text-amber-600 dark:text-brand/70 dark:hover:text-brand transition-colors"
+                >
+                  <Lightbulb className="w-4 h-4" />
+                  <span>{t('category.suggest_new') || "Don't see your category? Suggest one"}</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {safeMainCategories.map((cat) => {
+                const isSelected = String(resolvedMainId) === String(cat.id);
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleSelectMain(cat)}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all border',
+                      isSelected
+                        ? 'bg-brand text-black border-brand shadow-sm'
+                        : 'bg-obsidian-card text-zinc-text border-border hover:border-brand/40 hover:bg-brand/[0.04]',
+                    )}
+                  >
+                    <CategoryIconPreview icon={cat.icon} />
+                    {getLocalizedName(cat, language)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {resolvedMainId && selectedMainCategory && mainHasSubs && (
+          <section className="px-4 py-4 border-t border-white/5 space-y-3">
+            <div>
+              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                {t('category.select_sub') || 'Sub-category (optional)'}
+              </p>
+              <p className="text-xs text-zinc-muted mt-1">
+                {t('category.picker_step_sub_hint') || 'Choose a sub-category under'}{' '}
+                <span className="font-bold text-zinc-text">
+                  {getLocalizedName(selectedMainCategory, language)}
+                </span>
+              </p>
+            </div>
+
+            {loadingChildren ? (
+              <div className="flex items-center gap-2 py-4">
                 <Loader2 className="w-4 h-4 animate-spin text-zinc-muted" />
                 <span className="text-sm text-zinc-muted">
                   {t('common.loading') || 'Loading...'}
                 </span>
               </div>
-            ) : dropdownItems.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-zinc-muted">
-                {t('category.no_results') || 'No categories match your search'}
-              </p>
-            ) : (
-              <ul className="py-1">
-                {dropdownItems.map((item) => {
-                  const isSelected = String(value) === String(item.category.id);
-                  const parentName = item.parent
-                    ? getLocalizedName(item.parent, language)
-                    : null;
-                  const categoryName = getLocalizedName(item.category, language);
-
+            ) : safeChildren.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {safeChildren.map((cat) => {
+                  const isSelected = String(value) === String(cat.id);
                   return (
-                    <li key={item.category.id}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
-                        onClick={() => handleSelectFromDropdown(item.category, item.parent)}
-                        className={cn(
-                          'flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors text-start',
-                          item.depth > 0 && (isRTL ? 'pr-8' : 'pl-8'),
-                          isSelected
-                            ? 'bg-brand/[0.12] text-brand'
-                            : 'text-zinc-text hover:bg-white/[0.04]',
-                        )}
-                      >
-                        <CategoryIconPreview icon={item.category.icon} />
-                        <span className="min-w-0 flex-1 line-clamp-2 break-words">
-                          {parentName ? (
-                            <>
-                              <span className="text-zinc-muted">{parentName}</span>
-                              <span className="mx-1.5 text-zinc-muted/60">›</span>
-                              <span className="font-bold">{categoryName}</span>
-                            </>
-                          ) : (
-                            <span className="font-bold">{categoryName}</span>
-                          )}
-                        </span>
-                        {isSelected && <Check className="w-3.5 h-3.5 shrink-0 text-brand" />}
-                      </button>
-                    </li>
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => handleSelectChild(cat)}
+                      className={cn(
+                        'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
+                        isSelected
+                          ? 'bg-brand/20 text-brand border-brand/40'
+                          : 'bg-white/[0.02] text-zinc-text border-white/[0.06] hover:border-brand/30 hover:bg-brand/[0.03]',
+                      )}
+                    >
+                      <CategoryIconPreview icon={cat.icon} />
+                      {getLocalizedName(cat, language)}
+                    </button>
                   );
                 })}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {canManageCategories && hiddenCategoryCount > 0 && (
-        <p className="text-xs text-warning/80 px-1">
-          {t('category.picker_hidden_note') ||
-            'Some categories are hidden from selection because they need admin review.'}
-        </p>
-      )}
-
-      <div className="rounded-xl border border-border bg-obsidian-card/50 overflow-hidden">
-        <button
-          type="button"
-          onClick={handleToggleBrowse}
-          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start hover:bg-white/[0.02] transition-colors"
-          aria-expanded={browseExpanded}
-        >
-          <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-            {value
-              ? t('category.picker_change') || 'Change category'
-              : t('category.picker_browse') || 'Browse categories'}
-          </span>
-          <ChevronDown
-            className={cn(
-              'w-4 h-4 text-zinc-muted transition-transform duration-200 shrink-0',
-              browseExpanded && 'rotate-180',
-            )}
-          />
-        </button>
-
-        {browseExpanded && (
-          <div className="px-4 pb-4 space-y-4 border-t border-white/5">
-            <div>
-              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-3 pt-3">
-                {t('category.select_main') || 'Main category'}
-              </p>
-              {loadingMain ? (
-                <div className="flex items-center gap-2 py-4">
-                  <Loader2 className="w-4 h-4 animate-spin text-zinc-muted" />
-                  <span className="text-sm text-zinc-muted">
-                    {t('common.loading') || 'Loading...'}
-                  </span>
-                </div>
-              ) : safeMainCategories.length === 0 ? (
-                <p className="text-sm text-zinc-muted py-2">
-                  {t('category.no_results') || 'No categories match your search'}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-white/[0.02] px-4 py-5 space-y-4">
+                <p className="text-sm text-zinc-text font-medium">
+                  {t('category.picker_no_subcategories') ||
+                    'No sub-categories are available under this main category yet.'}
                 </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {safeMainCategories.map((cat) => {
-                    const isSelected = String(resolvedMainId) === String(cat.id);
-
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => handleSelectMain(cat)}
-                        className={cn(
-                          'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all border',
-                          isSelected
-                            ? 'bg-brand text-black border-brand shadow-sm'
-                            : 'bg-obsidian-card text-zinc-text border-border hover:border-brand/40 hover:bg-brand/[0.04]',
-                        )}
-                      >
-                        <CategoryIconPreview icon={cat.icon} />
-                        {getLocalizedName(cat, language)}
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-wrap items-center gap-4">
+                  {showSuggest && (
+                    <button
+                      type="button"
+                      onClick={openSuggestSubCategory}
+                      className="flex items-center gap-2 text-sm font-medium text-zinc-secondary hover:text-amber-600 dark:text-brand/70 dark:hover:text-brand transition-colors"
+                    >
+                      <Lightbulb className="w-4 h-4" />
+                      <span>
+                        {t('category.picker_suggest_sub') || 'Suggest a new sub-category'}
+                      </span>
+                    </button>
+                  )}
+                  {showManageLink && canManageCategories && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(true)}
+                      className="flex items-center gap-2 text-sm font-medium text-zinc-muted hover:text-brand transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>{t('category.picker_add_sub') || 'Add sub-category'}</span>
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-
-            {resolvedMainId && safeChildren.length > 0 && (
-              <div>
-                <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-3">
-                  {t('category.select_sub') || 'Sub-category (optional)'}
-                </p>
-                {loadingChildren ? (
-                  <div className="flex items-center gap-2 py-4">
-                    <Loader2 className="w-4 h-4 animate-spin text-zinc-muted" />
-                    <span className="text-sm text-zinc-muted">
-                      {t('common.loading') || 'Loading...'}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {safeChildren.map((cat) => {
-                      const isSelected = String(value) === String(cat.id);
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => handleSelectChild(cat)}
-                          className={cn(
-                            'inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all border',
-                            isSelected
-                              ? 'bg-brand/20 text-brand border-brand/40'
-                              : 'bg-white/[0.02] text-zinc-text border-white/[0.06] hover:border-brand/30 hover:bg-brand/[0.03]',
-                          )}
-                        >
-                          <CategoryIconPreview icon={cat.icon} />
-                          {getLocalizedName(cat, language)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             )}
-          </div>
+          </section>
         )}
       </div>
 
-      <div className={cn('flex flex-wrap items-center gap-4 mt-2', isRTL && 'flex-row-reverse')}>
-        {showSuggest && !showSuggestForm && (
-          <button
-            type="button"
-            onClick={() => setShowSuggestForm(true)}
-            className="flex items-center gap-2 text-sm font-medium text-brand/70 hover:text-brand transition-colors"
-          >
-            <Lightbulb className="w-4 h-4" />
-            <span>
-              {t('category.suggest_new') || "Don't see your category? Suggest one"}
-            </span>
-          </button>
-        )}
+      {showSuggest && !showSuggestForm && !resolvedMainId && safeMainCategories.length > 0 && (
+        <button
+          type="button"
+          onClick={openSuggestMainCategory}
+          className="flex items-center gap-2 text-sm font-medium text-zinc-secondary hover:text-amber-600 dark:text-brand/70 dark:hover:text-brand transition-colors"
+        >
+          <Lightbulb className="w-4 h-4" />
+          <span>{t('category.suggest_new') || "Don't see your category? Suggest one"}</span>
+        </button>
+      )}
 
-        {showManageLink && canManageCategories && (
-          <button
-            type="button"
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 text-sm font-medium text-zinc-muted hover:text-brand transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t('category.add_new') || 'Add new category'}</span>
-          </button>
-        )}
-      </div>
+      {showManageLink && canManageCategories && !resolvedMainId && (
+        <button
+          type="button"
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 text-sm font-medium text-zinc-muted hover:text-brand transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          <span>{t('category.add_new') || 'Add new category'}</span>
+        </button>
+      )}
 
       {canManageCategories && (
         <CategoryAddModal
@@ -614,7 +480,6 @@ export function CategoryPicker({
               setSelectedMainId(String(category.id));
             }
             onChange(Number(category.id));
-            setBrowseExpanded(false);
           }}
         />
       )}
@@ -627,7 +492,10 @@ export function CategoryPicker({
             </h4>
             <button
               type="button"
-              onClick={() => setShowSuggestForm(false)}
+              onClick={() => {
+                setShowSuggestForm(false);
+                setSuggestParentLocked(false);
+              }}
               className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
             >
               <X className="w-4 h-4 text-zinc-muted" />
@@ -670,23 +538,36 @@ export function CategoryPicker({
                 {...registerSuggest('description')}
               />
 
-              <AmberDropdown
-                label={t('category.suggest_parent') || 'Parent Category (Optional)'}
-                options={[
-                  { label: t('category.no_parent') || 'None (Main Category)', value: '' },
-                  ...(mainCategories || []).map((cat) => ({
-                    label: getLocalizedName(cat, language),
-                    value: String(cat.id),
-                  })),
-                ]}
-                value={suggestParentId || ''}
-                onChange={(val: string) => {
-                  registerSuggest('parentId').onChange({ target: { value: val, name: 'parentId' } } as any);
-                }}
-                placeholder={
-                  t('category.select_parent_placeholder') || 'Select parent...'
-                }
-              />
+              {suggestParentLocked && selectedMainCategory ? (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-bold text-zinc-muted uppercase tracking-widest">
+                    {t('category.suggest_parent') || 'Parent category'}
+                  </p>
+                  <p className="text-sm font-medium text-zinc-text rounded-xl border border-border bg-white/[0.02] px-4 py-3">
+                    {getLocalizedName(selectedMainCategory, language)}
+                  </p>
+                </div>
+              ) : (
+                <AmberDropdown
+                  label={t('category.suggest_parent') || 'Parent Category (Optional)'}
+                  options={[
+                    { label: t('category.no_parent') || 'None (Main Category)', value: '' },
+                    ...(mainCategories || []).map((cat) => ({
+                      label: getLocalizedName(cat, language),
+                      value: String(cat.id),
+                    })),
+                  ]}
+                  value={suggestParentId || ''}
+                  onChange={(val: string) => {
+                    registerSuggest('parentId').onChange({
+                      target: { value: val, name: 'parentId' },
+                    } as any);
+                  }}
+                  placeholder={
+                    t('category.select_parent_placeholder') || 'Select parent...'
+                  }
+                />
+              )}
 
               <div className="flex items-center gap-3 pt-2">
                 <AmberButton
@@ -706,7 +587,10 @@ export function CategoryPicker({
                 <AmberButton
                   type="button"
                   variant="outline"
-                  onClick={() => setShowSuggestForm(false)}
+                  onClick={() => {
+                    setShowSuggestForm(false);
+                    setSuggestParentLocked(false);
+                  }}
                   className="h-10 px-6 rounded-xl font-bold"
                 >
                   {t('common.cancel') || 'Cancel'}

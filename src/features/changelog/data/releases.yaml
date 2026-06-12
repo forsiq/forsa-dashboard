@@ -1,3 +1,25 @@
+- version: "1.7.2"
+  date: "2026-06-12"
+  title:
+    en: "Listing detail publish actions"
+    ar: "إجراءات النشر في تفاصيل المنتج"
+  entries:
+    - description:
+        en: "Fixed product images not saving on the new listing wizard (step 2) when submitting or publishing directly."
+        ar: "إصلاح عدم حفظ صور المنتج في معالج الإضافة (الخطوة 2) عند الإرسال أو النشر المباشر."
+      type: fixed
+      sidebarPath: /listings
+    - description:
+        en: "Clearer two-step category picker — main category first, then sub-category, with suggest/add when no sub-categories exist."
+        ar: "تنظيم أوضح لاختيار الفئة — رئيسية ثم فرعية، مع اقتراح أو إضافة فئة فرعية عند عدم وجودها."
+      type: improved
+      sidebarPath: /listings
+    - description:
+        en: "Removed the redundant «Publish Directly» header button on listing detail — trusted merchants publish from the auction or group-buy channel cards below."
+        ar: "إزالة زر «نشر مباشر» المكرر من أعلى صفحة تفاصيل المنتج — التاجر الموثوق ينشر من بطاقات المزاد أو الصفقة الجماعية أدناه."
+      type: improved
+      sidebarPath: /listings
+
 - version: "1.7.1"
   date: "2026-06-09"
   title:
