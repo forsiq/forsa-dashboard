@@ -450,6 +450,8 @@ export const ar: Record<string, string> = {
   "listing.table.auction_count": "المزادات",
   "listing.table.deal_count": "الصفقات",
   "listing.table.approval_status": "حالة المراجعة",
+  "listing.table.publisher": "الناشر",
+  "listing.table.published_by": "نُشر بواسطة",
   "listing.table.actions": "الإجراءات",
   "listing.table.no_listings": "لا توجد منتجات",
 
@@ -459,7 +461,11 @@ export const ar: Record<string, string> = {
   "listing.stats.with_deal": "لديها صفقات",
   "listing.stats.orphan": "غير منشورة",
   "listing.stats.with_issues": "بها مشاكل",
+  "listing.stats.published": "منشورة",
   "listing.filter.issues_only": "منتجات ناقصة فقط",
+  "listing.filter.publish_status.all": "الكل",
+  "listing.filter.publish_status.published": "منشورة",
+  "listing.filter.publish_status.not_published": "غير منشورة",
   "listing.readiness.issues_tooltip": "مشاكل الجاهزية",
 
   // Listing detail
@@ -1385,6 +1391,9 @@ export const ar: Record<string, string> = {
   "approval.messages.reject_reason_required": "يرجى كتابة سبب الرفض",
   "approval.messages.already_submitted": "هذا المنتج تم إرساله للمراجعة مسبقاً",
   "approval.messages.not_submitted": "لم يتم إرسال هذا المنتج بعد",
+  "approval.messages.ready_to_deploy": "جاهز للنشر",
+  "approval.messages.fix_and_resubmit": "أصلح المشكلات وأعد الإرسال للمراجعة",
+  "approval.messages.under_review": "هذا المنتج قيد المراجعة حالياً. لا يزال بإمكانك تعديله.",
 
   // الإشراف - قائمة المراجعة
   "moderation.title": "قائمة المراجعة",

@@ -152,9 +152,9 @@ export function UsersListPage() {
   // Get role badge color
   const getRoleBadgeColor = (role: string) => {
     const colors = {
-      admin: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      user: 'bg-zinc-500/20 text-zinc-muted border-zinc-500/30',
+      admin: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
+      manager: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+      user: 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border-zinc-500/30',
     };
     return colors[role as keyof typeof colors] || colors.user;
   };
@@ -215,8 +215,8 @@ export function UsersListPage() {
           }}
           className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
             user.isActive
-              ? 'bg-green-500/20 text-green-300 border-green-500/30'
-              : 'bg-red-500/20 text-red-300 border-red-500/30'
+              ? 'bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30'
+              : 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30'
           }`}
         >
           {t(user.isActive ? 'user.status.active' : 'user.status.inactive')}

@@ -551,7 +551,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           ? retainedAttachmentIds
           : [];
 
-    if (idsToSave.length === 0 && externalUrlsForServerTransfer.length === 0) {
+    const persistableUrls = previewUrls.filter((url) => !url.startsWith('blob:'));
+
+    if (
+      idsToSave.length === 0 &&
+      externalUrlsForServerTransfer.length === 0 &&
+      persistableUrls.length === 0
+    ) {
       if (pendingFiles.length > 0) {
         throw new Error(
           uploadError || t('common.upload_failed') || 'Image upload failed. Please try again.',
@@ -561,12 +567,18 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     }
 
     const data: UpdateListingInput = {};
-    if (externalUrlsForServerTransfer.length > 0) {
-      data.images = previewUrls.filter((url) => !url.startsWith('blob:'));
-    }
     if (idsToSave.length > 0) {
       data.mainAttachmentId = idsToSave[0];
       data.attachmentIds = idsToSave;
+    }
+    if (
+      externalUrlsForServerTransfer.length > 0 ||
+      (idsToSave.length === 0 && persistableUrls.length > 0)
+    ) {
+      data.images = persistableUrls;
+      if (!data.mainAttachmentId) {
+        data.imageUrl = persistableUrls[0];
+      }
     }
 
     const updated = await updateMutation.mutateAsync({ id, data });

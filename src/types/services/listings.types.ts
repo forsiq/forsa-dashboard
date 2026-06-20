@@ -36,11 +36,13 @@ export interface ProductListing {
   imageUrl?: string;
   images: string[];
   sellerId?: string | null;
+  sellerName?: string | null;
   translations?: Record<string, Record<string, string>>;
   metadata?: Record<string, any>;
   projectId?: number;
   _auctionCount?: number;
   _dealCount?: number;
+  _isPublished?: boolean;
   approvalStatus?: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'changes_requested';
   rejectionReason?: string | null;
   createdAt: string;
@@ -53,6 +55,7 @@ export interface ListingFilters {
   categoryId?: number;
   brand?: string;
   condition?: string;
+  publishStatus?: 'published' | 'not_published';
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -74,6 +77,8 @@ export interface ListingsResponse {
     withAuction?: number;
     withDeal?: number;
     orphan?: number;
+    published?: number;
+    notPublished?: number;
   };
 }
 

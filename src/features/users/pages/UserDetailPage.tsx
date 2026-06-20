@@ -63,9 +63,9 @@ export function UserDetailPage() {
   // Get role badge color
   const getRoleBadgeColor = (role: string) => {
     const colors = {
-      admin: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      manager: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      user: 'bg-zinc-500/20 text-zinc-muted border-zinc-500/30',
+      admin: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
+      manager: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+      user: 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border-zinc-500/30',
     };
     return colors[role as keyof typeof colors] || colors.user;
   };
@@ -145,14 +145,14 @@ export function UserDetailPage() {
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center">
                   {user.isActive ? (
-                    <UserCheck className="h-5 w-5 text-green-400" />
+                    <UserCheck className="h-5 w-5 text-green-700 dark:text-green-400" />
                   ) : (
-                    <UserX className="h-5 w-5 text-red-400" />
+                    <UserX className="h-5 w-5 text-red-700 dark:text-red-400" />
                   )}
                 </div>
                 <div>
                   <p className="text-[13px] text-zinc-500">{t('user.is_active')}</p>
-                  <p className={`text-sm font-medium ${user.isActive ? 'text-green-400' : 'text-red-400'}`}>
+                  <p className={`text-sm font-medium ${user.isActive ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                     {t(user.isActive ? 'user.status.active' : 'user.status.inactive')}
                   </p>
                 </div>

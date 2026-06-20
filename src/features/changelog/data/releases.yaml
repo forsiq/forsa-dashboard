@@ -1,3 +1,27 @@
+- version: "1.7.5"
+  date: "2026-06-20"
+  title:
+    en: "Listings publisher column for admins"
+    ar: "عمود الناشر في المنتجات للمسؤولين"
+  entries:
+    - description:
+        en: "Admins see which merchant published each listing in the listings table (publisher name per row)."
+        ar: "المسؤولون يرون أي تاجر نشر كل منتج في جدول القوائم (اسم الناشر في كل صف)."
+      type: added
+      sidebarPath: /listings
+
+- version: "1.7.4"
+  date: "2026-06-20"
+  title:
+    en: "Listings auction & deal counts"
+    ar: "أعداد المزادات والصفقات في القوائم"
+  entries:
+    - description:
+        en: "Listings table now shows correct auction and group-deal counts per product, with Published filter chips and aggregate stats from the API."
+        ar: "جدول المنتجات يعرض الآن أعداد المزادات والصفقات الجماعية الصحيحة لكل منتج، مع شرائح تصفية «منشورة» وإحصائيات مجمّعة من الـ API."
+      type: fixed
+      sidebarPath: /listings
+
 - version: "1.7.3"
   date: "2026-06-12"
   title:

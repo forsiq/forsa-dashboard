@@ -452,6 +452,8 @@ export const en: Record<string, string> = {
   "listing.table.auction_count": "Auctions",
   "listing.table.deal_count": "Deals",
   "listing.table.approval_status": "Review Status",
+  "listing.table.publisher": "Publisher",
+  "listing.table.published_by": "Published by",
   "listing.table.actions": "Actions",
   "listing.table.no_listings": "No listings found",
 
@@ -461,7 +463,11 @@ export const en: Record<string, string> = {
   "listing.stats.with_deal": "With Deals",
   "listing.stats.orphan": "Not Deployed",
   "listing.stats.with_issues": "With Issues",
+  "listing.stats.published": "Published",
   "listing.filter.issues_only": "Issues only",
+  "listing.filter.publish_status.all": "All",
+  "listing.filter.publish_status.published": "Published",
+  "listing.filter.publish_status.not_published": "Not Published",
   "listing.readiness.issues_tooltip": "Readiness issues",
 
   // Listing detail
@@ -1384,6 +1390,9 @@ export const en: Record<string, string> = {
   "approval.messages.reject_reason_required": "Please provide a rejection reason",
   "approval.messages.already_submitted": "This product is already submitted for review",
   "approval.messages.not_submitted": "This product has not been submitted yet",
+  "approval.messages.ready_to_deploy": "Ready to Deploy",
+  "approval.messages.fix_and_resubmit": "Fix the issues and resubmit for review",
+  "approval.messages.under_review": "This product is currently under review. You can still edit it.",
 
   // Moderation - Approval Queue
   "moderation.title": "Moderation Queue",

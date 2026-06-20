@@ -12,6 +12,7 @@ import {
   Users,
   Zap,
   AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -43,6 +44,13 @@ import { ListingReadinessBadge } from '../components/ListingReadinessBadge';
 import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 
 type ApprovalStatusKey = NonNullable<ProductListing['approvalStatus']>;
+type PublishStatusFilter = 'all' | 'published' | 'not_published';
+
+const PUBLISH_STATUS_TABS: { key: PublishStatusFilter; labelKey: string; countKey?: 'published' | 'notPublished' }[] = [
+  { key: 'all', labelKey: 'listing.filter.publish_status.all' },
+  { key: 'published', labelKey: 'listing.filter.publish_status.published', countKey: 'published' },
+  { key: 'not_published', labelKey: 'listing.filter.publish_status.not_published', countKey: 'notPublished' },
+];
 
 const APPROVAL_STATUS_VARIANT: Record<ApprovalStatusKey, 'inactive' | 'warning' | 'success' | 'failed'> = {
   draft: 'inactive',
@@ -56,7 +64,7 @@ export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
   const router = useRouter();
   const { isMobile } = useIsMobile();
-  const { canManageListings, canDeleteListings, canViewApprovalStatus } = useDashboardRole();
+  const { canManageListings, canDeleteListings, canViewApprovalStatus, isAdmin } = useDashboardRole();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
@@ -69,6 +77,7 @@ export const ListingsListPage: React.FC = () => {
   const [sortBy, setSortBy] = useFilterState<string>('sortBy', 'createdAt');
   const [sortOrder, setSortOrder] = useFilterState<'asc' | 'desc'>('sortOrder', 'desc');
   const [issuesOnly, setIssuesOnly] = useFilterState<string>('issuesOnly', 'false');
+  const [publishStatusFilter, setPublishStatusFilter] = useFilterState<PublishStatusFilter>('publishStatus', 'all');
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -82,6 +91,7 @@ export const ListingsListPage: React.FC = () => {
     search: debouncedSearch || undefined,
     condition: conditionFilter !== 'all' ? conditionFilter : undefined,
     brand: brandFilter !== 'all' ? brandFilter : undefined,
+    publishStatus: publishStatusFilter === 'all' ? undefined : publishStatusFilter,
     sortBy: sortBy as any,
     sortOrder,
     page,
@@ -99,14 +109,15 @@ export const ListingsListPage: React.FC = () => {
     return listings.filter((l) => analyzeProductReadiness(l).length > 0);
   }, [listings, issuesOnly]);
 
-  // Compute stats from listings — prefer API aggregate counts when available
   const stats = useMemo(() => {
     const all = pagination?.total || listings.length;
     return {
       total: all,
-      withAuction: listingsData?.stats?.withAuction ?? (listings.filter(l => l._auctionCount && l._auctionCount > 0).length || 0),
-      withDeal: listingsData?.stats?.withDeal ?? (listings.filter(l => l._dealCount && l._dealCount > 0).length || 0),
-      orphan: listingsData?.stats?.orphan ?? (listings.filter(l => !l._auctionCount && !l._dealCount).length || 0),
+      withAuction: listingsData?.stats?.withAuction ?? listings.filter(l => (l._auctionCount ?? 0) > 0).length,
+      withDeal: listingsData?.stats?.withDeal ?? listings.filter(l => (l._dealCount ?? 0) > 0).length,
+      orphan: listingsData?.stats?.orphan ?? listings.filter(l => !(l._auctionCount ?? 0) && !(l._dealCount ?? 0)).length,
+      published: listingsData?.stats?.published ?? listings.filter(l => l._isPublished).length,
+      notPublished: listingsData?.stats?.notPublished ?? listings.filter(l => !l._isPublished).length,
       withIssues: listings.filter((l) => analyzeProductReadiness(l).length > 0).length,
     };
   }, [listings, pagination, listingsData?.stats]);
@@ -127,8 +138,9 @@ export const ListingsListPage: React.FC = () => {
     if (conditionFilter !== 'all') count += 1;
     if (brandFilter !== 'all') count += 1;
     if (issuesOnly === 'true') count += 1;
+    if (publishStatusFilter !== 'all') count += 1;
     return count;
-  }, [conditionFilter, brandFilter, issuesOnly]);
+  }, [conditionFilter, brandFilter, issuesOnly, publishStatusFilter]);
 
   const approvalStatusLabel = useMemo<Record<ApprovalStatusKey, string>>(
     () => ({
@@ -196,6 +208,20 @@ export const ListingsListPage: React.FC = () => {
       sortable: true,
       align: 'center',
     },
+    ...(isAdmin ? [{
+      key: 'sellerName',
+      label: t('listing.table.publisher') || 'Publisher',
+      render: (listing: ProductListing) => (
+        listing.sellerName || listing.sellerId ? (
+          <span className="inline-flex items-center rounded-lg border border-white/10 bg-obsidian-outer px-2.5 py-1 text-[11px] font-bold text-zinc-text">
+            {listing.sellerName || listing.sellerId}
+          </span>
+        ) : (
+          <span className="text-xs text-zinc-muted">—</span>
+        )
+      ),
+      align: 'center' as const,
+    }] : []),
     {
       key: 'condition',
       label: t('listing.table.condition') || 'Condition',
@@ -242,7 +268,7 @@ export const ListingsListPage: React.FC = () => {
       ),
       align: 'center',
     },
-  ], [t, canViewApprovalStatus, renderApprovalBadge]);
+  ], [t, canViewApprovalStatus, isAdmin, renderApprovalBadge]);
 
   const rowActions: Action<ProductListing>[] = useMemo(() => [
     {
@@ -346,6 +372,12 @@ export const ListingsListPage: React.FC = () => {
             {listing.sku || listing.brand || '—'}
           </p>
 
+          {isAdmin && (listing.sellerName || listing.sellerId) && (
+            <p className="text-[10px] font-bold text-zinc-secondary truncate">
+              {t('listing.table.published_by') || 'Published by'}: {listing.sellerName || listing.sellerId}
+            </p>
+          )}
+
           {/* Approval status (mobile card footer) */}
           {canViewApprovalStatus && (
             <div className="flex items-center">
@@ -376,7 +408,7 @@ export const ListingsListPage: React.FC = () => {
         </div>
       </Link>
     ),
-    [renderApprovalBadge, canViewApprovalStatus],
+    [renderApprovalBadge, canViewApprovalStatus, isAdmin, t],
   );
 
   if (!isClient) return null;
@@ -415,6 +447,13 @@ export const ListingsListPage: React.FC = () => {
           icon: Package,
           color: 'brand',
           description: t('listing.title') || 'Product Listings',
+        },
+        {
+          label: t('listing.stats.published') || 'Published',
+          value: stats.published,
+          icon: CheckCircle2,
+          color: 'success',
+          description: t('listing.detail.publish_status.published') || 'Active auction or deal',
         },
         {
           label: t('listing.stats.with_auction') || 'With Auctions',
@@ -464,6 +503,52 @@ export const ListingsListPage: React.FC = () => {
         {canManageListings && (
           <FlowConceptBanner messageKey="listing.flow.concept_catalog" />
         )}
+
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {PUBLISH_STATUS_TABS.map((tab) => {
+            const isActive = publishStatusFilter === tab.key;
+            const count = tab.key === 'all'
+              ? stats.total
+              : tab.countKey
+                ? stats[tab.countKey]
+                : undefined;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  setPublishStatusFilter(tab.key);
+                  setPage(1);
+                }}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border shrink-0',
+                  isActive
+                    ? tab.key === 'published'
+                      ? 'bg-success/15 text-success-700 dark:text-success-300 border-success/30'
+                      : 'bg-brand text-black border-brand'
+                    : 'bg-obsidian-card text-zinc-muted border-white/5 hover:border-white/10',
+                )}
+              >
+                {tab.key === 'published' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                <span>{t(tab.labelKey)}</span>
+                {count !== undefined && (
+                  <span className={cn(
+                    'tabular-nums px-1.5 py-0.5 rounded-md text-[10px]',
+                    isActive
+                      ? tab.key === 'published'
+                        ? 'bg-success/20 text-success-700 dark:text-success-300'
+                        : 'bg-black/10 text-black'
+                      : 'bg-white/5 text-zinc-muted',
+                  )}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
         {isPending ? (
           <ListPageSkeleton count={6} columns={3} />
         ) : filteredListings.length === 0 ? (
@@ -632,6 +717,7 @@ export const ListingsListPage: React.FC = () => {
                 setConditionFilter('all');
                 setBrandFilter('all');
                 setIssuesOnly('false');
+                setPublishStatusFilter('all');
                 setPage(1);
                 setIsFilterOpen(false);
               }}

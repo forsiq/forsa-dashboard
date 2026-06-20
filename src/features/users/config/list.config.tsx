@@ -59,9 +59,9 @@ export const userListConfig: ListConfig = {
       label: 'user.role',
       render: (row: any) => {
         const roleColors = {
-          admin: 'bg-purple-500/20 text-purple-300',
-          manager: 'bg-blue-500/20 text-blue-300',
-          user: 'bg-zinc-500/20 text-zinc-muted',
+          admin: 'bg-purple-500/15 text-purple-700 dark:text-purple-300',
+          manager: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+          user: 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300',
         };
         const roleKey = row.role as keyof typeof roleColors;
         return (
@@ -77,8 +77,8 @@ export const userListConfig: ListConfig = {
       label: 'user.is_active',
       render: (row: any) => {
         const statusConfig = row.isActive
-          ? { label: 'user.status.active', className: 'bg-green-500/20 text-green-300' }
-          : { label: 'user.status.inactive', className: 'bg-red-500/20 text-red-300' };
+          ? { label: 'user.status.active', className: 'bg-green-500/15 text-green-700 dark:text-green-300' }
+          : { label: 'user.status.inactive', className: 'bg-red-500/15 text-red-700 dark:text-red-300' };
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.className}`}>
             {statusConfig.label}
