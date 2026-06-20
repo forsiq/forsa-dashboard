@@ -36,7 +36,10 @@ export const ListingReadinessBadge: React.FC<Props> = ({ listing }) => {
             : 'bg-info/10 border-info/20 text-info hover:bg-info/20',
         )}
         aria-label={t('listing.readiness.issues_tooltip') || 'Product issues'}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
       >
         {hasWarning ? (
           <AlertTriangle className="w-3.5 h-3.5" />

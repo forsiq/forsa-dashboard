@@ -259,13 +259,33 @@ export const ListingsListPage: React.FC = () => {
       {
         label: t('listing.detail.deploy_auction') || 'Deploy as Auction',
         icon: Gavel,
-        onClick: (listing: ProductListing) => router.push(`/listings/${listing.id}/publish?type=auction`),
+        onClick: (listing: ProductListing) => {
+          const hasCritical = analyzeProductReadiness(listing).some(s => s.severity === 'warning');
+          if (hasCritical) return;
+          router.push(`/listings/${listing.id}/publish?type=auction`);
+        },
         variant: 'success' as const,
+        isDisabled: (listing: ProductListing) => analyzeProductReadiness(listing).some(s => s.severity === 'warning'),
+        disabledTooltip: (listing: ProductListing) => {
+          const issues = analyzeProductReadiness(listing).filter(s => s.severity === 'warning');
+          if (issues.length === 0) return '';
+          return t('listing.readiness.fix_critical_first') || 'Fix critical issues before deploying';
+        },
       },
       {
         label: t('listing.detail.deploy_group_buy') || 'Deploy as Group Buy',
         icon: Users,
-        onClick: (listing: ProductListing) => router.push(`/listings/${listing.id}/publish?type=group-buy`),
+        onClick: (listing: ProductListing) => {
+          const hasCritical = analyzeProductReadiness(listing).some(s => s.severity === 'warning');
+          if (hasCritical) return;
+          router.push(`/listings/${listing.id}/publish?type=group-buy`);
+        },
+        isDisabled: (listing: ProductListing) => analyzeProductReadiness(listing).some(s => s.severity === 'warning'),
+        disabledTooltip: (listing: ProductListing) => {
+          const issues = analyzeProductReadiness(listing).filter(s => s.severity === 'warning');
+          if (issues.length === 0) return '';
+          return t('listing.readiness.fix_critical_first') || 'Fix critical issues before deploying';
+        },
       },
     ] : []),
     ...(canDeleteListings ? [{
@@ -596,27 +616,6 @@ export const ListingsListPage: React.FC = () => {
               </div>
             </div>
           )}
-
-          <div className="space-y-3">
-            <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-              {t('listing.readiness.title') || 'Product Readiness'}
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setIssuesOnly(issuesOnly === 'true' ? 'false' : 'true');
-                setPage(1);
-              }}
-              className={cn(
-                'w-full px-3 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all border text-start',
-                issuesOnly === 'true'
-                  ? 'bg-warning/10 text-warning border-warning/20'
-                  : 'bg-obsidian-panel text-zinc-muted border-white/5 hover:border-white/10',
-              )}
-            >
-              {t('listing.filter.issues_only') || 'Show only products with issues'}
-            </button>
-          </div>
 
           <div className="pt-8 space-y-3">
             <AmberButton

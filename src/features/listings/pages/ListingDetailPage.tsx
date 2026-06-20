@@ -17,6 +17,7 @@ import {
   Timer,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   Plus,
   SendHorizonal,
   Eye,
@@ -41,6 +42,7 @@ import { getCountdown } from '@core/utils/countdown';
 import { EmptyState } from '@core/components/EmptyState';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
+import { analyzeProductReadiness } from '../utils/product-readiness.utils';
 
 export const ListingDetailPage: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -65,6 +67,10 @@ export const ListingDetailPage: React.FC = () => {
   const rejectionReason = (listing as any)?.rejectionReason || '';
 
   const canSubmitForReview = ['draft', 'rejected', 'changes_requested'].includes(approvalStatus);
+  const isRejectedOrChangesRequested = ['rejected', 'changes_requested'].includes(approvalStatus);
+  const isPendingReview = approvalStatus === 'pending_review';
+  const isApproved = approvalStatus === 'approved';
+  const hasReadinessWarnings = listing ? analyzeProductReadiness(listing).some(s => s.severity === 'warning') : false;
 
   const approvalStatusLabel: Record<string, string> = {
     draft: t('approval.status.draft') || 'Draft',
@@ -253,6 +259,22 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {t('approval.actions.submit')}
             </AmberButton>
+          )}
+          {isPendingReview && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-warning/10 border border-warning/20">
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-warning border-t-transparent animate-spin" />
+              <span className="text-[12px] font-black text-warning uppercase tracking-wider">
+                {t('approval.status.pending_review') || 'Under Review'}
+              </span>
+            </div>
+          )}
+          {isApproved && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success/10 border border-success/20">
+              <CheckCircle className="w-3.5 h-3.5 text-success" />
+              <span className="text-[12px] font-black text-success uppercase tracking-wider">
+                {t('approval.messages.ready_to_deploy') || 'Ready to Deploy'}
+              </span>
+            </div>
           )}
           <AmberButton variant="outline" className="h-11 border-border font-bold rounded-xl px-6 gap-2 active:scale-95 transition-all" onClick={() => router.push(`/listings/${listingId}/edit`)}>
               <Edit className="w-4 h-4" />
@@ -507,13 +529,32 @@ export const ListingDetailPage: React.FC = () => {
                 )}
 
                 {!sortedAuctions.some((a: any) => a.status === 'active') && (
-                  <AmberButton
-                    className="w-full h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all"
-                    onClick={() => router.push(`/listings/${listingId}/publish?type=auction`)}
-                  >
-                    <Plus className="w-4 h-4" />
-                    {t('listing.channels.new_auction')}
-                  </AmberButton>
+                  <div className="space-y-3">
+                    {isRejectedOrChangesRequested && (
+                      <div className="flex items-center gap-2 p-3 rounded-xl bg-danger/[0.05] border border-danger/10">
+                        <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0" />
+                        <p className="text-[11px] text-danger font-bold">
+                          {t('approval.messages.fix_and_resubmit') || 'Fix issues and resubmit before deploying'}
+                        </p>
+                      </div>
+                    )}
+                    {hasReadinessWarnings && !isRejectedOrChangesRequested && (
+                      <div className="flex items-center gap-2 p-3 rounded-xl bg-warning/[0.05] border border-warning/10">
+                        <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0" />
+                        <p className="text-[11px] text-warning font-bold">
+                          {t('listing.readiness.fix_issues_above') || 'Fix the readiness issues above before deploying'}
+                        </p>
+                      </div>
+                    )}
+                    <AmberButton
+                      className="w-full h-10 bg-brand text-black font-black rounded-xl px-6 gap-2 border-none active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={isRejectedOrChangesRequested || hasReadinessWarnings}
+                      onClick={() => router.push(`/listings/${listingId}/publish?type=auction`)}
+                    >
+                      <Plus className="w-4 h-4" />
+                      {t('listing.channels.new_auction')}
+                    </AmberButton>
+                  </div>
                 )}
               </Card>
 

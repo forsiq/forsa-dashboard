@@ -16,6 +16,7 @@ import {
   CheckCircle,
   ScanBarcode,
   ExternalLink,
+  Clock,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
@@ -1009,6 +1010,39 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-warning shrink-0" />
           <p className="text-sm text-zinc-text font-medium">{t('listing.wizard.invalid_step')}</p>
+        </div>
+      )}
+
+      {wizardMode === 'edit' && existingListing && (approvalStatus === 'rejected' || approvalStatus === 'changes_requested') && (
+        <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
+          <div className="space-y-1 min-w-0">
+            <p className="text-sm font-black text-danger uppercase">
+              {approvalStatus === 'rejected'
+                ? (t('approval.status.rejected') || 'Rejected')
+                : (t('approval.status.changes_requested') || 'Changes Requested')}
+            </p>
+            {(existingListing as any).rejectionReason && (
+              <p className="text-sm text-zinc-text font-medium">{(existingListing as any).rejectionReason}</p>
+            )}
+            <p className="text-[11px] text-zinc-muted font-bold">
+              {t('approval.messages.fix_and_resubmit') || 'Fix the issues below and resubmit for review.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {wizardMode === 'edit' && existingListing && approvalStatus === 'pending_review' && (
+        <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl flex items-start gap-3">
+          <Clock className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-sm font-black text-warning uppercase">
+              {t('approval.status.pending_review') || 'Pending Review'}
+            </p>
+            <p className="text-[11px] text-zinc-muted font-bold">
+              {t('approval.messages.under_review') || 'This listing is currently under review. You can still edit it.'}
+            </p>
+          </div>
         </div>
       )}
 
