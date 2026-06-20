@@ -5,6 +5,11 @@
     ar: "عمود الناشر في المنتجات للمسؤولين"
   entries:
     - description:
+        en: "Categories page adds a grid/table view toggle; grid cards show icon, status, and actions with preference saved in the browser."
+        ar: "صفحة الفئات تضيف التبديل بين عرض البطاقات والجدول؛ بطاقات الشبكة تعرض الأيقونة والحالة والإجراءات مع حفظ التفضيل في المتصفح."
+      type: added
+      sidebarPath: /categories
+    - description:
         en: "Admins see which merchant published each listing in the listings table (publisher name per row)."
         ar: "المسؤولون يرون أي تاجر نشر كل منتج في جدول القوائم (اسم الناشر في كل صف)."
       type: added

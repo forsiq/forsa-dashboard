@@ -77,12 +77,6 @@ export function AmazonProductDetailModal({
   }, [isOpen, importPhase]);
 
   useEffect(() => {
-    if (isOpen && product?.asin) {
-      setCategoryState(createInitialCategoryState());
-    }
-  }, [isOpen, product?.asin]);
-
-  useEffect(() => {
     if (!isOpen) return;
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';

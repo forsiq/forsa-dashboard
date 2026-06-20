@@ -5,6 +5,7 @@ import {
   Plus,
   Search,
   LayoutGrid,
+  List,
   Edit,
   Trash2,
   Activity,
@@ -72,6 +73,14 @@ import { SuggestionReview } from '../components/SuggestionReview';
 
 type StatusTab = 'all' | 'active' | 'inactive' | 'issues';
 type PageTab = 'categories' | 'suggestions';
+type CategoryViewMode = 'table' | 'grid';
+
+const CATEGORIES_VIEW_MODE_KEY = 'forsa_categories_view_mode';
+
+function readStoredCategoryViewMode(): CategoryViewMode {
+  if (typeof window === 'undefined') return 'table';
+  return localStorage.getItem(CATEGORIES_VIEW_MODE_KEY) === 'grid' ? 'grid' : 'table';
+}
 
 function nodeMatchesStatus(node: CategoryTreeNode, statusFilter: StatusTab): boolean {
   if (statusFilter === 'all') return true;
@@ -372,6 +381,213 @@ function CategoryRowActions({
       >
         <Trash2 className="w-4 h-4" />
       </button>
+    </div>
+  );
+}
+
+function CategoryViewToggle({
+  viewMode,
+  onChange,
+  t,
+}: {
+  viewMode: CategoryViewMode;
+  onChange: (mode: CategoryViewMode) => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <div
+      className="flex items-center bg-[var(--color-obsidian-card)] rounded-xl p-0.5 border border-[var(--color-border)]"
+      role="group"
+      aria-label={t('category.view_mode') || 'View mode'}
+    >
+      <button
+        type="button"
+        onClick={() => onChange('table')}
+        className={cn(
+          'p-2 rounded-lg transition-all',
+          viewMode === 'table'
+            ? 'bg-[var(--color-brand)] text-black shadow-sm'
+            : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+        )}
+        title={t('common.table_view') || 'Table View'}
+        aria-label={t('common.table_view') || 'Table View'}
+        aria-pressed={viewMode === 'table'}
+      >
+        <List className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange('grid')}
+        className={cn(
+          'p-2 rounded-lg transition-all',
+          viewMode === 'grid'
+            ? 'bg-[var(--color-brand)] text-black shadow-sm'
+            : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+        )}
+        title={t('common.grid_view') || 'Grid View'}
+        aria-label={t('common.grid_view') || 'Grid View'}
+        aria-pressed={viewMode === 'grid'}
+      >
+        <LayoutGrid className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function CategoryGridCard({
+  node,
+  language,
+  dir,
+  canManage,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  onAddChild,
+  onAddSibling,
+  openConfirm,
+  t,
+  issuesByCategoryId,
+  onContextMenu,
+}: Omit<TreeNodeSharedProps, 'level' | 'canReorder' | 'showDragHandle' | 'isLastSibling' | 'ancestorContinues'>) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = Boolean(node.children?.length);
+  const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
+  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
+
+  return (
+    <div className="h-full" onContextMenu={(e) => onContextMenu?.(e, node)}>
+      <AmberCard className="!p-0 h-full flex flex-col bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm overflow-hidden">
+        <div className="p-4 flex flex-col gap-3 flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div
+              className={cn(
+                'p-3 rounded-xl border shrink-0',
+                hasChildren
+                  ? 'bg-brand/10 border-brand/20'
+                  : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
+              )}
+            >
+              <Icon
+                className={cn(
+                  'w-6 h-6',
+                  hasChildren ? 'text-brand' : 'text-zinc-muted',
+                )}
+              />
+            </div>
+            <StatusBadge
+              status={
+                node.isActive
+                  ? t('category.active') || 'Active'
+                  : t('category.inactive') || 'Inactive'
+              }
+              variant={node.isActive ? 'success' : 'inactive'}
+              size="sm"
+            />
+          </div>
+
+          <div className="min-w-0 space-y-1">
+            <Link
+              href={`/categories/${node.id}`}
+              className="text-sm font-bold text-zinc-text tracking-tight line-clamp-2 break-words block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors"
+            >
+              {getLocalizedName(node, language)}
+            </Link>
+            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest line-clamp-1 break-all">
+              {node.slug || '-'}
+            </p>
+          </div>
+
+          {nodeIssues.length > 0 && (
+            <CategoryIssueBadges issues={nodeIssues} t={t} className="flex-wrap" />
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold text-zinc-muted uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5">
+              {t('category.products_count') || 'Products'}
+              <span className="text-zinc-text tabular-nums">{node.productCount || 0}</span>
+            </span>
+            {hasChildren && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-zinc-muted bg-white/[0.04] px-2 py-0.5 rounded-full normal-case">
+                {node.children!.length}{' '}
+                {t('category.subcategories') || 'subcategories'}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-[var(--color-border)] bg-black/[0.02]">
+          {hasChildren ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:text-brand transition-colors"
+              aria-expanded={expanded}
+            >
+              <ChevronDown
+                className={cn(
+                  'w-3.5 h-3.5 transition-transform duration-200',
+                  !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
+                )}
+              />
+              {expanded
+                ? t('common.collapse') || 'Collapse'
+                : t('common.expand') || 'Expand'}
+            </button>
+          ) : (
+            <span aria-hidden className="w-px" />
+          )}
+          <CategoryRowActions
+            node={node}
+            language={language}
+            canManage={canManage}
+            onEdit={onEdit}
+            onToggleStatus={onToggleStatus}
+            onDelete={onDelete}
+            onAddChild={onAddChild}
+            onAddSibling={onAddSibling}
+            openConfirm={openConfirm}
+            t={t}
+          />
+        </div>
+
+        {expanded && hasChildren && (
+          <div className="px-4 pb-4 space-y-2 border-t border-[var(--color-border)] bg-black/[0.02]">
+            {node.children!.map((child) => {
+              const ChildIcon = resolveCategoryTreeIcon(child, Boolean(child.children?.length), false);
+              const childIssues = issuesByCategoryId?.get(String(child.id)) ?? [];
+              return (
+                <div
+                  key={child.id}
+                  className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-obsidian-card)] px-3 py-2"
+                  onContextMenu={(e) => onContextMenu?.(e, child)}
+                >
+                  <ChildIcon className="w-4 h-4 shrink-0 text-zinc-muted" />
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/categories/${child.id}`}
+                      className="text-xs font-bold text-zinc-text line-clamp-1 hover:text-brand transition-colors"
+                    >
+                      {getLocalizedName(child, language)}
+                    </Link>
+                    {childIssues.length > 0 && (
+                      <CategoryIssueBadges issues={childIssues} t={t} compact className="mt-1" />
+                    )}
+                  </div>
+                  <StatusBadge
+                    status={
+                      child.isActive
+                        ? t('category.active') || 'Active'
+                        : t('category.inactive') || 'Inactive'
+                    }
+                    variant={child.isActive ? 'success' : 'inactive'}
+                    size="sm"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </AmberCard>
     </div>
   );
 }
@@ -766,6 +982,7 @@ export function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [pageTab, setPageTab] = useState<PageTab>('categories');
+  const [viewMode, setViewMode] = useState<CategoryViewMode>(() => readStoredCategoryViewMode());
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -1054,6 +1271,13 @@ export function CategoriesPage() {
     }
   }, [canReviewCategorySuggestions, pageTab]);
 
+  const handleViewModeChange = useCallback((mode: CategoryViewMode) => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CATEGORIES_VIEW_MODE_KEY, mode);
+    }
+  }, []);
+
   if (!isClient) return null;
 
   return (
@@ -1159,15 +1383,24 @@ export function CategoriesPage() {
         </div>
       }
       toolbar={
-        <ListPageToolbar
-          search={
-            <ListPageToolbarSearch
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
-            />
-          }
-        />
+        pageTab === 'categories' ? (
+          <ListPageToolbar
+            search={
+              <ListPageToolbarSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('category.search_placeholder') || 'البحث عن فئة...'}
+              />
+            }
+            endActions={
+              <CategoryViewToggle
+                viewMode={viewMode}
+                onChange={handleViewModeChange}
+                t={t}
+              />
+            }
+          />
+        ) : undefined
       }
     >
       <div className="space-y-6">
@@ -1282,7 +1515,31 @@ export function CategoriesPage() {
                   ))}
                 </div>
 
-                {/* Desktop: table tree with drag-and-drop reorder */}
+                {/* Desktop: grid or table tree */}
+                {viewMode === 'grid' ? (
+                  <div className="hidden md:block p-4 min-h-[200px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {paginatedTree.map((node) => (
+                        <CategoryGridCard
+                          key={node.id}
+                          node={node}
+                          language={language}
+                          dir={dir}
+                          canManage={canManageCategories}
+                          onEdit={handleEdit}
+                          onToggleStatus={handleToggleStatus}
+                          onDelete={handleDelete}
+                          onAddChild={canManageCategories ? handleAddChild : undefined}
+                          onAddSibling={canManageCategories ? handleAddSibling : undefined}
+                          openConfirm={openConfirm}
+                          t={t}
+                          issuesByCategoryId={healthReport.issuesByCategoryId}
+                          onContextMenu={canManageCategories ? handleContextMenu : undefined}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
                 <div className="hidden md:block flex-1 min-h-[200px] overflow-x-auto">
                   <DndContext
                     sensors={sensors}
@@ -1350,6 +1607,7 @@ export function CategoriesPage() {
                     </table>
                   </DndContext>
                 </div>
+                )}
                 {/* Pagination */}
                 {!hidePagination && totalPages > 1 && (
                   <div className="flex items-center justify-center gap-3 px-6 py-4 border-t border-white/5">
