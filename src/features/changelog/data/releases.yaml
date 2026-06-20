@@ -9,6 +9,11 @@
         ar: "المسؤولون يرون أي تاجر نشر كل منتج في جدول القوائم (اسم الناشر في كل صف)."
       type: added
       sidebarPath: /listings
+    - description:
+        en: "Listings publisher column shows merchant name instead of numeric seller ID when the profile is resolved."
+        ar: "عمود الناشر في المنتجات يعرض اسم التاجر بدل رقم المعرف عند توفر بيانات الملف الشخصي."
+      type: fixed
+      sidebarPath: /listings
 
 - version: "1.7.4"
   date: "2026-06-20"

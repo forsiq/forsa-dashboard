@@ -454,6 +454,7 @@ export const en: Record<string, string> = {
   "listing.table.approval_status": "Review Status",
   "listing.table.publisher": "Publisher",
   "listing.table.published_by": "Published by",
+  "listing.table.unknown_merchant": "Unknown merchant",
   "listing.table.actions": "Actions",
   "listing.table.no_listings": "No listings found",
 

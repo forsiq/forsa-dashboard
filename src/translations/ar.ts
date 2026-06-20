@@ -452,6 +452,7 @@ export const ar: Record<string, string> = {
   "listing.table.approval_status": "حالة المراجعة",
   "listing.table.publisher": "الناشر",
   "listing.table.published_by": "نُشر بواسطة",
+  "listing.table.unknown_merchant": "تاجر غير معروف",
   "listing.table.actions": "الإجراءات",
   "listing.table.no_listings": "لا توجد منتجات",
 

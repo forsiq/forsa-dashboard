@@ -60,6 +60,18 @@ const APPROVAL_STATUS_VARIANT: Record<ApprovalStatusKey, 'inactive' | 'warning' 
   changes_requested: 'warning',
 };
 
+function resolveListingSellerLabel(
+  listing: ProductListing,
+  t: (key: string) => string,
+): string | null {
+  const name = listing.sellerName?.trim();
+  if (name) return name;
+  if (listing.sellerId) {
+    return t('listing.table.unknown_merchant') || 'Unknown merchant';
+  }
+  return null;
+}
+
 export const ListingsListPage: React.FC = () => {
   const { t } = useLanguage();
   const router = useRouter();
@@ -211,15 +223,16 @@ export const ListingsListPage: React.FC = () => {
     ...(isAdmin ? [{
       key: 'sellerName',
       label: t('listing.table.publisher') || 'Publisher',
-      render: (listing: ProductListing) => (
-        listing.sellerName || listing.sellerId ? (
+      render: (listing: ProductListing) => {
+        const sellerLabel = resolveListingSellerLabel(listing, t);
+        return sellerLabel ? (
           <span className="inline-flex items-center rounded-lg border border-white/10 bg-obsidian-outer px-2.5 py-1 text-[11px] font-bold text-zinc-text">
-            {listing.sellerName || listing.sellerId}
+            {sellerLabel}
           </span>
         ) : (
           <span className="text-xs text-zinc-muted">—</span>
-        )
-      ),
+        );
+      },
       align: 'center' as const,
     }] : []),
     {
@@ -328,7 +341,10 @@ export const ListingsListPage: React.FC = () => {
   ], [t, router, canManageListings, canDeleteListings, openConfirm, deleteMutation]);
 
   const renderListingCard = React.useCallback(
-    (listing: ProductListing) => (
+    (listing: ProductListing) => {
+      const sellerLabel = isAdmin ? resolveListingSellerLabel(listing, t) : null;
+
+      return (
       <Link
         key={listing.id}
         href={`/listings/${listing.id}`}
@@ -372,9 +388,9 @@ export const ListingsListPage: React.FC = () => {
             {listing.sku || listing.brand || '—'}
           </p>
 
-          {isAdmin && (listing.sellerName || listing.sellerId) && (
+          {sellerLabel && (
             <p className="text-[10px] font-bold text-zinc-secondary truncate">
-              {t('listing.table.published_by') || 'Published by'}: {listing.sellerName || listing.sellerId}
+              {t('listing.table.published_by') || 'Published by'}: {sellerLabel}
             </p>
           )}
 
@@ -407,7 +423,8 @@ export const ListingsListPage: React.FC = () => {
           </div>
         </div>
       </Link>
-    ),
+      );
+    },
     [renderApprovalBadge, canViewApprovalStatus, isAdmin, t],
   );
 

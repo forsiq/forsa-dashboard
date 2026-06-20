@@ -19,6 +19,10 @@ import { AmberButton } from '@core/components/AmberButton';
 import { useAmazonProduct } from '@services/amazon/hooks/useAmazonSearch';
 import { useCreateListing, listingKeys } from '@features/listings/api/listing-hooks';
 import { collectAmazonProductImages } from '@services/amazon/utils/amazon-images';
+import {
+  collectAmazonListingSpecs,
+  normalizeAmazonSpecs,
+} from '@services/amazon/utils/amazon-specs';
 import type { ListingSpec } from '../../../types/services/listings.types';
 import { useRouter } from 'next/router';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
@@ -85,6 +89,10 @@ export function AmazonProductDetailModal({
     return () => { document.body.style.overflow = original; };
   }, [isOpen]);
 
+  const handleCategoryChange = useCallback((next: AmazonImportCategoryState) => {
+    setCategoryState(next);
+  }, []);
+
   const keepPortalMounted = isOpen || importPhase !== 'idle';
   if (!keepPortalMounted || typeof window === 'undefined') return null;
 
@@ -92,10 +100,6 @@ export function AmazonProductDetailModal({
     if (!product?.price) return null;
     return product.price.display || (product.price.value ? `${product.price.value}` : null);
   };
-
-  const handleCategoryChange = useCallback((next: AmazonImportCategoryState) => {
-    setCategoryState(next);
-  }, []);
 
   const handleImport = async () => {
     if (!product || !categoryState.parentId) return;
@@ -120,17 +124,7 @@ export function AmazonProductDetailModal({
       }
 
       // Convert Amazon specifications to ListingSpec[] format
-      const specs: ListingSpec[] = product.specifications
-        ? Object.entries(product.specifications)
-            .map(([key, value]) => ({
-              label: String(key ?? '').trim(),
-              value:
-                typeof value === 'object' && value !== null
-                  ? String((value as { value?: unknown }).value ?? '').trim()
-                  : String(value ?? '').trim(),
-            }))
-            .filter((s) => s.label || s.value)
-        : [];
+      const specs: ListingSpec[] = collectAmazonListingSpecs(product);
 
       const payload: any = {
         title: String(product.title ?? '').trim() || 'Untitled',
@@ -396,23 +390,25 @@ export function AmazonProductDetailModal({
               )}
 
               {/* Specifications */}
-              {product.specifications && Object.keys(product.specifications).length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                    {t('amazon.specifications') || 'Specifications'}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(product.specifications).slice(0, 6).map(([key, value]) => (
-                      <div key={key} className="px-3 py-2 rounded-lg bg-obsidian-outer border border-white/5">
-                        <p className="text-[11px] text-zinc-muted uppercase tracking-wider">{key}</p>
-                        <p className="text-[13px] font-bold text-zinc-text mt-0.5">
-                          {typeof value === 'object' ? (value as any).value : String(value)}
-                        </p>
-                      </div>
-                    ))}
+              {(() => {
+                const specRows = normalizeAmazonSpecs(product.specifications).slice(0, 6);
+                if (specRows.length === 0) return null;
+                return (
+                  <div className="space-y-2">
+                    <h3 className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
+                      {t('amazon.specifications') || 'Specifications'}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {specRows.map((spec, idx) => (
+                        <div key={`${spec.label}-${idx}`} className="px-3 py-2 rounded-lg bg-obsidian-outer border border-white/5">
+                          <p className="text-[11px] text-zinc-muted uppercase tracking-wider">{spec.label}</p>
+                          <p className="text-[13px] font-bold text-zinc-text mt-0.5">{spec.value}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <AmazonImportCategoryPanel
                 product={product}

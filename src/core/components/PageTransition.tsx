@@ -22,8 +22,10 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   useEffect(() => {
     const handleStart = (url: string) => {
       if (url === router.asPath) return;
+      // Skip exit animation: fading the wrapper while Next.js swaps page content
+      // races portal teardown and triggers removeChild NotFoundError (React 19).
       clearTimeout();
-      setPhase('exiting');
+      setPhase('idle');
     };
 
     const handleComplete = () => {
