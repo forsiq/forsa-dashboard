@@ -883,6 +883,8 @@ export const ar: Record<string, string> = {
   "category.status": "الحالة",
   "category.order": "الترتيب",
   "category.search_placeholder": "البحث عن فئة...",
+  "category.search_results": "{count} فئة تطابق البحث",
+  "category.pagination_summary": "عرض {from}-{to} من {total} فئة رئيسية",
   "category.error_loading": "حدث خطأ في تحميل الفئات",
   "category.empty": "لا توجد فئات",
   "category.no_results": "لا توجد فئات تطابق البحث",

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, AlertCircle, X } from 'lucide-react';
@@ -66,14 +67,7 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
     reValidateMode: 'onChange',
   });
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [open]);
+  const { shouldRender } = useOverlayPortal(open, onClose);
 
   const handleFormSubmit = async (data: CategoryFormData) => {
     try {
@@ -93,9 +87,9 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
     }
   };
 
-  if (!open || typeof document === 'undefined') return null;
+  if (!shouldRender || typeof document === 'undefined') return null;
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-hidden"
       role="dialog"
@@ -246,6 +240,6 @@ export function CategoryEditModal({ category, open, onClose }: CategoryEditModal
         </form>
       </div>
     </div>,
-    document.body,
+    getOverlayPortalRoot(),
   );
 }

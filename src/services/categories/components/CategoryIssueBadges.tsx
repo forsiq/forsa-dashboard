@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot } from '@core/hooks/useOverlayPortal';
 import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { cn } from '@core/lib/utils/cn';
 import type { CategoryIssue } from '../lib/categoryHealth';
@@ -115,7 +116,7 @@ function IssueTooltipPanel({
           'Review and fix these issues on this category.'}
       </p>
     </div>,
-    document.body,
+    getOverlayPortalRoot(),
   );
 }
 

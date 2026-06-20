@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import Image from 'next/image';
 import {
   X,
@@ -68,6 +69,9 @@ export function AmazonProductDetailModal({
 
   const product = data?.product;
 
+  const keepPortalMounted = isOpen || importPhase !== 'idle';
+  const { shouldRender } = useOverlayPortal(keepPortalMounted, onClose);
+
   useEffect(() => {
     if (!isOpen && importPhase === 'idle') {
       setImportImageCount(0);
@@ -76,19 +80,11 @@ export function AmazonProductDetailModal({
     }
   }, [isOpen, importPhase]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const original = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = original; };
-  }, [isOpen]);
-
   const handleCategoryChange = useCallback((next: AmazonImportCategoryState) => {
     setCategoryState(next);
   }, []);
 
-  const keepPortalMounted = isOpen || importPhase !== 'idle';
-  if (!keepPortalMounted || typeof window === 'undefined') return null;
+  if (!shouldRender || typeof window === 'undefined') return null;
 
   const formatPrice = () => {
     if (!product?.price) return null;
@@ -181,7 +177,7 @@ export function AmazonProductDetailModal({
 
   const allImages = product ? collectAmazonProductImages(product) : [];
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
@@ -455,6 +451,6 @@ export function AmazonProductDetailModal({
         )}
       </div>
     </div>,
-    document.body
+    getOverlayPortalRoot()
   );
 }

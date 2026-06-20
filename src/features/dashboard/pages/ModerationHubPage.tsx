@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import {
   useModerationActivity,
   useModerationActivityStats,
@@ -228,6 +229,12 @@ function BidModerationSection() {
 
   const isBusy = voidBid.isPending || suspendUser.isPending || unsuspendUser.isPending;
 
+  const closeConfirmDialog = useCallback(() => setConfirmAction(null), []);
+  const { shouldRender: shouldRenderConfirmDialog } = useOverlayPortal(
+    !!confirmAction,
+    closeConfirmDialog,
+  );
+
   return (
     <>
       <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-4">
@@ -323,7 +330,7 @@ function BidModerationSection() {
       </div>
 
       {/* Confirmation Dialog */}
-      {confirmAction && typeof window !== 'undefined' && ReactDOM.createPortal(
+      {shouldRenderConfirmDialog && confirmAction && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true">
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
@@ -348,7 +355,7 @@ function BidModerationSection() {
               <AmberButton
                 variant="outline"
                 className="h-10 px-6 font-bold uppercase tracking-wider text-xs"
-                onClick={() => setConfirmAction(null)}
+                onClick={closeConfirmDialog}
                 disabled={isBusy}
               >
                 Cancel
@@ -368,7 +375,7 @@ function BidModerationSection() {
             </div>
           </div>
         </div>,
-        document.body
+        getOverlayPortalRoot()
       )}
     </>
   );

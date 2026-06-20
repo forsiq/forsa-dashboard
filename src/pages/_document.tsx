@@ -20,6 +20,7 @@ export default function Document() {
       </Head>
       <body className="antialiased bg-obsidian-outer text-zinc-text selection:bg-brand/30 selection:text-brand" suppressHydrationWarning>
         <Main />
+        <div id="forsa-overlay-portal-root" />
         <NextScript />
       </body>
     </Html>

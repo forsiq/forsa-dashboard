@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/router';
+import { getOverlayPortalRoot } from '@core/hooks/useOverlayPortal';
 import { Edit, Trash2, Plus, Power, PowerOff } from 'lucide-react';
 import { cn } from '@core/lib/utils/cn';
 
@@ -90,11 +92,12 @@ function CategoryRowContextMenuInner({
 
 export function CategoryRowContextMenu(props: CategoryRowContextMenuProps) {
   if (typeof document === 'undefined') return null;
-  return createPortal(<CategoryRowContextMenuInner {...props} />, document.body);
+  return createPortal(<CategoryRowContextMenuInner {...props} />, getOverlayPortalRoot());
 }
 
 /** Hook to manage context menu state for a tree row. */
 export function useContextMenu() {
+  const router = useRouter();
   const [state, setState] = React.useState<{
     x: number;
     y: number;
@@ -111,6 +114,13 @@ export function useContextMenu() {
   );
 
   const close = useCallback(() => setState(null), []);
+
+  useEffect(() => {
+    if (!state) return;
+    const handleRouteChange = () => setState(null);
+    router.events.on('routeChangeStart', handleRouteChange);
+    return () => router.events.off('routeChangeStart', handleRouteChange);
+  }, [state, router.events]);
 
   return { contextMenu: state, openContextMenu: open, closeContextMenu: close };
 }

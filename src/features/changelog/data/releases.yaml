@@ -5,6 +5,11 @@
     ar: "عمود الناشر في المنتجات للمسؤولين"
   entries:
     - description:
+        en: "Categories list shows pagination for main categories, Arabic-normalized search finds subcategories, and matching parents auto-expand."
+        ar: "قائمة الفئات تعرض ترقيم الصفحات للفئات الرئيسية، والبحث العربي يجد الفئات الفرعية مع توسيع الأب تلقائياً."
+      type: fixed
+      sidebarPath: /categories
+    - description:
         en: "Categories page adds a grid/table view toggle; grid cards show icon, status, and actions with preference saved in the browser."
         ar: "صفحة الفئات تضيف التبديل بين عرض البطاقات والجدول؛ بطاقات الشبكة تعرض الأيقونة والحالة والإجراءات مع حفظ التفضيل في المتصفح."
       type: added

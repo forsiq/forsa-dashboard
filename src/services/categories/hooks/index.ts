@@ -208,7 +208,8 @@ export function useMySuggestions() {
 
 /** Flat list + derived health report for admin cleanup UI. */
 export function useCategoryHealthReport(language = 'en') {
-  const query = useGetCategories({ limit: 500 } as CategoryFilters);
+  // Backend returns the full flat list (no server-side pagination).
+  const query = useGetCategories({} as CategoryFilters);
   const categories = query.data?.categories ?? EMPTY_CATEGORIES;
   const report = useMemo(
     () => analyzeCategoryHealth(categories, language),

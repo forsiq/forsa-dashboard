@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import { useRouter } from 'next/router';
 import {
   ChevronLeft,
@@ -265,6 +266,15 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   const { data: brands = [] } = useBrands();
   const [barcodeFoundListing, setBarcodeFoundListing] = useState<ProductListing | null>(null);
   const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
+  const closeBarcodeDialog = useCallback(() => {
+    setShowBarcodeDialog(false);
+    setBarcodeFoundListing(null);
+  }, []);
+  const barcodeDialogOpen = showBarcodeDialog && !!barcodeFoundListing;
+  const { shouldRender: shouldRenderBarcodeDialog } = useOverlayPortal(
+    barcodeDialogOpen,
+    closeBarcodeDialog,
+  );
 
   const listingAttachmentIds = useMemo(
     () => (existingListing ? getListingAttachmentIds(existingListing) : []),
@@ -1292,7 +1302,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             </div>
 
             {/* Barcode found dialog */}
-            {showBarcodeDialog && barcodeFoundListing && typeof window !== 'undefined' && ReactDOM.createPortal(
+            {shouldRenderBarcodeDialog && barcodeFoundListing && typeof window !== 'undefined' && createPortal(
               <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
                 <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
                   <div className="flex items-center gap-3 mb-4">
@@ -1315,17 +1325,14 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                     <AmberButton
                       variant="outline"
                       className="h-10 px-5 font-bold uppercase tracking-wider text-xs"
-                      onClick={() => {
-                        setShowBarcodeDialog(false);
-                        setBarcodeFoundListing(null);
-                      }}
+                      onClick={closeBarcodeDialog}
                     >
                       {t('listing.barcode.continue_create') || 'Continue Creating'}
                     </AmberButton>
                     <AmberButton
                       className="h-10 px-5 font-bold uppercase tracking-wider text-xs bg-brand text-black border-none"
                       onClick={() => {
-                        setShowBarcodeDialog(false);
+                        closeBarcodeDialog();
                         if (barcodeFoundListing.id) {
                           router.push(`/listings/${barcodeFoundListing.id}`);
                         }
@@ -1337,7 +1344,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                   </div>
                 </div>
               </div>,
-              document.body
+              getOverlayPortalRoot()
             )}
 
             {isMobile && (

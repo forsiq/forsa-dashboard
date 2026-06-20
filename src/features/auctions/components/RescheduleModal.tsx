@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import { motion } from 'framer-motion';
 import { Clock, Calendar, X, Loader2, Plus } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -54,15 +55,13 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
 
   const [newEndTime, setNewEndTime] = useState<string>('');
   const [mode, setMode] = useState<'quick' | 'custom'>('quick');
+  const { shouldRender } = useOverlayPortal(isOpen, () => onClose());
 
   // Reset form state when modal opens with a new auction
   React.useEffect(() => {
     if (isOpen) {
       setNewEndTime('');
       setMode('quick');
-      const original = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = original; };
     }
   }, [isOpen]);
 
@@ -100,11 +99,11 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
     );
   };
 
-  if (!isOpen || !auction || typeof window === 'undefined') {
+  if (!shouldRender || !auction || typeof window === 'undefined') {
     return null;
   }
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center" role="dialog" aria-modal="true">
       <motion.div
         initial={{ opacity: 0 }}
@@ -215,6 +214,6 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
         </div>
       </motion.div>
     </div>,
-    document.body
+    getOverlayPortalRoot()
   );
 };

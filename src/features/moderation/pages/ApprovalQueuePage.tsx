@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import Image from 'next/image';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { AdminListPageShell } from '@core/components/Layout';
@@ -80,10 +81,16 @@ function ApprovalQueuePage() {
     setReasonModal({ open: true, action, type, item });
   };
 
-  const closeReasonModal = () => {
+  const closeReasonModal = useCallback(() => {
     setReasonModal({ open: false, action: 'reject', type: 'listing', item: null });
     setReasonText('');
-  };
+  }, []);
+
+  const reasonModalOpen = reasonModal.open && !!reasonModal.item;
+  const { shouldRender: shouldRenderReasonModal } = useOverlayPortal(
+    reasonModalOpen,
+    closeReasonModal,
+  );
 
   const handleReasonSubmit = () => {
     if (!reasonModal.item || !reasonText.trim()) return;
@@ -215,7 +222,7 @@ function ApprovalQueuePage() {
       )}
 
       {/* Reason Modal */}
-      {reasonModal.open && reasonModal.item && typeof window !== 'undefined' && ReactDOM.createPortal(
+      {shouldRenderReasonModal && reasonModal.item && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
           <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
@@ -281,7 +288,7 @@ function ApprovalQueuePage() {
             </div>
           </div>
         </div>,
-        document.body
+        getOverlayPortalRoot()
       )}
     </AdminListPageShell>
   );

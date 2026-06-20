@@ -39,3 +39,8 @@ export {
 } from './categoryHealth';
 
 export { buildCategoryTreeFromFlat } from './buildCategoryTree';
+
+export {
+  normalizeCategorySearchText,
+  categorySearchMatches,
+} from './categorySearch';

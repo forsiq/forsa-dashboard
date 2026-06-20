@@ -55,7 +55,7 @@ import {
 } from '../hooks';
 import type { Category, CategoryTreeNode } from '../types';
 import { getLocalizedName, getLocalizedDescription } from '../types';
-import { buildCategoryTreeFromFlat, type CategoryIssue } from '../lib';
+import { buildCategoryTreeFromFlat, categorySearchMatches, type CategoryIssue } from '../lib';
 import { CategoryIssueBadges } from '../components/CategoryIssueBadges';
 import { CategoryAddModal } from '../components/CategoryAddModal';
 import { CategoryEditModal } from '../components/CategoryEditModal';
@@ -90,12 +90,10 @@ function nodeMatchesStatus(node: CategoryTreeNode, statusFilter: StatusTab): boo
 
 function nodeMatchesSearch(node: CategoryTreeNode, language: string, query: string): boolean {
   if (!query) return true;
-  const q = query.toLowerCase();
   return (
-    getLocalizedName(node, language)?.toLowerCase().includes(q) ||
-    node.slug?.toLowerCase().includes(q) ||
-    getLocalizedDescription(node, language)?.toLowerCase().includes(q) ||
-    false
+    categorySearchMatches(getLocalizedName(node, language), query) ||
+    categorySearchMatches(node.slug, query) ||
+    categorySearchMatches(getLocalizedDescription(node, language), query)
   );
 }
 
@@ -288,6 +286,8 @@ interface TreeNodeSharedProps {
   ancestorContinues?: boolean[];
   issuesByCategoryId?: Map<string, CategoryIssue[]>;
   onContextMenu?: (e: React.MouseEvent, node: CategoryTreeNode) => void;
+  /** Expand nested rows when search/filter highlights subcategories. */
+  autoExpand?: boolean;
 }
 
 function CategoryRowActions({
@@ -448,9 +448,14 @@ function CategoryGridCard({
   t,
   issuesByCategoryId,
   onContextMenu,
+  autoExpand = false,
 }: Omit<TreeNodeSharedProps, 'level' | 'canReorder' | 'showDragHandle' | 'isLastSibling' | 'ancestorContinues'>) {
-  const [expanded, setExpanded] = useState(false);
   const hasChildren = Boolean(node.children?.length);
+  const [expanded, setExpanded] = useState(autoExpand && hasChildren);
+
+  useEffect(() => {
+    if (autoExpand && hasChildren) setExpanded(true);
+  }, [autoExpand, hasChildren, node.id]);
   const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
   const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
@@ -609,9 +614,14 @@ function TreeCategoryCard({
   ancestorContinues = [],
   issuesByCategoryId,
   onContextMenu,
+  autoExpand = false,
 }: TreeNodeSharedProps) {
-  const [expanded, setExpanded] = useState(false);
   const hasChildren = Boolean(node.children?.length);
+  const [expanded, setExpanded] = useState(autoExpand && hasChildren);
+
+  useEffect(() => {
+    if (autoExpand && hasChildren) setExpanded(true);
+  }, [autoExpand, hasChildren, node.id]);
   const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
   const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
@@ -744,6 +754,7 @@ function TreeCategoryCard({
             t={t}
             issuesByCategoryId={issuesByCategoryId}
             onContextMenu={onContextMenu}
+            autoExpand={autoExpand}
           />
         ))}
     </div>
@@ -769,9 +780,15 @@ function SortableTreeRow({
   ancestorContinues = [],
   issuesByCategoryId,
   onContextMenu,
+  autoExpand = false,
 }: TreeNodeSharedProps) {
-  const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
+  const [expanded, setExpanded] = useState(Boolean(autoExpand && hasChildren));
+
+  useEffect(() => {
+    if (autoExpand && hasChildren) setExpanded(true);
+  }, [autoExpand, hasChildren, node.id]);
+
   const Icon = resolveCategoryTreeIcon(node, Boolean(hasChildren), expanded);
   const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
 
@@ -967,6 +984,7 @@ function SortableTreeRow({
               t={t}
               issuesByCategoryId={issuesByCategoryId}
               onContextMenu={onContextMenu}
+              autoExpand={autoExpand}
             />
           ))}
         </SortableContext>
@@ -984,8 +1002,9 @@ export function CategoriesPage() {
   const [pageTab, setPageTab] = useState<PageTab>('categories');
   const [viewMode, setViewMode] = useState<CategoryViewMode>(() => readStoredCategoryViewMode());
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 12;
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const searchActive = Boolean((debouncedSearch ?? '').trim());
   const isClient = useIsClient();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
@@ -1046,10 +1065,30 @@ export function CategoriesPage() {
   // Client-side pagination on root nodes
   const totalRoots = displayTree.length;
   const totalPages = Math.max(1, Math.ceil(totalRoots / PAGE_SIZE));
-  const hidePagination = statusFilter === 'issues' || Boolean((debouncedSearch ?? '').trim());
+  const hidePagination = statusFilter === 'issues' || searchActive;
   const paginatedTree = hidePagination
     ? displayTree
     : displayTree.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const pageFrom = hidePagination ? 1 : (currentPage - 1) * PAGE_SIZE + 1;
+  const pageTo = hidePagination ? totalRoots : Math.min(currentPage * PAGE_SIZE, totalRoots);
+  const autoExpandTree = searchActive || statusFilter === 'issues';
+
+  const countTreeNodes = useCallback((nodes: CategoryTreeNode[]): number => {
+    let count = 0;
+    const walk = (list: CategoryTreeNode[]) => {
+      for (const node of list) {
+        count += 1;
+        if (node.children?.length) walk(node.children);
+      }
+    };
+    walk(nodes);
+    return count;
+  }, []);
+
+  const visibleCategoryCount = useMemo(
+    () => countTreeNodes(filteredTree),
+    [filteredTree, countTreeNodes],
+  );
 
   useEffect(() => {
     if (isSavingOrder || !canReorder) return;
@@ -1489,6 +1528,14 @@ export function CategoriesPage() {
                   </div>
                 </div>
               )}
+              {searchActive && (
+                <p className="px-4 py-2 text-xs font-bold text-zinc-muted border-b border-white/5 bg-white/[0.02]">
+                  {(t('category.search_results') || '{count} categories match your search').replace(
+                    '{count}',
+                    String(visibleCategoryCount),
+                  )}
+                </p>
+              )}
               <div className="flex flex-col">
                 {/* Mobile: card tree */}
                 <div className="md:hidden p-3 space-y-2 min-h-[200px]">
@@ -1511,6 +1558,7 @@ export function CategoriesPage() {
                       t={t}
                       issuesByCategoryId={healthReport.issuesByCategoryId}
                       onContextMenu={canManageCategories ? handleContextMenu : undefined}
+                      autoExpand={autoExpandTree}
                     />
                   ))}
                 </div>
@@ -1535,6 +1583,7 @@ export function CategoriesPage() {
                           t={t}
                           issuesByCategoryId={healthReport.issuesByCategoryId}
                           onContextMenu={canManageCategories ? handleContextMenu : undefined}
+                          autoExpand={autoExpandTree}
                         />
                       ))}
                     </div>
@@ -1600,6 +1649,7 @@ export function CategoriesPage() {
                               t={t}
                               issuesByCategoryId={healthReport.issuesByCategoryId}
                               onContextMenu={canManageCategories ? handleContextMenu : undefined}
+                              autoExpand={autoExpandTree}
                             />
                           ))}
                         </SortableContext>
@@ -1609,25 +1659,35 @@ export function CategoriesPage() {
                 </div>
                 )}
                 {/* Pagination */}
-                {!hidePagination && totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-3 px-6 py-4 border-t border-white/5">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage <= 1}
-                      className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
-                    >
-                      {t('common.prev') || 'Prev'}
-                    </button>
-                    <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
-                      {currentPage} / {totalPages}
+                {!hidePagination && totalRoots > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-6 py-4 border-t border-white/5">
+                    <span className="text-[11px] font-bold text-zinc-muted tabular-nums order-2 sm:order-1">
+                      {(t('category.pagination_summary') || 'Showing {from}-{to} of {total} main categories')
+                        .replace('{from}', String(pageFrom))
+                        .replace('{to}', String(pageTo))
+                        .replace('{total}', String(totalRoots))}
                     </span>
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage >= totalPages}
-                      className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
-                    >
-                      {t('common.next') || 'Next'}
-                    </button>
+                    {totalPages > 1 && (
+                      <div className="flex items-center gap-3 order-1 sm:order-2">
+                        <button
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage <= 1}
+                          className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                        >
+                          {t('common.prev') || 'Prev'}
+                        </button>
+                        <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
+                          {currentPage} / {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage >= totalPages}
+                          className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                        >
+                          {t('common.next') || 'Next'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -882,6 +882,8 @@ export const en: Record<string, string> = {
   "category.status": "Status",
   "category.order": "Order",
   "category.search_placeholder": "Search categories...",
+  "category.search_results": "{count} categories match your search",
+  "category.pagination_summary": "Showing {from}-{to} of {total} main categories",
   "category.error_loading": "Error loading categories",
   "category.empty": "No categories yet",
   "category.no_results": "No categories match your search",
