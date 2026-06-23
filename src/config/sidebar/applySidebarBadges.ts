@@ -8,7 +8,7 @@ import type { MenuSection } from '@config/navigation';
 import type { SidebarBadgeCounts } from '@core/hooks/useSidebarBadges';
 import { getNavPathBase } from '@core/utils/isNavItemActive';
 
-export type SidebarModuleView = 'dashboard' | 'marketplace' | 'sales' | 'reports';
+export type SidebarModuleView = 'dashboard' | 'marketplace' | 'sales' | 'reports' | 'feedback';
 
 /** Sentinel value for changelog "new feature" badges — translate at render time via `sidebar.badge.new`. */
 export const CHANGELOG_NEW_BADGE = '__changelog_new__';
@@ -33,6 +33,7 @@ const BADGE_BY_BASE_PATH: Partial<
   },
   sales: {},
   reports: {},
+  feedback: {},
 };
 
 function resolveCountBadge(

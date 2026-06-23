@@ -6,6 +6,7 @@ import { sidebarSections as dashboardSections } from '@config/sidebar/dashboard'
 import { sidebarSections as marketplaceSections } from '@config/sidebar/marketplace';
 import { sidebarSections as salesSections } from '@config/sidebar/sales';
 import { sidebarSections as reportsSections } from '@config/sidebar/reports';
+import { feedbackSidebarSections } from '@features/feedback/sidebar';
 import {
   applySidebarBadges,
   type SidebarModuleView,
@@ -32,10 +33,12 @@ const moduleSidebars: Record<SidebarModuleView, MenuSection[]> = {
   marketplace: resolveSections(marketplaceSections),
   sales: resolveSections(salesSections),
   reports: resolveSections(reportsSections),
+  feedback: resolveSections(feedbackSidebarSections),
 };
 
 /** Map URL prefixes to sidebar views for auto-switching */
 function getViewForPath(pathname: string): SidebarModuleView {
+  if (pathname.startsWith('/feedback')) return 'feedback';
   if (pathname.startsWith('/reports')) return 'reports';
   if (
     pathname.startsWith('/auctions') ||

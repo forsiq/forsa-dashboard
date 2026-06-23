@@ -9,6 +9,7 @@ import { sidebarSections as dashboardSections } from './dashboard';
 import { sidebarSections as marketplaceSections } from './marketplace';
 import { sidebarSections as salesSections } from './sales';
 import { sidebarSections as reportsSections } from './reports';
+import { feedbackSidebarSections } from '@features/feedback/sidebar';
 import {
   applySidebarBadges,
   type SidebarModuleView,
@@ -57,6 +58,14 @@ const MODULE_ORDER: ModuleDefinition[] = [
     color: 'from-emerald-500 to-emerald-600',
     sections: reportsSections,
     allowedRoles: ['admin', 'merchant', 'product_analyst', 'customer_support'],
+  },
+  {
+    id: 'feedback',
+    title: 'sidebar.module.feedback',
+    icon: 'MessageSquare',
+    color: 'from-pink-500 to-rose-600',
+    sections: feedbackSidebarSections,
+    allowedRoles: ['admin', 'customer_support'],
   },
 ];
 

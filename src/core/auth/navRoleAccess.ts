@@ -7,6 +7,7 @@ export const NAV_ROLE_MAP: Record<string, UserRole[]> = {
   '/users': ['admin'],
   '/settings': ['admin'],
   '/merchants': ['admin'],
+  '/merchant-applications': ['admin'],
   '/live-monitor': ['admin', 'product_analyst'],
   '/listings': ['admin', 'merchant'],
   '/categories': ['admin', 'merchant', 'product_moderator'],
@@ -22,6 +23,7 @@ export const NAV_ROLE_MAP: Record<string, UserRole[]> = {
   /** Consumer/bidder page — not shown in merchant dashboard nav */
   '/my-bids': [],
   '/amazon-import': ['admin', 'merchant'],
+  '/feedback': ['admin', 'customer_support'],
 };
 
 /** Longest matching NAV_ROLE_MAP prefix wins (e.g. /reports/customer-insights over /reports). */

@@ -17,9 +17,20 @@ export const sidebarSections: MenuSection[] = [
     title: 'sidebar.administration',
     items: [
       { path: '/merchants', label: 'sidebar.merchants', icon: 'Store' },
+      { path: '/merchant-applications', label: 'sidebar.merchant_applications', icon: 'UserPlus' },
       { path: '/settlements', label: 'sidebar.settlements', icon: 'Landmark' },
       { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
       { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
+    ],
+  },
+  {
+    title: 'sidebar.feedback_title',
+    items: [
+      { path: '/feedback/overview', label: 'sidebar.feedback_overview', icon: 'BarChart3' },
+      { path: '/feedback/reviews', label: 'sidebar.feedback_reviews', icon: 'Star' },
+      { path: '/feedback/posts', label: 'sidebar.feedback_posts', icon: 'MessageSquare' },
+      { path: '/feedback/roadmap', label: 'sidebar.feedback_roadmap', icon: 'Map' },
+      { path: '/feedback/changelog', label: 'sidebar.feedback_changelog', icon: 'FileText' },
     ],
   },
 ];
