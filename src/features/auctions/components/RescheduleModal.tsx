@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
 import { motion } from 'framer-motion';
-import { Clock, Calendar, X, Loader2, Plus } from 'lucide-react';
+import { Clock, Calendar, Loader2, Plus } from 'lucide-react';
+import { ModalIconHeader } from '@core/components/Feedback/ModalIconHeader';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
@@ -117,32 +118,19 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({ isOpen, onClos
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', duration: 0.2 }}
         className="relative bg-obsidian-card border border-white/10 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto"
+        dir={dir}
       >
-        <button
-          onClick={() => onClose()}
-          disabled={rescheduleMutation.isPending}
-          className={cn(
-            'absolute top-3 p-2 rounded-lg text-zinc-muted hover:text-zinc-text hover:bg-white/10 transition-colors disabled:opacity-50 z-10',
-            dir === 'rtl' ? 'left-3' : 'right-3'
-          )}
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="p-6 space-y-6" dir={dir}>
-          <div className={cn('flex items-start gap-4', dir === 'rtl' && 'flex-row-reverse')}>
-            <div className="p-3 rounded-lg bg-brand/10">
-              <Calendar className="w-6 h-6 text-brand" />
-            </div>
-            <div className={cn('flex-1 space-y-1', dir === 'rtl' ? 'text-right' : 'text-left')}>
-              <h3 className="text-lg font-bold text-zinc-text">
-                {t('auction.reschedule.title') || 'Reschedule Auction'}
-              </h3>
-              <p className="text-sm text-zinc-muted">
-                {auction.title}
-              </p>
-            </div>
-          </div>
+        <div className="p-6 space-y-6">
+          <ModalIconHeader
+            icon={Calendar}
+            iconBg="bg-brand/10"
+            iconColor="text-brand"
+            title={t('auction.reschedule.title') || 'Reschedule Auction'}
+            description={auction.title}
+            onClose={() => onClose()}
+            closeDisabled={rescheduleMutation.isPending}
+            closeLabel={t('common.close') || 'Close'}
+          />
 
           <div className="space-y-2">
             <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">

@@ -14,6 +14,9 @@ export {
   useConfirmModal,
   default as AmberConfirmModalDefault,
 } from './Feedback/AmberConfirmModal';
+export { SessionExpiredDialog } from './Feedback/SessionExpiredDialog';
+export { DeleteCardConfirmation } from './Feedback/DeleteCardConfirmation';
+export { ModalIconHeader } from './Feedback/ModalIconHeader';
 export type {
   AmberConfirmModalProps,
   ConfirmModalVariant,

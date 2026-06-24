@@ -9,8 +9,8 @@ export type DataTableEntityTitleProps = {
   className?: string;
   /** When set, title renders as a navigable link (stops row click propagation). */
   href?: string;
-  /** 1 = single-line ellipsis (default for tables); 2 = two-line clamp. */
-  maxLines?: 1 | 2;
+  /** 1 = single-line clamp; 2 = two lines (default); 3 = three lines. */
+  maxLines?: 1 | 2 | 3;
 };
 
 const baseClassName =
@@ -100,11 +100,17 @@ function FullTitleTooltip({
 /**
  * Entity title inside DataTable cells: truncated display + full title tooltip when clipped.
  */
+const lineClampClass: Record<1 | 2 | 3, string> = {
+  1: 'line-clamp-1',
+  2: 'line-clamp-2',
+  3: 'line-clamp-3',
+};
+
 export function DataTableEntityTitle({
   text,
   className,
   href,
-  maxLines = 1,
+  maxLines = 2,
 }: DataTableEntityTitleProps) {
   const anchorRef = useRef<HTMLSpanElement>(null);
   const tooltipId = useId();
@@ -123,10 +129,10 @@ export function DataTableEntityTitle({
     return () => window.removeEventListener('resize', measureTruncation);
   }, [text, maxLines, measureTruncation]);
 
-  const clampClass =
-    maxLines === 1
-      ? 'truncate whitespace-nowrap overflow-hidden text-ellipsis'
-      : 'line-clamp-2 break-words overflow-hidden';
+  const clampClass = cn(
+    lineClampClass[maxLines],
+    'overflow-hidden break-words [overflow-wrap:anywhere] whitespace-normal text-start',
+  );
 
   const openTip = () => {
     measureTruncation();
@@ -147,7 +153,7 @@ export function DataTableEntityTitle({
 
   const interactiveWrap = (child: React.ReactNode) => (
     <span
-      className="block w-full min-w-0 max-w-[min(100%,16rem)] sm:max-w-[18rem] md:max-w-[20rem]"
+      className="block w-full min-w-0 max-w-full overflow-hidden"
       onMouseEnter={openTip}
       onMouseLeave={closeTip}
       onFocus={openTip}

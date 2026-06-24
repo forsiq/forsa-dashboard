@@ -185,6 +185,7 @@ export const ListingsListPage: React.FC = () => {
       key: 'title',
       label: t('listing.table.title') || 'Title',
       cardTitle: true,
+      className: 'max-w-[min(42vw,24rem)]',
       render: (listing) => (
         <Link
           href={`/listings/${listing.id}`}
@@ -194,11 +195,13 @@ export const ListingsListPage: React.FC = () => {
             <ListingImage listing={listing} className="w-full h-full object-cover" fallbackClassName="w-5 h-5 text-zinc-muted/40" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <DataTableEntityTitle
-                text={listing.title}
-                className="group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors"
-              />
+            <div className="flex min-w-0 items-start gap-2">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <DataTableEntityTitle
+                  text={listing.title}
+                  className="group-hover/link:text-brand group-hover/link:underline underline-offset-2 decoration-brand/50 transition-colors"
+                />
+              </div>
               <ListingReadinessBadge listing={listing} />
             </div>
             <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mt-0.5">

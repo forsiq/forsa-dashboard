@@ -227,6 +227,7 @@ export const AuctionsList: React.FC = () => {
         key: 'title',
         label: t('auction.table.identification') || 'Auction',
         cardTitle: true,
+        className: 'max-w-[min(42vw,24rem)]',
         render: (auction) => (
           <div className="flex min-w-0 items-center gap-4">
             <div className="relative w-10 h-10 rounded-lg bg-obsidian-outer border border-border flex items-center justify-center overflow-hidden shrink-0">

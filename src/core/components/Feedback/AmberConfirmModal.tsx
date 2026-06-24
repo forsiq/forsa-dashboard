@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
-import { Info, CheckCircle, AlertTriangle, XCircle, X } from 'lucide-react';
+import { Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { ModalIconHeader } from './ModalIconHeader';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
@@ -142,40 +143,25 @@ export const AmberConfirmModal = React.forwardRef<HTMLDivElement, AmberConfirmMo
             sizeConfig[size],
           )}
           onClick={(e) => e.stopPropagation()}
+          dir={dir}
         >
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isConfirming || isLoading}
-            aria-label={t('common.close') || 'Close'}
-            className={cn(
-              'absolute top-3 end-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-              'text-zinc-muted hover:text-zinc-text hover:bg-white/5 active:bg-white/[0.08]',
-              'transition-colors z-10',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-card',
-              'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
-            )}
-          >
-            <X className="h-5 w-5" aria-hidden />
-          </button>
-
           <div className="p-6">
-            <div className={cn('flex items-start gap-4', dir === 'rtl' && 'flex-row-reverse')}>
-              <div className={cn('shrink-0 p-3 rounded-xl', config.iconBg)}>
-                <IconComponent className={cn('w-6 h-6', config.iconColor)} />
-              </div>
-              <div className={cn('min-w-0 flex-1 space-y-3 pe-8', dir === 'rtl' ? 'text-right' : 'text-left')}>
-                <h3 id={titleId} className="text-lg font-bold leading-snug text-zinc-text">
-                  {title}
-                </h3>
-                <p className="text-sm leading-relaxed text-zinc-muted">{message}</p>
-              </div>
-            </div>
+            <ModalIconHeader
+              icon={IconComponent}
+              iconBg={config.iconBg}
+              iconColor={config.iconColor}
+              titleId={titleId}
+              title={title}
+              description={message}
+              onClose={onClose}
+              closeDisabled={isConfirming || isLoading}
+              closeLabel={t('common.close') || 'Close'}
+            />
 
             <div
               className={cn(
-                'mt-6 flex gap-3 border-t border-white/10 pt-5',
-                dir === 'rtl' ? 'flex-row-reverse' : 'flex-row',
+                'mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-5',
+                dir === 'rtl' ? 'flex-row-reverse justify-start' : 'flex-row justify-end',
               )}
             >
               <AmberButton

@@ -1,6 +1,4 @@
-import React, { useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
+import React, { useState } from 'react';
 import {
   useModerationActivity,
   useModerationActivityStats,
@@ -15,6 +13,7 @@ import { useToast } from '@core/contexts/ToastContext';
 import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
 import { AmberButton } from '@core/components/AmberButton';
+import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { AuctionImage } from '../../auctions/components/AuctionImage';
@@ -202,11 +201,7 @@ function AuctionCard({ auction, t, dir }: { auction: ActivityAuctionItem; t: (ke
 function BidModerationSection() {
   const { t } = useLanguage();
   const toast = useToast();
-  const [confirmAction, setConfirmAction] = useState<{
-    type: 'void' | 'suspend' | 'unsuspend';
-    id: string;
-    label: string;
-  } | null>(null);
+  const { openConfirm, ConfirmModal } = useConfirmModal();
 
   const { data: bidsData, isLoading: bidsLoading } = useAllBids({ limit: 20 });
   const voidBid = useVoidBid();
@@ -215,25 +210,43 @@ function BidModerationSection() {
 
   const bids = (bidsData as any)?.data || (bidsData as any)?.bids || [];
 
-  const handleConfirm = () => {
-    if (!confirmAction) return;
-    const { type, id } = confirmAction;
-    if (type === 'void') {
-      voidBid.mutate(id, { onSettled: () => setConfirmAction(null) });
-    } else if (type === 'suspend') {
-      suspendUser.mutate(id, { onSettled: () => setConfirmAction(null) });
-    } else {
-      unsuspendUser.mutate(id, { onSettled: () => setConfirmAction(null) });
-    }
-  };
-
   const isBusy = voidBid.isPending || suspendUser.isPending || unsuspendUser.isPending;
 
-  const closeConfirmDialog = useCallback(() => setConfirmAction(null), []);
-  const { shouldRender: shouldRenderConfirmDialog } = useOverlayPortal(
-    !!confirmAction,
-    closeConfirmDialog,
-  );
+  const openModerationConfirm = (
+    action: { type: 'void' | 'suspend' | 'unsuspend'; id: string; label: string },
+  ) => {
+    const titleByType = {
+      void: 'Void Bid',
+      suspend: 'Suspend User',
+      unsuspend: 'Unsuspend User',
+    };
+    const messageByType = {
+      void: 'Are you sure you want to void this bid? This action cannot be undone.',
+      suspend: 'Are you sure you want to suspend this user? They will not be able to place bids.',
+      unsuspend: 'Are you sure you want to unsuspend this user? They will be able to place bids again.',
+    };
+    const variantByType = {
+      void: 'destructive' as const,
+      suspend: 'destructive' as const,
+      unsuspend: 'success' as const,
+    };
+
+    openConfirm({
+      title: titleByType[action.type],
+      message: `${messageByType[action.type]}\n\n${action.label}`,
+      variant: variantByType[action.type],
+      confirmText: 'Confirm',
+      onConfirm: async () => {
+        if (action.type === 'void') {
+          await voidBid.mutateAsync(action.id);
+        } else if (action.type === 'suspend') {
+          await suspendUser.mutateAsync(action.id);
+        } else {
+          await unsuspendUser.mutateAsync(action.id);
+        }
+      },
+    });
+  };
 
   return (
     <>
@@ -283,7 +296,7 @@ function BidModerationSection() {
                   <AmberButton
                     className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
                     onClick={() =>
-                      setConfirmAction({
+                      openModerationConfirm({
                         type: 'void',
                         id: String(bid.id),
                         label: `Bid #${bid.id} (${Number(bid.amount).toLocaleString()} IQD)`,
@@ -298,7 +311,7 @@ function BidModerationSection() {
                   <AmberButton
                     className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-all"
                     onClick={() =>
-                      setConfirmAction({
+                      openModerationConfirm({
                         type: 'suspend',
                         id: String(bid.bidderId),
                         label: bid.bidderName || maskId(bid.bidderId),
@@ -312,7 +325,7 @@ function BidModerationSection() {
                   <AmberButton
                     className="h-8 px-3 text-[11px] font-black uppercase tracking-widest bg-success/10 border border-success/20 text-success hover:bg-success/20 rounded-lg transition-all"
                     onClick={() =>
-                      setConfirmAction({
+                      openModerationConfirm({
                         type: 'unsuspend',
                         id: String(bid.bidderId),
                         label: bid.bidderName || maskId(bid.bidderId),
@@ -329,54 +342,7 @@ function BidModerationSection() {
         )}
       </div>
 
-      {/* Confirmation Dialog */}
-      {shouldRenderConfirmDialog && confirmAction && typeof window !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true">
-          <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-danger" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-                  {confirmAction.type === 'void' ? 'Void Bid' : confirmAction.type === 'suspend' ? 'Suspend User' : 'Unsuspend User'}
-                </h3>
-                <p className="text-[13px] text-zinc-muted font-bold">{confirmAction.label}</p>
-              </div>
-            </div>
-            <p className="text-sm text-zinc-muted mb-6">
-              {confirmAction.type === 'void'
-                ? 'Are you sure you want to void this bid? This action cannot be undone.'
-                : confirmAction.type === 'suspend'
-                  ? 'Are you sure you want to suspend this user? They will not be able to place bids.'
-                  : 'Are you sure you want to unsuspend this user? They will be able to place bids again.'}
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <AmberButton
-                variant="outline"
-                className="h-10 px-6 font-bold uppercase tracking-wider text-xs"
-                onClick={closeConfirmDialog}
-                disabled={isBusy}
-              >
-                Cancel
-              </AmberButton>
-              <AmberButton
-                className={cn(
-                  'h-10 px-6 font-bold uppercase tracking-wider text-xs border-none',
-                  confirmAction.type === 'unsuspend'
-                    ? 'bg-success text-black hover:bg-success/90'
-                    : 'bg-danger text-white hover:bg-danger/90'
-                )}
-                onClick={handleConfirm}
-                disabled={isBusy}
-              >
-                {isBusy ? 'Processing...' : 'Confirm'}
-              </AmberButton>
-            </div>
-          </div>
-        </div>,
-        getOverlayPortalRoot()
-      )}
+      <ConfirmModal isLoading={isBusy} />
     </>
   );
 }
