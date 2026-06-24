@@ -139,13 +139,13 @@ export const DashboardHomePage = () => {
       {/* Charts Cluster */}
       <DashboardCharts salesData={salesChart || []} categoryData={categoryData || []} />
 
-      {/* Content Grid */}
-      <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
-        <div className="lg:col-span-2 space-y-6">
+      {/* Content Grid — xl breakpoint keeps side-by-side layout off tight lg viewports */}
+      <div className="grid gap-4 md:gap-6 grid-cols-1 xl:grid-cols-3">
+        <div className="xl:col-span-2 space-y-6 min-w-0 order-2 xl:order-1">
           <TopAuctions products={topProducts || []} />
           <ActivityFeed activities={activities} />
         </div>
-        <div className="lg:col-span-1">
+        <div className="xl:col-span-1 min-w-0 order-1 xl:order-2">
           <QuickActions actions={quickActionItems} />
         </div>
       </div>

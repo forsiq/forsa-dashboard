@@ -1,3 +1,20 @@
+- version: "1.7.6"
+  date: "2026-06-23"
+  title:
+    en: "Auction start and end schedule"
+    ar: "جدولة بداية ونهاية المزاد"
+  entries:
+    - description:
+        en: "Publishing a listing as an auction now asks for start and end date/time (duration or manual end) before deploy."
+        ar: "عند نشر منتج كمزاد يُطلب الآن تحديد تاريخ ووقت البدء والانتهاء (بالمدة أو تاريخ نهاية يدوي) قبل النشر."
+      type: added
+      sidebarPath: /auctions
+    - description:
+        en: "Auction edit page focuses on auction settings only; images and specs are edited from the linked product listing."
+        ar: "صفحة تعديل المزاد تركز على إعدادات المزاد فقط؛ الصور والمواصفات تُعدَّل من صفحة المنتج المرتبط."
+      type: improved
+      sidebarPath: /auctions
+
 - version: "1.7.5"
   date: "2026-06-20"
   title:

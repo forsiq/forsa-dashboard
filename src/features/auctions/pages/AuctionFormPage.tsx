@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, ExternalLink, Info } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
@@ -133,15 +134,41 @@ export const AuctionFormPage: React.FC = () => {
         onSubmit={handleSubmit}
       />
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Primary Data Cluster */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-8">
+      {isEdit && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-info/10 border border-info/20">
+          <Info className="w-5 h-5 text-info shrink-0 mt-0.5" />
+          <div className="space-y-2 min-w-0">
+            <p className="text-sm font-bold text-zinc-text leading-relaxed">
+              {t('auction.form.edit_scope_hint')}
+            </p>
+            {existingAuction?.listingId ? (
+              <Link
+                href={`/listings/${existingAuction.listingId}/edit`}
+                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-info hover:text-info/80 transition-colors"
+              >
+                {t('auction.form.edit_catalog_link')}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        className={cn(
+          'grid gap-4 md:gap-8',
+          isEdit ? 'max-w-3xl mx-auto grid-cols-1' : 'grid-cols-1 lg:grid-cols-3',
+        )}
+      >
+        <div className={cn('space-y-4 md:space-y-8', !isEdit && 'lg:col-span-2')}>
           <AuctionCoreFields
             formData={formData}
             errors={errors}
             onChange={(field, value) => handleChange(field, value, inventoryItems)}
             inventoryItems={inventoryItems}
             categoryOptions={categoryOptions}
+            mode={mode}
           />
 
           <AuctionPricingFields
@@ -150,33 +177,6 @@ export const AuctionFormPage: React.FC = () => {
             reservePrice={formData.reservePrice}
             errors={errors}
             onChange={handleChange}
-          />
-
-          <AuctionSpecsEditor
-            specs={formData.specs || []}
-            onChange={(specs) => handleChange('specs', specs)}
-          />
-
-          <AuctionSourcesEditor
-            sources={formData.sources || []}
-            onChange={(sources) => handleChange('sources', sources)}
-          />
-        </div>
-
-        {/* Temporal & Visual Logistics */}
-        <div className="space-y-4 md:space-y-8">
-          <AuctionImageSection
-            imageUpload={imageUpload}
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-            uploadError={uploadError}
-            onRemoveExisting={(index) => {
-              const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
-              if (index < existingCount) {
-                setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
-              }
-              imageUpload.removeAt(index);
-            }}
           />
 
           <AuctionTemporalSection
@@ -195,6 +195,60 @@ export const AuctionFormPage: React.FC = () => {
             onUseDurationModeChange={setUseDurationMode}
           />
 
+          {!isEdit && (
+            <>
+              <AuctionSpecsEditor
+                specs={formData.specs || []}
+                onChange={(specs) => handleChange('specs', specs)}
+              />
+
+              <AuctionSourcesEditor
+                sources={formData.sources || []}
+                onChange={(sources) => handleChange('sources', sources)}
+              />
+            </>
+          )}
+
+          {isEdit && (
+            <div className="space-y-3 pt-2">
+              <AmberButton
+                className="w-full h-12 md:h-14 bg-brand hover:bg-brand text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl active:scale-95 transition-all text-sm gap-3"
+                disabled={updateMutation.isPending || isUploading}
+                onClick={handleSubmit}
+              >
+                {(updateMutation.isPending || isUploading) && (
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                )}
+                {t('auction.form.authorize_sync')}
+              </AmberButton>
+              <Link href="/auctions">
+                <AmberButton
+                  variant="secondary"
+                  className="w-full h-12 bg-obsidian-card font-black uppercase tracking-widest rounded-xl border border-white/5 active:scale-95 transition-all"
+                >
+                  {t('auction.form.cancel')}
+                </AmberButton>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {!isEdit && (
+        <div className="space-y-4 md:space-y-8">
+          <AuctionImageSection
+            imageUpload={imageUpload}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            uploadError={uploadError}
+            onRemoveExisting={(index) => {
+              const existingCount = imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+              if (index < existingCount) {
+                setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
+              }
+              imageUpload.removeAt(index);
+            }}
+          />
+
           {/* Deployment Control Surface */}
           <div className="space-y-3">
             <AmberButton
@@ -205,7 +259,7 @@ export const AuctionFormPage: React.FC = () => {
               {(updateMutation.isPending || createMutation.isPending || isUploading) && (
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               )}
-              {isClone ? (t('auction.form.action.clone') || 'Clone Auction') : isEdit ? t('auction.form.authorize_sync') : t('auction.form.execute_deployment')}
+              {isClone ? (t('auction.form.action.clone') || 'Clone Auction') : t('auction.form.execute_deployment')}
             </AmberButton>
             <Link href="/auctions">
               <AmberButton
@@ -217,6 +271,7 @@ export const AuctionFormPage: React.FC = () => {
             </Link>
           </div>
         </div>
+        )}
       </form>
     </div>
   );

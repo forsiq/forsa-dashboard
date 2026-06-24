@@ -83,7 +83,15 @@ function deriveMerchantStatus(raw: MerchantApiRow): Merchant['status'] {
 
 function mapMerchantFromApi(raw: MerchantApiRow): Merchant {
   const id = String(raw.id ?? '');
-  const nameRaw = raw.name ?? raw.full_name ?? raw.fullName;
+  const nameRaw =
+    raw.name ??
+    raw.full_name ??
+    raw.fullName ??
+    [raw.firstName ?? raw.first_name, raw.lastName ?? raw.last_name]
+      .filter((p) => typeof p === 'string' && p.trim())
+      .join(' ')
+      .trim() ||
+    undefined;
   const phoneRaw = raw.phone ?? raw.phone_number ?? raw.mobile;
 
   return {

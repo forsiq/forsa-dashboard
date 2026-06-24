@@ -17,6 +17,13 @@ interface AuctionTemporalSectionProps {
   onEndTimeChange: (val: string) => void;
   onDurationDaysChange: (days: number) => void;
   onUseDurationModeChange: (use: boolean) => void;
+  /** Override default auction.form.* label keys (e.g. listing.deploy.*). */
+  labels?: {
+    section?: string;
+    start?: string;
+    end?: string;
+    duration?: string;
+  };
 }
 
 export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
@@ -30,24 +37,29 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
   onEndTimeChange,
   onDurationDaysChange,
   onUseDurationModeChange,
+  labels,
 }) => {
   const { t, dir } = useLanguage();
+  const sectionTitle = labels?.section ?? t('auction.form.section.temporal') ?? 'Schedule';
+  const startLabel = labels?.start ?? t('auction.form.temporal_start') ?? 'Start';
+  const endLabel = labels?.end ?? t('auction.form.temporal_end') ?? 'End';
+  const durationLabel = labels?.duration ?? t('auction.form.cycle_duration') ?? 'Duration';
 
   return (
-    <Card className="!p-8 bg-obsidian-card border-border shadow-xl space-y-6">
-      <div className="flex items-center justify-between border-b border-white/[0.03] pb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
+    <Card className="!p-4 sm:!p-6 md:!p-8 bg-obsidian-card border-border shadow-xl space-y-6 min-w-0">
+      <div className="flex items-center justify-between border-b border-white/[0.03] pb-6 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning border border-warning/20 shrink-0">
             <Clock className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em]">{t('auction.form.section.temporal')}</h3>
+          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.25em] truncate">{sectionTitle}</h3>
         </div>
         {/* Mode toggle in header */}
-        <div className="flex items-center gap-1 bg-white/[0.02] rounded-lg p-0.5 border border-white/5">
+        <div className="flex items-center gap-1 bg-white/[0.02] rounded-lg p-0.5 border border-white/5 shrink-0">
           <button
             type="button"
             onClick={() => onUseDurationModeChange(true)}
-            title={t('auction.form.cycle_duration') || 'Duration'}
+            title={durationLabel}
             className={cn(
               "p-1.5 rounded-md transition-all",
               useDurationMode
@@ -60,7 +72,7 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
           <button
             type="button"
             onClick={() => onUseDurationModeChange(false)}
-            title={t('auction.form.temporal_end') || 'Manual Date'}
+            title={endLabel}
             className={cn(
               "p-1.5 rounded-md transition-all",
               !useDurationMode
@@ -74,7 +86,7 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
       </div>
       <div className="space-y-6">
         <AmberDatePicker
-          label={t('auction.form.temporal_start')}
+          label={startLabel}
           value={startTime}
           onChange={onStartTimeChange}
           error={errors.startTime}
@@ -85,7 +97,7 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
           /* Duration mode: number of days */
           <>
             <AmberInput
-              label={t('auction.form.cycle_duration') || 'Duration (Days)'}
+              label={durationLabel}
               type="number"
               value={durationDays}
               onChange={(e) => {
@@ -98,7 +110,7 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
             />
             <div className="p-4 rounded-xl bg-obsidian-panel/40 border border-white/5 space-y-3">
               <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
-                <span className="text-zinc-muted">{t('auction.form.temporal_end')}</span>
+                <span className="text-zinc-muted">{endLabel}</span>
                 <span className="text-success font-mono text-xs">
                   {computedEndTime
                     ? new Date(computedEndTime).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', {
@@ -127,7 +139,7 @@ export const AuctionTemporalSection: React.FC<AuctionTemporalSectionProps> = ({
         ) : (
           /* Manual mode: pick exact end date */
           <AmberDatePicker
-            label={t('auction.form.temporal_end')}
+            label={endLabel}
             value={endTime}
             onChange={onEndTimeChange}
             error={errors.endTime}

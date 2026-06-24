@@ -83,6 +83,9 @@ import {
   createDeployAuctionClientSchema,
   createDeployGroupBuyClientSchema,
 } from '../validation/deployListingSchemas';
+import { AuctionTemporalSection } from '../../auctions/components/AuctionTemporalSection';
+import { useAuctionDurationCalc } from '../../auctions/hooks/useAuctionDurationCalc';
+import { getDefaultAuctionSchedule } from '../../auctions/utils/defaultAuctionSchedule';
 import {
   buildUrlToAttachmentIdMap,
   getListingAttachmentIds,
@@ -229,11 +232,25 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     return null;
   });
 
-  const [auctionPricing, setAuctionPricing] = useState({
-    startPrice: 0,
-    originalPrice: '',
-    bidIncrement: 5000,
+  const [auctionPricing, setAuctionPricing] = useState(() => {
+    const schedule = getDefaultAuctionSchedule();
+    return {
+      startPrice: 0,
+      originalPrice: '',
+      bidIncrement: 5000,
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      durationDays: schedule.durationDays,
+    };
   });
+
+  const {
+    durationDays: auctionDurationDays,
+    setDurationDays: setAuctionDurationDays,
+    useDurationMode: auctionUseDurationMode,
+    setUseDurationMode: setAuctionUseDurationMode,
+    computedEndTime: auctionComputedEndTime,
+  } = useAuctionDurationCalc(auctionPricing.startTime);
 
   const [groupBuyPricing, setGroupBuyPricing] = useState({
     originalPrice: 0,
@@ -777,7 +794,11 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     const deployAuctionSchema = createDeployAuctionClientSchema(t);
     const deployGroupBuySchema = createDeployGroupBuyClientSchema(t);
     if (deployChannel === 'auction') {
-      const parsed = deployAuctionSchema.safeParse(auctionPricing);
+      const finalEndTime = auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime;
+      const parsed = deployAuctionSchema.safeParse({
+        ...auctionPricing,
+        endTime: finalEndTime,
+      });
       if (!parsed.success) {
         const mapped = zodIssuesToFieldMap(parsed.error);
         setFieldErrors(mapped);
@@ -796,6 +817,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
 
     try {
       if (deployChannel === 'auction') {
+        const finalEndTime = auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime;
         const originalPrice = parseOptionalListingPrice(auctionPricing.originalPrice);
         const auction = await deployAuctionMutation.mutateAsync({
           id: listingId,
@@ -803,6 +825,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             startPrice: parseRequiredListingPrice(auctionPricing.startPrice),
             ...(originalPrice !== undefined ? { originalPrice } : {}),
             bidIncrement: parseBidIncrement(auctionPricing.bidIncrement, 5000),
+            startTime: new Date(auctionPricing.startTime).toISOString(),
+            endTime: new Date(finalEndTime).toISOString(),
           },
         });
         const auctionId = auction?.id;
@@ -1675,6 +1699,45 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               </>
             )}
           </div>
+
+          <div className="mt-6">
+            <AuctionTemporalSection
+            labels={{
+              section: t('listing.deploy.mode_schedule'),
+              start: t('listing.deploy.start_time'),
+              end: t('listing.deploy.end_time'),
+              duration: t('listing.deploy.duration_days'),
+            }}
+            startTime={auctionPricing.startTime}
+            endTime={auctionPricing.endTime}
+            errors={fieldErrors}
+            durationDays={auctionDurationDays}
+            useDurationMode={auctionUseDurationMode}
+            computedEndTime={auctionComputedEndTime}
+            onStartTimeChange={(val) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.startTime;
+                delete n.endTime;
+                return n;
+              });
+              setAuctionPricing((prev) => ({ ...prev, startTime: val }));
+            }}
+            onEndTimeChange={(val) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.endTime;
+                return n;
+              });
+              setAuctionPricing((prev) => ({ ...prev, endTime: val }));
+            }}
+            onDurationDaysChange={(days) => {
+              setAuctionDurationDays(days);
+              setAuctionPricing((prev) => ({ ...prev, durationDays: days }));
+            }}
+            onUseDurationModeChange={setAuctionUseDurationMode}
+          />
+          </div>
         </FormSection>
       )}
 
@@ -1777,6 +1840,24 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                     <p className="font-black">{auctionPricing.originalPrice}</p>
                   </div>
                 )}
+                <div>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_time')}</p>
+                  <p className="font-black text-xs sm:text-sm">
+                    {auctionPricing.startTime
+                      ? new Date(auctionPricing.startTime).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.end_time')}</p>
+                  <p className="font-black text-xs sm:text-sm">
+                    {(auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime)
+                      ? new Date(auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime).toLocaleString(
+                          dir === 'rtl' ? 'ar-IQ' : 'en-US',
+                        )
+                      : '—'}
+                  </p>
+                </div>
               </div>
             )}
             {deployChannel === 'group_buy' && (

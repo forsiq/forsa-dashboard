@@ -1,6 +1,7 @@
 import React from 'react';
 import { Gavel } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
+import { cn } from '@core/lib/utils/cn';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { FormSection } from '@core/components/FormSection';
@@ -13,6 +14,8 @@ interface AuctionCoreFieldsProps {
   onChange: (field: string, value: any, inventoryItems?: any[]) => void;
   inventoryItems: any[];
   categoryOptions: { label: string; value: string }[];
+  /** Edit mode: auction settings only — hide inventory link picker. */
+  mode?: 'create' | 'edit' | 'clone';
 }
 
 export const AuctionCoreFields: React.FC<AuctionCoreFieldsProps> = ({
@@ -21,27 +24,31 @@ export const AuctionCoreFields: React.FC<AuctionCoreFieldsProps> = ({
   onChange,
   inventoryItems,
   categoryOptions,
+  mode = 'create',
 }) => {
   const { t } = useLanguage();
+  const showInventoryLink = mode !== 'edit';
 
   return (
     <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('auction.form.section.core')}>
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="w-full">
-            <AmberDropdown
-              label={t('auction.form.inventory_sync')}
-              options={[
-                { label: t('auction.form.manual_config'), value: '' },
-                ...inventoryItems.map((item: any) => ({
-                  label: item.name,
-                  value: String(item.id),
-                })),
-              ]}
-              value={String(formData.productId || '')}
-              onChange={(val) => onChange('productId', val ? Number(val) : undefined)}
-            />
-          </div>
+        <div className={cn('grid grid-cols-1 gap-8', showInventoryLink && 'md:grid-cols-2')}>
+          {showInventoryLink && (
+            <div className="w-full">
+              <AmberDropdown
+                label={t('auction.form.inventory_sync')}
+                options={[
+                  { label: t('auction.form.manual_config'), value: '' },
+                  ...inventoryItems.map((item: any) => ({
+                    label: item.name,
+                    value: String(item.id),
+                  })),
+                ]}
+                value={String(formData.productId || '')}
+                onChange={(val) => onChange('productId', val ? Number(val) : undefined)}
+              />
+            </div>
+          )}
           <div className="w-full">
             <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest mb-2 block">
               {t('auction.form.tactical_category') || 'Category'}

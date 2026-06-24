@@ -209,25 +209,45 @@ export function MerchantsListPage() {
 }
 
 function MerchantRow({ merchant, t, onClick }: { merchant: Merchant; t: (key: string) => string; onClick: () => void }) {
+  const initials = merchant.name
+    ?.split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || '?';
+
   return (
     <button
       onClick={onClick}
-      className="w-full text-start grid grid-cols-1 md:grid-cols-[2fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-2 md:gap-4 px-5 py-4 hover:bg-white/[0.01] transition-colors group"
+      className="w-full text-start grid grid-cols-1 md:grid-cols-[2fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-2 md:gap-4 px-5 py-4 hover:bg-white/[0.01] transition-colors group min-w-0"
     >
       {/* Name */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-brand/10 flex items-center justify-center text-brand text-xs font-black shrink-0">
-          {merchant.name?.[0]?.toUpperCase() || '?'}
+      <div className="flex items-center gap-3 min-w-0">
+        {merchant.avatar ? (
+          <img
+            src={merchant.avatar}
+            alt=""
+            className="w-9 h-9 rounded-full object-cover shrink-0 border border-white/10"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-brand/10 flex items-center justify-center text-brand text-[10px] font-black shrink-0">
+            {initials}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-zinc-text truncate group-hover:text-[var(--color-brand)] transition-colors">
+            {merchant.name}
+          </p>
+          {merchant.email && merchant.email !== merchant.name && (
+            <p className="text-[11px] text-zinc-muted truncate mt-0.5">{merchant.email}</p>
+          )}
         </div>
-        <span className="text-sm font-bold text-zinc-text truncate group-hover:text-[var(--color-brand)] transition-colors">
-          {merchant.name}
-        </span>
       </div>
 
       {/* Phone */}
-      <div className="flex items-center gap-1.5">
-        <Phone className="w-3 h-3 text-zinc-muted hidden md:block" />
-        <span className="text-[12px] text-zinc-muted font-medium">{merchant.phone}</span>
+      <div className="flex items-center gap-1.5 min-w-0">
+        <Phone className="w-3 h-3 text-zinc-muted hidden md:block shrink-0" />
+        <span className="text-[12px] text-zinc-muted font-medium truncate">{merchant.phone}</span>
       </div>
 
       {/* Products */}

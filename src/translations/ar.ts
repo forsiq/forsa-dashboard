@@ -279,6 +279,12 @@ export const ar: Record<string, string> = {
 
   "auction.form.section.sources": "المصادر والمراجع",
   "auction.form.section.specs": "المواصفات",
+  "auction.form.section.temporal": "جدول المزاد",
+  "auction.form.temporal_start": "تاريخ ووقت البدء",
+  "auction.form.temporal_end": "تاريخ ووقت الانتهاء",
+  "auction.form.cycle_duration": "المدة (أيام)",
+  "auction.form.edit_scope_hint": "عدّل هنا عنوان المزاد والوصف والتصنيف والأسعار والجدول الزمني. الصور والمواصفات وتفاصيل المنتج تُعدَّل من صفحة القائمة (المنتج).",
+  "auction.form.edit_catalog_link": "تعديل المنتج (الصور والمواصفات)",
   "auction.form.add_source": "إضافة مصدر",
   "auction.form.add_spec": "إضافة مواصفة",
   "auction.form.no_sources": "لا توجد مصادر",

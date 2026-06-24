@@ -7,7 +7,7 @@ function msg(t: TFn, key: string, fallback: string) {
   return v && v !== key ? v : fallback;
 }
 
-/** Deploy listing → auction (pricing only; window is set server-side). */
+/** Deploy listing → auction (pricing + schedule window). */
 export function createDeployAuctionClientSchema(t: TFn) {
   return z
     .object({
@@ -18,6 +18,8 @@ export function createDeployAuctionClientSchema(t: TFn) {
         message: msg(t, 'listing.deploy.validation.bid_increment_min', 'Bid increment must be at least 1'),
       }),
       originalPrice: z.union([z.string(), z.number()]).optional(),
+      startTime: z.string().min(1, msg(t, 'listing.deploy.validation.start_time_required', 'Start time is required')),
+      endTime: z.string().min(1, msg(t, 'listing.deploy.validation.end_time_required', 'End time is required')),
     })
     .superRefine((data, ctx) => {
       const origRaw = data.originalPrice;
@@ -44,6 +46,30 @@ export function createDeployAuctionClientSchema(t: TFn) {
             ),
           });
         }
+      }
+
+      const ts = new Date(data.startTime).getTime();
+      const te = new Date(data.endTime).getTime();
+      if (!Number.isFinite(ts)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['startTime'],
+          message: msg(t, 'listing.deploy.validation.start_time_invalid', 'Invalid start time'),
+        });
+      }
+      if (!Number.isFinite(te)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endTime'],
+          message: msg(t, 'listing.deploy.validation.end_time_invalid', 'Invalid end time'),
+        });
+      }
+      if (Number.isFinite(ts) && Number.isFinite(te) && te <= ts) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endTime'],
+          message: msg(t, 'listing.deploy.validation.end_after_start', 'End time must be after start time'),
+        });
       }
     });
 }

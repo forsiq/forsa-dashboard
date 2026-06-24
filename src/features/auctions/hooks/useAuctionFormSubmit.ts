@@ -91,6 +91,32 @@ export function useAuctionFormSubmit({
 
     try {
       setSubmitError(null);
+
+      if (isEdit) {
+        const finalEndTime = useDurationMode ? computedEndTime : formData.endTime;
+        const resRaw = formData.reservePrice;
+        await updateMutation.mutateAsync({
+          id: auctionId,
+          title: formData.title,
+          description: formData.description,
+          categoryId: Number(formData.categoryId),
+          startPrice: Number(formData.startPrice),
+          bidIncrement: Number(formData.bidIncrement),
+          startTime: formData.startTime ? new Date(formData.startTime).toISOString() : undefined,
+          endTime: finalEndTime ? new Date(finalEndTime).toISOString() : undefined,
+          reservePrice:
+            resRaw !== undefined &&
+            resRaw !== null &&
+            Number.isFinite(Number(resRaw)) &&
+            Number(resRaw) > 0
+              ? Number(resRaw)
+              : undefined,
+        } as AuctionUpdateInput);
+        markClean();
+        router.push('/auctions');
+        return;
+      }
+
       const newAttachmentIds =
         imageUpload.pendingFiles.length > 0
           ? await uploadMultiple(imageUpload.pendingFiles)
@@ -115,15 +141,7 @@ export function useAuctionFormSubmit({
         payload.attachmentIds = allAttachmentIds;
       }
 
-      if (isEdit) {
-        await updateMutation.mutateAsync({
-          ...payload,
-          id: auctionId,
-        } as AuctionUpdateInput);
-      } else {
-        // Create (also handles clone - always creates new auction)
-        await createMutation.mutateAsync(payload as AuctionCreateInput);
-      }
+      await createMutation.mutateAsync(payload as AuctionCreateInput);
       markClean();
       router.push('/auctions');
     } catch (err: any) {

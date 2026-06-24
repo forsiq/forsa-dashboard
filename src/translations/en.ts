@@ -281,6 +281,12 @@ export const en: Record<string, string> = {
 
   "auction.form.section.sources": "Sources & references",
   "auction.form.section.specs": "Specifications",
+  "auction.form.section.temporal": "Auction schedule",
+  "auction.form.temporal_start": "Start date & time",
+  "auction.form.temporal_end": "End date & time",
+  "auction.form.cycle_duration": "Duration (days)",
+  "auction.form.edit_scope_hint": "Update auction title, description, category, pricing, and schedule here. Images, specifications, and catalog details are edited from the product listing.",
+  "auction.form.edit_catalog_link": "Edit product listing (images & specs)",
   "auction.form.add_source": "Add source",
   "auction.form.add_spec": "Add specification",
   "auction.form.no_sources": "No sources added",
