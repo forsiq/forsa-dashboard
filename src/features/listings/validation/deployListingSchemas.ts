@@ -74,7 +74,7 @@ export function createDeployAuctionClientSchema(t: TFn) {
     });
 }
 
-/** Deploy listing → group buy (pricing only; window is set server-side). */
+/** Deploy listing → group buy (pricing + schedule window). */
 export function createDeployGroupBuyClientSchema(t: TFn) {
   return z
     .object({
@@ -101,6 +101,8 @@ export function createDeployGroupBuyClientSchema(t: TFn) {
           'Max participants must be at least 1',
         ),
       }),
+      startTime: z.string().min(1, msg(t, 'listing.deploy.validation.start_time_required', 'Start time is required')),
+      endTime: z.string().min(1, msg(t, 'listing.deploy.validation.end_time_required', 'End time is required')),
       autoCreateOrder: z.boolean().optional(),
     })
     .superRefine((data, ctx) => {
@@ -124,6 +126,30 @@ export function createDeployGroupBuyClientSchema(t: TFn) {
             'listing.deploy.validation.deal_price_lt_original',
             'Deal price must be less than original price',
           ),
+        });
+      }
+
+      const ts = new Date(data.startTime).getTime();
+      const te = new Date(data.endTime).getTime();
+      if (!Number.isFinite(ts)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['startTime'],
+          message: msg(t, 'listing.deploy.validation.start_time_invalid', 'Invalid start time'),
+        });
+      }
+      if (!Number.isFinite(te)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endTime'],
+          message: msg(t, 'listing.deploy.validation.end_time_invalid', 'Invalid end time'),
+        });
+      }
+      if (Number.isFinite(ts) && Number.isFinite(te) && te <= ts) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endTime'],
+          message: msg(t, 'listing.deploy.validation.end_after_start', 'End time must be after start time'),
         });
       }
     });

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reviewApi, postApi, roadmapApi, changelogApi, adminApi } from './feedback-api';
-import type { FeedbackFilters, GuestReviewPayload } from '../types';
+import type { FeedbackFilters, GuestReviewPayload, CreatePostPayload } from '../types';
 
 export const feedbackKeys = {
   all: ['feedback'] as const,
@@ -81,6 +81,17 @@ export const useUpdatePostStatus = () => {
     mutationFn: ({ id, status }: { id: number; status: string }) =>
       postApi.updateStatus(id, status),
     onSuccess: () => qc.invalidateQueries({ queryKey: feedbackKeys.posts() }),
+  });
+};
+
+export const useCreatePost = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreatePostPayload) => postApi.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: feedbackKeys.posts() });
+      qc.invalidateQueries({ queryKey: feedbackKeys.stats() });
+    },
   });
 };
 

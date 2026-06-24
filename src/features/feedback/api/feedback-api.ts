@@ -41,6 +41,8 @@ export const postApi = {
     client.get('/posts', { params }).then((r) => r.data),
   get: (id: number) =>
     client.get(`/posts/${id}`).then((r) => r.data),
+  create: (data: { title: string; description: string; category?: string }) =>
+    client.post('/posts', data).then((r) => r.data),
   updateStatus: (id: number, status: string) =>
     client.put(`/admin/posts/${id}/status?status=${status}`).then((r) => r.data),
 };

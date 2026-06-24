@@ -49,6 +49,12 @@ export interface Favorite {
   updatedAt: string;
 }
 
+export interface CreatePostPayload {
+  title: string;
+  description: string;
+  category?: FeedbackPost['category'];
+}
+
 export interface FeedbackPost {
   id: number;
   title: string;

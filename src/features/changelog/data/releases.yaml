@@ -1,3 +1,24 @@
+- version: "1.7.7"
+  date: "2026-06-24"
+  title:
+    en: "Tables, group-buy schedule, and feedback hub"
+    ar: "الجداول وجدولة اللُمّة ولوحة الملاحظات"
+  entries:
+    - description:
+        en: "Fixed row action menus (⋮) in data tables so they open above cards and stay open until you click outside."
+        ar: "إصلاح قوائم إجراءات الصف (⋮) في الجداول لتظهر فوق البطاقات وتبقى مفتوحة حتى النقر خارجها."
+      type: fixed
+    - description:
+        en: "Publishing a listing as group buy now asks for start and end date/time before deploy, matching the auction flow."
+        ar: "عند نشر منتج كصفقة جماعية (لُمّة) يُطلب الآن تحديد تاريخ ووقت البدء والانتهاء قبل النشر، مثل مسار المزاد."
+      type: added
+      sidebarPath: /listings
+    - description:
+        en: "Feedback overview adds Discover links, recent reviews and posts, and a form to submit feature requests."
+        ar: "نظرة عامة الملاحظات تضيف روابط الاستكشاف وأحدث التقييمات والطلبات ونموذجاً لإرسال طلبات الميزات."
+      type: improved
+      sidebarPath: /feedback/overview
+
 - version: "1.7.6"
   date: "2026-06-23"
   title:

@@ -252,12 +252,26 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
     computedEndTime: auctionComputedEndTime,
   } = useAuctionDurationCalc(auctionPricing.startTime);
 
-  const [groupBuyPricing, setGroupBuyPricing] = useState({
-    originalPrice: 0,
-    dealPrice: 0,
-    minParticipants: 2,
-    maxParticipants: 100,
+  const [groupBuyPricing, setGroupBuyPricing] = useState(() => {
+    const schedule = getDefaultAuctionSchedule();
+    return {
+      originalPrice: 0,
+      dealPrice: 0,
+      minParticipants: 2,
+      maxParticipants: 100,
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      durationDays: schedule.durationDays,
+    };
   });
+
+  const {
+    durationDays: groupBuyDurationDays,
+    setDurationDays: setGroupBuyDurationDays,
+    useDurationMode: groupBuyUseDurationMode,
+    setUseDurationMode: setGroupBuyUseDurationMode,
+    computedEndTime: groupBuyComputedEndTime,
+  } = useAuctionDurationCalc(groupBuyPricing.startTime);
 
   const imageUpload = usePendingImageFiles();
   const { upload, isUploading, progress: uploadProgress, error: uploadError } =
@@ -808,7 +822,13 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         return;
       }
     } else {
-      const parsed = deployGroupBuySchema.safeParse(groupBuyPricing);
+      const finalGroupBuyEndTime = groupBuyUseDurationMode
+        ? groupBuyComputedEndTime
+        : groupBuyPricing.endTime;
+      const parsed = deployGroupBuySchema.safeParse({
+        ...groupBuyPricing,
+        endTime: finalGroupBuyEndTime,
+      });
       if (!parsed.success) {
         setFieldErrors(zodIssuesToFieldMap(parsed.error));
         return;
@@ -835,6 +855,9 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
           auctionId ? `/auctions/${auctionId}` : `/listings/${listingId}`,
         );
       } else {
+        const finalGroupBuyEndTime = groupBuyUseDurationMode
+          ? groupBuyComputedEndTime
+          : groupBuyPricing.endTime;
         const deal = await deployGroupBuyMutation.mutateAsync({
           id: listingId,
           data: {
@@ -842,6 +865,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             dealPrice: Number(groupBuyPricing.dealPrice),
             minParticipants: Number(groupBuyPricing.minParticipants),
             maxParticipants: Number(groupBuyPricing.maxParticipants),
+            startTime: new Date(groupBuyPricing.startTime).toISOString(),
+            endTime: new Date(finalGroupBuyEndTime).toISOString(),
             autoCreateOrder: true,
           },
         });
@@ -1804,6 +1829,45 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
               error={fieldErrors.maxParticipants}
             />
           </div>
+
+          <div className="mt-6">
+            <AuctionTemporalSection
+              labels={{
+                section: t('listing.deploy.mode_schedule'),
+                start: t('listing.deploy.start_time'),
+                end: t('listing.deploy.end_time'),
+                duration: t('listing.deploy.duration_days'),
+              }}
+              startTime={groupBuyPricing.startTime}
+              endTime={groupBuyPricing.endTime}
+              errors={fieldErrors}
+              durationDays={groupBuyDurationDays}
+              useDurationMode={groupBuyUseDurationMode}
+              computedEndTime={groupBuyComputedEndTime}
+              onStartTimeChange={(val) => {
+                setFieldErrors((p) => {
+                  const n = { ...p };
+                  delete n.startTime;
+                  delete n.endTime;
+                  return n;
+                });
+                setGroupBuyPricing((prev) => ({ ...prev, startTime: val }));
+              }}
+              onEndTimeChange={(val) => {
+                setFieldErrors((p) => {
+                  const n = { ...p };
+                  delete n.endTime;
+                  return n;
+                });
+                setGroupBuyPricing((prev) => ({ ...prev, endTime: val }));
+              }}
+              onDurationDaysChange={(days) => {
+                setGroupBuyDurationDays(days);
+                setGroupBuyPricing((prev) => ({ ...prev, durationDays: days }));
+              }}
+              onUseDurationModeChange={setGroupBuyUseDurationMode}
+            />
+          </div>
         </FormSection>
       )}
 
@@ -1863,12 +1927,34 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             {deployChannel === 'group_buy' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.original_price')}</p>
+                  <p className="font-black">{groupBuyPricing.originalPrice}</p>
+                </div>
+                <div>
                   <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.deal_price')}</p>
                   <p className="font-black">{groupBuyPricing.dealPrice}</p>
                 </div>
                 <div>
                   <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.min_participants')}</p>
                   <p className="font-black">{groupBuyPricing.minParticipants} – {groupBuyPricing.maxParticipants}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_time')}</p>
+                  <p className="font-black text-xs sm:text-sm">
+                    {groupBuyPricing.startTime
+                      ? new Date(groupBuyPricing.startTime).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.end_time')}</p>
+                  <p className="font-black text-xs sm:text-sm">
+                    {(groupBuyUseDurationMode ? groupBuyComputedEndTime : groupBuyPricing.endTime)
+                      ? new Date(
+                          groupBuyUseDurationMode ? groupBuyComputedEndTime : groupBuyPricing.endTime,
+                        ).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
+                      : '—'}
+                  </p>
                 </div>
               </div>
             )}
