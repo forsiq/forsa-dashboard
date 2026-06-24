@@ -13,8 +13,11 @@ export interface Merchant {
   name: string;
   phone: string;
   email?: string;
+  username?: string;
   status: 'active' | 'inactive' | 'suspended';
   productsCount: number;
+  publishedProductsCount?: number;
+  notPublishedProductsCount?: number;
   auctionsCount: number;
   joinedAt: string;
   avatar?: string | null;
@@ -30,6 +33,7 @@ export interface MerchantProduct {
   title: string;
   price: number;
   status: string;
+  isPublished?: boolean;
   category: string;
   imageUrl?: string | null;
   createdAt: string;
@@ -82,16 +86,18 @@ function deriveMerchantStatus(raw: MerchantApiRow): Merchant['status'] {
 }
 
 function mapMerchantFromApi(raw: MerchantApiRow): Merchant {
-  const id = String(raw.id ?? '');
+  const id = String(raw.id ?? '').trim();
   const nameRaw =
     raw.name ??
+    raw.displayName ??
+    raw.display_name ??
+    raw.username ??
     raw.full_name ??
     raw.fullName ??
-    [raw.firstName ?? raw.first_name, raw.lastName ?? raw.last_name]
+    ([raw.firstName ?? raw.first_name, raw.lastName ?? raw.last_name]
       .filter((p) => typeof p === 'string' && p.trim())
       .join(' ')
-      .trim() ||
-    undefined;
+      .trim() || undefined);
   const phoneRaw = raw.phone ?? raw.phone_number ?? raw.mobile;
 
   return {
@@ -102,9 +108,22 @@ function mapMerchantFromApi(raw: MerchantApiRow): Merchant {
       '—',
     phone: (typeof phoneRaw === 'string' && phoneRaw.trim()) || '—',
     email: typeof raw.email === 'string' ? raw.email : undefined,
+    username: typeof raw.username === 'string' ? raw.username : undefined,
     status: deriveMerchantStatus(raw),
     productsCount: Number(
       raw.productsCount ?? raw.productCount ?? raw.product_count ?? 0,
+    ),
+    publishedProductsCount: Number(
+      raw.publishedProductsCount ??
+        raw.publishedProductCount ??
+        raw.published_product_count ??
+        0,
+    ),
+    notPublishedProductsCount: Number(
+      raw.notPublishedProductsCount ??
+        raw.notPublishedProductCount ??
+        raw.not_published_product_count ??
+        0,
     ),
     auctionsCount: Number(
       raw.auctionsCount ?? raw.auctionCount ?? raw.auction_count ?? 0,
@@ -135,7 +154,8 @@ function mapMerchantProductFromApi(raw: MerchantApiRow): MerchantProduct {
     title: String(raw.title ?? raw.name ?? '—'),
     price: Number(raw.price ?? raw.startPrice ?? raw.start_price ?? 0),
     status: String(statusRaw),
-    category: String(raw.category ?? raw.category_name ?? '—'),
+    isPublished: Boolean(raw.isPublished ?? raw.is_published ?? false),
+    category: String(raw.category ?? raw.category_name ?? raw.categoryId ?? '—'),
     imageUrl: (raw.imageUrl ?? raw.image_url ?? null) as string | null,
     createdAt: String(raw.createdAt ?? raw.created_at ?? new Date().toISOString()),
   };

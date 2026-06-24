@@ -5,6 +5,7 @@ import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
+import { AmberToggle } from '@core/components';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
 import { cn } from '@core/lib/utils/cn';
 import { useLanguage } from '@core/contexts/LanguageContext';
@@ -388,23 +389,13 @@ export const ProductEditPage = () => {
 
               {/* Active Toggle */}
               <div className="md:col-span-2 flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.isActive}
-                  onClick={() => handleChange('isActive', !formData.isActive)}
-                  className={cn(
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                    formData.isActive ? 'bg-[var(--color-brand)]' : 'bg-[var(--color-border)]'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'inline-block h-4 w-4 rounded-full bg-white transition-transform',
-                      formData.isActive ? 'translate-x-6' : 'translate-x-1'
-                    )}
-                  />
-                </button>
+                <AmberToggle
+                  enabled={formData.isActive}
+                  onChange={(value) => handleChange('isActive', value)}
+                  activeColor="bg-[var(--color-brand)]"
+                  inactiveColor="bg-[var(--color-border)]"
+                  label={formData.isActive ? (t('common.active') || 'نشط') : (t('common.inactive') || 'غير نشط')}
+                />
                 <span className="text-sm font-bold text-zinc-text">
                   {formData.isActive ? (t('common.active') || 'نشط') : (t('common.inactive') || 'غير نشط')}
                 </span>

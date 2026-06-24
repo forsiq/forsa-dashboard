@@ -23,6 +23,7 @@ import { AmberCard as Card } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
 import { AmberDatePicker } from '@core/components/AmberDatePicker';
+import { AmberToggle } from '@core/components';
 import { AmberDropdown } from '@core/components/AmberDropdown';
 import { AmberImageUpload } from '@core/components/AmberImageUpload';
 import { useFileUpload } from '@core/hooks/useFileUpload';
@@ -431,16 +432,16 @@ export const GroupBuyingFormPage: React.FC = () => {
 
                 <div className="h-px bg-white/[0.03]" />
 
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-obsidian-outer border border-white/5 group/toggle cursor-pointer" onClick={() => handleChange('autoCreateOrder', !formData.autoCreateOrder)}>
-                    <div className={cn(
-                        "w-12 h-6 rounded-full p-1 transition-all duration-300 relative",
-                        formData.autoCreateOrder ? "bg-brand" : "bg-zinc-800"
-                    )}>
-                        <div className={cn(
-                            "w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300",
-                            formData.autoCreateOrder ? (isRTL ? "-translate-x-6" : "translate-x-6") : "translate-x-0"
-                        )} />
-                    </div>
+                <div
+                  className="flex items-center gap-4 p-4 rounded-xl bg-obsidian-outer border border-white/5 group/toggle cursor-pointer"
+                  onClick={() => handleChange('autoCreateOrder', !formData.autoCreateOrder)}
+                >
+                    <AmberToggle
+                      enabled={formData.autoCreateOrder}
+                      onToggle={() => handleChange('autoCreateOrder', !formData.autoCreateOrder)}
+                      inactiveColor="bg-zinc-800"
+                      className="pointer-events-none"
+                    />
                     <div className="space-y-0.5">
                         <p className="text-sm font-black text-zinc-text uppercase tracking-widest">{t('groupBuying.form.auto_create_order') || 'Auto-Create Orders'}</p>
                         <p className="text-[11px] text-zinc-muted font-bold tracking-tight">{t('groupBuying.form.auto_create_order_desc') || 'Automatically generate orders when campaign succeeds'}</p>

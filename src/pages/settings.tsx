@@ -31,6 +31,7 @@ import {
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberToggle } from '@core/components';
 import { useLanguage } from '@yousef2001/core-ui/contexts';
 import { useTheme } from '@core/contexts/ThemeContext';
 import { cn } from '@core/lib/utils/cn';
@@ -39,27 +40,6 @@ import { useToast } from '@core/contexts/ToastContext';
 import { FormSection } from '@core/components/FormSection';
 
 type Tab = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };
-
-function Toggle({ enabled, onChange, label }: { enabled: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!enabled)}
-      className={cn(
-        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0',
-        enabled ? 'bg-brand' : 'bg-zinc-600'
-      )}
-      aria-label={label}
-    >
-      <span
-        className={cn(
-          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          enabled ? 'translate-x-6' : 'translate-x-1'
-        )}
-      />
-    </button>
-  );
-}
 
 const SETTINGS_KEY = 'forsa_settings';
 
@@ -495,7 +475,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.cash_payment_desc') || 'Accept cash payments'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.cashPayment !== false} onChange={(v) => updateSetting('cashPayment', v)} label="Cash payment" />
+                    <AmberToggle enabled={settings.cashPayment !== false} onChange={(v) => updateSetting('cashPayment', v)} label="Cash payment" />
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
@@ -508,7 +488,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.card_payment_desc') || 'Accept credit/debit cards'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.cardPayment === true} onChange={(v) => updateSetting('cardPayment', v)} label="Card payment" />
+                    <AmberToggle enabled={settings.cardPayment === true} onChange={(v) => updateSetting('cardPayment', v)} label="Card payment" />
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
@@ -521,7 +501,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.online_payment_desc') || 'Accept online payment gateways'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.onlinePayment === true} onChange={(v) => updateSetting('onlinePayment', v)} label="Online payment" />
+                    <AmberToggle enabled={settings.onlinePayment === true} onChange={(v) => updateSetting('onlinePayment', v)} label="Online payment" />
                   </div>
                 </div>
               </FormSection>
@@ -547,7 +527,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.shipping_enabled_desc') || 'Allow shipping for auction items'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.shippingEnabled !== false} onChange={(v) => updateSetting('shippingEnabled', v)} label="Enable shipping" />
+                    <AmberToggle enabled={settings.shippingEnabled !== false} onChange={(v) => updateSetting('shippingEnabled', v)} label="Enable shipping" />
                   </div>
 
                   <AmberInput
@@ -589,7 +569,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.email_notifications_desc') || 'Receive updates via email'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.emailNotifications !== false} onChange={(v) => updateSetting('emailNotifications', v)} label="Email notifications" />
+                    <AmberToggle enabled={settings.emailNotifications !== false} onChange={(v) => updateSetting('emailNotifications', v)} label="Email notifications" />
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
@@ -602,7 +582,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.push_notifications_desc') || 'Browser and mobile push alerts'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.pushNotifications !== false} onChange={(v) => updateSetting('pushNotifications', v)} label="Push notifications" />
+                    <AmberToggle enabled={settings.pushNotifications !== false} onChange={(v) => updateSetting('pushNotifications', v)} label="Push notifications" />
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
@@ -615,7 +595,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.sms_notifications_desc') || 'Receive text message alerts'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.smsNotifications === true} onChange={(v) => updateSetting('smsNotifications', v)} label="SMS notifications" />
+                    <AmberToggle enabled={settings.smsNotifications === true} onChange={(v) => updateSetting('smsNotifications', v)} label="SMS notifications" />
                   </div>
                 </div>
               </FormSection>
@@ -636,7 +616,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.bid_alerts_desc') || 'Notify when outbid on auctions'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.bidAlerts !== false} onChange={(v) => updateSetting('bidAlerts', v)} label="Bid alerts" />
+                    <AmberToggle enabled={settings.bidAlerts !== false} onChange={(v) => updateSetting('bidAlerts', v)} label="Bid alerts" />
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
@@ -649,7 +629,7 @@ function SettingsPageContent() {
                         <p className="text-[11px] text-zinc-muted">{t('settings.auction_reminders_desc') || 'Remind before auction ends'}</p>
                       </div>
                     </div>
-                    <Toggle enabled={settings.auctionReminders !== false} onChange={(v) => updateSetting('auctionReminders', v)} label="Auction reminders" />
+                    <AmberToggle enabled={settings.auctionReminders !== false} onChange={(v) => updateSetting('auctionReminders', v)} label="Auction reminders" />
                   </div>
                 </div>
               </FormSection>

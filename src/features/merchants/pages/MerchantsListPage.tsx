@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { useIsMobile } from '@core/hooks/useIsMobile';
@@ -8,61 +8,190 @@ import {
   ListPageToolbarSearch,
 } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { AmberButton } from '@core/components/AmberButton';
+import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
+import { EmptyState } from '@core/components/EmptyState';
 import { cn } from '@core/lib/utils/cn';
 import { useDebounce } from '@core/hooks/useDebounce';
 import { useFilterState } from '@core/hooks/useFilterState';
-import {
-  Store,
-  Package,
-  Gavel,
-  Phone,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  X,
-} from 'lucide-react';
-import dayjs from 'dayjs';
+import { Store, Eye, Users, X } from 'lucide-react';
 import { useGetMerchants } from '../hooks/useMerchants';
 import type { Merchant } from '../services/merchantsService';
 
+const PAGE_SIZE = 20;
+
 function merchantStatusVariant(status: string): 'success' | 'error' | 'inactive' {
   switch (status) {
-    case 'active': return 'success';
-    case 'suspended': return 'error';
-    default: return 'inactive';
+    case 'active':
+      return 'success';
+    case 'suspended':
+      return 'error';
+    default:
+      return 'inactive';
   }
 }
 
+function merchantContactLine(merchant: Merchant): string {
+  const phone = merchant.phone?.trim();
+  if (phone && phone !== '—') return phone;
+  const email = merchant.email?.trim();
+  if (email) return email;
+  const username = merchant.username?.trim();
+  if (username) return `@${username}`;
+  return '—';
+}
+
+function merchantInitials(name: string): string {
+  return (
+    name
+      ?.split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || '?'
+  );
+}
+
 export function MerchantsListPage() {
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const router = useRouter();
   const { isMobile } = useIsMobile();
+  const [isClient, setIsClient] = useState(false);
 
   const [searchInput, setSearchInput] = useFilterState('search', '');
   const [statusFilter, setStatusFilter] = useFilterState<string>('status', 'all');
   const [page, setPage] = useFilterState('page', 1);
   const debouncedSearch = useDebounce(searchInput, 300);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { data: merchantsData, isPending, isFetching } = useGetMerchants({
     search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     page,
-    limit: 20,
+    limit: PAGE_SIZE,
   });
 
   const merchants = Array.isArray(merchantsData?.data) ? merchantsData.data : [];
   const total = merchantsData?.total || 0;
-  const totalPages = merchantsData?.totalPages || 1;
-
-  const hasFilters = statusFilter !== 'all' || searchInput;
+  const hasFilters = statusFilter !== 'all' || Boolean(searchInput);
 
   const clearFilters = () => {
     setStatusFilter('all');
     setSearchInput('');
     setPage(1);
   };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString(dir === 'rtl' ? 'ar-IQ' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const columns: Column<Merchant>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        label: t('merchant.table.name') || 'Name',
+        cardTitle: true,
+        className: 'max-w-[min(42vw,24rem)]',
+        render: (merchant) => (
+          <div className="flex min-w-0 items-center gap-3">
+            {merchant.avatar ? (
+              <img
+                src={merchant.avatar}
+                alt=""
+                className="h-10 w-10 shrink-0 rounded-lg border border-white/10 object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10 text-[10px] font-black text-brand">
+                {merchantInitials(merchant.name)}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-zinc-text tracking-tight">
+                {merchant.name}
+              </p>
+              {merchant.email && merchant.email !== merchant.name && (
+                <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-widest text-zinc-muted">
+                  {merchant.email}
+                </p>
+              )}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'phone',
+        label: t('merchant.table.phone') || 'Phone',
+        cardSubtitle: true,
+        render: (merchant) => (
+          <span className="text-[13px] font-bold text-zinc-muted">{merchantContactLine(merchant)}</span>
+        ),
+      },
+      {
+        key: 'productsCount',
+        label: t('merchant.table.products') || 'Products',
+        align: 'center',
+        render: (merchant) => (
+          <span className="text-base font-black tabular-nums text-zinc-text">{merchant.productsCount}</span>
+        ),
+      },
+      {
+        key: 'auctionsCount',
+        label: t('merchant.table.auctions') || 'Auctions',
+        align: 'center',
+        render: (merchant) => (
+          <span className="text-base font-black tabular-nums text-brand">{merchant.auctionsCount}</span>
+        ),
+      },
+      {
+        key: 'status',
+        label: t('merchant.table.status') || 'Status',
+        cardBadge: true,
+        align: 'center',
+        render: (merchant) => (
+          <StatusBadge
+            status={merchant.status}
+            labelKey={`merchant.filter.${merchant.status}`}
+            variant={merchantStatusVariant(merchant.status)}
+            showDot
+            size="sm"
+            className="font-bold text-[11px]"
+          />
+        ),
+      },
+      {
+        key: 'joinedAt',
+        label: t('merchant.table.joined') || 'Joined',
+        render: (merchant) => (
+          <span className="text-[13px] font-bold text-zinc-muted tabular-nums">
+            {formatDate(merchant.joinedAt)}
+          </span>
+        ),
+        align: 'center',
+      },
+    ],
+    [t, dir],
+  );
+
+  const rowActions: Action<Merchant>[] = useMemo(
+    () => [
+      {
+        label: t('common.view') || 'View',
+        icon: Eye,
+        onClick: (merchant) => router.push(`/merchants/${merchant.id}`),
+      },
+    ],
+    [router, t],
+  );
+
+  if (!isClient) return null;
 
   return (
     <AdminListPageShell
@@ -80,7 +209,7 @@ export function MerchantsListPage() {
       ]}
       statsColumns={1}
       tabs={
-        <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] p-1.5 shadow-sm scrollbar-hide">
           {[
             { key: 'all', label: t('merchant.filter.all') || 'All' },
             { key: 'active', label: t('merchant.filter.active') || 'Active' },
@@ -89,12 +218,16 @@ export function MerchantsListPage() {
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => { setStatusFilter(tab.key); setPage(1); }}
+              type="button"
+              onClick={() => {
+                setStatusFilter(tab.key);
+                setPage(1);
+              }}
               className={cn(
-                'px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-colors rounded-lg whitespace-nowrap',
+                'whitespace-nowrap rounded-lg px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-colors',
                 statusFilter === tab.key
                   ? 'bg-[var(--color-brand)] text-black shadow-sm'
-                  : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
+                  : 'text-zinc-muted hover:bg-black/5 hover:text-zinc-text',
               )}
             >
               {tab.label}
@@ -107,7 +240,10 @@ export function MerchantsListPage() {
           search={
             <ListPageToolbarSearch
               value={searchInput}
-              onChange={(v) => { setSearchInput(v); setPage(1); }}
+              onChange={(v) => {
+                setSearchInput(v);
+                setPage(1);
+              }}
               placeholder={t('merchant.search') || 'Search merchants...'}
             />
           }
@@ -116,9 +252,9 @@ export function MerchantsListPage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors whitespace-nowrap"
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-widest text-red-400 transition-colors hover:bg-red-500/20"
               >
-                <X className="w-3 h-3" />
+                <X className="h-3 w-3" />
                 {t('common.clear_filters') || 'Clear'}
               </button>
             ) : undefined
@@ -127,157 +263,35 @@ export function MerchantsListPage() {
       }
     >
       <div className="space-y-6">
-      {isPending ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-5 animate-pulse">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-[var(--color-obsidian-outer)]" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-[var(--color-obsidian-outer)] rounded w-1/3" />
-                  <div className="h-2 bg-[var(--color-obsidian-outer)] rounded w-1/2" />
-                  <div className="h-2 bg-[var(--color-obsidian-outer)] rounded w-1/4" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : merchants.length === 0 ? (
-        <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-16 text-center">
-          <Store className="w-12 h-12 text-zinc-muted mx-auto mb-4" />
-          <p className="text-sm text-zinc-muted font-bold">
-            {t('merchant.list.empty') || 'No merchants found'}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="relative bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
-            {isFetching && !isPending && (
-              <div className="absolute inset-0 z-[80] flex items-start justify-center pt-2 pointer-events-none">
-                <div className="flex items-center gap-2 bg-[var(--color-obsidian-card)]/80 backdrop-blur-sm border border-white/[0.05] rounded-lg px-3 py-1.5">
-                  <div className="w-3 h-3 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">Refreshing...</span>
-                </div>
-              </div>
-            )}
-
-            {/* Table Header */}
-            <div className="hidden md:grid grid-cols-[2fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-4 px-5 py-3 border-b border-[var(--color-border)] bg-white/[0.01]">
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.table.name') || 'Name'}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.table.phone') || 'Phone'}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted text-center">{t('merchant.table.products') || 'Products'}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted text-center">{t('merchant.table.auctions') || 'Auctions'}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted text-center">{t('merchant.table.status') || 'Status'}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.table.joined') || 'Joined'}</span>
-            </div>
-
-            {/* Rows */}
-            <div className="divide-y divide-[var(--color-border)]">
-              {merchants.map((merchant) => (
-                <MerchantRow key={merchant.id} merchant={merchant} t={t} onClick={() => router.push(`/merchants/${merchant.id}`)} />
-              ))}
-            </div>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page <= 1}
-                className="p-2 rounded-lg bg-[var(--color-obsidian-card)] border border-[var(--color-border)] text-zinc-muted hover:text-zinc-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs text-zinc-muted font-bold tabular-nums">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page >= totalPages}
-                className="p-2 rounded-lg bg-[var(--color-obsidian-card)] border border-[var(--color-border)] text-zinc-muted hover:text-zinc-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </>
-      )}
-      </div>
-    </AdminListPageShell>
-  );
-}
-
-function MerchantRow({ merchant, t, onClick }: { merchant: Merchant; t: (key: string) => string; onClick: () => void }) {
-  const initials = merchant.name
-    ?.split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || '?';
-
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-start grid grid-cols-1 md:grid-cols-[2fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-2 md:gap-4 px-5 py-4 hover:bg-white/[0.01] transition-colors group min-w-0"
-    >
-      {/* Name */}
-      <div className="flex items-center gap-3 min-w-0">
-        {merchant.avatar ? (
-          <img
-            src={merchant.avatar}
-            alt=""
-            className="w-9 h-9 rounded-full object-cover shrink-0 border border-white/10"
+        {isPending ? (
+          <ListPageSkeleton count={6} columns={4} />
+        ) : merchants.length === 0 ? (
+          <EmptyState
+            icon={Store}
+            title={t('merchant.list.empty') || 'No merchants found'}
+            description={t('merchant.list.subtitle') || 'Manage merchant accounts and view their activity'}
           />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-brand/10 flex items-center justify-center text-brand text-[10px] font-black shrink-0">
-            {initials}
+          <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
+            {isFetching && <FetchingOverlay />}
+            <DataTable
+              columns={columns}
+              data={merchants}
+              keyField="id"
+              rowActions={rowActions}
+              onRowClick={(merchant) => router.push(`/merchants/${merchant.id}`)}
+              pagination
+              pageSize={PAGE_SIZE}
+              currentPage={page}
+              totalItems={total}
+              onPageChange={setPage}
+              showViewToggle
+              viewMode={isMobile ? 'grid' : 'table'}
+              gridCols={2}
+            />
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-zinc-text truncate group-hover:text-[var(--color-brand)] transition-colors">
-            {merchant.name}
-          </p>
-          {merchant.email && merchant.email !== merchant.name && (
-            <p className="text-[11px] text-zinc-muted truncate mt-0.5">{merchant.email}</p>
-          )}
-        </div>
       </div>
-
-      {/* Phone */}
-      <div className="flex items-center gap-1.5 min-w-0">
-        <Phone className="w-3 h-3 text-zinc-muted hidden md:block shrink-0" />
-        <span className="text-[12px] text-zinc-muted font-medium truncate">{merchant.phone}</span>
-      </div>
-
-      {/* Products */}
-      <div className="flex items-center justify-center gap-1">
-        <Package className="w-3 h-3 text-zinc-muted" />
-        <span className="text-xs font-bold text-zinc-text tabular-nums">{merchant.productsCount}</span>
-      </div>
-
-      {/* Auctions */}
-      <div className="flex items-center justify-center gap-1">
-        <Gavel className="w-3 h-3 text-zinc-muted" />
-        <span className="text-xs font-bold text-zinc-text tabular-nums">{merchant.auctionsCount}</span>
-      </div>
-
-      {/* Status */}
-      <div className="flex justify-center">
-        <StatusBadge
-          status={merchant.status}
-          variant={merchantStatusVariant(merchant.status)}
-          showDot
-          size="sm"
-          className="font-bold text-[11px]"
-        />
-      </div>
-
-      {/* Joined */}
-      <div className="flex items-center gap-1.5">
-        <Calendar className="w-3 h-3 text-zinc-muted hidden md:block" />
-        <span className="text-[12px] text-zinc-muted">{dayjs(merchant.joinedAt).format('MMM D, YYYY')}</span>
-      </div>
-    </button>
+    </AdminListPageShell>
   );
 }

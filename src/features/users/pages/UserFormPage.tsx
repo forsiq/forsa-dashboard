@@ -14,6 +14,7 @@ import { useToast } from '@core/contexts/ToastContext';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberToggle } from '@core/components';
 import { PageHeader } from '@core/components/Layout/PageHeader';
 import { useFormUX } from '@core/hooks/useFormUX';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -285,19 +286,12 @@ export function UserFormPage() {
                 </label>
                 <p className="text-[13px] text-zinc-500">{t('user.is_active_description')}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => handleChange('isActive', !formData.isActive)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  formData.isActive ? 'bg-blue-600' : 'bg-zinc-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.isActive ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
+              <AmberToggle
+                enabled={formData.isActive}
+                onChange={(value) => handleChange('isActive', value)}
+                activeColor="bg-blue-600"
+                label={t('user.is_active')}
+              />
             </div>
           </div>
 

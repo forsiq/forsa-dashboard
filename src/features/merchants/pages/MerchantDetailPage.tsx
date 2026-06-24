@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useLanguage } from '@core/contexts/LanguageContext';
-import { useToast } from '@core/contexts/ToastContext';
+import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AdminListPageShell } from '@core/components/Layout';
 import { StatusBadge } from '@core/components/Data/StatusBadge';
+import { DataTable, Column, Action } from '@core/components/Data/DataTable';
+import { DataTableEntityTitle } from '@core/components/Data/DataTableEntityTitle';
+import { EmptyState } from '@core/components/EmptyState';
 import { AmberButton } from '@core/components/AmberButton';
 import { cn } from '@core/lib/utils/cn';
-import { DetailPageSkeleton } from '@core/loading';
+import { DetailPageSkeleton, ListPageSkeleton } from '@core/loading';
 import {
   Store,
   ArrowLeft,
@@ -18,7 +21,8 @@ import {
   Gavel,
   TrendingUp,
   Activity,
-  Inbox,
+  Eye,
+  CheckCircle2,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import {
@@ -26,6 +30,8 @@ import {
   useGetMerchantProducts,
   useGetMerchantAuctions,
 } from '../hooks/useMerchants';
+import type { MerchantAuction, MerchantProduct } from '../services/merchantsService';
+import { merchantContactLine } from '../utils/merchantContact';
 
 type TabValue = 'products' | 'auctions';
 
@@ -35,6 +41,10 @@ function merchantStatusVariant(status: string): 'success' | 'error' | 'inactive'
     case 'suspended': return 'error';
     default: return 'inactive';
   }
+}
+
+function merchantStatusLabel(status: string, t: (key: string) => string): string {
+  return t(`merchant.filter.${status}`) || status;
 }
 
 export function MerchantDetailPage() {
@@ -55,6 +65,14 @@ export function MerchantDetailPage() {
 
   const productList = products || [];
   const auctionList = auctions || [];
+  const totalProducts = merchant.productsCount ?? productList.length;
+  const publishedProducts =
+    merchant.publishedProductsCount ??
+    productList.filter((product) => product.isPublished).length;
+  const notPublishedProducts =
+    merchant.notPublishedProductsCount ??
+    Math.max(0, totalProducts - publishedProducts);
+  const contactLine = merchantContactLine(merchant);
 
   return (
     <AdminListPageShell
@@ -75,9 +93,23 @@ export function MerchantDetailPage() {
       stats={[
         {
           label: t('merchant.detail.stats.products') || 'Products',
-          value: (merchant.productsCount ?? productList.length).toString(),
+          value: totalProducts.toString(),
           icon: Package,
           color: 'warning',
+          description:
+            t('merchant.detail.stats.published_summary', {
+              published: publishedProducts,
+              total: totalProducts,
+            }) || `${publishedProducts} published of ${totalProducts}`,
+        },
+        {
+          label: t('merchant.detail.stats.published') || 'Published',
+          value: publishedProducts.toString(),
+          icon: CheckCircle2,
+          color: 'success',
+          description:
+            t('merchant.detail.stats.not_published', { count: notPublishedProducts }) ||
+            `${notPublishedProducts} not published`,
         },
         {
           label: t('merchant.detail.stats.auctions') || 'Auctions',
@@ -93,12 +125,13 @@ export function MerchantDetailPage() {
         },
         {
           label: t('merchant.detail.stats.status') || 'Status',
-          value: merchant.status,
+          value: merchantStatusLabel(merchant.status, t),
           icon: Activity,
           color: merchant.status === 'active' ? 'success' : 'danger',
+          valueClassName: 'text-2xl text-zinc-text tracking-normal [font-variant-numeric:normal]',
         },
       ]}
-      statsColumns={4}
+      statsColumns={5}
       tabs={
         <div className="flex items-center bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1 rounded-xl shadow-sm w-fit">
           {([
@@ -144,7 +177,7 @@ export function MerchantDetailPage() {
             </div>
             <div>
               <p className="text-[11px] text-zinc-muted uppercase tracking-widest">{t('merchant.detail.phone') || 'Phone'}</p>
-              <p className="text-sm font-bold text-zinc-text">{merchant.phone}</p>
+              <p className="text-sm font-bold text-zinc-text">{contactLine}</p>
             </div>
           </div>
 
@@ -155,7 +188,7 @@ export function MerchantDetailPage() {
             </div>
             <div>
               <p className="text-[11px] text-zinc-muted uppercase tracking-widest">{t('merchant.detail.email') || 'Email'}</p>
-              <p className="text-sm font-bold text-zinc-text">{merchant.email || '—'}</p>
+              <p className="text-sm font-bold text-zinc-text break-all">{merchant.email?.trim() || '—'}</p>
             </div>
           </div>
 
@@ -179,6 +212,7 @@ export function MerchantDetailPage() {
               <p className="text-[11px] text-zinc-muted uppercase tracking-widest">{t('merchant.detail.status') || 'Status'}</p>
               <StatusBadge
                 status={merchant.status}
+                labelKey={`merchant.filter.${merchant.status}`}
                 variant={merchantStatusVariant(merchant.status)}
                 showDot
                 size="sm"
@@ -200,110 +234,271 @@ export function MerchantDetailPage() {
   );
 }
 
-function ProductsTab({ products, isLoading, t }: { products: any[]; isLoading: boolean; t: (key: string) => string }) {
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-4 animate-pulse">
-            <div className="h-3 bg-[var(--color-obsidian-outer)] rounded w-1/2" />
+function ProductsTab({
+  products,
+  isLoading,
+  t,
+}: {
+  products: MerchantProduct[];
+  isLoading: boolean;
+  t: (key: string) => string;
+}) {
+  const router = useRouter();
+  const { isMobile } = useIsMobile();
+
+  const columns: Column<MerchantProduct>[] = useMemo(
+    () => [
+      {
+        key: 'title',
+        label: t('merchant.detail.product.title') || 'Title',
+        cardTitle: true,
+        className: 'max-w-[min(48vw,28rem)]',
+        render: (product) => (
+          <div className="flex min-w-0 items-start gap-3">
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt=""
+                className="h-10 w-10 shrink-0 rounded-lg border border-white/10 object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10">
+                <Package className="h-4 w-4 text-brand" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <DataTableEntityTitle
+                text={product.title}
+                href={`/listings/${product.id}`}
+                maxLines={3}
+              />
+            </div>
           </div>
-        ))}
-      </div>
-    );
+        ),
+      },
+      {
+        key: 'price',
+        label: t('merchant.detail.product.price') || 'Price',
+        align: 'center',
+        render: (product) => (
+          <span className="text-[13px] font-black tabular-nums text-zinc-text">
+            {Number(product.price).toLocaleString()} IQD
+          </span>
+        ),
+      },
+      {
+        key: 'category',
+        label: t('merchant.detail.product.category') || 'Category',
+        cardSubtitle: true,
+        render: (product) => (
+          <span className="text-[13px] font-bold text-zinc-muted">{product.category || '—'}</span>
+        ),
+      },
+      {
+        key: 'status',
+        label: t('merchant.detail.product.status') || 'Status',
+        cardBadge: true,
+        align: 'center',
+        render: (product) => (
+          <StatusBadge
+            status={product.status}
+            variant="info"
+            showDot
+            size="sm"
+            className="font-bold text-[11px]"
+          />
+        ),
+      },
+      {
+        key: 'isPublished',
+        label: t('merchant.detail.product.publish_status') || 'Publish',
+        align: 'center',
+        render: (product) => (
+          <StatusBadge
+            status={product.isPublished ? 'published' : 'not_published'}
+            labelKey={
+              product.isPublished
+                ? 'listing.filter.publish_status.published'
+                : 'listing.filter.publish_status.not_published'
+            }
+            variant={product.isPublished ? 'success' : 'inactive'}
+            showDot
+            size="sm"
+            className="font-bold text-[11px]"
+          />
+        ),
+      },
+    ],
+    [t],
+  );
+
+  const rowActions: Action<MerchantProduct>[] = useMemo(
+    () => [
+      {
+        label: t('common.view') || 'View',
+        icon: Eye,
+        onClick: (product) => router.push(`/listings/${product.id}`),
+      },
+    ],
+    [router, t],
+  );
+
+  if (isLoading) {
+    return <ListPageSkeleton count={4} columns={4} />;
   }
 
   if (products.length === 0) {
     return (
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-12 text-center">
-        <Inbox className="w-10 h-10 text-zinc-muted mx-auto mb-3" />
-        <p className="text-sm text-zinc-muted font-bold">
-          {t('merchant.detail.no_products') || 'No products yet'}
-        </p>
-      </div>
+      <EmptyState
+        icon={Package}
+        title={t('merchant.detail.no_products') || 'No products yet'}
+        description={t('merchant.detail.tabs.products') || 'Products'}
+      />
     );
   }
 
   return (
-    <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-5 py-3 border-b border-[var(--color-border)] bg-white/[0.01]">
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.product.title') || 'Title'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.product.price') || 'Price'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.product.category') || 'Category'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.product.status') || 'Status'}</span>
-      </div>
-
-      <div className="divide-y divide-[var(--color-border)]">
-        {products.map((product) => (
-          <div key={product.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-2 md:gap-4 px-5 py-3 hover:bg-white/[0.01] transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
-                <Package className="w-4 h-4 text-brand" />
-              </div>
-              <span className="text-sm font-bold text-zinc-text truncate">{product.title}</span>
-            </div>
-            <span className="text-sm text-zinc-text tabular-nums font-bold">{Number(product.price).toLocaleString()} IQD</span>
-            <span className="text-sm text-zinc-muted">{product.category || '—'}</span>
-            <StatusBadge status={product.status} variant="info" showDot size="sm" className="font-bold text-[11px]" />
-          </div>
-        ))}
-      </div>
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
+      <DataTable
+        columns={columns}
+        data={products}
+        keyField="id"
+        rowActions={rowActions}
+        onRowClick={(product) => router.push(`/listings/${product.id}`)}
+        showViewToggle
+        viewMode={isMobile ? 'grid' : 'table'}
+        gridCols={2}
+      />
     </div>
   );
 }
 
-function AuctionsTab({ auctions, isLoading, t }: { auctions: any[]; isLoading: boolean; t: (key: string) => string }) {
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-4 animate-pulse">
-            <div className="h-3 bg-[var(--color-obsidian-outer)] rounded w-1/2" />
+function AuctionsTab({
+  auctions,
+  isLoading,
+  t,
+}: {
+  auctions: MerchantAuction[];
+  isLoading: boolean;
+  t: (key: string) => string;
+}) {
+  const router = useRouter();
+  const { isMobile } = useIsMobile();
+
+  const columns: Column<MerchantAuction>[] = useMemo(
+    () => [
+      {
+        key: 'title',
+        label: t('merchant.detail.auction.title') || 'Title',
+        cardTitle: true,
+        className: 'max-w-[min(48vw,28rem)]',
+        render: (auction) => (
+          <div className="flex min-w-0 items-start gap-3">
+            {auction.imageUrl ? (
+              <img
+                src={auction.imageUrl}
+                alt=""
+                className="h-10 w-10 shrink-0 rounded-lg border border-white/10 object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10">
+                <Gavel className="h-4 w-4 text-brand" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <DataTableEntityTitle
+                text={auction.title}
+                href={`/auctions/${auction.id}`}
+                maxLines={3}
+              />
+            </div>
           </div>
-        ))}
-      </div>
-    );
+        ),
+      },
+      {
+        key: 'startPrice',
+        label: t('merchant.detail.auction.start_price') || 'Start Price',
+        align: 'center',
+        render: (auction) => (
+          <span className="text-[13px] font-black tabular-nums text-zinc-text">
+            {Number(auction.startPrice).toLocaleString()} IQD
+          </span>
+        ),
+      },
+      {
+        key: 'currentPrice',
+        label: t('merchant.detail.auction.current_price') || 'Current Price',
+        align: 'center',
+        render: (auction) => (
+          <span className="text-[13px] font-black tabular-nums text-brand">
+            {Number(auction.currentPrice).toLocaleString()} IQD
+          </span>
+        ),
+      },
+      {
+        key: 'bidCount',
+        label: t('merchant.detail.auction.bids') || 'Bids',
+        align: 'center',
+        render: (auction) => (
+          <span className="text-base font-black tabular-nums text-zinc-text">{auction.bidCount ?? 0}</span>
+        ),
+      },
+      {
+        key: 'status',
+        label: t('merchant.detail.auction.status') || 'Status',
+        cardBadge: true,
+        align: 'center',
+        render: (auction) => (
+          <StatusBadge
+            status={auction.status}
+            variant="info"
+            showDot
+            size="sm"
+            className="font-bold text-[11px]"
+          />
+        ),
+      },
+    ],
+    [t],
+  );
+
+  const rowActions: Action<MerchantAuction>[] = useMemo(
+    () => [
+      {
+        label: t('common.view') || 'View',
+        icon: Eye,
+        onClick: (auction) => router.push(`/auctions/${auction.id}`),
+      },
+    ],
+    [router, t],
+  );
+
+  if (isLoading) {
+    return <ListPageSkeleton count={4} columns={4} />;
   }
 
   if (auctions.length === 0) {
     return (
-      <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-12 text-center">
-        <Inbox className="w-10 h-10 text-zinc-muted mx-auto mb-3" />
-        <p className="text-sm text-zinc-muted font-bold">
-          {t('merchant.detail.no_auctions') || 'No auctions yet'}
-        </p>
-      </div>
+      <EmptyState
+        icon={Gavel}
+        title={t('merchant.detail.no_auctions') || 'No auctions yet'}
+        description={t('merchant.detail.tabs.auctions') || 'Auctions'}
+      />
     );
   }
 
   return (
-    <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_0.7fr_1fr] gap-4 px-5 py-3 border-b border-[var(--color-border)] bg-white/[0.01]">
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.auction.title') || 'Title'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.auction.start_price') || 'Start Price'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.auction.current_price') || 'Current Price'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted text-center">{t('merchant.detail.auction.bids') || 'Bids'}</span>
-        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-muted">{t('merchant.detail.auction.status') || 'Status'}</span>
-      </div>
-
-      <div className="divide-y divide-[var(--color-border)]">
-        {auctions.map((auction) => (
-          <div key={auction.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_0.7fr_1fr] gap-2 md:gap-4 px-5 py-3 hover:bg-white/[0.01] transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
-                <Gavel className="w-4 h-4 text-brand" />
-              </div>
-              <span className="text-sm font-bold text-zinc-text truncate">{auction.title}</span>
-            </div>
-            <span className="text-sm text-zinc-text tabular-nums font-bold">{Number(auction.startPrice).toLocaleString()} IQD</span>
-            <span className="text-sm text-zinc-text tabular-nums font-bold text-[var(--color-brand)]">{Number(auction.currentPrice).toLocaleString()} IQD</span>
-            <span className="text-sm text-zinc-text text-center tabular-nums font-bold">{auction.bidCount ?? 0}</span>
-            <StatusBadge status={auction.status} variant="info" showDot size="sm" className="font-bold text-[11px]" />
-          </div>
-        ))}
-      </div>
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
+      <DataTable
+        columns={columns}
+        data={auctions}
+        keyField="id"
+        rowActions={rowActions}
+        onRowClick={(auction) => router.push(`/auctions/${auction.id}`)}
+        showViewToggle
+        viewMode={isMobile ? 'grid' : 'table'}
+        gridCols={2}
+      />
     </div>
   );
 }

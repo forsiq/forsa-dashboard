@@ -4,6 +4,9 @@
  */
 export * from '@yousef2001/core-ui/components';
 
+export { AmberToggle } from './AmberToggle';
+export type { AmberToggleProps } from './AmberToggle';
+
 export { IqdPriceInput } from './IqdPriceInput';
 export type { IqdDenomination, IqdPriceInputProps } from './IqdPriceInput';
 
