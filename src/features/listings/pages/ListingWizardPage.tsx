@@ -1,135 +1,37 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { getOverlayPortalRoot, useOverlayPortal } from '@core/hooks/useOverlayPortal';
+import React from 'react';
 import { useRouter } from 'next/router';
 import {
   ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Package,
   Image as ImageIcon,
-  Gavel,
-  Users,
-  Rocket,
   AlertCircle,
   X,
-  SendHorizonal,
-  CheckCircle,
-  ScanBarcode,
-  ExternalLink,
   Clock,
+  Package,
 } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
-import { useDashboardRole } from '@core/hooks/useDashboardRole';
-import { useIsMobile } from '@core/hooks/useIsMobile';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberInput } from '@core/components/AmberInput';
-import { AmberImageUpload } from '@core/components/AmberImageUpload';
-import { AmberImageGallery } from '@core/components/AmberImageGallery';
 import { AmberFormSkeleton } from '@core/components/Loading/AmberFormSkeleton';
-import { FormSection } from '@core/components/FormSection';
-import { FormBuilder } from '@core/components/Form/FormBuilder';
-import { IqdSymbol } from '@core/components/IqdSymbol';
-import { IqdPriceInput } from '@core/components/IqdPriceInput';
 import { EmptyState } from '@core/components/EmptyState';
-import { useFormUX } from '@core/hooks/useFormUX';
-import { useIsClient } from '@core/hooks/useIsClient';
-import { useFileUpload } from '@core/hooks/useFileUpload';
-import { usePendingImageFiles } from '@core/hooks/usePendingImageFiles';
-import { useAttachmentUrls } from '@core/hooks/useAttachmentUrls';
-import { useMapApiValidationError } from '@core/hooks/useMapApiValidationError';
-import { useMapApiValidationFieldErrors } from '@core/hooks/useMapApiValidationFieldErrors';
-import { zodIssuesToFieldMap } from '@core/validation/zodIssuesToFieldMap';
-import {
-  parseBidIncrement,
-  parseOptionalListingPrice,
-  parseRequiredListingPrice,
-} from '@core/utils/listingDeployPrices';
-import { CategoryPicker } from '../../../services/categories/components/CategoryPicker';
-import { useQueryClient } from '@tanstack/react-query';
-import type { FormFieldConfig } from '@core/services/types';
-import type { ListingSpec, ListingSource, CreateListingInput, UpdateListingInput, ProductListing } from '../../../types/services/listings.types';
-import {
-  useCreateListing,
-  useUpdateListing,
-  useGetListing,
-  useDeployAsAuction,
-  useDeployAsGroupBuy,
-  useSubmitListingForReview,
-  isListingSubmitIdempotentError,
-  useLookupByBarcode,
-  listingKeys,
-} from '../api/listing-hooks';
+import { resolveListingLoadError } from '../utils/listing-wizard.utils';
+import { useWizardFormFields } from '../utils/listing-wizard.fields';
+import { useListingWizard } from '../hooks/useListingWizard';
 import { ListingSpecsEditor } from '../components/ListingSpecsEditor';
 import { ListingSourcesEditor } from '../components/ListingSourcesEditor';
 import { FlowConceptBanner } from '../components/FlowConceptBanner';
 import { ListingWizardStepIndicator } from '../components/ListingWizardStepIndicator';
-import { FieldHelpHint } from '../components/FieldHelpHint';
-import { useBrands, saveBrandToLocalStorage } from '../hooks/useBrands';
-import { AmberAutocomplete } from '@core/components/AmberAutocomplete';
-import {
-  getWizardLayout,
-  normalizeWizardStepFromQuery,
-  remapWizardStep,
-  DESKTOP_WIZARD_STEP,
-  MOBILE_WIZARD_STEP,
-} from '../utils/listing-wizard.utils';
-import {
-  createWizardBasicStepSchema,
-  createWizardDescriptionStepSchema,
-} from '../validation/listing-wizard.schemas';
-import {
-  createDeployAuctionClientSchema,
-  createDeployGroupBuyClientSchema,
-} from '../validation/deployListingSchemas';
-import { AuctionTemporalSection } from '../../auctions/components/AuctionTemporalSection';
-import { useAuctionDurationCalc } from '../../auctions/hooks/useAuctionDurationCalc';
-import { getDefaultAuctionSchedule } from '../../auctions/utils/defaultAuctionSchedule';
-import {
-  buildUrlToAttachmentIdMap,
-  getListingAttachmentIds,
-  lookupAttachmentIdForPreviewUrl,
-  reorderRetainedAttachmentIds,
-  resolveListingMediaSave,
-} from '../utils/listing-media';
-import { buildListingGalleryImages } from '../utils/listing-gallery';
+import { WizardProductStep } from '../components/WizardProductStep';
+import { WizardChannelStep } from '../components/WizardChannelStep';
+import { WizardAuctionPricingStep } from '../components/WizardAuctionPricingStep';
+import { WizardGroupBuyPricingStep } from '../components/WizardGroupBuyPricingStep';
+import { WizardPublishReview } from '../components/WizardPublishReview';
+import { WizardFooterNav } from '../components/WizardFooterNav';
+import { WizardSuccessCard } from '../components/WizardSuccessCard';
+import { FormSection } from '@core/components/FormSection';
+import { AmberImageUpload } from '@core/components/AmberImageUpload';
+import type { ListingWizardMode, ListingWizardPageProps } from '../types/listingWizard.types';
 
-export type ListingWizardMode = 'create' | 'edit' | 'publish-only';
-
-export interface ListingWizardPageProps {
-  mode?: ListingWizardMode;
-  /** Last step number (e.g. 5 for catalog-only edit). */
-  maxStep?: number;
-}
-
-type DeployChannel = 'auction' | 'group_buy' | null;
-
-function filterSpecs(specs: ListingSpec[]): ListingSpec[] {
-  return specs.filter(
-    (s) => (s.label?.trim() ?? '') !== '' || (s.value?.trim() ?? '') !== '',
-  );
-}
-
-function filterSources(sources: ListingSource[]): ListingSource[] {
-  return sources.filter(
-    (s) => (s.label?.trim() ?? '') !== '' || (s.url?.trim() ?? '') !== '',
-  );
-}
-
-function resolveListingLoadError(
-  error: unknown,
-  t: (key: string) => string,
-): string {
-  const ax = error as { response?: { status?: number }; status?: number; code?: string };
-  const status = ax?.response?.status ?? ax?.status;
-  if (status === 404) return t('listing.detail.not_found');
-  if (status === 403) return t('listing.wizard.load_error_forbidden');
-  if (ax?.code === 'ERR_NETWORK' || (typeof navigator !== 'undefined' && !navigator.onLine)) {
-    return t('listing.wizard.load_error_network');
-  }
-  return t('listing.wizard.load_error');
-}
+export type { ListingWizardMode, ListingWizardPageProps };
 
 function WizardLoadingShell({
   t,
@@ -152,923 +54,84 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
   maxStep: maxStepProp,
 }) => {
   const { t, dir } = useLanguage();
-  const router = useRouter();
-  const isClient = useIsClient();
-  const mapApiError = useMapApiValidationError();
-  const mapApiFieldErrors = useMapApiValidationFieldErrors();
-  const queryClient = useQueryClient();
   const isRTL = dir === 'rtl';
 
-  const routeId = router.query.id ? Number(router.query.id) : undefined;
-  const queryStep = router.query.step ? Number(router.query.step) : undefined;
-  const queryType = router.query.type as string | undefined;
-
-  const wizardMode: ListingWizardMode =
-    modeProp ??
-    (router.pathname.includes('/publish')
-      ? 'publish-only'
-      : routeId
-        ? 'edit'
-        : 'create');
-
-  const isPublishFlow = wizardMode === 'publish-only';
-
-  const { isMerchant, isTrustedMerchant, isAdmin } = useDashboardRole();
-  /** Merchant catalog wizard is 2 steps; publish deploy flow needs channel + pricing steps. */
-  const useMerchantWizardLayout = isMerchant && !isPublishFlow;
-
-  const { isMobile } = useIsMobile();
-  const wizardLayout = useMemo(
-    () => getWizardLayout(isMobile, { merchant: useMerchantWizardLayout }),
-    [isMobile, useMerchantWizardLayout],
-  );
-  const step = wizardLayout.step;
-  const fullLayoutStep = useMemo(
-    () => (isMobile ? MOBILE_WIZARD_STEP : DESKTOP_WIZARD_STEP),
-    [isMobile],
-  );
-  const prevIsMobileRef = useRef<boolean | null>(null);
-
-  const maxStep = useMerchantWizardLayout
-    ? wizardLayout.totalSteps
-    : maxStepProp ?? (wizardMode === 'edit' ? step.MEDIA : wizardLayout.totalSteps);
-
-  const initialStep = useMemo(() => {
-    if (queryStep) {
-      const normalized = normalizeWizardStepFromQuery(queryStep, maxStep, isMobile, {
-        merchant: useMerchantWizardLayout,
-      });
-      if (normalized >= 1 && normalized <= maxStep) return normalized;
-    }
-    if (wizardMode === 'publish-only') return fullLayoutStep.CHANNEL;
-    return step.PRODUCT;
-  }, [queryStep, wizardMode, maxStep, isMobile, useMerchantWizardLayout, fullLayoutStep.CHANNEL, step.PRODUCT]);
-
-  const [currentStep, setCurrentStep] = useState(initialStep);
-  const [listingId, setListingId] = useState<number | undefined>(routeId);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [showMoreDetails, setShowMoreDetails] = useState(false);
-  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
-  const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
-
-  const [catalog, setCatalog] = useState({
-    title: '',
-    description: '',
-    categoryId: undefined as number | undefined,
-    brand: '',
-    model: '',
-    condition: '',
-    authenticity: '',
-    sku: '',
-    barcode: '',
-    specs: [] as ListingSpec[],
-    sources: [] as ListingSource[],
-  });
-
-  const [deployChannel, setDeployChannel] = useState<DeployChannel>(() => {
-    if (queryType === 'group-buy') return 'group_buy';
-    if (queryType === 'auction') return 'auction';
-    return null;
-  });
-
-  const [auctionPricing, setAuctionPricing] = useState(() => {
-    const schedule = getDefaultAuctionSchedule();
-    return {
-      startPrice: 0,
-      originalPrice: '',
-      bidIncrement: 5000,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      durationDays: schedule.durationDays,
-    };
-  });
-
-  const {
-    durationDays: auctionDurationDays,
-    setDurationDays: setAuctionDurationDays,
-    useDurationMode: auctionUseDurationMode,
-    setUseDurationMode: setAuctionUseDurationMode,
-    computedEndTime: auctionComputedEndTime,
-  } = useAuctionDurationCalc(auctionPricing.startTime);
-
-  const [groupBuyPricing, setGroupBuyPricing] = useState(() => {
-    const schedule = getDefaultAuctionSchedule();
-    return {
-      originalPrice: 0,
-      dealPrice: 0,
-      minParticipants: 2,
-      maxParticipants: 100,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      durationDays: schedule.durationDays,
-    };
-  });
-
-  const {
-    durationDays: groupBuyDurationDays,
-    setDurationDays: setGroupBuyDurationDays,
-    useDurationMode: groupBuyUseDurationMode,
-    setUseDurationMode: setGroupBuyUseDurationMode,
-    computedEndTime: groupBuyComputedEndTime,
-  } = useAuctionDurationCalc(groupBuyPricing.startTime);
-
-  const imageUpload = usePendingImageFiles();
-  const { upload, isUploading, progress: uploadProgress, error: uploadError } =
-    useFileUpload();
-  const [retainedAttachmentIds, setRetainedAttachmentIds] = useState<number[]>([]);
-  const urlToAttachmentIdRef = useRef<Map<string, number>>(new Map());
-  const listingMediaSyncedIdRef = useRef<number | null>(null);
-
-  const {
-    data: existingListing,
-    isLoading: listingLoading,
-    isError: listingLoadError,
-    error: listingFetchError,
-    refetch: refetchListing,
-  } = useGetListing(listingId!, !!listingId && wizardMode !== 'create');
-  const createMutation = useCreateListing();
-  const updateMutation = useUpdateListing();
-  const deployAuctionMutation = useDeployAsAuction();
-  const deployGroupBuyMutation = useDeployAsGroupBuy();
-  const submitForReviewMutation = useSubmitListingForReview();
-
-  const lookupByBarcodeMutation = useLookupByBarcode();
-  const { data: brands = [] } = useBrands();
-  const [barcodeFoundListing, setBarcodeFoundListing] = useState<ProductListing | null>(null);
-  const [showBarcodeDialog, setShowBarcodeDialog] = useState(false);
-  const closeBarcodeDialog = useCallback(() => {
-    setShowBarcodeDialog(false);
-    setBarcodeFoundListing(null);
-  }, []);
-  const barcodeDialogOpen = showBarcodeDialog && !!barcodeFoundListing;
-  const { shouldRender: shouldRenderBarcodeDialog } = useOverlayPortal(
-    barcodeDialogOpen,
-    closeBarcodeDialog,
-  );
-
-  const listingAttachmentIds = useMemo(
-    () => (existingListing ? getListingAttachmentIds(existingListing) : []),
-    [existingListing],
-  );
-  const { data: listingAttachmentUrlMap, isPending: listingAttachmentsLoading } =
-    useAttachmentUrls(listingAttachmentIds.length > 0 ? listingAttachmentIds : []);
-
-  const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
-  const [showImportedBanner, setShowImportedBanner] = useState(false);
-
-  const importedFromAmazon = router.query.imported === '1';
-
-  const invalidListingId =
-    wizardMode === 'edit' &&
-    router.isReady &&
-    router.query.id != null &&
-    (routeId == null || !Number.isFinite(routeId) || routeId <= 0);
-
-  const stepOutOfRange = useMemo(() => {
-    if (queryStep == null || Number.isNaN(queryStep)) return false;
-    return queryStep < 1 || queryStep > maxStep;
-  }, [queryStep, maxStep]);
-
-  const importedBanner = (importedFromAmazon || showImportedBanner) ? (
-    <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl flex items-start gap-3">
-      <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
-      <p className="text-sm font-bold text-zinc-text flex-1">
-        {importedFromAmazon
-          ? t('amazon.import_redirecting')
-          : t('listing.wizard.imported_banner')}
-      </p>
-    </div>
-  ) : null;
-
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
-    if (listingLoadError && listingFetchError) {
-      console.warn('[ListingWizardPage] listing fetch failed', {
-        listingId,
-        wizardMode,
-        error: listingFetchError,
-      });
-    }
-  }, [listingLoadError, listingFetchError, listingId, wizardMode]);
-
-  useEffect(() => {
-    if (!router.isReady || wizardMode !== 'edit') return;
-    if (router.query.imported === '1') {
-      setShowImportedBanner(true);
-      const { imported: _removed, ...rest } = router.query;
-      router.replace(
-        { pathname: router.pathname, query: rest },
-        undefined,
-        { shallow: true },
-      );
-    }
-  }, [router.isReady, router.query.imported, wizardMode, router.pathname, router]);
-
-  useEffect(() => {
-    if (stepOutOfRange && process.env.NODE_ENV === 'development') {
-      console.warn('[ListingWizardPage] wizard step out of range', {
-        queryStep,
-        maxStep,
-        currentStep,
-      });
-    }
-  }, [stepOutOfRange, queryStep, maxStep, currentStep]);
-
-  useEffect(() => {
-    setCurrentStep(initialStep);
-  }, [initialStep]);
-
-  useEffect(() => {
-    if (prevIsMobileRef.current === null) {
-      prevIsMobileRef.current = isMobile;
-      return;
-    }
-    if (prevIsMobileRef.current === isMobile) return;
-    setCurrentStep((prev) => {
-      const remapped = remapWizardStep(prev, prevIsMobileRef.current!, isMobile, {
-        merchant: useMerchantWizardLayout,
-      });
-      return Math.max(step.PRODUCT, Math.min(maxStep, remapped));
-    });
-    prevIsMobileRef.current = isMobile;
-  }, [isMobile, maxStep, step.PRODUCT, useMerchantWizardLayout]);
-
-  useEffect(() => {
-    if (!router.isReady || !isMerchant || wizardMode !== 'create') return;
-    const overStep = queryStep != null && queryStep > maxStep;
-    const hasDeployType = queryType === 'auction' || queryType === 'group-buy';
-    if (!overStep && !hasDeployType) return;
-    router.replace(
-      { pathname: '/listings/new', query: { step: String(Math.min(queryStep ?? maxStep, maxStep)) } },
-      undefined,
-      { shallow: true },
-    );
-  }, [router.isReady, isMerchant, wizardMode, queryStep, queryType, maxStep, router]);
-
-  useEffect(() => {
-    if (existingListing) {
-      setCatalog({
-        title: existingListing.title || '',
-        description: existingListing.description || '',
-        categoryId: existingListing.categoryId,
-        brand: existingListing.brand || '',
-        model: existingListing.model || '',
-        condition: existingListing.condition || '',
-        authenticity: existingListing.authenticity || '',
-        sku: existingListing.sku || '',
-        barcode: (existingListing as any).barcode || '',
-        specs: existingListing.specs || [],
-        sources: existingListing.sources || [],
-      });
-      const hasAdvanced =
-        !!existingListing.brand ||
-        !!existingListing.model ||
-        !!existingListing.condition ||
-        !!existingListing.authenticity ||
-        !!existingListing.sku;
-      if (hasAdvanced && isMobile) setShowMoreDetails(true);
-      if (
-        isMobile &&
-        ((existingListing.specs?.length ?? 0) > 0 || (existingListing.sources?.length ?? 0) > 0)
-      ) {
-        setShowOptionalDetails(true);
-      }
-    }
-  }, [existingListing, isMobile]);
-
-  useEffect(() => {
-    if (!existingListing) return;
-    if (imageUpload.pendingFiles.length > 0) return;
-
-    const ids = getListingAttachmentIds(existingListing);
-    const direct = buildListingGalleryImages(existingListing, listingAttachmentUrlMap);
-    if (ids.length > 0 && listingAttachmentsLoading && direct.length === 0) return;
-
-    const previewUrls = direct.length > 0
-      ? direct
-      : imageUpload.previewUrls.length > 0
-        ? imageUpload.previewUrls
-        : [];
-
-    if (previewUrls.length === 0) {
-      if (ids.length > 0 && listingAttachmentsLoading) return;
-      if (listingMediaSyncedIdRef.current === existingListing.id) return;
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[ListingWizardPage] no preview URLs resolved', {
-          listingId: existingListing.id,
-          direct,
-          attachmentIds: ids,
-          batchResolved: listingAttachmentUrlMap
-            ? Object.fromEntries(listingAttachmentUrlMap)
-            : undefined,
-          raw: {
-            imageUrl: existingListing.imageUrl,
-            images: existingListing.images,
-            attachmentIds: existingListing.attachmentIds,
-          },
-        });
-      }
-      return;
-    }
-
-    if (
-      listingMediaSyncedIdRef.current === existingListing.id &&
-      imageUpload.previewUrls.length === previewUrls.length &&
-      imageUpload.previewUrls.every((url, i) => url === previewUrls[i])
-    ) {
-      return;
-    }
-
-    imageUpload.resetFromServer(previewUrls);
-    const urlMap = buildUrlToAttachmentIdMap(ids, listingAttachmentUrlMap, previewUrls);
-    urlToAttachmentIdRef.current = urlMap;
-    const alignedIds: number[] = [];
-    for (let i = 0; i < previewUrls.length; i++) {
-      const mapped = lookupAttachmentIdForPreviewUrl(previewUrls[i], urlMap);
-      const fallback = ids[i];
-      const id = mapped ?? fallback;
-      if (id && id > 0) alignedIds.push(id);
-    }
-    setRetainedAttachmentIds(alignedIds.length > 0 ? alignedIds : ids);
-    listingMediaSyncedIdRef.current = existingListing.id;
-  }, [
-    existingListing,
-    listingAttachmentUrlMap,
-    listingAttachmentsLoading,
-    imageUpload.pendingFiles.length,
-    imageUpload.previewUrls,
-    imageUpload.resetFromServer,
-  ]);
-
-  const syncStepUrl = useCallback(
-    (step: number) => {
-      if (!router.isReady) return;
-      const base =
-        wizardMode === 'publish-only' && listingId
-          ? `/listings/${listingId}/publish`
-          : wizardMode === 'edit' && listingId
-            ? `/listings/${listingId}/edit`
-            : '/listings/new';
-      const query: Record<string, string> = { step: String(step) };
-      if (!useMerchantWizardLayout) {
-        if (deployChannel === 'auction') query.type = 'auction';
-        if (deployChannel === 'group_buy') query.type = 'group-buy';
-      }
-      router.replace({ pathname: base, query }, undefined, { shallow: true });
-    },
-    [router, wizardMode, listingId, deployChannel, useMerchantWizardLayout],
-  );
-
-  const goToStep = (step: number) => {
-    const clamped = Math.max(1, Math.min(maxStep, step));
-    setCurrentStep(clamped);
-    syncStepUrl(clamped);
-  };
-
-  const buildCatalogPayload = (): CreateListingInput => ({
-    title: (catalog.title ?? '').trim(),
-    description: catalog.description,
-    categoryId: catalog.categoryId,
-    brand: catalog.brand || undefined,
-    model: catalog.model || undefined,
-    condition: catalog.condition || undefined,
-    authenticity: catalog.authenticity || undefined,
-    sku: catalog.sku || undefined,
-    barcode: catalog.barcode || undefined,
-    specs: filterSpecs(catalog.specs),
-    sources: filterSources(catalog.sources),
-  });
-
-  const saveCatalog = async (): Promise<number> => {
-    const payload = buildCatalogPayload();
-    if (listingId) {
-      const updated = await updateMutation.mutateAsync({ id: listingId, data: payload });
-      if (updated) queryClient.setQueryData(listingKeys.detail(listingId), updated);
-      return listingId;
-    }
-    const created = await createMutation.mutateAsync(payload);
-    setListingId(created.id);
-    if (created?.id) queryClient.setQueryData(listingKeys.detail(created.id), created);
-    return created.id;
-  };
-
-  /** Save catalog (create/update listing) and upload gallery media. Used before finish/submit on the media step. */
-  const persistCatalogAndMedia = async (): Promise<number> => {
-    let id = listingId;
-    if (isMerchant || isMobile) {
-      id = await saveCatalog();
-      setListingId(id);
-    }
-    if (!id) {
-      throw new Error(t('common.error_occurred') || 'Error');
-    }
-    await saveMedia(id);
-    return id;
-  };
-
-  const saveMedia = async (id: number) => {
-    const { previewUrls, pendingFiles } = imageUpload;
-    if (previewUrls.length === 0) return;
-
-    const { attachmentIds, externalUrlsForServerTransfer, hasPendingUploads } =
-      await resolveListingMediaSave({
-        previewUrls,
-        pendingFiles,
-        urlToAttachmentId: urlToAttachmentIdRef.current,
-        uploadFile: (file) => upload(file),
-        retainedAttachmentIds,
-      });
-
-    const originalIds = existingListing ? getListingAttachmentIds(existingListing) : [];
-    const orderChanged =
-      retainedAttachmentIds.length > 0 &&
-      JSON.stringify(retainedAttachmentIds) !== JSON.stringify(originalIds);
-
-    const idsToSave =
-      attachmentIds.length > 0
-        ? attachmentIds
-        : orderChanged
-          ? retainedAttachmentIds
-          : [];
-
-    const persistableUrls = previewUrls.filter((url) => !url.startsWith('blob:'));
-
-    if (
-      idsToSave.length === 0 &&
-      externalUrlsForServerTransfer.length === 0 &&
-      persistableUrls.length === 0
-    ) {
-      if (pendingFiles.length > 0) {
-        throw new Error(
-          uploadError || t('common.upload_failed') || 'Image upload failed. Please try again.',
-        );
-      }
-      return;
-    }
-
-    const data: UpdateListingInput = {};
-    if (idsToSave.length > 0) {
-      data.mainAttachmentId = idsToSave[0];
-      data.attachmentIds = idsToSave;
-    }
-    if (
-      externalUrlsForServerTransfer.length > 0 ||
-      (idsToSave.length === 0 && persistableUrls.length > 0)
-    ) {
-      data.images = persistableUrls;
-      if (!data.mainAttachmentId) {
-        data.imageUrl = persistableUrls[0];
-      }
-    }
-
-    const updated = await updateMutation.mutateAsync({ id, data });
-    if (updated) queryClient.setQueryData(listingKeys.detail(id), updated);
-    const savedIds = getListingAttachmentIds(updated);
-    if (savedIds.length > 0) {
-      setRetainedAttachmentIds(savedIds);
-      const gallery = buildListingGalleryImages(updated, listingAttachmentUrlMap);
-      urlToAttachmentIdRef.current = buildUrlToAttachmentIdMap(
-        savedIds,
-        listingAttachmentUrlMap,
-        gallery.length > 0 ? gallery : previewUrls,
-      );
-    }
-    if (hasPendingUploads) {
-      const gallery = buildListingGalleryImages(updated, listingAttachmentUrlMap);
-      imageUpload.resetFromServer(gallery.length > 0 ? gallery : previewUrls);
-    }
-  };
-
-  const handleImageReorder = useCallback(
-    (newOrder: string[]) => {
-      const existingCount =
-        imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
-      const reorderedIds = reorderRetainedAttachmentIds(
-        newOrder.slice(0, existingCount),
-        imageUpload.previewUrls,
-        retainedAttachmentIds,
-        urlToAttachmentIdRef.current,
-      );
-      if (reorderedIds.length > 0) {
-        setRetainedAttachmentIds(reorderedIds);
-      }
-      imageUpload.reorder(newOrder);
-    },
-    [imageUpload, retainedAttachmentIds],
-  );
-
-  const isBusy =
-    createMutation.isPending ||
-    updateMutation.isPending ||
-    isUploading ||
-    deployAuctionMutation.isPending ||
-    deployGroupBuyMutation.isPending ||
-    submitForReviewMutation.isPending;
-
-  const approvalStatus = existingListing?.approvalStatus ?? 'draft';
-  const isListingApproved = approvalStatus === 'approved';
-
-  const goToPublishFlow = useCallback(
-    (id: number) => {
-      setShowSubmitSuccess(false);
-      router.push(`/listings/${id}/publish`);
-    },
-    [router],
-  );
-
-  const submitListing = (mode: 'review' | 'direct', id: number) => {
-    submitForReviewMutation.mutate(
-      { id, mode },
-      {
-        onSuccess: () => {
-          setShowSubmitSuccess(false);
-          router.push(mode === 'direct' ? `/listings/${id}/publish` : `/listings/${id}`);
-        },
-        onError: (error: unknown) => {
-          const detail = mapApiError(error) || (error instanceof Error ? error.message : '');
-          if (isListingSubmitIdempotentError(detail, mode)) {
-            setShowSubmitSuccess(false);
-            router.push(mode === 'direct' ? `/listings/${id}/publish` : `/listings/${id}`);
-          }
-        },
-      },
-    );
-  };
-
-  const handleSaveAndExit = async () => {
-    setSubmitError(null);
-    setFieldErrors({});
-    try {
-      const id = await persistCatalogAndMedia();
-      router.push(`/listings/${id}`);
-    } catch (err) {
-      setSubmitError(mapApiError(err));
-    }
-  };
-
-  const handleMediaStepAction = async (action: (id: number) => void | Promise<void>) => {
-    setSubmitError(null);
-    setFieldErrors({});
-    try {
-      const id = await persistCatalogAndMedia();
-      await action(id);
-    } catch (err) {
-      setSubmitError(mapApiError(err));
-    }
-  };
-
-  useFormUX({
-    values: catalog,
-    initialValues: catalog,
-    isSubmitting: isBusy,
-    storageKey: listingId ? `draft-listing-wizard-${listingId}` : 'draft-listing-wizard-new',
-  });
-
-  const handleNext = async () => {
-    setSubmitError(null);
-    setFieldErrors({});
-
-    const validateProductStep = () => {
-      const parsed = createWizardBasicStepSchema(t).safeParse({
-        title: catalog.title,
-        categoryId: catalog.categoryId,
-        brand: catalog.brand,
-        model: catalog.model,
-        condition: catalog.condition,
-        authenticity: catalog.authenticity,
-        sku: catalog.sku,
-      });
-      if (!parsed.success) {
-        const mapped = zodIssuesToFieldMap(parsed.error);
-        setFieldErrors(mapped);
-        if (
-          isMobile &&
-          Object.keys(mapped).some((f) =>
-            ['brand', 'model', 'condition', 'authenticity', 'sku'].includes(f),
-          )
-        ) {
-          setShowMoreDetails(true);
-        }
-        return false;
-      }
-      createWizardDescriptionStepSchema().safeParse({ description: catalog.description });
-      return true;
-    };
-
-    try {
-      if (currentStep === step.PRODUCT) {
-        if (!validateProductStep()) return;
-        if (isMerchant || isMobile) {
-          const id = await saveCatalog();
-          setListingId(id);
-          goToStep(step.MEDIA);
-        } else {
-          goToStep(DESKTOP_WIZARD_STEP.DETAILS);
-        }
-        return;
-      }
-
-      if (!isMerchant && !isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS) {
-        const id = await saveCatalog();
-        setListingId(id);
-        goToStep(step.MEDIA);
-        return;
-      }
-
-      if (currentStep === step.MEDIA) {
-        await persistCatalogAndMedia();
-        if (isMerchant || maxStep <= step.MEDIA) {
-          setShowSubmitSuccess(true);
-          return;
-        }
-        goToStep(fullLayoutStep.CHANNEL);
-        return;
-      }
-
-      if ((!isMerchant || isPublishFlow) && currentStep === fullLayoutStep.CHANNEL) {
-        if (!deployChannel) {
-          setSubmitError(t('listing.wizard.channel_required') || 'Select a sales channel');
-          return;
-        }
-        goToStep(fullLayoutStep.PUBLISH);
-        return;
-      }
-    } catch (err: unknown) {
-      setSubmitError(mapApiError(err) || t('common.error_occurred') || 'Error');
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!listingId || !deployChannel) return;
-
-    setSubmitError(null);
-    setFieldErrors({});
-
-    const deployAuctionSchema = createDeployAuctionClientSchema(t);
-    const deployGroupBuySchema = createDeployGroupBuyClientSchema(t);
-    if (deployChannel === 'auction') {
-      const finalEndTime = auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime;
-      const parsed = deployAuctionSchema.safeParse({
-        ...auctionPricing,
-        endTime: finalEndTime,
-      });
-      if (!parsed.success) {
-        const mapped = zodIssuesToFieldMap(parsed.error);
-        setFieldErrors(mapped);
-        if (Object.keys(mapped).some((f) => ['originalPrice', 'bidIncrement'].includes(f))) {
-          if (isMobile) setShowAdvancedPricing(true);
-        }
-        return;
-      }
-    } else {
-      const finalGroupBuyEndTime = groupBuyUseDurationMode
-        ? groupBuyComputedEndTime
-        : groupBuyPricing.endTime;
-      const parsed = deployGroupBuySchema.safeParse({
-        ...groupBuyPricing,
-        endTime: finalGroupBuyEndTime,
-      });
-      if (!parsed.success) {
-        setFieldErrors(zodIssuesToFieldMap(parsed.error));
-        return;
-      }
-    }
-
-    try {
-      if (deployChannel === 'auction') {
-        const finalEndTime = auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime;
-        const originalPrice = parseOptionalListingPrice(auctionPricing.originalPrice);
-        const auction = await deployAuctionMutation.mutateAsync({
-          id: listingId,
-          data: {
-            startPrice: parseRequiredListingPrice(auctionPricing.startPrice),
-            ...(originalPrice !== undefined ? { originalPrice } : {}),
-            bidIncrement: parseBidIncrement(auctionPricing.bidIncrement, 5000),
-            startTime: new Date(auctionPricing.startTime).toISOString(),
-            endTime: new Date(finalEndTime).toISOString(),
-          },
-        });
-        const auctionId = auction?.id;
-        if (listingId) queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) });
-        router.push(
-          auctionId ? `/auctions/${auctionId}` : `/listings/${listingId}`,
-        );
-      } else {
-        const finalGroupBuyEndTime = groupBuyUseDurationMode
-          ? groupBuyComputedEndTime
-          : groupBuyPricing.endTime;
-        const deal = await deployGroupBuyMutation.mutateAsync({
-          id: listingId,
-          data: {
-            originalPrice: Number(groupBuyPricing.originalPrice),
-            dealPrice: Number(groupBuyPricing.dealPrice),
-            minParticipants: Number(groupBuyPricing.minParticipants),
-            maxParticipants: Number(groupBuyPricing.maxParticipants),
-            startTime: new Date(groupBuyPricing.startTime).toISOString(),
-            endTime: new Date(finalGroupBuyEndTime).toISOString(),
-            autoCreateOrder: true,
-          },
-        });
-        const dealId = deal?.id;
-        if (listingId) queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) });
-        router.push(
-          dealId ? `/group-buying/${dealId}` : `/listings/${listingId}`,
-        );
-      }
-    } catch (err: unknown) {
-      const apiFields = mapApiFieldErrors(err);
-      const { _form, ...inlineFields } = apiFields;
-      if (Object.keys(inlineFields).length) setFieldErrors(inlineFields);
-      setSubmitError(
-        _form ||
-          mapApiError(err, { firstOnly: true }) ||
-          t('listing.deploy.error_reason_unknown'),
-      );
-    }
-  };
-
-  const essentialFields: FormFieldConfig[] = useMemo(
-    () => [
-      {
-        name: 'title',
-        label: t('listing.form.title') || 'Title',
-        type: 'text',
-        placeholder: t('listing.form.title_placeholder'),
-        required: true,
-      },
-    ],
-    [t],
-  );
-
-  const advancedFields: FormFieldConfig[] = useMemo(
-    () => [
-      {
-        name: 'model',
-        label: t('listing.form.model') || 'Model',
-        type: 'text',
-        placeholder: t('listing.form.model_placeholder'),
-      },
-      {
-        name: 'condition',
-        label: t('listing.form.condition') || 'Condition',
-        type: 'select',
-        placeholder: t('common.select'),
-        options: [
-          { label: t('common.condition_new') || 'New', value: 'new' },
-          { label: t('common.condition_used') || 'Used', value: 'used' },
-          { label: t('common.condition_open_box') || 'Open Box', value: 'open_box' },
-          { label: t('common.condition_refurbished') || 'Refurbished', value: 'refurbished' },
-        ],
-      },
-      {
-        name: 'authenticity',
-        label: t('listing.form.authenticity') || 'Authenticity',
-        type: 'select',
-        placeholder: t('common.select'),
-        options: [
-          { label: t('common.authenticity_original') || 'Original', value: 'original' },
-          { label: t('common.authenticity_copy') || 'Copy', value: 'copy' },
-          { label: t('common.authenticity_high_copy') || 'High Copy', value: 'high_copy' },
-        ],
-      },
-      {
-        name: 'sku',
-        label: t('listing.form.sku') || 'SKU',
-        type: 'text',
-        placeholder: t('listing.form.sku_placeholder'),
-      },
-    ],
-    [t],
-  );
-
-  const basicFields: FormFieldConfig[] = useMemo(
-    () => [...essentialFields, ...advancedFields],
-    [essentialFields, advancedFields],
-  );
-
-  const catalogFormValues = useMemo(
-    () => ({
-      title: catalog.title,
-      categoryId: catalog.categoryId ? String(catalog.categoryId) : '',
-      brand: catalog.brand,
-      model: catalog.model,
-      condition: catalog.condition,
-      authenticity: catalog.authenticity,
-      sku: catalog.sku,
-      barcode: catalog.barcode,
-    }),
-    [catalog],
-  );
-
-  const handleCatalogChange = useCallback((data: Record<string, unknown>, field: string, value: unknown) => {
-    setCatalog((prev) => ({
-      ...prev,
-      [field]: field === 'categoryId' ? (value ? Number(value) : undefined) : value,
-    }));
-    setFieldErrors((prev) => {
-      if (!prev[field]) return prev;
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }, []);
-
-  const effectiveStepLabelKeys = useMemo(() => {
-    if (!isPublishFlow) return wizardLayout.stepLabelKeys;
-    return wizardLayout.stepLabelKeys.map((key, index) => {
-      const channelIdx = fullLayoutStep.CHANNEL - 1;
-      const publishIdx = fullLayoutStep.PUBLISH - 1;
-      if (index === channelIdx) return 'listing.wizard.step.channel_publish';
-      if (index === publishIdx) return 'listing.wizard.step.pricing_publish';
-      return key;
-    });
-  }, [isPublishFlow, wizardLayout.stepLabelKeys, fullLayoutStep.CHANNEL, fullLayoutStep.PUBLISH]);
-
-  const wizardGalleryImages = useMemo(() => {
-    if (imageUpload.previewUrls.length > 0) return imageUpload.previewUrls;
-    if (!existingListing) return [] as string[];
-    return buildListingGalleryImages(existingListing, listingAttachmentUrlMap);
-  }, [imageUpload.previewUrls, existingListing, listingAttachmentUrlMap]);
-
-  if (!isClient || !router.isReady) {
-    return <WizardLoadingShell t={t} banner={importedBanner} />;
+  const w = useListingWizard({ mode: modeProp, maxStepProp, t });
+  const { essentialFields, advancedFields, basicFields } = useWizardFormFields(t);
+
+  if (!w.isClient || !w.router.isReady) {
+    return <WizardLoadingShell t={t} banner={w.importedBanner} />;
   }
 
-  if (invalidListingId) {
+  if (w.invalidListingId) {
     return (
       <EmptyState
         icon={Package}
         title={t('listing.wizard.invalid_id')}
         actionLabel={t('listing.form.cancel') || 'Back'}
-        onAction={() => router.push('/listings')}
+        onAction={() => w.router.push('/listings')}
       />
     );
   }
 
-  if (listingId && listingLoading && wizardMode !== 'create') {
-    return <WizardLoadingShell t={t} banner={importedBanner} />;
+  if (w.listingId && w.listingLoading && w.wizardMode !== 'create') {
+    return <WizardLoadingShell t={t} banner={w.importedBanner} />;
   }
 
-  if (
-    listingLoadError &&
-    listingId &&
-    wizardMode !== 'create'
-  ) {
+  if (w.listingLoadError && w.listingId && w.wizardMode !== 'create') {
     return (
       <div className="space-y-4 p-6 max-w-[1200px] mx-auto">
-        {importedBanner}
+        {w.importedBanner}
         <EmptyState
           icon={AlertCircle}
-          title={resolveListingLoadError(listingFetchError, t)}
+          title={resolveListingLoadError(w.listingFetchError, t)}
           actionLabel={t('common.retry')}
-          onAction={() => void refetchListing()}
+          onAction={() => void w.refetchListing()}
         />
       </div>
     );
   }
 
   if (
-    (wizardMode === 'publish-only' || wizardMode === 'edit') &&
-    listingId &&
-    !listingLoading &&
-    !existingListing
+    (w.wizardMode === 'publish-only' || w.wizardMode === 'edit') &&
+    w.listingId &&
+    !w.listingLoading &&
+    !w.existingListing
   ) {
     return (
       <EmptyState
         icon={Package}
         title={t('listing.detail.not_found') || 'Not Found'}
         actionLabel={t('listing.form.cancel') || 'Back'}
-        onAction={() => router.push('/listings')}
+        onAction={() => w.router.push('/listings')}
       />
     );
   }
 
-  const showPublishSteps = (isAdmin || isPublishFlow) && maxStep > step.MEDIA;
   const pageTitle =
-    wizardMode === 'create'
+    w.wizardMode === 'create'
       ? t('listing.wizard.title_create')
-      : wizardMode === 'publish-only'
+      : w.wizardMode === 'publish-only'
         ? t('listing.wizard.title_publish')
         : t('listing.wizard.title_edit');
 
   return (
     <div className="space-y-4 md:space-y-8 p-3 md:p-6 max-w-[1200px] mx-auto animate-in fade-in duration-700" dir={dir}>
-      {isPublishFlow && (
+      {w.isPublishFlow && (
         <FlowConceptBanner messageKey="listing.flow.concept_publish" />
       )}
 
-      {wizardMode === 'create' && !isPublishFlow && (
+      {w.wizardMode === 'create' && !w.isPublishFlow && (
         <FlowConceptBanner messageKey="listing.flow.concept_catalog" />
       )}
 
-      {showImportedBanner && (
+      {w.showImportedBanner && (
         <div className="bg-brand/10 border border-brand/20 p-4 rounded-xl flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
           <p className="text-sm font-bold text-zinc-text flex-1">{t('listing.wizard.imported_banner')}</p>
           <button
             type="button"
-            onClick={() => setShowImportedBanner(false)}
+            onClick={() => w.setShowImportedBanner(false)}
             className="text-zinc-muted hover:text-zinc-text shrink-0"
             aria-label={t('common.close') || 'Close'}
           >
@@ -1077,24 +140,24 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {stepOutOfRange && (
+      {w.stepOutOfRange && (
         <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-warning shrink-0" />
           <p className="text-sm text-zinc-text font-medium">{t('listing.wizard.invalid_step')}</p>
         </div>
       )}
 
-      {wizardMode === 'edit' && existingListing && (approvalStatus === 'rejected' || approvalStatus === 'changes_requested') && (
+      {w.wizardMode === 'edit' && w.existingListing && (w.approvalStatus === 'rejected' || w.approvalStatus === 'changes_requested') && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <div className="space-y-1 min-w-0">
             <p className="text-sm font-black text-danger uppercase">
-              {approvalStatus === 'rejected'
+              {w.approvalStatus === 'rejected'
                 ? (t('approval.status.rejected') || 'Rejected')
                 : (t('approval.status.changes_requested') || 'Changes Requested')}
             </p>
-            {(existingListing as any).rejectionReason && (
-              <p className="text-sm text-zinc-text font-medium">{(existingListing as any).rejectionReason}</p>
+            {(w.existingListing as any).rejectionReason && (
+              <p className="text-sm text-zinc-text font-medium">{(w.existingListing as any).rejectionReason}</p>
             )}
             <p className="text-[11px] text-zinc-muted font-bold">
               {t('approval.messages.fix_and_resubmit') || 'Fix the issues below and resubmit for review.'}
@@ -1103,7 +166,7 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {wizardMode === 'edit' && existingListing && approvalStatus === 'pending_review' && (
+      {w.wizardMode === 'edit' && w.existingListing && w.approvalStatus === 'pending_review' && (
         <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl flex items-start gap-3">
           <Clock className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div className="space-y-0.5 min-w-0">
@@ -1117,93 +180,28 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {submitError && (
+      {w.submitError && (
         <div className="bg-danger/10 border border-danger/20 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-danger shrink-0" />
-          <p className="text-sm text-danger font-medium whitespace-pre-line">{submitError}</p>
-          <button type="button" onClick={() => setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
+          <p className="text-sm text-danger font-medium whitespace-pre-line">{w.submitError}</p>
+          <button type="button" onClick={() => w.setSubmitError(null)} className="ml-auto text-danger/60 hover:text-danger">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {showSubmitSuccess && listingId && (
-        <div className="bg-success/10 border border-success/20 p-6 rounded-2xl space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-success" />
-            </div>
-            <div>
-              <p className="text-lg font-black text-zinc-text uppercase">{t('listing.wizard.saved') || 'Product Saved'}</p>
-              <p className="text-sm text-zinc-muted">
-                {isTrustedMerchant
-                  ? isListingApproved
-                    ? t('listing.wizard.already_approved_prompt')
-                    : t('listing.wizard.trusted_submit_prompt')
-                  : t('listing.wizard.submit_prompt')}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {isTrustedMerchant ? (
-              <>
-                {isListingApproved ? (
-                  <AmberButton
-                    className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                    disabled={isBusy}
-                    onClick={() => goToPublishFlow(listingId)}
-                  >
-                    <Rocket className="w-4 h-4" />
-                    {t('listing.wizard.continue_to_publish')}
-                  </AmberButton>
-                ) : (
-                  <AmberButton
-                    className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                    disabled={submitForReviewMutation.isPending}
-                    onClick={() => submitListing('direct', listingId)}
-                  >
-                    {submitForReviewMutation.isPending ? (
-                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Rocket className="w-4 h-4" />
-                    )}
-                    {t('approval.actions.direct_publish')}
-                  </AmberButton>
-                )}
-                <AmberButton
-                  variant="outline"
-                  className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
-                  disabled={isBusy}
-                  onClick={() => void handleSaveAndExit()}
-                >
-                  {t('listing.wizard.save_and_exit')}
-                </AmberButton>
-              </>
-            ) : (
-              <AmberButton
-                className="h-11 bg-brand text-black font-black rounded-xl px-6 gap-2 active:scale-95 transition-all"
-                disabled={submitForReviewMutation.isPending}
-                onClick={() => submitListing('review', listingId)}
-              >
-                {submitForReviewMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <SendHorizonal className="w-4 h-4" />
-                )}
-                {t('approval.actions.submit')}
-              </AmberButton>
-            )}
-            {!isTrustedMerchant && (
-              <AmberButton
-                variant="outline"
-                className="h-11 border-border font-bold rounded-xl px-6 active:scale-95 transition-all"
-                onClick={() => router.push(`/listings/${listingId}`)}
-              >
-                {t('listing.form.save') || 'Save Draft'}
-              </AmberButton>
-            )}
-          </div>
-        </div>
+      {w.showSubmitSuccess && w.listingId && (
+        <WizardSuccessCard
+          listingId={w.listingId}
+          isTrustedMerchant={w.isTrustedMerchant}
+          isListingApproved={w.isListingApproved}
+          isBusy={w.isBusy}
+          isSubmitting={w.submitForReviewMutation.isPending}
+          t={t}
+          onSubmit={w.submitListing}
+          onGoToPublishFlow={w.goToPublishFlow}
+          onSaveAndExit={w.handleSaveAndExit}
+        />
       )}
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -1212,8 +210,8 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             variant="secondary"
             className="p-0 w-11 h-11 rounded-xl flex items-center justify-center"
             onClick={() => {
-              if (currentStep > 1) goToStep(currentStep - 1);
-              else router.push(listingId ? `/listings/${listingId}` : '/listings');
+              if (w.currentStep > 1) w.goToStep(w.currentStep - 1);
+              else w.router.push(w.listingId ? `/listings/${w.listingId}` : '/listings');
             }}
           >
             <ChevronLeft className={cn('w-5 h-5', isRTL && 'rotate-180')} />
@@ -1222,285 +220,90 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
             <h1 className="text-xl md:text-3xl font-black text-zinc-text tracking-tighter uppercase leading-none">
               {pageTitle}
             </h1>
-            {existingListing?.title && (
-              <p className="text-sm text-zinc-muted font-bold uppercase mt-1">{existingListing.title}</p>
+            {w.existingListing?.title && (
+              <p className="text-sm text-zinc-muted font-bold uppercase mt-1">{w.existingListing.title}</p>
             )}
           </div>
         </div>
       </div>
 
       <ListingWizardStepIndicator
-        currentStep={currentStep}
-        maxStep={maxStep}
-        minStep={wizardMode === 'publish-only' ? fullLayoutStep.CHANNEL : 1}
-        stepLabelKeys={effectiveStepLabelKeys}
+        currentStep={w.currentStep}
+        maxStep={w.maxStep}
+        minStep={w.wizardMode === 'publish-only' ? w.fullLayoutStep.CHANNEL : 1}
+        stepLabelKeys={w.effectiveStepLabelKeys}
       />
 
-      {currentStep === step.PRODUCT && (
-        <div className="space-y-8">
-          <FormSection icon={<Package className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.product')}>
-            <div className="mb-6 space-y-2">
-              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                {t('listing.form.category') || 'Category'}
-              </label>
-              <CategoryPicker
-                value={catalog.categoryId}
-                onChange={(id) => {
-                  setCatalog((prev) => ({ ...prev, categoryId: id || undefined }));
-                  if (fieldErrors.categoryId) {
-                    setFieldErrors((prev) => {
-                      const next = { ...prev };
-                      delete next.categoryId;
-                      return next;
-                    });
-                  }
-                }}
-              />
-              {fieldErrors.categoryId ? (
-                <p className="text-[13px] text-danger font-medium px-1">{fieldErrors.categoryId}</p>
-              ) : null}
-            </div>
-            <FormBuilder
-              fields={isMobile ? essentialFields : basicFields}
-              initialValues={catalogFormValues}
-              onSubmit={() => {}}
-              showActions={false}
-              layout="vertical"
-              onChange={handleCatalogChange}
-            />
-            {!isMobile && (
-              <AmberAutocomplete
-                label={t('listing.form.brand') || 'Brand'}
-                placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
-                value={catalog.brand}
-                onChange={(val) => {
-                  setCatalog((prev) => ({ ...prev, brand: val }));
-                  saveBrandToLocalStorage(val);
-                  if (fieldErrors.brand) {
-                    setFieldErrors((prev) => {
-                      const next = { ...prev };
-                      delete next.brand;
-                      return next;
-                    });
-                  }
-                }}
-                suggestions={brands}
-                dir={dir}
-              />
-            )}
-            <div className="mt-6 space-y-2">
-              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                {t('listing.form.description')}
-              </label>
-              <textarea
-                className={cn(
-                  'w-full rounded-xl bg-obsidian-panel border border-border p-4 text-sm text-zinc-text font-medium',
-                  isMobile ? 'min-h-[120px]' : 'min-h-[160px]',
-                )}
-                placeholder={t('listing.form.description_placeholder')}
-                value={catalog.description}
-                onChange={(e) => setCatalog((p) => ({ ...p, description: e.target.value }))}
-              />
-            </div>
-
-            {/* Barcode scan / lookup */}
-            <div className="mt-6 space-y-2">
-              <label className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                {t('listing.form.barcode') || 'Barcode'}
-              </label>
-              <div className="flex gap-2">
-                <AmberInput
-                  placeholder={t('listing.form.barcode_placeholder') || 'Scan or enter barcode...'}
-                  value={catalog.barcode}
-                  onChange={(e) => {
-                    setCatalog((p) => ({ ...p, barcode: e.target.value }));
-                    if (fieldErrors.barcode) {
-                      setFieldErrors((prev) => { const n = { ...prev }; delete n.barcode; return n; });
-                    }
-                  }}
-                  error={fieldErrors.barcode}
-                />
-                <AmberButton
-                  variant="outline"
-                  className="h-11 px-4 shrink-0 rounded-xl border-border"
-                  disabled={!catalog.barcode.trim() || lookupByBarcodeMutation.isPending}
-                  onClick={async () => {
-                    const barcode = catalog.barcode.trim();
-                    if (!barcode) return;
-                    try {
-                      const found = await lookupByBarcodeMutation.mutateAsync(barcode);
-                      if (found) {
-                        setBarcodeFoundListing(found);
-                        setShowBarcodeDialog(true);
-                      }
-                    } catch {
-                      // Not found — continue normal flow
-                    }
-                  }}
-                >
-                  {lookupByBarcodeMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-zinc-muted border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ScanBarcode className="w-4 h-4" />
-                  )}
-                </AmberButton>
-              </div>
-              <p className="text-[10px] text-zinc-muted">
-                {t('listing.form.barcode_hint') || 'Enter EAN/UPC barcode to check for existing products'}
-              </p>
-            </div>
-
-            {/* Barcode found dialog */}
-            {shouldRenderBarcodeDialog && barcodeFoundListing && typeof window !== 'undefined' && createPortal(
-              <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
-                <div className="bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 text-amber-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-zinc-text uppercase tracking-widest">
-                        {t('listing.barcode.found_title') || 'Product Already Exists'}
-                      </h3>
-                      <p className="text-[13px] text-zinc-muted font-bold truncate max-w-[280px]">
-                        {barcodeFoundListing.title}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-muted mb-5">
-                    {t('listing.barcode.found_desc') || 'A product with this barcode already exists in the catalog. You can view it or continue creating a new listing.'}
-                  </p>
-                  <div className="flex items-center justify-end gap-3">
-                    <AmberButton
-                      variant="outline"
-                      className="h-10 px-5 font-bold uppercase tracking-wider text-xs"
-                      onClick={closeBarcodeDialog}
-                    >
-                      {t('listing.barcode.continue_create') || 'Continue Creating'}
-                    </AmberButton>
-                    <AmberButton
-                      className="h-10 px-5 font-bold uppercase tracking-wider text-xs bg-brand text-black border-none"
-                      onClick={() => {
-                        closeBarcodeDialog();
-                        if (barcodeFoundListing.id) {
-                          router.push(`/listings/${barcodeFoundListing.id}`);
-                        }
-                      }}
-                    >
-                      <ExternalLink className="w-3 h-3 me-1" />
-                      {t('listing.barcode.view_product') || 'View Product'}
-                    </AmberButton>
-                  </div>
-                </div>
-              </div>,
-              getOverlayPortalRoot()
-            )}
-
-            {isMobile && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setShowMoreDetails((open) => !open)}
-                  className={cn(
-                    'mt-6 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors',
-                    isRTL && 'flex-row-reverse',
-                  )}
-                >
-                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                    {t('listing.wizard.more_details')}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'w-4 h-4 text-zinc-muted transition-transform',
-                      showMoreDetails && 'rotate-180',
-                    )}
-                  />
-                </button>
-
-                {showMoreDetails && (
-                  <div className="mt-4 pt-4 border-t border-white/5">
-                    <AmberAutocomplete
-                      label={t('listing.form.brand') || 'Brand'}
-                      placeholder={t('listing.form.brand_placeholder') || 'Brand name'}
-                      value={catalog.brand}
-                      onChange={(val) => {
-                        setCatalog((prev) => ({ ...prev, brand: val }));
-                        saveBrandToLocalStorage(val);
-                        if (fieldErrors.brand) {
-                          setFieldErrors((prev) => {
-                            const next = { ...prev };
-                            delete next.brand;
-                            return next;
-                          });
-                        }
-                      }}
-                      suggestions={brands}
-                      dir={dir}
-                    />
-                    <FormBuilder
-                      fields={advancedFields}
-                      initialValues={catalogFormValues}
-                      onSubmit={() => {}}
-                      showActions={false}
-                      layout="vertical"
-                      onChange={handleCatalogChange}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </FormSection>
-        </div>
+      {w.currentStep === w.step.PRODUCT && (
+        <WizardProductStep
+          t={t}
+          isRTL={isRTL}
+          isMobile={w.isMobile}
+          catalog={w.catalog}
+          setCatalog={w.setCatalog}
+          fieldErrors={w.fieldErrors}
+          setFieldErrors={w.setFieldErrors}
+          essentialFields={essentialFields}
+          advancedFields={advancedFields}
+          basicFields={basicFields}
+          brands={w.brands}
+          barcodeFoundListing={w.barcodeFoundListing}
+          shouldRenderBarcodeDialog={w.shouldRenderBarcodeDialog}
+          closeBarcodeDialog={w.closeBarcodeDialog}
+          onViewBarcodeProduct={(id) => w.router.push(`/listings/${id}`)}
+          onBarcodeLookup={w.onBarcodeLookup}
+          isBarcodeLookupPending={w.isBarcodeLookupPending}
+        />
       )}
 
-      {!isMerchant && !isMobile && currentStep === DESKTOP_WIZARD_STEP.DETAILS && (
+      {!w.isMerchant && !w.isMobile && w.currentStep === 2 && (
         <div className="space-y-8">
           <ListingSpecsEditor
-            specs={catalog.specs}
-            onChange={(specs) => setCatalog((p) => ({ ...p, specs }))}
+            specs={w.catalog.specs}
+            onChange={(specs) => w.setCatalog((p) => ({ ...p, specs }))}
           />
           <ListingSourcesEditor
-            sources={catalog.sources}
-            onChange={(sources) => setCatalog((p) => ({ ...p, sources }))}
+            sources={w.catalog.sources}
+            onChange={(sources) => w.setCatalog((p) => ({ ...p, sources }))}
           />
         </div>
       )}
 
-      {currentStep === step.MEDIA && (
-        <div className={cn(isMobile && 'space-y-6')}>
+      {w.currentStep === w.step.MEDIA && (
+        <div className={cn(w.isMobile && 'space-y-6')}>
           <FormSection icon={<ImageIcon className="w-5 h-5" />} iconBgColor="info" title={t('listing.wizard.step.media')}>
             <AmberImageUpload
-              value={imageUpload.previewUrls}
+              value={w.imageUpload.previewUrls}
               onChange={(files) => {
-                if (files?.length) imageUpload.appendFiles(files);
+                if (files?.length) w.imageUpload.appendFiles(files);
               }}
               onRemove={(index) => {
                 const existingCount =
-                  imageUpload.previewUrls.length - imageUpload.pendingFiles.length;
+                  w.imageUpload.previewUrls.length - w.imageUpload.pendingFiles.length;
                 if (index < existingCount) {
-                  setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
+                  w.setRetainedAttachmentIds((prev) => prev.filter((_, i) => i !== index));
                 }
-                imageUpload.removeAt(index);
+                w.imageUpload.removeAt(index);
               }}
-              onReorder={handleImageReorder}
+              onReorder={w.handleImageReorder}
               multiple
               sortable
               maxFiles={10}
-              disabled={isUploading}
-              isUploading={isUploading}
-              uploadProgress={uploadProgress}
-              uploadError={uploadError}
+              disabled={w.isUploading}
+              isUploading={w.isUploading}
+              uploadProgress={w.uploadProgress}
+              uploadError={w.uploadError}
             />
             <p className="text-[11px] text-zinc-muted font-bold uppercase tracking-widest text-center mt-4">
               {t('common.image_upload_hint')}
             </p>
           </FormSection>
 
-          {(isMobile || isMerchant) && (
+          {(w.isMobile || w.isMerchant) && (
             <>
               <button
                 type="button"
-                onClick={() => setShowOptionalDetails((open) => !open)}
+                onClick={() => w.setShowOptionalDetails((open) => !open)}
                 className={cn(
                   'w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors',
                   isRTL && 'flex-row-reverse',
@@ -1509,23 +312,17 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
                 <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
                   {t('listing.wizard.optional_details')}
                 </span>
-                <ChevronDown
-                  className={cn(
-                    'w-4 h-4 text-zinc-muted transition-transform',
-                    showOptionalDetails && 'rotate-180',
-                  )}
-                />
               </button>
 
-              {showOptionalDetails && (
+              {w.showOptionalDetails && (
                 <div className="space-y-6 animate-in fade-in duration-200">
                   <ListingSpecsEditor
-                    specs={catalog.specs}
-                    onChange={(specs) => setCatalog((p) => ({ ...p, specs }))}
+                    specs={w.catalog.specs}
+                    onChange={(specs) => w.setCatalog((p) => ({ ...p, specs }))}
                   />
                   <ListingSourcesEditor
-                    sources={catalog.sources}
-                    onChange={(sources) => setCatalog((p) => ({ ...p, sources }))}
+                    sources={w.catalog.sources}
+                    onChange={(sources) => w.setCatalog((p) => ({ ...p, sources }))}
                   />
                 </div>
               )}
@@ -1534,531 +331,94 @@ export const ListingWizardPage: React.FC<ListingWizardPageProps> = ({
         </div>
       )}
 
-      {currentStep === fullLayoutStep.CHANNEL && showPublishSteps && (
-        <div className="space-y-4">
-          {existingListing && (
-            <div
-              className={cn(
-                'flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-obsidian-card',
-                isRTL && 'flex-row-reverse',
-              )}
-            >
-              <div className="w-14 h-14 rounded-lg bg-obsidian-panel border border-white/5 overflow-hidden shrink-0">
-                {wizardGalleryImages[0] ? (
-                  <img
-                    src={wizardGalleryImages[0]}
-                    alt={existingListing.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-5 h-5 text-zinc-muted/40" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black text-zinc-muted uppercase tracking-widest">
-                  {t('listing.flow.publish_listing_label')}
-                </p>
-                <p className="text-sm font-bold text-zinc-text truncate">{existingListing.title}</p>
-              </div>
-              <AmberButton
-                variant="ghost"
-                className="shrink-0 h-9 text-[11px] font-black uppercase tracking-wider text-brand"
-                onClick={() => void router.push('/auctions/add')}
-              >
-                {t('listing.flow.change_product')}
-              </AmberButton>
-            </div>
-          )}
-          <p className="text-sm font-black text-zinc-muted uppercase tracking-[0.25em]">
-            {t('listing.deploy.choose')}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <button
-              type="button"
-              onClick={() => {
-                setDeployChannel('auction');
-                setFieldErrors({});
-              }}
-              className={cn(
-                'p-4 md:p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
-                deployChannel === 'auction' ? 'border-brand/30' : 'border-white/5 hover:border-brand/20',
-              )}
-            >
-              <Gavel className="w-7 h-7 text-brand mb-4" />
-              <h3 className="text-lg font-black text-zinc-text uppercase">{t('listing.deploy.as_auction')}</h3>
-              <p className="text-sm text-zinc-muted mt-2">{t('listing.deploy.as_auction_desc')}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDeployChannel('group_buy');
-                setFieldErrors({});
-              }}
-              className={cn(
-                'p-4 md:p-8 rounded-2xl bg-obsidian-card border transition-all text-left',
-                deployChannel === 'group_buy' ? 'border-info/30' : 'border-white/5 hover:border-info/20',
-              )}
-            >
-              <Users className="w-7 h-7 text-info mb-4" />
-              <h3 className="text-lg font-black text-zinc-text uppercase">{t('listing.deploy.as_group_buy')}</h3>
-              <p className="text-sm text-zinc-muted mt-2">{t('listing.deploy.as_group_buy_desc')}</p>
-            </button>
-          </div>
-        </div>
+      {w.currentStep === w.fullLayoutStep.CHANNEL && w.showPublishSteps && (
+        <WizardChannelStep
+          t={t}
+          isRTL={isRTL}
+          existingListing={w.existingListing}
+          wizardGalleryImages={w.wizardGalleryImages}
+          deployChannel={w.deployChannel}
+          setDeployChannel={w.setDeployChannel}
+          setFieldErrors={w.setFieldErrors}
+          onRouterPush={(path) => void w.router.push(path)}
+        />
       )}
 
-      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'auction' && (
-        <FormSection icon={<Gavel className="w-5 h-5" />} iconBgColor="brand" title={t('listing.deploy.auction_settings')}>
-          <div className="space-y-6">
-            <IqdPriceInput
-              label={t('listing.deploy.start_price')}
-              value={auctionPricing.startPrice}
-              onChange={(v) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.startPrice;
-                  return n;
-                });
-                setAuctionPricing((prev) => ({ ...prev, startPrice: v }));
-              }}
-              denomination="thousand"
-              icon={<IqdSymbol />}
-              error={fieldErrors.startPrice}
-              rightElement={<FieldHelpHint text={t('listing.deploy.hint.start_price')} />}
-            />
-
-            {isMobile ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedPricing((open) => !open)}
-                  className={cn(
-                    'w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 transition-colors',
-                    isRTL && 'flex-row-reverse',
-                  )}
-                >
-                  <span className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">
-                    {t('listing.wizard.advanced_pricing')}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'w-4 h-4 text-zinc-muted transition-transform',
-                      showAdvancedPricing && 'rotate-180',
-                    )}
-                  />
-                </button>
-
-                {showAdvancedPricing && (
-                  <div className="space-y-6 pt-2 border-t border-white/5">
-                    <IqdPriceInput
-                      label={t('listing.deploy.auction_original_price')}
-                      value={auctionPricing.originalPrice ? Number(auctionPricing.originalPrice) : 0}
-                      onChange={(v) => {
-                        setFieldErrors((p) => {
-                          const n = { ...p };
-                          delete n.originalPrice;
-                          return n;
-                        });
-                        setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
-                      }}
-                      denomination="thousand"
-                      icon={<IqdSymbol />}
-                      error={fieldErrors.originalPrice}
-                      rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
-                    />
-                    <IqdPriceInput
-                      label={t('listing.deploy.bid_increment')}
-                      value={auctionPricing.bidIncrement}
-                      onChange={(v) => {
-                        setFieldErrors((p) => {
-                          const n = { ...p };
-                          delete n.bidIncrement;
-                          return n;
-                        });
-                        setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
-                      }}
-                      denomination="unit"
-                      icon={<Gavel className="w-4 h-4" />}
-                      error={fieldErrors.bidIncrement}
-                      rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
-                    />
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <IqdPriceInput
-                  label={t('listing.deploy.auction_original_price')}
-                  value={auctionPricing.originalPrice ? Number(auctionPricing.originalPrice) : 0}
-                  onChange={(v) => {
-                    setFieldErrors((p) => {
-                      const n = { ...p };
-                      delete n.originalPrice;
-                      return n;
-                    });
-                    setAuctionPricing((prev) => ({ ...prev, originalPrice: String(v) }));
-                  }}
-                  denomination="thousand"
-                  icon={<IqdSymbol />}
-                  error={fieldErrors.originalPrice}
-                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.auction_original_price')} />}
-                />
-                <IqdPriceInput
-                  label={t('listing.deploy.bid_increment')}
-                  value={auctionPricing.bidIncrement}
-                  onChange={(v) => {
-                    setFieldErrors((p) => {
-                      const n = { ...p };
-                      delete n.bidIncrement;
-                      return n;
-                    });
-                    setAuctionPricing((prev) => ({ ...prev, bidIncrement: v }));
-                  }}
-                  denomination="unit"
-                  icon={<Gavel className="w-4 h-4" />}
-                  error={fieldErrors.bidIncrement}
-                  rightElement={<FieldHelpHint text={t('listing.deploy.hint.bid_increment')} />}
-                />
-              </>
-            )}
-          </div>
-
-          <div className="mt-6">
-            <AuctionTemporalSection
-            labels={{
-              section: t('listing.deploy.mode_schedule'),
-              start: t('listing.deploy.start_time'),
-              end: t('listing.deploy.end_time'),
-              duration: t('listing.deploy.duration_days'),
-            }}
-            startTime={auctionPricing.startTime}
-            endTime={auctionPricing.endTime}
-            errors={fieldErrors}
-            durationDays={auctionDurationDays}
-            useDurationMode={auctionUseDurationMode}
-            computedEndTime={auctionComputedEndTime}
-            onStartTimeChange={(val) => {
-              setFieldErrors((p) => {
-                const n = { ...p };
-                delete n.startTime;
-                delete n.endTime;
-                return n;
-              });
-              setAuctionPricing((prev) => ({ ...prev, startTime: val }));
-            }}
-            onEndTimeChange={(val) => {
-              setFieldErrors((p) => {
-                const n = { ...p };
-                delete n.endTime;
-                return n;
-              });
-              setAuctionPricing((prev) => ({ ...prev, endTime: val }));
-            }}
-            onDurationDaysChange={(days) => {
-              setAuctionDurationDays(days);
-              setAuctionPricing((prev) => ({ ...prev, durationDays: days }));
-            }}
-            onUseDurationModeChange={setAuctionUseDurationMode}
-          />
-          </div>
-        </FormSection>
+      {w.currentStep === w.fullLayoutStep.PUBLISH && w.showPublishSteps && w.deployChannel === 'auction' && (
+        <WizardAuctionPricingStep
+          t={t}
+          isRTL={isRTL}
+          isMobile={w.isMobile}
+          showAdvancedPricing={w.showAdvancedPricing}
+          setShowAdvancedPricing={w.setShowAdvancedPricing}
+          auctionPricing={w.auctionPricing}
+          setAuctionPricing={w.setAuctionPricing}
+          fieldErrors={w.fieldErrors}
+          setFieldErrors={w.setFieldErrors}
+          auctionDurationDays={w.auctionDurationDays}
+          auctionUseDurationMode={w.auctionUseDurationMode}
+          auctionComputedEndTime={w.auctionComputedEndTime}
+          setAuctionDurationDays={w.setAuctionDurationDays}
+          setAuctionUseDurationMode={w.setAuctionUseDurationMode}
+        />
       )}
 
-      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && deployChannel === 'group_buy' && (
-        <FormSection icon={<Users className="w-5 h-5" />} iconBgColor="info" title={t('listing.deploy.group_buy_settings')}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <IqdPriceInput
-              label={t('listing.deploy.original_price')}
-              value={groupBuyPricing.originalPrice}
-              onChange={(v) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.originalPrice;
-                  return n;
-                });
-                setGroupBuyPricing((p) => ({ ...p, originalPrice: v }));
-              }}
-              denomination="thousand"
-              icon={<IqdSymbol />}
-              error={fieldErrors.originalPrice}
-            />
-            <IqdPriceInput
-              label={t('listing.deploy.deal_price')}
-              value={groupBuyPricing.dealPrice}
-              onChange={(v) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.dealPrice;
-                  return n;
-                });
-                setGroupBuyPricing((p) => ({ ...p, dealPrice: v }));
-              }}
-              denomination="thousand"
-              error={fieldErrors.dealPrice}
-            />
-            <AmberInput
-              label={t('listing.deploy.min_participants')}
-              type="number"
-              value={groupBuyPricing.minParticipants}
-              onChange={(e) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.minParticipants;
-                  delete n.maxParticipants;
-                  return n;
-                });
-                setGroupBuyPricing((p) => ({ ...p, minParticipants: Number(e.target.value) }));
-              }}
-              error={fieldErrors.minParticipants}
-            />
-            <AmberInput
-              label={t('listing.deploy.max_participants')}
-              type="number"
-              value={groupBuyPricing.maxParticipants}
-              onChange={(e) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.minParticipants;
-                  delete n.maxParticipants;
-                  return n;
-                });
-                setGroupBuyPricing((p) => ({ ...p, maxParticipants: Number(e.target.value) }));
-              }}
-              error={fieldErrors.maxParticipants}
-            />
-          </div>
-
-          <div className="mt-6">
-            <AuctionTemporalSection
-              labels={{
-                section: t('listing.deploy.mode_schedule'),
-                start: t('listing.deploy.start_time'),
-                end: t('listing.deploy.end_time'),
-                duration: t('listing.deploy.duration_days'),
-              }}
-              startTime={groupBuyPricing.startTime}
-              endTime={groupBuyPricing.endTime}
-              errors={fieldErrors}
-              durationDays={groupBuyDurationDays}
-              useDurationMode={groupBuyUseDurationMode}
-              computedEndTime={groupBuyComputedEndTime}
-              onStartTimeChange={(val) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.startTime;
-                  delete n.endTime;
-                  return n;
-                });
-                setGroupBuyPricing((prev) => ({ ...prev, startTime: val }));
-              }}
-              onEndTimeChange={(val) => {
-                setFieldErrors((p) => {
-                  const n = { ...p };
-                  delete n.endTime;
-                  return n;
-                });
-                setGroupBuyPricing((prev) => ({ ...prev, endTime: val }));
-              }}
-              onDurationDaysChange={(days) => {
-                setGroupBuyDurationDays(days);
-                setGroupBuyPricing((prev) => ({ ...prev, durationDays: days }));
-              }}
-              onUseDurationModeChange={setGroupBuyUseDurationMode}
-            />
-          </div>
-        </FormSection>
+      {w.currentStep === w.fullLayoutStep.PUBLISH && w.showPublishSteps && w.deployChannel === 'group_buy' && (
+        <WizardGroupBuyPricingStep
+          t={t}
+          groupBuyPricing={w.groupBuyPricing}
+          setGroupBuyPricing={w.setGroupBuyPricing}
+          fieldErrors={w.fieldErrors}
+          setFieldErrors={w.setFieldErrors}
+          groupBuyDurationDays={w.groupBuyDurationDays}
+          groupBuyUseDurationMode={w.groupBuyUseDurationMode}
+          groupBuyComputedEndTime={w.groupBuyComputedEndTime}
+          setGroupBuyDurationDays={w.setGroupBuyDurationDays}
+          setGroupBuyUseDurationMode={w.setGroupBuyUseDurationMode}
+        />
       )}
 
-      {currentStep === fullLayoutStep.PUBLISH && showPublishSteps && (
-        <FormSection icon={<Rocket className="w-5 h-5" />} iconBgColor="brand" title={t('listing.wizard.step.publish')}>
-          <div className="space-y-6 text-sm">
-            {wizardGalleryImages.length > 0 && (
-              <AmberImageGallery
-                images={wizardGalleryImages}
-                alt={catalog.title}
-                height="h-[180px] md:h-[220px]"
-                thumbnailCols="grid-cols-5 sm:grid-cols-6"
-              />
-            )}
-            <div>
-              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.form.title')}</p>
-              <p className="font-bold text-zinc-text">{catalog.title}</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-black text-zinc-muted uppercase tracking-widest">{t('listing.wizard.step.channel')}</p>
-              <p className="font-bold text-zinc-text">
-                {deployChannel === 'auction' ? t('listing.deploy.as_auction') : t('listing.deploy.as_group_buy')}
-              </p>
-            </div>
-            {deployChannel === 'auction' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_price')}</p>
-                  <p className="font-black">{auctionPricing.startPrice}</p>
-                </div>
-                {auctionPricing.originalPrice && (
-                  <div>
-                    <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.auction_original_price')}</p>
-                    <p className="font-black">{auctionPricing.originalPrice}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_time')}</p>
-                  <p className="font-black text-xs sm:text-sm">
-                    {auctionPricing.startTime
-                      ? new Date(auctionPricing.startTime).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
-                      : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.end_time')}</p>
-                  <p className="font-black text-xs sm:text-sm">
-                    {(auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime)
-                      ? new Date(auctionUseDurationMode ? auctionComputedEndTime : auctionPricing.endTime).toLocaleString(
-                          dir === 'rtl' ? 'ar-IQ' : 'en-US',
-                        )
-                      : '—'}
-                  </p>
-                </div>
-              </div>
-            )}
-            {deployChannel === 'group_buy' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.original_price')}</p>
-                  <p className="font-black">{groupBuyPricing.originalPrice}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.deal_price')}</p>
-                  <p className="font-black">{groupBuyPricing.dealPrice}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.min_participants')}</p>
-                  <p className="font-black">{groupBuyPricing.minParticipants} – {groupBuyPricing.maxParticipants}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.start_time')}</p>
-                  <p className="font-black text-xs sm:text-sm">
-                    {groupBuyPricing.startTime
-                      ? new Date(groupBuyPricing.startTime).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
-                      : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-muted uppercase">{t('listing.deploy.end_time')}</p>
-                  <p className="font-black text-xs sm:text-sm">
-                    {(groupBuyUseDurationMode ? groupBuyComputedEndTime : groupBuyPricing.endTime)
-                      ? new Date(
-                          groupBuyUseDurationMode ? groupBuyComputedEndTime : groupBuyPricing.endTime,
-                        ).toLocaleString(dir === 'rtl' ? 'ar-IQ' : 'en-US')
-                      : '—'}
-                  </p>
-                </div>
-              </div>
-            )}
-            <p className="text-[11px] text-zinc-muted font-bold">{t('listing.wizard.review_publish_active')}</p>
-          </div>
-        </FormSection>
+      {w.currentStep === w.fullLayoutStep.PUBLISH && w.showPublishSteps && (
+        <WizardPublishReview
+          t={t}
+          dir={dir}
+          catalogTitle={w.catalog.title}
+          deployChannel={w.deployChannel}
+          wizardGalleryImages={w.wizardGalleryImages}
+          auctionPricing={w.auctionPricing}
+          groupBuyPricing={w.groupBuyPricing}
+          auctionUseDurationMode={w.auctionUseDurationMode}
+          auctionComputedEndTime={w.auctionComputedEndTime}
+          groupBuyUseDurationMode={w.groupBuyUseDurationMode}
+          groupBuyComputedEndTime={w.groupBuyComputedEndTime}
+        />
       )}
 
-      <div className="flex justify-between gap-3 pt-4 border-t border-white/5">
-        <AmberButton
-          variant="outline"
-          className="h-11 rounded-xl px-6"
-          disabled={currentStep <= 1 || isBusy}
-          onClick={() => goToStep(currentStep - 1)}
-        >
-          {t('listing.wizard.back')}
-        </AmberButton>
-        {currentStep === step.MEDIA && isMerchant ? (
-          isTrustedMerchant ? (
-            <div className="flex flex-wrap gap-3 justify-end">
-              <AmberButton
-                variant="outline"
-                className="h-11 border-border font-bold rounded-xl px-6"
-                disabled={isBusy}
-                onClick={() => void handleSaveAndExit()}
-              >
-                {isBusy ? (
-                  <div className="w-4 h-4 border-2 border-zinc-text border-t-transparent rounded-full animate-spin" />
-                ) : null}
-                {t('listing.wizard.save_and_exit')}
-              </AmberButton>
-              {isListingApproved ? (
-                <AmberButton
-                  className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-                  disabled={isBusy}
-                  onClick={() => void handleMediaStepAction((id) => goToPublishFlow(id))}
-                >
-                  <Rocket className="w-4 h-4" />
-                  {t('listing.wizard.continue_to_publish')}
-                  <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-                </AmberButton>
-              ) : (
-                <AmberButton
-                  className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-                  disabled={isBusy}
-                  onClick={() => void handleMediaStepAction((id) => submitListing('direct', id))}
-                >
-                  {submitForReviewMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Rocket className="w-4 h-4" />
-                  )}
-                  {t('approval.actions.direct_publish')}
-                  <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-                </AmberButton>
-              )}
-            </div>
-          ) : (
-            <AmberButton
-              className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-              disabled={isBusy}
-              onClick={() => void handleMediaStepAction((id) => submitListing('review', id))}
-            >
-              {submitForReviewMutation.isPending ? (
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <SendHorizonal className="w-4 h-4" />
-              )}
-              {t('approval.actions.submit')}
-              <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-            </AmberButton>
-          )
-        ) : currentStep < fullLayoutStep.PUBLISH || !showPublishSteps ? (
-          <AmberButton
-            className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-            disabled={isBusy}
-            onClick={() => void handleNext()}
-          >
-            {isBusy && (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-            )}
-            <span>
-              {currentStep === step.MEDIA && maxStep === step.MEDIA
-                ? t('listing.form.save')
-                : t('listing.wizard.next')}
-            </span>
-            <ChevronRight className={cn('w-4 h-4', isRTL && 'rotate-180')} />
-          </AmberButton>
-        ) : (
-          <AmberButton
-            className="h-11 bg-brand text-black font-black rounded-xl px-8 gap-2"
-            disabled={isBusy}
-            onClick={() => void handlePublish()}
-          >
-            {isBusy ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Rocket className="w-4 h-4" />
-            )}
-            {t('listing.deploy.deploy')}
-          </AmberButton>
-        )}
-      </div>
-
+      <WizardFooterNav
+        currentStep={w.currentStep}
+        maxStep={w.maxStep}
+        isBusy={w.isBusy}
+        isSubmitting={w.submitForReviewMutation.isPending}
+        isRTL={isRTL}
+        isMerchant={w.isMerchant}
+        isTrustedMerchant={w.isTrustedMerchant}
+        isListingApproved={w.isListingApproved}
+        showPublishSteps={w.showPublishSteps}
+        stepProduct={w.step.PRODUCT}
+        stepMedia={w.step.MEDIA}
+        stepPublish={w.fullLayoutStep.PUBLISH}
+        t={t}
+        onBack={() => {
+          if (w.currentStep > 1) w.goToStep(w.currentStep - 1);
+          else w.router.push(w.listingId ? `/listings/${w.listingId}` : '/listings');
+        }}
+        onNext={w.handleNext}
+        onPublish={w.handlePublish}
+        onSaveAndExit={w.handleSaveAndExit}
+        onMediaStepAction={w.handleMediaStepAction}
+        onSubmit={w.submitListing}
+        onGoToPublishFlow={w.goToPublishFlow}
+      />
     </div>
   );
 };

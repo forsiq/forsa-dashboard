@@ -44,3 +44,20 @@ export {
   normalizeCategorySearchText,
   categorySearchMatches,
 } from './categorySearch';
+
+export {
+  type StatusTab,
+  type CategoryViewMode,
+  CATEGORIES_VIEW_MODE_KEY,
+  readStoredCategoryViewMode,
+  nodeMatchesStatus,
+  nodeMatchesSearch,
+  filterCategoryTree,
+  getCategoryTreeSignature,
+  filterIssuesTree,
+  arrayMove,
+  findSiblingContext,
+  reorderSiblingsInTree,
+  countTreeNodes,
+  resolveCategoryTreeIcon,
+} from './categoryTreeUtils';

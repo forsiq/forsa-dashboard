@@ -1,23 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   Plus,
-  Search,
-  LayoutGrid,
-  List,
   Edit,
   Trash2,
+  Power,
+  PowerOff,
+  LayoutGrid,
   Activity,
   Ban,
   Layers,
-  Power,
-  PowerOff,
-  GripVertical,
   Loader2,
-  ChevronDown,
-  Folder,
-  FolderOpen,
   MessageSquare,
   AlertTriangle,
 } from 'lucide-react';
@@ -34,16 +27,10 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { cn } from '@core/lib/utils/cn';
 import { AmberButton } from '@core/components/AmberButton';
-import { AmberCard } from '@core/components/AmberCard';
-import { AmberInput } from '@core/components/AmberInput';
-import { StatusBadge } from '@core/components/Data/StatusBadge';
-import { getIconByName } from '@core/components/IconPicker';
 import { useConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useDebounce } from '@core/hooks/useDebounce';
 import {
@@ -54,12 +41,31 @@ import {
   useCategoryHealthReport,
 } from '../hooks';
 import type { Category, CategoryTreeNode } from '../types';
-import { getLocalizedName, getLocalizedDescription } from '../types';
-import { buildCategoryTreeFromFlat, categorySearchMatches, type CategoryIssue } from '../lib';
-import { CategoryIssueBadges } from '../components/CategoryIssueBadges';
+import { getLocalizedName } from '../types';
+import { buildCategoryTreeFromFlat } from '../lib';
+import {
+  filterCategoryTree,
+  filterIssuesTree,
+  getCategoryTreeSignature,
+  arrayMove,
+  findSiblingContext,
+  reorderSiblingsInTree,
+  countTreeNodes,
+  readStoredCategoryViewMode,
+  type StatusTab,
+  type CategoryViewMode,
+} from '../lib';
 import { CategoryAddModal } from '../components/CategoryAddModal';
 import { CategoryEditModal } from '../components/CategoryEditModal';
-import { CategoryRowContextMenu, useContextMenu, type ContextMenuAction } from '../components/CategoryRowContextMenu';
+import {
+  CategoryRowContextMenu,
+  useContextMenu,
+  type ContextMenuAction,
+} from '../components/CategoryRowContextMenu';
+import { CategoryViewToggle } from '../components/CategoryViewToggle';
+import { CategoryGridCard } from '../components/CategoryGridCard';
+import { TreeCategoryCard } from '../components/TreeCategoryCard';
+import { SortableTreeRow } from '../components/SortableTreeRow';
 import { useIsClient } from '@core/hooks/useIsClient';
 import { useDashboardRole } from '@core/hooks/useDashboardRole';
 import {
@@ -71,927 +77,7 @@ import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
 import { SuggestionReview } from '../components/SuggestionReview';
 
-type StatusTab = 'all' | 'active' | 'inactive' | 'issues';
 type PageTab = 'categories' | 'suggestions';
-type CategoryViewMode = 'table' | 'grid';
-
-const CATEGORIES_VIEW_MODE_KEY = 'forsa_categories_view_mode';
-
-function readStoredCategoryViewMode(): CategoryViewMode {
-  if (typeof window === 'undefined') return 'table';
-  return localStorage.getItem(CATEGORIES_VIEW_MODE_KEY) === 'grid' ? 'grid' : 'table';
-}
-
-function nodeMatchesStatus(node: CategoryTreeNode, statusFilter: StatusTab): boolean {
-  if (statusFilter === 'all') return true;
-  const wantActive = statusFilter === 'active';
-  return node.isActive === wantActive;
-}
-
-function nodeMatchesSearch(node: CategoryTreeNode, language: string, query: string): boolean {
-  if (!query) return true;
-  return (
-    categorySearchMatches(getLocalizedName(node, language), query) ||
-    categorySearchMatches(node.slug, query) ||
-    categorySearchMatches(getLocalizedDescription(node, language), query)
-  );
-}
-
-function filterCategoryTree(
-  nodes: CategoryTreeNode[],
-  language: string,
-  statusFilter: StatusTab,
-  search: string,
-): CategoryTreeNode[] {
-  const filterNode = (node: CategoryTreeNode): CategoryTreeNode | null => {
-    const filteredChildren = (node.children ?? [])
-      .map(filterNode)
-      .filter((child): child is CategoryTreeNode => child !== null);
-
-    const selfMatches =
-      nodeMatchesStatus(node, statusFilter) && nodeMatchesSearch(node, language, search.trim());
-
-    if (!selfMatches && filteredChildren.length === 0) return null;
-
-    return {
-      ...node,
-      children: filteredChildren,
-    };
-  };
-
-  return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
-}
-
-/** Stable signature for tree order — avoids redundant localTree syncs. */
-function getCategoryTreeSignature(nodes: CategoryTreeNode[]): string {
-  const parts: string[] = [];
-  const walk = (list: CategoryTreeNode[]) => {
-    for (const node of list) {
-      parts.push(`${node.id}:${node.sortOrder ?? 0}`);
-      if (node.children?.length) walk(node.children);
-    }
-  };
-  walk(nodes);
-  return parts.join(',');
-}
-
-function filterIssuesTree(
-  nodes: CategoryTreeNode[],
-  issuesByCategoryId: Map<string, CategoryIssue[]>,
-): CategoryTreeNode[] {
-  const filterNode = (node: CategoryTreeNode): CategoryTreeNode | null => {
-    const filteredChildren = (node.children ?? [])
-      .map(filterNode)
-      .filter((child): child is CategoryTreeNode => child !== null);
-
-    const selfHasIssues = (issuesByCategoryId.get(String(node.id))?.length ?? 0) > 0;
-
-    if (!selfHasIssues && filteredChildren.length === 0) return null;
-
-    return {
-      ...node,
-      children: filteredChildren,
-    };
-  };
-
-  return nodes.map(filterNode).filter((node): node is CategoryTreeNode => node !== null);
-}
-
-function arrayMove<T>(array: T[], from: number, to: number): T[] {
-  const next = array.slice();
-  const [removed] = next.splice(from, 1);
-  next.splice(to, 0, removed);
-  return next;
-}
-
-function findSiblingContext(
-  nodes: CategoryTreeNode[],
-  targetId: string,
-  parentId: string | null = null,
-): { siblings: CategoryTreeNode[]; parentId: string | null } | null {
-  if (nodes.some((n) => String(n.id) === targetId)) {
-    return { siblings: nodes, parentId };
-  }
-  for (const node of nodes) {
-    if (!node.children?.length) continue;
-    const found = findSiblingContext(node.children, targetId, node.id);
-    if (found) return found;
-  }
-  return null;
-}
-
-function reorderSiblingsInTree(
-  nodes: CategoryTreeNode[],
-  parentId: string | null,
-  orderedIds: string[],
-): CategoryTreeNode[] {
-  if (parentId === null) {
-    const byId = new Map(nodes.map((n) => [String(n.id), n]));
-    return orderedIds.map((id) => byId.get(id)).filter((n): n is CategoryTreeNode => Boolean(n));
-  }
-  return nodes.map((node) => {
-    if (String(node.id) === String(parentId)) {
-      const byId = new Map((node.children ?? []).map((c) => [String(c.id), c]));
-      return {
-        ...node,
-        children: orderedIds.map((id) => byId.get(id)).filter((c): c is CategoryTreeNode => Boolean(c)),
-      };
-    }
-    if (node.children?.length) {
-      return {
-        ...node,
-        children: reorderSiblingsInTree(node.children, parentId, orderedIds),
-      };
-    }
-    return node;
-  });
-}
-
-// --- Tree rows (desktop table + mobile cards) ---
-
-const TREE_GUIDE_WIDTH = 22;
-
-interface CategoryTreeGuidesProps {
-  level: number;
-  isLastSibling: boolean;
-  ancestorContinues: boolean[];
-}
-
-/** Vertical/horizontal connectors for nested category rows (file-tree style). */
-function CategoryTreeGuides({
-  level,
-  isLastSibling,
-  ancestorContinues,
-}: CategoryTreeGuidesProps) {
-  if (level === 0) return null;
-
-  return (
-    <div className="flex items-stretch shrink-0 self-stretch min-h-8" aria-hidden>
-      {ancestorContinues.map((showVertical, depth) => (
-        <div
-          key={`tree-pipe-${depth}`}
-          className="relative shrink-0"
-          style={{ width: TREE_GUIDE_WIDTH }}
-        >
-          {showVertical && (
-            <span className="pointer-events-none absolute inset-y-0 start-2 w-px bg-white/15" />
-          )}
-        </div>
-      ))}
-      <div className="relative shrink-0" style={{ width: TREE_GUIDE_WIDTH }}>
-        <span className="pointer-events-none absolute top-0 start-2 h-1/2 w-px bg-white/20" />
-        <span className="pointer-events-none absolute top-1/2 start-2 end-0 h-px -translate-y-px bg-white/20" />
-        {!isLastSibling && (
-          <span className="pointer-events-none absolute bottom-0 top-1/2 start-2 w-px bg-white/20" />
-        )}
-        <span className="pointer-events-none absolute top-1/2 start-1.5 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-brand/50 ring-2 ring-brand/10" />
-      </div>
-    </div>
-  );
-}
-
-function resolveCategoryTreeIcon(
-  node: CategoryTreeNode,
-  hasChildren: boolean,
-  expanded: boolean,
-): React.ComponentType<{ className?: string }> {
-  const custom = node.icon ? getIconByName(node.icon) : null;
-  if (custom) return custom;
-  if (hasChildren) return expanded ? FolderOpen : Folder;
-  return LayoutGrid;
-}
-
-interface TreeNodeSharedProps {
-  node: CategoryTreeNode;
-  level: number;
-  language: string;
-  dir: 'ltr' | 'rtl';
-  canManage: boolean;
-  onEdit: (category: Category) => void;
-  onToggleStatus: (category: Category) => void;
-  onDelete: (id: string) => void;
-  onAddChild?: (node: CategoryTreeNode) => void;
-  onAddSibling?: (node: CategoryTreeNode) => void;
-  openConfirm: (options: {
-    title: string;
-    message: string;
-    variant?: 'default' | 'destructive' | 'warning';
-    confirmText?: string;
-    onConfirm: () => void;
-  }) => void;
-  t: (key: string) => string;
-  canReorder?: boolean;
-  showDragHandle?: boolean;
-  isLastSibling?: boolean;
-  ancestorContinues?: boolean[];
-  issuesByCategoryId?: Map<string, CategoryIssue[]>;
-  onContextMenu?: (e: React.MouseEvent, node: CategoryTreeNode) => void;
-  /** Expand nested rows when search/filter highlights subcategories. */
-  autoExpand?: boolean;
-}
-
-function CategoryRowActions({
-  node,
-  language,
-  canManage,
-  onEdit,
-  onToggleStatus,
-  onDelete,
-  onAddChild,
-  onAddSibling,
-  openConfirm,
-  t,
-  className,
-}: Pick<
-  TreeNodeSharedProps,
-  'node' | 'language' | 'canManage' | 'onEdit' | 'onToggleStatus' | 'onDelete' | 'onAddChild' | 'onAddSibling' | 'openConfirm' | 't'
-> & { className?: string }) {
-  if (!canManage) return null;
-
-  const isMain = !node.parentId;
-
-  return (
-    <div className={cn('flex items-center gap-1', className)}>
-      {isMain && onAddChild && (
-        <button
-          type="button"
-          onClick={() => onAddChild(node)}
-          className="p-2 rounded-lg text-zinc-muted hover:text-success hover:bg-success/10 transition-all"
-          title={t('category.add_subcategory') || 'Add subcategory'}
-          aria-label={t('category.add_subcategory') || 'Add subcategory'}
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      )}
-      {!isMain && onAddSibling && (
-        <button
-          type="button"
-          onClick={() => onAddSibling(node)}
-          className="p-2 rounded-lg text-zinc-muted hover:text-info hover:bg-info/10 transition-all"
-          title={t('category.add_sibling') || 'Add sibling'}
-          aria-label={t('category.add_sibling') || 'Add sibling'}
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={() => onEdit(node)}
-        className="p-2 rounded-lg text-zinc-muted hover:text-brand hover:bg-brand/10 transition-all"
-        title={t('common.edit') || 'Edit'}
-        aria-label={t('common.edit') || 'Edit'}
-      >
-        <Edit className="w-4 h-4" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onToggleStatus(node)}
-        className={cn(
-          'p-2 rounded-lg transition-all',
-          node.isActive
-            ? 'text-zinc-muted hover:text-warning hover:bg-warning/10'
-            : 'text-zinc-muted hover:text-success hover:bg-success/10',
-        )}
-        title={
-          node.isActive
-            ? t('category.deactivate') || 'Deactivate'
-            : t('category.activate') || 'Activate'
-        }
-        aria-label={
-          node.isActive
-            ? t('category.deactivate') || 'Deactivate'
-            : t('category.activate') || 'Activate'
-        }
-      >
-        {node.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          openConfirm({
-            title: t('category.delete') || 'Delete Category',
-            message: `${t('category.delete_confirm') || 'Are you sure?'}\n\n"${getLocalizedName(node, language)}"`,
-            variant: 'destructive',
-            onConfirm: () => onDelete(node.id),
-          });
-        }}
-        className="p-2 rounded-lg text-zinc-muted hover:text-danger hover:bg-danger/10 transition-all"
-        title={t('common.delete') || 'Delete'}
-        aria-label={t('common.delete') || 'Delete'}
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
-
-function CategoryViewToggle({
-  viewMode,
-  onChange,
-  t,
-}: {
-  viewMode: CategoryViewMode;
-  onChange: (mode: CategoryViewMode) => void;
-  t: (key: string) => string;
-}) {
-  return (
-    <div
-      className="flex items-center bg-[var(--color-obsidian-card)] rounded-xl p-0.5 border border-[var(--color-border)]"
-      role="group"
-      aria-label={t('category.view_mode') || 'View mode'}
-    >
-      <button
-        type="button"
-        onClick={() => onChange('table')}
-        className={cn(
-          'p-2 rounded-lg transition-all',
-          viewMode === 'table'
-            ? 'bg-[var(--color-brand)] text-black shadow-sm'
-            : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
-        )}
-        title={t('common.table_view') || 'Table View'}
-        aria-label={t('common.table_view') || 'Table View'}
-        aria-pressed={viewMode === 'table'}
-      >
-        <List className="w-4 h-4" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange('grid')}
-        className={cn(
-          'p-2 rounded-lg transition-all',
-          viewMode === 'grid'
-            ? 'bg-[var(--color-brand)] text-black shadow-sm'
-            : 'text-zinc-muted hover:text-zinc-text hover:bg-black/5',
-        )}
-        title={t('common.grid_view') || 'Grid View'}
-        aria-label={t('common.grid_view') || 'Grid View'}
-        aria-pressed={viewMode === 'grid'}
-      >
-        <LayoutGrid className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
-
-function CategoryGridCard({
-  node,
-  language,
-  dir,
-  canManage,
-  onEdit,
-  onToggleStatus,
-  onDelete,
-  onAddChild,
-  onAddSibling,
-  openConfirm,
-  t,
-  issuesByCategoryId,
-  onContextMenu,
-  autoExpand = false,
-}: Omit<TreeNodeSharedProps, 'level' | 'canReorder' | 'showDragHandle' | 'isLastSibling' | 'ancestorContinues'>) {
-  const hasChildren = Boolean(node.children?.length);
-  const [expanded, setExpanded] = useState(autoExpand && hasChildren);
-
-  useEffect(() => {
-    if (autoExpand && hasChildren) setExpanded(true);
-  }, [autoExpand, hasChildren, node.id]);
-  const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
-  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
-
-  return (
-    <div className="h-full" onContextMenu={(e) => onContextMenu?.(e, node)}>
-      <AmberCard className="!p-0 h-full flex flex-col bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm overflow-hidden">
-        <div className="p-4 flex flex-col gap-3 flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div
-              className={cn(
-                'p-3 rounded-xl border shrink-0',
-                hasChildren
-                  ? 'bg-brand/10 border-brand/20'
-                  : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
-              )}
-            >
-              <Icon
-                className={cn(
-                  'w-6 h-6',
-                  hasChildren ? 'text-brand' : 'text-zinc-muted',
-                )}
-              />
-            </div>
-            <StatusBadge
-              status={
-                node.isActive
-                  ? t('category.active') || 'Active'
-                  : t('category.inactive') || 'Inactive'
-              }
-              variant={node.isActive ? 'success' : 'inactive'}
-              size="sm"
-            />
-          </div>
-
-          <div className="min-w-0 space-y-1">
-            <Link
-              href={`/categories/${node.id}`}
-              className="text-sm font-bold text-zinc-text tracking-tight line-clamp-2 break-words block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors"
-            >
-              {getLocalizedName(node, language)}
-            </Link>
-            <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest line-clamp-1 break-all">
-              {node.slug || '-'}
-            </p>
-          </div>
-
-          {nodeIssues.length > 0 && (
-            <CategoryIssueBadges issues={nodeIssues} t={t} className="flex-wrap" />
-          )}
-
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold text-zinc-muted uppercase tracking-widest">
-            <span className="inline-flex items-center gap-1.5">
-              {t('category.products_count') || 'Products'}
-              <span className="text-zinc-text tabular-nums">{node.productCount || 0}</span>
-            </span>
-            {hasChildren && (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-zinc-muted bg-white/[0.04] px-2 py-0.5 rounded-full normal-case">
-                {node.children!.length}{' '}
-                {t('category.subcategories') || 'subcategories'}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-[var(--color-border)] bg-black/[0.02]">
-          {hasChildren ? (
-            <button
-              type="button"
-              onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-muted hover:text-brand transition-colors"
-              aria-expanded={expanded}
-            >
-              <ChevronDown
-                className={cn(
-                  'w-3.5 h-3.5 transition-transform duration-200',
-                  !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
-                )}
-              />
-              {expanded
-                ? t('common.collapse') || 'Collapse'
-                : t('common.expand') || 'Expand'}
-            </button>
-          ) : (
-            <span aria-hidden className="w-px" />
-          )}
-          <CategoryRowActions
-            node={node}
-            language={language}
-            canManage={canManage}
-            onEdit={onEdit}
-            onToggleStatus={onToggleStatus}
-            onDelete={onDelete}
-            onAddChild={onAddChild}
-            onAddSibling={onAddSibling}
-            openConfirm={openConfirm}
-            t={t}
-          />
-        </div>
-
-        {expanded && hasChildren && (
-          <div className="px-4 pb-4 space-y-2 border-t border-[var(--color-border)] bg-black/[0.02]">
-            {node.children!.map((child) => {
-              const ChildIcon = resolveCategoryTreeIcon(child, Boolean(child.children?.length), false);
-              const childIssues = issuesByCategoryId?.get(String(child.id)) ?? [];
-              return (
-                <div
-                  key={child.id}
-                  className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-obsidian-card)] px-3 py-2"
-                  onContextMenu={(e) => onContextMenu?.(e, child)}
-                >
-                  <ChildIcon className="w-4 h-4 shrink-0 text-zinc-muted" />
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/categories/${child.id}`}
-                      className="text-xs font-bold text-zinc-text line-clamp-1 hover:text-brand transition-colors"
-                    >
-                      {getLocalizedName(child, language)}
-                    </Link>
-                    {childIssues.length > 0 && (
-                      <CategoryIssueBadges issues={childIssues} t={t} compact className="mt-1" />
-                    )}
-                  </div>
-                  <StatusBadge
-                    status={
-                      child.isActive
-                        ? t('category.active') || 'Active'
-                        : t('category.inactive') || 'Inactive'
-                    }
-                    variant={child.isActive ? 'success' : 'inactive'}
-                    size="sm"
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </AmberCard>
-    </div>
-  );
-}
-
-function TreeCategoryCard({
-  node,
-  level,
-  language,
-  dir,
-  canManage,
-  onEdit,
-  onToggleStatus,
-  onDelete,
-  onAddChild,
-  onAddSibling,
-  openConfirm,
-  t,
-  isLastSibling = true,
-  ancestorContinues = [],
-  issuesByCategoryId,
-  onContextMenu,
-  autoExpand = false,
-}: TreeNodeSharedProps) {
-  const hasChildren = Boolean(node.children?.length);
-  const [expanded, setExpanded] = useState(autoExpand && hasChildren);
-
-  useEffect(() => {
-    if (autoExpand && hasChildren) setExpanded(true);
-  }, [autoExpand, hasChildren, node.id]);
-  const Icon = resolveCategoryTreeIcon(node, hasChildren, expanded);
-  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
-
-  return (
-    <div className="space-y-2" onContextMenu={(e) => onContextMenu?.(e, node)}>
-      <AmberCard className="!p-4 bg-[var(--color-obsidian-card)] border-[var(--color-border)] shadow-sm">
-        <div className="flex items-start gap-1 min-w-0">
-          <CategoryTreeGuides
-            level={level}
-            isLastSibling={isLastSibling}
-            ancestorContinues={ancestorContinues}
-          />
-          <div className="flex items-center justify-center w-8 h-8 shrink-0 mt-0.5">
-            {hasChildren ? (
-              <button
-                type="button"
-                onClick={() => setExpanded(!expanded)}
-                className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-zinc-muted"
-                aria-expanded={expanded}
-                aria-label={
-                  expanded
-                    ? t('common.collapse') || 'Collapse'
-                    : t('common.expand') || 'Expand'
-                }
-              >
-                <ChevronDown
-                  className={cn(
-                    'w-4 h-4 transition-transform duration-200',
-                    !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
-                  )}
-                />
-              </button>
-            ) : (
-              <span className="w-8 h-8 shrink-0" aria-hidden />
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <div
-                  className={cn(
-                    'p-1.5 rounded-lg border shrink-0',
-                    hasChildren
-                      ? 'bg-brand/10 border-brand/20'
-                      : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      'w-4 h-4',
-                      hasChildren ? 'text-brand' : 'text-zinc-muted',
-                    )}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <Link
-                    href={`/categories/${node.id}`}
-                    className={cn(
-                      'text-sm tracking-tight line-clamp-2 break-words block hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
-                      level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
-                    )}
-                  >
-                    {getLocalizedName(node, language)}
-                  </Link>
-                  <p className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest line-clamp-2 break-words mt-0.5">
-                    {node.slug || '-'}
-                  </p>
-                  {nodeIssues.length > 0 && (
-                    <CategoryIssueBadges issues={nodeIssues} t={t} className="mt-2" />
-                  )}
-                </div>
-              </div>
-              <StatusBadge
-                status={
-                  node.isActive
-                    ? t('category.active') || 'Active'
-                    : t('category.inactive') || 'Inactive'
-                }
-                variant={node.isActive ? 'success' : 'inactive'}
-                size="sm"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-zinc-muted uppercase tracking-widest">
-                <span>{t('category.products_count') || 'Products'}</span>
-                <span className="text-zinc-text tabular-nums">{node.productCount || 0}</span>
-                {hasChildren && (
-                  <span className="text-[10px] font-bold text-zinc-muted bg-white/[0.04] px-2 py-0.5 rounded-full normal-case">
-                    {node.children!.length}
-                  </span>
-                )}
-              </div>
-              <CategoryRowActions
-                node={node}
-                language={language}
-                canManage={canManage}
-                onEdit={onEdit}
-                onToggleStatus={onToggleStatus}
-                onDelete={onDelete}
-                onAddChild={onAddChild}
-                onAddSibling={onAddSibling}
-                openConfirm={openConfirm}
-                t={t}
-              />
-            </div>
-          </div>
-        </div>
-      </AmberCard>
-
-      {expanded &&
-        hasChildren &&
-        node.children!.map((child, index) => (
-          <TreeCategoryCard
-            key={child.id}
-            node={child}
-            level={level + 1}
-            isLastSibling={index === node.children!.length - 1}
-            ancestorContinues={[...ancestorContinues, !isLastSibling]}
-            language={language}
-            dir={dir}
-            canManage={canManage}
-            onEdit={onEdit}
-            onToggleStatus={onToggleStatus}
-            onDelete={onDelete}
-            onAddChild={onAddChild}
-            onAddSibling={onAddSibling}
-            openConfirm={openConfirm}
-            t={t}
-            issuesByCategoryId={issuesByCategoryId}
-            onContextMenu={onContextMenu}
-            autoExpand={autoExpand}
-          />
-        ))}
-    </div>
-  );
-}
-
-function SortableTreeRow({
-  node,
-  level,
-  language,
-  dir,
-  canManage,
-  canReorder = false,
-  showDragHandle = false,
-  onEdit,
-  onToggleStatus,
-  onDelete,
-  onAddChild,
-  onAddSibling,
-  openConfirm,
-  t,
-  isLastSibling = true,
-  ancestorContinues = [],
-  issuesByCategoryId,
-  onContextMenu,
-  autoExpand = false,
-}: TreeNodeSharedProps) {
-  const hasChildren = node.children && node.children.length > 0;
-  const [expanded, setExpanded] = useState(Boolean(autoExpand && hasChildren));
-
-  useEffect(() => {
-    if (autoExpand && hasChildren) setExpanded(true);
-  }, [autoExpand, hasChildren, node.id]);
-
-  const Icon = resolveCategoryTreeIcon(node, Boolean(hasChildren), expanded);
-  const nodeIssues = issuesByCategoryId?.get(String(node.id)) ?? [];
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: node.id, disabled: !canReorder });
-
-  const rowStyle: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    position: 'relative',
-    zIndex: isDragging ? 50 : 'auto',
-  };
-
-  return (
-    <>
-      <tr
-        ref={setNodeRef}
-        style={rowStyle}
-        onContextMenu={(e) => {
-          // Exclude drag handle from triggering context menu
-          const target = e.target as HTMLElement;
-          if (target.closest('[data-dnd-handle]')) return;
-          onContextMenu?.(e, node);
-        }}
-        className={cn(
-          'group transition-colors border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]',
-          level > 0 && 'bg-white/[0.015]',
-        )}
-      >
-        {/* Drag handle — admin / merchant / trusted_merchant only */}
-        {showDragHandle && (
-          <td className="px-3 py-5 align-middle w-10">
-            <div
-              ref={setActivatorNodeRef}
-              data-dnd-handle=""
-              {...(canReorder ? { ...attributes, ...listeners } : {})}
-              className={cn(
-                'flex items-center justify-center w-8 h-8 text-zinc-muted/30 transition-colors',
-                canReorder
-                  ? 'cursor-grab active:cursor-grabbing hover:text-zinc-muted'
-                  : 'cursor-not-allowed opacity-40',
-              )}
-              aria-hidden={!canReorder}
-            >
-              <GripVertical className="w-4 h-4" />
-            </div>
-          </td>
-        )}
-        {/* Expand toggle — aligned with row content */}
-        <td className="px-3 py-5 align-middle w-10">
-          <div className="flex items-center justify-center w-8 h-8">
-            {hasChildren ? (
-              <button
-                type="button"
-                onClick={() => setExpanded(!expanded)}
-                className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-zinc-muted"
-                aria-expanded={expanded}
-                aria-label={
-                  expanded
-                    ? t('common.collapse') || 'Collapse'
-                    : t('common.expand') || 'Expand'
-                }
-              >
-                <ChevronDown
-                  className={cn(
-                    'w-4 h-4 transition-transform duration-200',
-                    !expanded && (dir === 'rtl' ? 'rotate-90' : '-rotate-90'),
-                  )}
-                />
-              </button>
-            ) : (
-              <span className="w-8 h-8 shrink-0" aria-hidden />
-            )}
-          </div>
-        </td>
-        {/* Name */}
-        <td className="px-4 py-5 align-top min-w-[220px] w-[32%]">
-          <div className="flex items-start gap-2 w-full min-w-0">
-            <CategoryTreeGuides
-              level={level}
-              isLastSibling={isLastSibling}
-              ancestorContinues={ancestorContinues}
-            />
-            <div
-              className={cn(
-                'p-1.5 rounded-lg border shrink-0',
-                hasChildren
-                  ? 'bg-brand/10 border-brand/20'
-                  : 'bg-[var(--color-obsidian-hover)] border-[var(--color-border)]',
-              )}
-            >
-              <Icon
-                className={cn(
-                  'w-4 h-4',
-                  hasChildren ? 'text-brand' : 'text-zinc-muted',
-                )}
-              />
-            </div>
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <Link
-                  href={`/categories/${node.id}`}
-                  className={cn(
-                    'text-sm tracking-tight break-words whitespace-normal min-w-0 hover:text-brand hover:underline underline-offset-2 decoration-brand/40 transition-colors',
-                    level === 0 ? 'font-bold text-zinc-text' : 'font-medium text-zinc-text/80',
-                  )}
-                >
-                  {getLocalizedName(node, language)}
-                </Link>
-                {hasChildren && (
-                  <span className="text-[10px] font-bold text-zinc-muted uppercase bg-white/[0.04] px-2 py-0.5 rounded-full shrink-0 tabular-nums">
-                    {node.children!.length}
-                  </span>
-                )}
-              </div>
-              {nodeIssues.length > 0 && (
-                <CategoryIssueBadges issues={nodeIssues} t={t} compact />
-              )}
-            </div>
-          </div>
-        </td>
-        {/* Slug */}
-        <td className="px-6 py-5">
-          <span className="text-sm text-zinc-text font-medium uppercase tracking-tight">
-            {node.slug || '-'}
-          </span>
-        </td>
-        {/* Product Count */}
-        <td className="px-6 py-5 text-[15px] font-bold text-zinc-text tracking-tight text-center">
-          {node.productCount || 0}
-        </td>
-        {/* Status */}
-        <td className="px-6 py-5 text-center">
-          <StatusBadge
-            status={
-              node.isActive
-                ? t('category.active') || 'Active'
-                : t('category.inactive') || 'Inactive'
-            }
-            variant={node.isActive ? 'success' : 'inactive'}
-            size="sm"
-          />
-        </td>
-        {/* Actions */}
-        <td className="px-6 py-5">
-          <CategoryRowActions
-            node={node}
-            language={language}
-            canManage={canManage}
-            onEdit={onEdit}
-            onToggleStatus={onToggleStatus}
-            onDelete={onDelete}
-            onAddChild={onAddChild}
-            onAddSibling={onAddSibling}
-            openConfirm={openConfirm}
-            t={t}
-            className="justify-center"
-          />
-        </td>
-      </tr>
-      {/* Render children */}
-      {expanded && hasChildren && (
-        <SortableContext
-          items={node.children!.map((c) => c.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {node.children!.map((child, index) => (
-            <SortableTreeRow
-              key={child.id}
-              node={child}
-              level={level + 1}
-              isLastSibling={index === node.children!.length - 1}
-              ancestorContinues={[...ancestorContinues, !isLastSibling]}
-              language={language}
-              dir={dir}
-              canManage={canManage}
-              canReorder={canReorder}
-              showDragHandle={showDragHandle}
-              onEdit={onEdit}
-              onToggleStatus={onToggleStatus}
-              onDelete={onDelete}
-              onAddChild={onAddChild}
-              onAddSibling={onAddSibling}
-              openConfirm={openConfirm}
-              t={t}
-              issuesByCategoryId={issuesByCategoryId}
-              onContextMenu={onContextMenu}
-              autoExpand={autoExpand}
-            />
-          ))}
-        </SortableContext>
-      )}
-    </>
-  );
-}
 
 export function CategoriesPage() {
   const { t, dir, language } = useLanguage();
@@ -1042,7 +128,6 @@ export function CategoriesPage() {
   const hasActiveFilters =
     statusFilter !== 'all' || Boolean((debouncedSearch ?? '').trim());
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter, debouncedSearch]);
@@ -1062,7 +147,6 @@ export function CategoriesPage() {
 
   const displayTree = canReorder ? localTree : filteredTree;
 
-  // Client-side pagination on root nodes
   const totalRoots = displayTree.length;
   const totalPages = Math.max(1, Math.ceil(totalRoots / PAGE_SIZE));
   const hidePagination = statusFilter === 'issues' || searchActive;
@@ -1073,21 +157,9 @@ export function CategoriesPage() {
   const pageTo = hidePagination ? totalRoots : Math.min(currentPage * PAGE_SIZE, totalRoots);
   const autoExpandTree = searchActive || statusFilter === 'issues';
 
-  const countTreeNodes = useCallback((nodes: CategoryTreeNode[]): number => {
-    let count = 0;
-    const walk = (list: CategoryTreeNode[]) => {
-      for (const node of list) {
-        count += 1;
-        if (node.children?.length) walk(node.children);
-      }
-    };
-    walk(nodes);
-    return count;
-  }, []);
-
   const visibleCategoryCount = useMemo(
     () => countTreeNodes(filteredTree),
-    [filteredTree, countTreeNodes],
+    [filteredTree],
   );
 
   useEffect(() => {
@@ -1149,10 +221,8 @@ export function CategoriesPage() {
     [canReorder, localTree, persistSiblingOrder],
   );
 
-  // Fetch stats
   const { data: stats, isPending: statsLoading } = useGetCategoryStats();
 
-  // Delete mutation
   const deleteMutation = useDeleteCategoryMutation({
     onError: (err) => {
       alert(err.message || t('category.delete_error') || 'Failed to delete category');
@@ -1165,7 +235,6 @@ export function CategoriesPage() {
     deleteMutation.mutate(id);
   };
 
-  // --- Modal state ---
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addDefaultParentId, setAddDefaultParentId] = useState<string | null>(null);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
@@ -1188,7 +257,6 @@ export function CategoriesPage() {
     setAddModalOpen(true);
   }, []);
 
-  // Handle query params (?add=1, ?edit=:id) for deep links
   useEffect(() => {
     if (!router.isReady) return;
     if (router.query.add === '1') {
@@ -1205,7 +273,7 @@ export function CategoriesPage() {
       }
       void router.replace('/categories', undefined, { shallow: true });
     }
-  }, [router.isReady, router.query.add, router.query.edit]);
+  }, [router.isReady, router.query.add, router.query.edit, flatCategories]);
 
   const handleToggleStatus = (category: Category) => {
     const newStatus = !category.isActive;
@@ -1313,7 +381,7 @@ export function CategoriesPage() {
   const handleViewModeChange = useCallback((mode: CategoryViewMode) => {
     setViewMode(mode);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(CATEGORIES_VIEW_MODE_KEY, mode);
+      localStorage.setItem('forsa_categories_view_mode', mode);
     }
   }, []);
 
@@ -1361,7 +429,6 @@ export function CategoriesPage() {
       ]}
       tabs={
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4">
-          {/* Page Tabs */}
           <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
             {pageTabs.map((tab) => {
               const TabIcon = tab.icon;
@@ -1383,7 +450,6 @@ export function CategoriesPage() {
             })}
           </div>
 
-          {/* Status filter */}
           {pageTab === 'categories' && (
             <div className="flex items-center gap-1 bg-[var(--color-obsidian-card)] border border-[var(--color-border)] p-1.5 rounded-xl shadow-sm overflow-x-auto scrollbar-hide">
               {STATUS_TABS.map((tab) => (
@@ -1443,7 +509,6 @@ export function CategoriesPage() {
       }
     >
       <div className="space-y-6">
-        {/* Suggestions Tab */}
         {pageTab === 'suggestions' ? (
           <SuggestionReview />
         ) : treeLoading ? (
@@ -1537,7 +602,6 @@ export function CategoriesPage() {
                 </p>
               )}
               <div className="flex flex-col">
-                {/* Mobile: card tree */}
                 <div className="md:hidden p-3 space-y-2 min-h-[200px]">
                   {paginatedTree.map((node, index) => (
                     <TreeCategoryCard
@@ -1563,7 +627,6 @@ export function CategoriesPage() {
                   ))}
                 </div>
 
-                {/* Desktop: grid or table tree */}
                 {viewMode === 'grid' ? (
                   <div className="hidden md:block p-4 min-h-[200px]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -1658,7 +721,6 @@ export function CategoriesPage() {
                   </DndContext>
                 </div>
                 )}
-                {/* Pagination */}
                 {!hidePagination && totalRoots > 0 && (
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-6 py-4 border-t border-white/5">
                     <span className="text-[11px] font-bold text-zinc-muted tabular-nums order-2 sm:order-1">

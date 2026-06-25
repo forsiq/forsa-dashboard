@@ -147,3 +147,30 @@ export function remapWizardStep(
   const targetIndex = to.stepIds.indexOf(stepId);
   return targetIndex >= 0 ? targetIndex + 1 : to.step.PRODUCT;
 }
+
+export function filterSpecs<T extends { label?: string; value?: string }>(specs: T[]): T[] {
+  return specs.filter(
+    (s) => (s.label?.trim() ?? '') !== '' || (s.value?.trim() ?? '') !== '',
+  );
+}
+
+export function filterSources<T extends { label?: string; url?: string }>(sources: T[]): T[] {
+  return sources.filter(
+    (s) => (s.label?.trim() ?? '') !== '' || (s.url?.trim() ?? '') !== '',
+  );
+}
+
+export function resolveListingLoadError(
+  error: unknown,
+  t: (key: string) => string,
+): string {
+  const ax = error as { response?: { status?: number }; status?: number; code?: string };
+  const status = ax?.response?.status ?? ax?.status;
+  if (status === 404) return t('listing.detail.not_found');
+  if (status === 403) return t('listing.wizard.load_error_forbidden');
+  if (ax?.code === 'ERR_NETWORK' || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+    return t('listing.wizard.load_error_network');
+  }
+  return t('listing.wizard.load_error');
+}
+
