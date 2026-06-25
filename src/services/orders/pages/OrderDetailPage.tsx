@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
+import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck, Printer } from 'lucide-react';
 import { getOrder, updateOrderStatus, updateOrderPaymentStatus, orderKeys } from '../api/orders';
 import type { Order, OrderStatus } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
@@ -14,6 +14,8 @@ import { formatOrderCustomerName, orderStatusLabelKey } from '../utils/order-dis
 import { useToast } from '@core/contexts/ToastContext';
 import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useState, useMemo } from 'react';
+import { InvoiceDocument } from '../components/InvoiceDocument';
+import { useInvoicePrint } from '../hooks/useInvoicePrint';
 
 const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant: 'default' | 'danger' | 'success' }[]>> = {
   pending: [
@@ -54,6 +56,7 @@ export const OrderDetailPage = () => {
     isOpen: boolean;
     status: OrderStatus | null;
   }>({ isOpen: false, status: null });
+  const { printOrder, isPrintOpen, printInvoice, closeInvoice } = useInvoicePrint();
 
   const { data: order, isPending } = useQuery({
     queryKey: orderKeys.detail(orderId || ''),
@@ -136,6 +139,15 @@ export const OrderDetailPage = () => {
             </p>
           </div>
         </div>
+        <AmberButton
+          variant="secondary"
+          size="sm"
+          className="gap-2"
+          onClick={() => printInvoice(order)}
+        >
+          <Printer size={16} />
+          <span className="hidden sm:inline">{t('invoice.print_invoice') || 'Print Invoice'}</span>
+        </AmberButton>
       </div>
 
       {/* Status Cards */}
@@ -188,14 +200,22 @@ export const OrderDetailPage = () => {
           <h2 className="text-lg font-semibold text-zinc-text mb-4">{t('orders.orderItems')}</h2>
           <div className="space-y-4">
             {order.items.length > 0 ? order.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                <div className="flex-1">
-                  <div className="text-zinc-text font-medium">{item.productName}</div>
-                  {item.productSku && (
-                    <div className="text-sm text-zinc-muted">SKU: {item.productSku}</div>
+              <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {item.image && (
+                    <div className="w-12 h-12 rounded-lg bg-obsidian-panel border border-white/5 overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.image} alt={item.productName} className="w-full h-full object-cover" />
+                    </div>
                   )}
+                  <div className="min-w-0">
+                    <div className="text-zinc-text font-medium truncate">{item.productName}</div>
+                    {item.productSku && (
+                      <div className="text-sm text-zinc-muted">SKU: {item.productSku}</div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-end">
+                <div className="text-end shrink-0">
                   <div className="text-zinc-text">{item.quantity} x {formatCurrency(item.unitPrice ?? 0)}</div>
                   <div className="text-sm font-medium text-zinc-text">{formatCurrency(item.totalPrice ?? 0)}</div>
                 </div>
@@ -366,6 +386,10 @@ export const OrderDetailPage = () => {
         variant="warning"
         isLoading={statusMutation.isPending}
       />
+
+      {isPrintOpen && printOrder && (
+        <InvoiceDocument order={printOrder} t={t} dir={dir} onClose={closeInvoice} />
+      )}
     </div>
   );
 };

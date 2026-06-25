@@ -23,3 +23,4 @@ export { en as notifications } from './notifications';
 export { en as support } from './support';
 export { en as toasts } from './toasts';
 export { en as feedback } from './feedback';
+export { en as invoice } from './invoice';

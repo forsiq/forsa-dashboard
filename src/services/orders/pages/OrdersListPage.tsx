@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock } from 'lucide-react';
+import { Plus, Package, TrendingUp, AlertCircle, DollarSign, Eye, Edit, CheckCircle, XCircle, Truck, Clock, Printer } from 'lucide-react';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { useIsMobile } from '@core/hooks/useIsMobile';
@@ -34,6 +34,8 @@ import {
 import { ListPageSkeleton, FetchingOverlay } from '@core/loading';
 import { EmptyState } from '@core/components/EmptyState';
 import { dataTableLinkClass } from '@core/components/Data/DataTableEntityTitle';
+import { InvoiceDocument } from '../components/InvoiceDocument';
+import { useInvoicePrint } from '../hooks/useInvoicePrint';
 
 type StatusTab = 'all' | 'pending' | 'processing' | 'delivered' | 'cancelled';
 
@@ -52,6 +54,7 @@ export const OrdersListPage = () => {
   const { t, dir } = useLanguage();
   const isClient = useIsClient();
   const { isMobile } = useIsMobile();
+  const { printOrder, isPrintOpen, printInvoice, closeInvoice } = useInvoicePrint();
 
   const [searchQuery, setSearchQuery] = useFilterState('search', '');
   const [statusFilter, setStatusFilter] = useFilterState<StatusTab>('status', 'all');
@@ -288,6 +291,11 @@ export const OrdersListPage = () => {
       icon: Eye,
       onClick: (order) => router.push(`/orders/${order.id}`),
     },
+    {
+      label: t('invoice.print_invoice') || 'Print Invoice',
+      icon: Printer,
+      onClick: (order) => printInvoice(order),
+    },
     ...(['pending', 'confirmed', 'paid', 'shipped'] as OrderStatus[]).flatMap((fromStatus) =>
       (statusTransitions[fromStatus] ?? []).map((transition) => ({
         label: (order: Order) =>
@@ -303,7 +311,7 @@ export const OrdersListPage = () => {
         },
       }))
     ),
-  ], [router, t, statusTransitions, handleStatusChange]);
+  ], [router, t, statusTransitions, handleStatusChange, printInvoice]);
 
   const handleRowClick = (order: Order) => {
     router.push(`/orders/${order.id}`);
@@ -518,6 +526,10 @@ export const OrdersListPage = () => {
       </div>
 
       <ConfirmModal />
+
+      {isPrintOpen && printOrder && (
+        <InvoiceDocument order={printOrder} t={t} dir={dir} onClose={closeInvoice} />
+      )}
     </AdminListPageShell>
   );
 };

@@ -30,7 +30,7 @@ const mapToOrder = (raw: any): Order => {
 
   // Map order items from API response
   const rawItems = (row.items ?? row.order_items ?? row.orderItems) as any[] | undefined;
-  const items: OrderItem[] = Array.isArray(rawItems)
+  let items: OrderItem[] = Array.isArray(rawItems)
     ? rawItems.map((item: any, idx: number) => ({
         id: String(item.id ?? idx),
         productId: String(item.productId ?? item.product_id ?? item.auctionId ?? item.auction_id ?? ''),
@@ -41,6 +41,29 @@ const mapToOrder = (raw: any): Order => {
         totalPrice: Number(item.totalPrice ?? item.total_price ?? item.unitPrice ?? item.unit_price ?? item.price ?? 0),
       }))
     : [];
+
+  // An auction order is one-won-auction-per-order. The backend Order entity
+  // has no `items[]`; it exposes auction fields directly (auctionTitle,
+  // finalPrice, imageUrl, auctionId). Synthesize a single line item so the
+  // detail page / invoice shows the product instead of "no items".
+  if (items.length === 0) {
+    const finalPrice = Number(row.finalPrice ?? row.final_price ?? row.total ?? row.amount ?? 0);
+    const auctionTitle = String(row.auctionTitle ?? row.auction_title ?? row.title ?? '').trim();
+    const auctionId = String(row.auctionId ?? row.auction_id ?? '');
+    const image = String(row.imageUrl ?? row.image_url ?? '').trim() || undefined;
+    if (auctionTitle || finalPrice > 0 || auctionId) {
+      items = [{
+        id: auctionId || row.id ? String(row.id) : 'item-0',
+        productId: auctionId,
+        productName: auctionTitle || (row.id ? `Order #${row.id}` : 'Item'),
+        productSku: undefined,
+        quantity: 1,
+        unitPrice: finalPrice,
+        totalPrice: finalPrice,
+        image,
+      }];
+    }
+  }
 
   const winnerPhone = String(row.winnerPhone ?? row.winner_phone ?? '').trim();
 
