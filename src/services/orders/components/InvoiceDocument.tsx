@@ -12,6 +12,7 @@ interface InvoiceDocumentProps {
   onClose: () => void;
 }
 
+
 /**
  * Print-only invoice. Rendered into a portal at document.body with print-only
  * styling so it appears on paper (and print preview) while the dashboard stays
@@ -51,12 +52,32 @@ export function InvoiceDocument({ order, t, dir, onClose }: InvoiceDocumentProps
       <div className="forsa-invoice">
         {/* Toolbar (screen only, hidden on paper) */}
         <div className="forsa-invoice__toolbar">
-          <button type="button" onClick={() => window.print()}>
-            {t('invoice.print') || 'Print'}
-          </button>
-          <button type="button" onClick={onClose}>
-            {t('common.close') || 'Close'}
-          </button>
+          <div className="forsa-invoice__toolbar-info">
+            <span className="forsa-invoice__toolbar-title">
+              {t('invoice.invoice_no') || 'Invoice #'} {order.orderNumber || order.id}
+            </span>
+          </div>
+          <div className="forsa-invoice__toolbar-actions">
+            <button
+              type="button"
+              className="forsa-invoice__btn"
+              onClick={() => window.print()}
+            >
+              <span aria-hidden>🖨</span> {t('invoice.print') || 'Print'}
+            </button>
+            <button
+              type="button"
+              className="forsa-invoice__btn forsa-invoice__btn--ghost"
+              onClick={onClose}
+            >
+              {t('common.close') || 'Close'}
+            </button>
+          </div>
+        </div>
+        {/* Hint shown to guide PDF save from the print dialog */}
+        <div className="forsa-invoice__hint">
+          {t('invoice.pdf_hint') ||
+            'In the print dialog, choose "Save as PDF" as the destination to download.'}
         </div>
 
         <div className="forsa-invoice__page">

@@ -15,4 +15,6 @@ export const ar: Record<string, string> = {
   "invoice.footer_generated": "تم إنشاء هذه الفاتورة إلكترونياً.",
   "invoice.print": "طباعة",
   "invoice.print_invoice": "طباعة الفاتورة",
+  "invoice.download_pdf": "تحميل PDF",
+  "invoice.pdf_hint": "في نافذة الطباعة، اختر \"حفظ بصيغة PDF\" كوجهة للتحميل.",
 };

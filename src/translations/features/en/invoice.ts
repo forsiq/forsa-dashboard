@@ -15,4 +15,6 @@ export const en: Record<string, string> = {
   "invoice.footer_generated": "This invoice was generated electronically.",
   "invoice.print": "Print",
   "invoice.print_invoice": "Print Invoice",
+  "invoice.download_pdf": "Download PDF",
+  "invoice.pdf_hint": "In the print dialog, choose \"Save as PDF\" as the destination to download.",
 };

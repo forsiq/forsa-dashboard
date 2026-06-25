@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck, Printer } from 'lucide-react';
+import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck, Printer, Download } from 'lucide-react';
 import { getOrder, updateOrderStatus, updateOrderPaymentStatus, orderKeys } from '../api/orders';
 import type { Order, OrderStatus } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
@@ -139,15 +139,26 @@ export const OrderDetailPage = () => {
             </p>
           </div>
         </div>
-        <AmberButton
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-          onClick={() => printInvoice(order)}
-        >
-          <Printer size={16} />
-          <span className="hidden sm:inline">{t('invoice.print_invoice') || 'Print Invoice'}</span>
-        </AmberButton>
+        <div className="flex items-center gap-2">
+          <AmberButton
+            variant="secondary"
+            size="sm"
+            className="gap-2"
+            onClick={() => printInvoice(order)}
+          >
+            <Printer size={16} />
+            <span className="hidden sm:inline">{t('invoice.print_invoice') || 'Print Invoice'}</span>
+          </AmberButton>
+          <AmberButton
+            variant="primary"
+            size="sm"
+            className="gap-2"
+            onClick={() => printInvoice(order)}
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">{t('invoice.download_pdf') || 'Download PDF'}</span>
+          </AmberButton>
+        </div>
       </div>
 
       {/* Status Cards */}

@@ -94,34 +94,72 @@
    invoice, formatted for A4 paper (black on white).
    ========================================================================= */
 
-/* Toolbar with Print / Close buttons — visible on screen, never on paper */
+/* Toolbar with Print / Download / Close buttons — visible on screen, never on paper */
 .forsa-invoice__toolbar {
   position: sticky;
   top: 0;
   z-index: 10;
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
   background: var(--color-obsidian-outer, #0a0a0b);
   border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
 }
-.forsa-invoice__toolbar button {
+.forsa-invoice__toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.forsa-invoice__toolbar-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-zinc-text, #e4e4e7);
+}
+.forsa-invoice__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.forsa-invoice__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-}
-.forsa-invoice__toolbar button:first-child {
-  background: #111;
-  color: #fff;
-  border: 1px solid #333;
-}
-.forsa-invoice__toolbar button:last-child {
   background: transparent;
   color: var(--color-zinc-muted, #888);
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+  transition: background 0.15s, border-color 0.15s;
+}
+.forsa-invoice__btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.forsa-invoice__btn--primary {
+  background: var(--color-brand, #6366f1);
+  color: #ffffff;
+  border-color: transparent;
+}
+.forsa-invoice__btn--primary:hover {
+  filter: brightness(1.1);
+  background: var(--color-brand, #6366f1);
+}
+.forsa-invoice__btn--ghost {
+  border-color: transparent;
+}
+.forsa-invoice__hint {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  color: var(--color-zinc-muted, #888);
+  text-align: center;
 }
 
 /* The invoice sheet — clean, document-like */
@@ -329,6 +367,9 @@
     display: block !important;
   }
   .forsa-invoice__toolbar {
+    display: none !important;
+  }
+  .forsa-invoice__hint {
     display: none !important;
   }
 
