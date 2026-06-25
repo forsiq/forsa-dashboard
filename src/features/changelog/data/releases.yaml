@@ -1,3 +1,25 @@
+- version: "1.8.0"
+  date: "2026-06-26"
+  title:
+    en: "Notification system and order history"
+    ar: "نظام الإشعارات وسجل حالة الطلبات"
+  entries:
+    - description:
+        en: "Admins can send custom notifications to a specific user from the dashboard (with optional push) and browse real notification history instead of placeholder data."
+        ar: "يمكن للمشرفين إرسال إشعارات مخصصة لمستخدم محدد من لوحة التحكم (مع إشعار فوري اختياري) وتصفح سجل الإشعارات الحقيقي بدلاً من بيانات تجريبية."
+      type: added
+      sidebarPath: /notifications/send
+    - description:
+        en: "Changing an order status (confirm, paid, shipped, delivered, cancelled) now notifies the customer via push and saves the update in their notification history."
+        ar: "تغيير حالة الطلب (تأكيد، دفع، شحن، توصيل، إلغاء) أصبح يُشعر العميل عبر إشعار فوري ويحفظ التحديث في سجل إشعاراته."
+      type: added
+      sidebarPath: /orders
+    - description:
+        en: "Order detail page now shows a status history timeline (who changed what and when)."
+        ar: "صفحة تفاصيل الطلب تعرض الآن جدول زمني لتغييرات الحالة (من غيّر ماذا ومتى)."
+      type: added
+      sidebarPath: /orders
+
 - version: "1.7.7"
   date: "2026-06-24"
   title:

@@ -41,6 +41,7 @@ export const ar: Record<string, string> = {
   "orders.status.refunded": "مسترد",
   "orders.status.shipped": "تم الشحن",
   "orders.status_change_confirm": "هل تريد تغيير حالة الطلب إلى",
+  "orders.status_history": "سجل تغييرات الحالة",
   "orders.status_update_failed": "فشل تحديث حالة الطلب",
   "orders.status_updated": "تم تحديث حالة الطلب",
   "orders.subtitle": "إدارة وتتبع جميع طلبات العملاء",

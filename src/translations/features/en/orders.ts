@@ -41,6 +41,7 @@ export const en: Record<string, string> = {
   "orders.status.refunded": "Refunded",
   "orders.status.shipped": "Shipped",
   "orders.status_change_confirm": "Change order status to",
+  "orders.status_history": "Status History",
   "orders.status_update_failed": "Failed to update order status",
   "orders.status_updated": "Order status updated",
   "orders.subtitle": "Manage and track all customer orders",

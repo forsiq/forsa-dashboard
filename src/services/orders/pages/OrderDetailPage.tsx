@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck, Printer, Download } from 'lucide-react';
+import { ArrowLeft, Package, CreditCard, User, MapPin, Phone, Clock, CheckCircle, XCircle, Truck, Printer, Download, History } from 'lucide-react';
 import { getOrder, updateOrderStatus, updateOrderPaymentStatus, orderKeys } from '../api/orders';
 import type { Order, OrderStatus } from '../types';
 import { AmberButton, AmberCard } from '@core/components';
@@ -16,6 +16,7 @@ import { AmberConfirmModal } from '@core/components/Feedback/AmberConfirmModal';
 import { useState, useMemo } from 'react';
 import { InvoiceDocument } from '../components/InvoiceDocument';
 import { useInvoicePrint } from '../hooks/useInvoicePrint';
+import { useOrderStatusLogs } from '@services/notifications';
 
 const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant: 'default' | 'danger' | 'success' }[]>> = {
   pending: [
@@ -63,6 +64,8 @@ export const OrderDetailPage = () => {
     queryFn: () => getOrder(orderId || ''),
     enabled: !!orderId,
   });
+
+  const { data: statusLogs } = useOrderStatusLogs(orderId || '');
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
@@ -381,6 +384,77 @@ export const OrderDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Status History Timeline */}
+      {statusLogs && statusLogs.length > 0 && (
+        <AmberCard className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <History className="text-zinc-muted" size={18} />
+            <h2 className="text-lg font-semibold text-zinc-text">
+              {t('orders.status_history') || 'سجل تغييرات الحالة'}
+            </h2>
+          </div>
+          <div className="relative">
+            {statusLogs.map((log, idx) => {
+              const isLast = idx === statusLogs.length - 1;
+              return (
+                <div key={log.id} className="flex gap-4 pb-6 last:pb-0 relative">
+                  {!isLast && (
+                    <div className="absolute left-[11px] top-6 bottom-0 w-px bg-white/10" />
+                  )}
+                  <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
+                    log.toStatus === 'cancelled'
+                      ? 'bg-red-500/20'
+                      : log.toStatus === 'delivered'
+                        ? 'bg-green-500/20'
+                        : 'bg-brand/20'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      log.toStatus === 'cancelled'
+                        ? 'bg-red-400'
+                        : log.toStatus === 'delivered'
+                          ? 'bg-green-400'
+                          : 'bg-brand'
+                    }`} />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {log.fromStatus && (
+                        <>
+                          <span className="text-xs font-medium text-zinc-muted">
+                            {t(orderStatusLabelKey(log.fromStatus as OrderStatus)) || log.fromStatus}
+                          </span>
+                          <span className="text-zinc-muted text-xs">→</span>
+                        </>
+                      )}
+                      <span className={`text-xs font-bold ${
+                        log.toStatus === 'cancelled'
+                          ? 'text-red-400'
+                          : log.toStatus === 'delivered'
+                            ? 'text-green-400'
+                            : 'text-brand'
+                      }`}>
+                        {t(orderStatusLabelKey(log.toStatus as OrderStatus)) || log.toStatus}
+                      </span>
+                    </div>
+                    {log.notes && (
+                      <p className="text-sm text-zinc-muted">{log.notes}</p>
+                    )}
+                    <p className="text-[11px] text-zinc-muted/70">
+                      {log.changedBy && (
+                        <span className="font-mono mr-2" dir="ltr">
+                          {log.changedBy.slice(0, 8)}…
+                        </span>
+                      )}
+                      {log.createdAt && new Date(log.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </AmberCard>
+      )}
 
       {/* Status Change Confirmation Modal */}
       <AmberConfirmModal

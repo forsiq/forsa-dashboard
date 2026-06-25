@@ -20,6 +20,7 @@ export const sidebarSections: MenuSection[] = [
       { path: '/merchant-applications', label: 'sidebar.merchant_applications', icon: 'UserPlus' },
       { path: '/settlements', label: 'sidebar.settlements', icon: 'Landmark' },
       { path: '/users', label: 'sidebar.users', icon: 'UserCog' },
+      { path: '/notifications/send', label: 'sidebar.send_notification', icon: 'Send' },
       { path: '/settings', label: 'sidebar.settings', icon: 'Settings' },
     ],
   },
