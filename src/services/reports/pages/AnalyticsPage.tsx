@@ -21,9 +21,9 @@ import { ReportStatsCard } from '../components/ReportStatsCard';
 import { ReportPanelCard } from '../components/ReportPanelCard';
 import { hasChartValues } from '../utils/chartData';
 import {
-  chartGridStroke,
   chartMargin,
-  chartTooltipStyle,
+  getChartGridStroke,
+  getChartTooltipStyle,
   getCategoryXAxisProps,
   getValueYAxisProps,
   reportHeaderSubtitleClass,
@@ -32,7 +32,13 @@ import {
   reportPageClass,
 } from '../utils/reportLayout';
 
-const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = [
+  'var(--chart-3, #10B981)',
+  'var(--chart-2, #3B82F6)',
+  'var(--chart-1, #FFC000)',
+  'var(--chart-4, #EF4444)',
+  'var(--chart-5, #8B5CF6)',
+];
 
 export function AnalyticsPage() {
   const { t, dir } = useLanguage();
@@ -136,14 +142,14 @@ export function AnalyticsPage() {
                         <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} vertical={false} />
                     <XAxis dataKey="date" {...getCategoryXAxisProps(isRTL)} />
                     <YAxis {...getValueYAxisProps()} />
-                    <Tooltip contentStyle={chartTooltipStyle} itemStyle={{ fontSize: '12px', fontWeight: 700 }} />
+                    <Tooltip contentStyle={getChartTooltipStyle()} itemStyle={{ fontSize: '12px', fontWeight: 700 }} />
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#22c55e"
+                      stroke="var(--chart-3, #10B981)"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorSales)"
@@ -167,12 +173,12 @@ export function AnalyticsPage() {
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
-                          stroke="rgba(255,255,255,0.05)"
+                          stroke="var(--color-border-subtle, rgba(0,0,0,0.06))"
                           strokeWidth={2}
                         />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={chartTooltipStyle} />
+                    <Tooltip contentStyle={getChartTooltipStyle()} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full px-2">
@@ -195,11 +201,11 @@ export function AnalyticsPage() {
             <div className="h-[280px] w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={ordersSeries} margin={chartMargin} barCategoryGap="25%">
-                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} vertical={false} />
                   <XAxis dataKey="date" {...getCategoryXAxisProps(isRTL)} />
                   <YAxis {...getValueYAxisProps()} allowDecimals={false} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={32} name="Orders" />
+                  <Tooltip contentStyle={getChartTooltipStyle()} />
+                  <Bar dataKey="value" fill="var(--chart-2, #3B82F6)" radius={[4, 4, 0, 0]} maxBarSize={32} name="Orders" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

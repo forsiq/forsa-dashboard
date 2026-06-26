@@ -19,10 +19,10 @@ import { ReportPanelCard } from '../components/ReportPanelCard';
 import { ReportChartFrame } from '../components/ReportChartFrame';
 import { hasChartValues } from '../utils/chartData';
 import {
-  chartGridStroke,
   chartMargin,
-  chartTooltipStyle,
   formatReportMetric,
+  getChartGridStroke,
+  getChartTooltipStyle,
   getCategoryXAxisProps,
   getValueYAxisProps,
   reportChartGridClass,
@@ -158,11 +158,11 @@ export function AuctionPerformancePage() {
               <ReportChartFrame heightClass="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={statusData} margin={chartMargin} barCategoryGap="25%">
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} vertical={false} />
                     <XAxis dataKey="name" {...getCategoryXAxisProps(isRTL)} />
                     <YAxis {...getValueYAxisProps()} allowDecimals={false} />
-                    <Tooltip contentStyle={chartTooltipStyle} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                    <Tooltip contentStyle={getChartTooltipStyle()} />
+                    <Bar dataKey="value" fill="var(--chart-2, #3B82F6)" radius={[4, 4, 0, 0]} maxBarSize={48} />
                   </BarChart>
                 </ResponsiveContainer>
               </ReportChartFrame>
@@ -178,18 +178,18 @@ export function AuctionPerformancePage() {
                   <AreaChart data={bidActivityData} margin={chartMargin}>
                     <defs>
                       <linearGradient id={bidsGradientId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                        <stop offset="5%" stopColor="var(--chart-3, #10B981)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--chart-3, #10B981)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} vertical={false} />
                     <XAxis dataKey="name" {...getCategoryXAxisProps(isRTL)} />
                     <YAxis {...getValueYAxisProps()} allowDecimals={false} />
-                    <Tooltip contentStyle={chartTooltipStyle} />
+                    <Tooltip contentStyle={getChartTooltipStyle()} />
                     <Area
                       type="monotone"
                       dataKey="bids"
-                      stroke="#22c55e"
+                      stroke="var(--chart-3, #10B981)"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill={`url(#${bidsGradientId})`}

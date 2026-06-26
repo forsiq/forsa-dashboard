@@ -35,8 +35,8 @@ export function InventoryProductPickerModal({
   const { data: inventoryData, isLoading, isFetching } = useInventoryList({
     search: debouncedSearch || undefined,
     limit: 30,
-    isActive: true,
-    sortBy: 'name',
+    isActive: 'true',
+    sortBy: 'sku',
     sortOrder: 'asc',
   });
 

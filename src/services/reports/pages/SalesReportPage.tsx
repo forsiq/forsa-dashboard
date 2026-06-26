@@ -11,10 +11,10 @@ import { ReportStatsCard } from '../components/ReportStatsCard';
 import { ReportPanelCard } from '../components/ReportPanelCard';
 import { hasChartValues } from '../utils/chartData';
 import {
-  chartAxisTick,
-  chartGridStroke,
   chartMargin,
-  chartTooltipStyle,
+  getChartAxisTick,
+  getChartGridStroke,
+  getChartTooltipStyle,
   getCategoryXAxisProps,
   getValueYAxisProps,
   reportChartGridClass,
@@ -148,23 +148,23 @@ export function SalesReportPage() {
               <div className="h-[320px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={products} layout="vertical" margin={{ ...chartMargin, left: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} horizontal={false} />
                     <XAxis type="number" {...getValueYAxisProps()} />
                     <YAxis
                       type="category"
                       dataKey="name"
-                      tick={chartAxisTick}
+                      tick={getChartAxisTick()}
                       width={88}
                       axisLine={false}
                       tickLine={false}
                     />
                     <Tooltip
-                      contentStyle={chartTooltipStyle}
+                      contentStyle={getChartTooltipStyle()}
                       formatter={(value: string | number | (string | number)[]) =>
                         formatCurrency(Array.isArray(value) ? value[0] : value)
                       }
                     />
-                    <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} maxBarSize={28} />
+                    <Bar dataKey="revenue" fill="var(--chart-2, #3B82F6)" radius={[0, 4, 4, 0]} maxBarSize={28} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -178,12 +178,12 @@ export function SalesReportPage() {
               <div className="h-[320px] w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={periodComparisonData} margin={chartMargin}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} vertical={false} />
                     <XAxis dataKey="name" {...getCategoryXAxisProps(isRTL)} />
                     <YAxis {...getValueYAxisProps()} />
-                    <Tooltip contentStyle={chartTooltipStyle} />
-                    <Area type="monotone" dataKey="revenue" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} strokeWidth={2} />
-                    <Area type="monotone" dataKey="goal" stroke="#71717a" fill="transparent" strokeDasharray="5 5" />
+                    <Tooltip contentStyle={getChartTooltipStyle()} />
+                    <Area type="monotone" dataKey="revenue" stroke="var(--chart-1, #FFC000)" fill="var(--chart-1, #FFC000)" fillOpacity={0.1} strokeWidth={2} />
+                    <Area type="monotone" dataKey="goal" stroke="var(--color-zinc-muted, #71717A)" fill="transparent" strokeDasharray="5 5" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

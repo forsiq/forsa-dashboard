@@ -20,10 +20,10 @@ import { ReportPanelCard } from '../components/ReportPanelCard';
 import { ReportChartFrame } from '../components/ReportChartFrame';
 import { hasChartValues } from '../utils/chartData';
 import {
-  chartGridStroke,
   chartMargin,
-  chartTooltipStyle,
   formatReportMetric,
+  getChartGridStroke,
+  getChartTooltipStyle,
   getCategoryYAxisProps,
   getIntegerXAxisProps,
   reportChartGridClass,
@@ -35,7 +35,13 @@ import {
 import { useGetGroupBuyings, useGetGroupBuyingStats } from '../../../features/sales/api/group-buying-hooks';
 import type { GroupBuying } from '../../../features/sales/types';
 
-const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = [
+  'var(--chart-3, #10B981)',
+  'var(--chart-2, #3B82F6)',
+  'var(--chart-1, #FFC000)',
+  'var(--chart-4, #EF4444)',
+  'var(--chart-5, #8B5CF6)',
+];
 
 /**
  * GroupBuyingAnalyticsPage - Group buying deal analytics
@@ -170,11 +176,11 @@ export function GroupBuyingAnalyticsPage() {
                     data={dealsByStatus}
                     margin={{ ...chartMargin, left: 4, right: 16 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={getChartGridStroke()} horizontal={false} />
                     <XAxis type="number" {...getIntegerXAxisProps()} />
                     <YAxis dataKey="name" {...getCategoryYAxisProps(isRTL ? 80 : 72)} />
-                    <Tooltip contentStyle={chartTooltipStyle} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} maxBarSize={36} />
+                    <Tooltip contentStyle={getChartTooltipStyle()} />
+                    <Bar dataKey="value" fill="var(--chart-2, #3B82F6)" radius={[0, 4, 4, 0]} maxBarSize={36} />
                   </BarChart>
                 </ResponsiveContainer>
               </ReportChartFrame>
@@ -199,7 +205,7 @@ export function GroupBuyingAnalyticsPage() {
                           />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={chartTooltipStyle} />
+                      <Tooltip contentStyle={getChartTooltipStyle()} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

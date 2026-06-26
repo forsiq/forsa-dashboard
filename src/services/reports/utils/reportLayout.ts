@@ -30,23 +30,60 @@ export const reportHeaderTitleClass =
 export const reportHeaderSubtitleClass =
   'text-sm sm:text-base text-zinc-secondary font-bold leading-relaxed';
 
+/**
+ * Reads a CSS custom property from :root so chart styles adapt to the active
+ * theme (light/dark). Falls back to a sensible value when the variable or DOM
+ * is unavailable (e.g. SSR or tests).
+ */
+function readCssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+/** Tooltip background adapts to theme via the obsidian-card token. */
+export function getChartTooltipStyle() {
+  return {
+    backgroundColor: readCssVar('--color-obsidian-card', '#FFFFFF'),
+    border: `1px solid ${readCssVar('--color-border-subtle', 'rgba(0,0,0,0.08)')}`,
+    borderRadius: '12px',
+  };
+}
+
+/** @deprecated use getChartTooltipStyle() — kept for backward compatibility */
 export const chartTooltipStyle = {
-  backgroundColor: '#18181b',
-  border: '1px solid #27272a',
+  backgroundColor: '#FFFFFF',
+  border: '1px solid rgba(0,0,0,0.08)',
   borderRadius: '12px',
 };
 
-export const chartGridStroke = 'rgba(255,255,255,0.05)';
+/** Grid stroke adapts to theme. */
+export function getChartGridStroke(): string {
+  return readCssVar('--color-border-subtle', 'rgba(0,0,0,0.06)');
+}
 
-export const chartAxisTick = { fill: '#71717a', fontSize: 10, fontWeight: 700 as const };
+/** @deprecated use getChartGridStroke() — kept for backward compatibility */
+export const chartGridStroke = 'rgba(0,0,0,0.06)';
+
+/** Axis tick fill adapts to theme (zinc-muted). */
+export function getChartAxisTick() {
+  return {
+    fill: readCssVar('--color-zinc-muted', '#64748B'),
+    fontSize: 10,
+    fontWeight: 700 as const,
+  };
+}
+
+/** @deprecated use getChartAxisTick() — kept for backward compatibility */
+export const chartAxisTick = { fill: '#64748B', fontSize: 10, fontWeight: 700 as const };
 
 export const chartMargin = { top: 8, right: 12, left: 0, bottom: 8 };
 
 /** X-axis props for category labels (Arabic/RTL-friendly). */
 export function getCategoryXAxisProps(isRTL: boolean) {
   return {
-    stroke: '#3f3f46',
-    tick: chartAxisTick,
+    stroke: readCssVar('--color-zinc-muted', '#64748B'),
+    tick: getChartAxisTick(),
     tickLine: false,
     axisLine: false,
     interval: 0,
@@ -58,8 +95,8 @@ export function getCategoryXAxisProps(isRTL: boolean) {
 
 export function getValueYAxisProps() {
   return {
-    stroke: '#3f3f46',
-    tick: chartAxisTick,
+    stroke: readCssVar('--color-zinc-muted', '#64748B'),
+    tick: getChartAxisTick(),
     tickLine: false,
     axisLine: false,
     width: 40,
@@ -70,8 +107,8 @@ export function getValueYAxisProps() {
 /** Numeric X-axis for horizontal bar charts (integer ticks only). */
 export function getIntegerXAxisProps() {
   return {
-    stroke: '#3f3f46',
-    tick: chartAxisTick,
+    stroke: readCssVar('--color-zinc-muted', '#64748B'),
+    tick: getChartAxisTick(),
     tickLine: false,
     axisLine: false,
     allowDecimals: false,
@@ -83,7 +120,7 @@ export function getIntegerXAxisProps() {
 export function getCategoryYAxisProps(width = 72) {
   return {
     type: 'category' as const,
-    tick: chartAxisTick,
+    tick: getChartAxisTick(),
     axisLine: false,
     tickLine: false,
     width,

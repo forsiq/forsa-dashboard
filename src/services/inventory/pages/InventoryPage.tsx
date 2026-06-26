@@ -106,23 +106,25 @@ export const InventoryPage = () => {
   const { data: inventoryData, isLoading, isFetching } = useList();
   const { data: statsData } = useStats();
 
-  const products: any[] = (inventoryData as any)?.items || [];
-  const inventoryStats = (statsData as any)?.data || {};
+  const products: any[] = (inventoryData as any)?.data || [];
+  const inventoryStats = statsData || {};
 
   const data = useMemo(() => {
     return products.map((p: any) => ({
       id: String(p.id),
-      name: p.name || p.title || '',
+      name: p.listing?.title || p.name || p.title || '',
       sku: p.sku || '',
-      category: p.category?.name || p.category || '',
-      price: parseFloat(p.price) || 0,
-      stock: p.inventory_quantity || p.stock || 0,
-      warehouse: p.warehouse || t('inventory.default_warehouse') || 'Default',
+      category: p.listing?.brand || p.category?.name || p.category || '',
+      price: Number(p.sellingPrice ?? p.costPrice ?? p.price ?? 0),
+      stock: Number(p.stockQuantity ?? p.stock ?? 0),
+      stockStatus: p.stockStatus || 'in_stock',
+      isActive: p.isActive ?? true,
+      warehouse: t('inventory.default_warehouse') || 'Primary',
       lastUpdated: p.updatedAt || p.updated_at || '',
-      image: p.image_url || p.image || (p.images?.[0]) || '',
-      images: p.images || [],
-      mainAttachmentId: p.mainAttachmentId || p.main_attachment_id || null,
-      attachmentIds: p.attachmentIds || p.attachment_ids || [],
+      image: p.listing?.imageUrl || p.image_url || p.image || (p.listing?.images?.[0]) || (p.images?.[0]) || '',
+      images: p.listing?.images || p.images || [],
+      mainAttachmentId: p.listing?.mainAttachmentId || p.mainAttachmentId || p.main_attachment_id || null,
+      attachmentIds: p.listing?.attachmentIds || p.attachmentIds || p.attachment_ids || [],
     }));
   }, [products, t]);
 
@@ -136,9 +138,9 @@ export const InventoryPage = () => {
       const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                            p.sku.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
-                           (statusFilter === 'in_stock' && p.stock > 5) ||
-                           (statusFilter === 'low_stock' && p.stock > 0 && p.stock <= 5) ||
-                           (statusFilter === 'out_of_stock' && p.stock === 0);
+                           (statusFilter === 'in_stock' && p.stockStatus === 'in_stock') ||
+                           (statusFilter === 'low_stock' && p.stockStatus === 'low_stock') ||
+                           (statusFilter === 'out_of_stock' && (p.stockStatus === 'out_of_stock' || p.stock === 0));
       const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
 
       return matchesSearch && matchesStatus && matchesCategory;
@@ -153,7 +155,7 @@ export const InventoryPage = () => {
   }, [data, debouncedSearch, statusFilter, categoryFilter, sortBy, sortOrder]);
 
   const lowStockAlerts = useMemo(() => {
-    return data.filter(p => p.stock <= 5 && p.stock > 0);
+    return data.filter(p => p.stockStatus === 'low_stock' || (p.stock <= 5 && p.stock > 0 && !p.stockStatus));
   }, [data]);
 
   const totalValue = useMemo(() => {
@@ -249,8 +251,8 @@ export const InventoryPage = () => {
       cardBadge: true,
       render: (row) => (
         <StatusBadge
-          status={row.stock > 5 ? t('inventory.stock_in_stock') : row.stock > 0 ? t('inventory.stock_low') : t('inventory.stock_out')}
-          variant={row.stock > 5 ? 'success' : row.stock > 0 ? 'warning' : 'failed'}
+          status={row.stockStatus === 'in_stock' ? (t('inventory.stock_in_stock') || 'In Stock') : row.stockStatus === 'low_stock' ? (t('inventory.stock_low') || 'Low') : row.stockStatus === 'discontinued' ? (t('inventory.status.discontinued') || 'Discontinued') : (t('inventory.stock_out') || 'Out')}
+          variant={row.stockStatus === 'in_stock' ? 'success' : row.stockStatus === 'low_stock' ? 'warning' : 'failed'}
           size="sm"
         />
       ),

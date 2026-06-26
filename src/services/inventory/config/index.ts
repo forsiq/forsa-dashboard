@@ -12,6 +12,7 @@ export const inventoryServiceConfig: CrudServiceConfig = {
 
 export const inventoryService = createCrudService<Product, CreateProductInput, UpdateProductInput, ProductFilters>(inventoryServiceConfig);
 
-export type { Product, CreateProductInput, UpdateProductInput, ProductFilters };
 export { inventoryEntityMeta, inventoryListConfig, productFormConfig };
+export { stockStatusOptions } from './entity.schema';
+export type { Product, CreateProductInput, UpdateProductInput, ProductFilters } from '../types';
 export default inventoryService;

@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { RoleGuard } from '@core/components/RoleGuard';
 import { DetailPageSkeleton } from '@core/loading';
 
 const ProductDetailPage = dynamic(
@@ -10,5 +11,9 @@ const ProductDetailPage = dynamic(
 );
 
 export default function ProductDetail() {
-  return <ProductDetailPage />;
+  return (
+    <RoleGuard allowedRoles={['admin', 'merchant']}>
+      <ProductDetailPage />
+    </RoleGuard>
+  );
 }

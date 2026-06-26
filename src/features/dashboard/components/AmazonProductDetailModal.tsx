@@ -188,7 +188,7 @@ export function AmazonProductDetailModal({
       {/* Modal */}
       <div className={cn(
         'relative w-full max-w-4xl max-h-[90vh] overflow-y-auto',
-        'bg-obsidian-card border border-white/5 rounded-2xl shadow-2xl',
+        'bg-obsidian-card border border-[var(--color-border-subtle)] rounded-2xl shadow-2xl',
         'animate-in zoom-in-95 duration-200'
       )}>
         {isImporting && (
@@ -216,8 +216,8 @@ export function AmazonProductDetailModal({
           disabled={isImporting}
           className={cn(
             'absolute top-4 z-10 w-10 h-10 rounded-xl',
-            'bg-obsidian-outer border border-white/5 flex items-center justify-center',
-            'text-zinc-muted hover:text-zinc-text hover:border-white/10 transition-all',
+            'bg-obsidian-outer border border-[var(--color-border-subtle)] flex items-center justify-center',
+            'text-zinc-muted hover:text-zinc-text hover:border-[var(--color-border)] transition-all',
             'disabled:opacity-40 disabled:pointer-events-none',
             isRTL ? 'left-4' : 'right-4'
           )}
@@ -299,7 +299,7 @@ export function AmazonProductDetailModal({
                         'relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all',
                         index === currentImageIndex
                           ? 'border-brand'
-                          : 'border-white/5 hover:border-white/10'
+                          : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
                       )}
                     >
                       <Image src={img} alt={`Thumbnail ${index + 1}`} fill className="object-cover" sizes="64px" />
@@ -390,7 +390,7 @@ export function AmazonProductDetailModal({
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
                       {specRows.map((spec, idx) => (
-                        <div key={`${spec.label}-${idx}`} className="px-3 py-2 rounded-lg bg-obsidian-outer border border-white/5">
+                        <div key={`${spec.label}-${idx}`} className="px-3 py-2 rounded-lg bg-obsidian-outer border border-[var(--color-border-subtle)]">
                           <p className="text-[11px] text-zinc-muted uppercase tracking-wider">{spec.label}</p>
                           <p className="text-[13px] font-bold text-zinc-text mt-0.5">{spec.value}</p>
                         </div>
@@ -408,9 +408,9 @@ export function AmazonProductDetailModal({
               />
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-white/5">
+              <div className="flex gap-3 pt-4 border-t border-[var(--color-border-subtle)]">
                 <AmberButton
-                  className="flex-1 h-12 bg-brand text-black font-black rounded-xl gap-2 border-none active:scale-95 transition-all"
+                  className="flex-1 h-12 bg-brand text-[var(--color-brand-contrast)] font-black rounded-xl gap-2 border-none active:scale-95 transition-all"
                   onClick={handleImport}
                   disabled={isImporting || !categoryState.parentId || !categoryState.isReady}
                 >
@@ -431,7 +431,7 @@ export function AmazonProductDetailModal({
                     rel="noopener noreferrer"
                     className={cn(
                       'h-12 px-4 rounded-xl flex items-center gap-2',
-                      'border border-white/10 text-zinc-muted hover:text-zinc-text hover:border-white/20',
+                      'border border-[var(--color-border-subtle)] text-zinc-muted hover:text-zinc-text hover:border-[var(--color-border)]',
                       'transition-all text-xs font-bold',
                       isImporting && 'pointer-events-none opacity-40',
                     )}

@@ -52,7 +52,11 @@ function normalizeImages(item: Record<string, unknown>): string[] {
 }
 
 export function normalizeInventoryProduct(item: Record<string, unknown>): NormalizedInventoryProduct {
-  const brandRaw = item.brand;
+  // New WarehouseItem shape: product-level data lives under `listing`
+  const listingRaw = item.listing as Record<string, unknown> | null | undefined;
+  const listing = listingRaw && typeof listingRaw === 'object' ? listingRaw : null;
+
+  const brandRaw = listing?.brand ?? item.brand;
   const brand =
     typeof brandRaw === 'object' && brandRaw !== null && 'name' in brandRaw
       ? String((brandRaw as { name?: string }).name || '')
@@ -60,7 +64,7 @@ export function normalizeInventoryProduct(item: Record<string, unknown>): Normal
         ? brandRaw
         : '';
 
-  const categoryRaw = item.category;
+  const categoryRaw = listing?.category ?? item.category;
   const categoryLabel =
     typeof categoryRaw === 'object' && categoryRaw !== null && 'name' in categoryRaw
       ? String((categoryRaw as { name?: string }).name || '')
@@ -68,23 +72,37 @@ export function normalizeInventoryProduct(item: Record<string, unknown>): Normal
         ? categoryRaw
         : '';
 
-  const images = normalizeImages(item);
+  // Images live on the listing
+  const imageSource = (listing ?? item) as Record<string, unknown>;
+  const images = normalizeImages(imageSource);
   const imageUrl =
-    (item.imageUrl as string | undefined) ||
-    (item.image_url as string | undefined) ||
+    (imageSource.imageUrl as string | undefined) ||
+    (imageSource.image_url as string | undefined) ||
     images[0];
 
-  const attributes = item.attributes as Record<string, string | number | boolean> | undefined;
+  const attributes = (listing?.specs ?? item.attributes) as
+    | Record<string, string | number | boolean>
+    | { label: string; value: string }[]
+    | undefined;
+
+  // Convert listing specs array to ListingSpec if present
+  const specsArr = Array.isArray(attributes)
+    ? attributes.map((s) => ({ label: String(s.label ?? ''), value: String(s.value ?? '') }))
+    : [];
+
+  const title =
+    String(listing?.title ?? item.name ?? item.title ?? '') ||
+    String(item.sku ?? '');
 
   return {
     id: String(item.id ?? ''),
-    name: String(item.name || item.title || ''),
-    description: String(item.description || item.descriptionAr || ''),
+    name: title,
+    description: String(listing?.description ?? item.description ?? ''),
     sku: item.sku ? String(item.sku) : undefined,
-    barcode: item.barcode ? String(item.barcode) : undefined,
+    barcode: (item.barcode ?? listing?.barcode) ? String(item.barcode ?? listing?.barcode) : undefined,
     categoryId:
+      parseCategoryId(listing?.categoryId ?? listing?.category_id) ??
       parseCategoryId(item.categoryId) ??
-      parseCategoryId(item.category_id) ??
       (typeof categoryRaw === 'object' && categoryRaw !== null && 'id' in categoryRaw
         ? parseCategoryId((categoryRaw as { id?: unknown }).id)
         : undefined),
@@ -93,9 +111,12 @@ export function normalizeInventoryProduct(item: Record<string, unknown>): Normal
     imageUrl,
     images,
     mainAttachmentId:
-      Number(item.mainAttachmentId ?? item.main_attachment_id) || undefined,
-    attachmentIds: parseAttachmentIds(item.attachmentIds ?? item.attachment_ids),
-    specs: attributesToSpecs(attributes),
+      Number(listing?.mainAttachmentId ?? listing?.main_attachment_id ?? item.mainAttachmentId) ||
+      undefined,
+    attachmentIds: parseAttachmentIds(
+      listing?.attachmentIds ?? listing?.attachment_ids ?? item.attachmentIds,
+    ),
+    specs: specsArr.length > 0 ? specsArr : attributesToSpecs(attributes as Record<string, string | number | boolean> | undefined),
   };
 }
 

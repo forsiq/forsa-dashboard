@@ -105,7 +105,7 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--color-obsidian-outer, #0a0a0b);
+  background: var(--color-obsidian-outer, #EFF2F7);
   border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
 }
 .forsa-invoice__toolbar-info {
@@ -134,7 +134,7 @@
   font-weight: 600;
   cursor: pointer;
   background: transparent;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
   transition: background 0.15s, border-color 0.15s;
 }
@@ -142,13 +142,13 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .forsa-invoice__btn--primary {
-  background: var(--color-brand, #6366f1);
-  color: #ffffff;
+  background: var(--color-brand, #FFC000);
+  color: var(--color-brand-contrast, #1E293B);
   border-color: transparent;
 }
 .forsa-invoice__btn--primary:hover {
   filter: brightness(1.1);
-  background: var(--color-brand, #6366f1);
+  background: var(--color-brand, #FFC000);
 }
 .forsa-invoice__btn--ghost {
   border-color: transparent;
@@ -158,7 +158,7 @@
   margin: 0 auto;
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   text-align: center;
 }
 
@@ -191,7 +191,7 @@
 }
 .forsa-invoice__brand-sub {
   font-size: 0.8rem;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   margin: 0.25rem 0 0;
 }
 .forsa-invoice__title-block {
@@ -206,7 +206,7 @@
 .forsa-invoice__number,
 .forsa-invoice__date {
   font-size: 0.85rem;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   margin: 0.15rem 0;
 }
 .forsa-invoice__parties {
@@ -220,7 +220,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   margin: 0 0 0.5rem;
 }
 .forsa-invoice__party p {
@@ -246,7 +246,7 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
 }
 .forsa-invoice__table {
   width: 100%;
@@ -259,7 +259,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   padding: 0.75rem 0.5rem;
   border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
 }
@@ -276,11 +276,11 @@
 }
 .forsa-invoice__item-sku {
   font-size: 0.75rem;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
 }
 .forsa-invoice__empty {
   text-align: center;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   padding: 2rem 0;
 }
 .forsa-invoice__totals {
@@ -316,7 +316,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--color-zinc-muted, #888);
+  color: var(--color-zinc-muted, #64748B);
   margin: 0 0 0.5rem;
 }
 .forsa-invoice__footer {
@@ -351,7 +351,7 @@
     inset: 0;
     z-index: 9999;
     overflow-y: auto;
-    background: var(--color-obsidian-outer, #0a0a0b);
+    background: var(--color-obsidian-outer, #EFF2F7);
   }
 }
 

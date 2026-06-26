@@ -13,7 +13,7 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
 
   return (
     <AmberCard className="!p-4 sm:!p-6 flex flex-col min-w-0 overflow-hidden">
-      <div className="flex items-center justify-between mb-4 sm:mb-6 border-b border-white/5 pb-4">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 border-b border-[var(--color-border-subtle)] pb-4">
          <h3 className="text-sm font-black text-zinc-text uppercase tracking-[0.2em] border-s-2 border-brand ps-3">
            {t('dash.top_performing')}
          </h3>
@@ -34,8 +34,8 @@ export const TopAuctions: React.FC<TopAuctionsProps> = ({ products }) => {
                  <div
                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-xs font-black tabular-nums shrink-0"
                    style={{
-                     background: index === 0 ? 'var(--color-brand)' : index === 1 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-                     color: index === 0 ? '#000' : 'var(--color-zinc-muted)',
+                     background: index === 0 ? 'var(--color-brand)' : index === 1 ? 'var(--color-surface-hover)' : 'var(--color-surface-subtle)',
+                     color: index === 0 ? 'var(--color-brand-contrast)' : 'var(--color-zinc-muted)',
                    }}
                  >
                     {index + 1}

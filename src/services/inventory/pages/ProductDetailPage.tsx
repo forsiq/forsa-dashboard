@@ -6,11 +6,9 @@ import {
   Package,
   DollarSign,
   Tag,
-  Layers,
   Barcode,
   Hash,
   Weight,
-  Percent,
   Calendar,
   FileText,
   AlertCircle,
@@ -46,12 +44,6 @@ const stockStatusLabelKey: Record<string, string> = {
   discontinued: 'inventory.stock_status.discontinued',
 };
 
-const productTypeLabel: Record<string, string> = {
-  simple: 'Simple',
-  variable: 'Variable',
-  bundle: 'Bundle',
-};
-
 export const ProductDetailPage: React.FC = () => {
   const router = useRouter();
   const { t, dir } = useLanguage();
@@ -64,15 +56,19 @@ export const ProductDetailPage: React.FC = () => {
   const deleteProduct = useDelete();
   const { openConfirm, ConfirmModal } = useConfirmModal();
 
+  // The listing holds the product media; the warehouse item holds the stock/pricing.
+  const listing = product?.listing ?? null;
+
   // Resolve images: direct URLs first, then attachment IDs
-  const directImageUrls = product?.images?.filter((url: string) => url && typeof url === 'string') || [];
-  const attachmentIds = product?.attachmentIds || [];
+  const directImageUrls = listing?.images?.filter((url: string) => url && typeof url === 'string') || [];
+  const attachmentIds = listing?.attachmentIds || [];
   const { data: attachmentUrlMap } = useAttachmentUrls(
     directImageUrls.length === 0 ? attachmentIds : [],
   );
 
   const allImages = (() => {
     if (directImageUrls.length > 0) return directImageUrls;
+    if (listing?.imageUrl) return [listing.imageUrl];
     if (!attachmentUrlMap || attachmentIds.length === 0) return [];
     return attachmentIds
       .map((id: number) => attachmentUrlMap.get(id))
@@ -85,11 +81,8 @@ export const ProductDetailPage: React.FC = () => {
     const rows = [
       { icon: DollarSign, label: t('inventory.detail.selling_price') || 'Selling Price', value: formatCurrency(product.sellingPrice) },
       { icon: DollarSign, label: t('inventory.detail.cost_price') || 'Cost Price', value: formatCurrency(product.costPrice) },
-      { icon: Percent, label: t('inventory.detail.tax_rate') || 'Tax Rate', value: `${product.taxRate}%` },
-      { icon: Layers, label: t('inventory.detail.type') || 'Type', value: productTypeLabel[product.type] || product.type },
       { icon: Package, label: t('inventory.detail.stock') || 'Stock', value: `${product.stockQuantity} ${product.unit}` },
-      { icon: Tag, label: t('inventory.detail.category') || 'Category', value: product.category?.name || '—' },
-      { icon: Hash, label: t('inventory.detail.brand') || 'Brand', value: product.brand?.name || '—' },
+      { icon: Hash, label: t('inventory.detail.brand') || 'Brand', value: listing?.brand || '—' },
       { icon: Barcode, label: t('inventory.detail.sku') || 'SKU', value: product.sku },
       { icon: Weight, label: t('inventory.detail.unit') || 'Unit', value: product.unit },
     ];
@@ -107,16 +100,7 @@ export const ProductDetailPage: React.FC = () => {
     }
 
     return rows;
-  }, [product, t]);
-
-  // Specifications from attributes
-  const specs = useMemo(() => {
-    if (!product?.attributes || Object.keys(product.attributes).length === 0) return [];
-    return Object.entries(product.attributes).map(([key, value]) => ({
-      label: key,
-      value: String(value),
-    }));
-  }, [product]);
+  }, [product, listing, t]);
 
   const handleDelete = () => {
     if (!product) return;
@@ -189,7 +173,7 @@ export const ProductDetailPage: React.FC = () => {
               <span className="text-[11px] font-semibold text-zinc-muted tracking-widest">#{product.id}</span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-zinc-text tracking-tight leading-tight mt-1 min-w-0 break-words lg:truncate">
-              {product.name}
+              {listing?.title || product.sku}
             </h1>
           </div>
         </div>
@@ -230,7 +214,7 @@ export const ProductDetailPage: React.FC = () => {
           {allImages.length > 0 ? (
             <AmberImageGallery
               images={allImages}
-              alt={product.name}
+              alt={listing?.title || product.sku}
               height="h-[300px] lg:h-[460px]"
               overlay={
                 <>
@@ -238,15 +222,15 @@ export const ProductDetailPage: React.FC = () => {
                     <div className="bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
                       <Package className="w-3.5 h-3.5 text-brand" />
                       <span className="text-xs font-semibold text-white tracking-wider">
-                        {productTypeLabel[product.type] || product.type}
+                        {t('inventory.detail.warehouse_item') || 'Warehouse Item'}
                       </span>
                     </div>
                   </div>
                   <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                     <span className="text-[11px] font-semibold text-brand tracking-widest">
-                      {product.category?.name || t('inventory.detail.uncategorized') || 'Uncategorized'}
+                      {listing?.brand || t('inventory.detail.uncategorized') || 'Uncategorized'}
                     </span>
-                    <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{product.name}</h2>
+                    <h2 className="text-lg font-bold text-white leading-snug line-clamp-2 mt-1">{listing?.title || product.sku}</h2>
                   </div>
                 </>
               }
@@ -266,7 +250,7 @@ export const ProductDetailPage: React.FC = () => {
           )}
 
           {/* Description */}
-          {product.description && (
+          {listing?.description && (
             <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
               <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
                 <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
@@ -275,34 +259,23 @@ export const ProductDetailPage: React.FC = () => {
                 <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('inventory.detail.description') || 'Description'}</h3>
               </div>
               <p className="text-sm text-zinc-text font-medium leading-relaxed whitespace-pre-wrap">
-                {product.description}
+                {listing.description}
               </p>
             </div>
           )}
 
-          {/* Specifications */}
-          {specs.length > 0 && (
+          {/* Notes (warehouse-specific) */}
+          {product.notes && (
             <div className="bg-[var(--color-obsidian-card)] border border-white/5 rounded-xl p-6 space-y-5">
               <div className="flex items-center gap-2.5 border-b border-white/5 pb-4">
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
                   <FileText className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('inventory.detail.specifications') || 'Specifications'}</h3>
+                <h3 className="text-sm font-bold text-zinc-text uppercase tracking-widest">{t('inventory.detail.notes') || 'Notes'}</h3>
               </div>
-              <div className="space-y-0">
-                {specs.map((spec, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'flex items-center justify-between py-3 gap-4',
-                      i < specs.length - 1 && 'border-b border-white/5',
-                    )}
-                  >
-                    <span className="text-[13px] font-semibold text-zinc-muted tracking-wide">{spec.label}</span>
-                    <span className="text-sm font-bold text-zinc-text text-end">{spec.value}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-zinc-text font-medium leading-relaxed whitespace-pre-wrap">
+                {product.notes}
+              </p>
             </div>
           )}
         </div>

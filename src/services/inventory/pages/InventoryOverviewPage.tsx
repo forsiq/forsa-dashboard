@@ -52,20 +52,22 @@ export const InventoryOverviewPage: React.FC = () => {
   }, []);
 
   const { data: inventoryData, isLoading: itemsLoading } = useList();
-  const products = (inventoryData as any)?.items || [];
-  const lowStockThreshold = 10;
+  const products: any[] = (inventoryData as any)?.data || [];
+  const lowStockThreshold = 5;
 
   const filteredProducts = useMemo(() => {
     return products.filter((p: any) => {
+      const name = p.listing?.title || p.name || '';
+      const sku = p.sku || '';
       const matchesSearch = !searchQuery ||
-        (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
+        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sku.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const qty = p.inventory_quantity || p.stock || 0;
+      const stockStatus = p.stockStatus || 'in_stock';
       const matchesStatus = statusFilter === 'all' ||
-        (statusFilter === 'in_stock' && qty > lowStockThreshold) ||
-        (statusFilter === 'low_stock' && qty > 0 && qty <= lowStockThreshold) ||
-        (statusFilter === 'out_of_stock' && qty === 0);
+        (statusFilter === 'in_stock' && stockStatus === 'in_stock') ||
+        (statusFilter === 'low_stock' && stockStatus === 'low_stock') ||
+        (statusFilter === 'out_of_stock' && (stockStatus === 'out_of_stock' || stockStatus === 'discontinued'));
 
       return matchesSearch && matchesStatus;
     });
@@ -73,7 +75,10 @@ export const InventoryOverviewPage: React.FC = () => {
 
   // Compute warehouse info from real product data
   const warehouses = useMemo(() => {
-    const totalStock = products.reduce((sum: number, p: any) => sum + (p.inventory_quantity || p.stock || 0), 0);
+    const totalStock = products.reduce(
+      (sum: number, p: any) => sum + Number(p.stockQuantity ?? p.stock ?? 0),
+      0,
+    );
     return [{
       name: t('inventory.default_warehouse') || 'Primary',
       used: totalStock,
@@ -82,30 +87,39 @@ export const InventoryOverviewPage: React.FC = () => {
     }];
   }, [products, t]);
 
-  const lowStockItems = products.filter((p: any) => (p.inventory_quantity || p.stock || 0) <= lowStockThreshold);
+  const lowStockItems = products.filter(
+    (p: any) =>
+      p.stockStatus === 'low_stock' ||
+      (Number(p.stockQuantity ?? p.stock ?? 0) <= lowStockThreshold &&
+       Number(p.stockQuantity ?? p.stock ?? 0) > 0),
+  );
 
   // --- Table Configuration ---
   const columns: Column<any>[] = [
     {
       key: 'item',
       label: t('inventory.table.item') || 'ASSET IDENTIFIER',
-      render: (row) => (
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-obsidian-outer border border-border rounded-xl flex items-center justify-center text-xl overflow-hidden shrink-0">
-             {row.image_url ? (
-               <Image src={row.image_url} alt={row.name} width={48} height={48} className="w-full h-full object-cover" />
-             ) : (
-               <Package className="w-5 h-5 text-zinc-muted" />
-             )}
+      render: (row) => {
+        const name = row.listing?.title || row.name || '';
+        const image = row.listing?.imageUrl || row.image_url || (row.listing?.images?.[0]) || '';
+        return (
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-obsidian-outer border border-border rounded-xl flex items-center justify-center text-xl overflow-hidden shrink-0">
+               {image ? (
+                 <Image src={image} alt={name} width={48} height={48} className="w-full h-full object-cover" />
+               ) : (
+                 <Package className="w-5 h-5 text-zinc-muted" />
+               )}
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-sm font-black text-zinc-text tracking-tight uppercase">
+                {name}
+              </p>
+              <p className="text-[11px] font-mono text-zinc-muted font-bold tracking-tight">{row.sku || 'NO-SKU-ID'}</p>
+            </div>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-sm font-black text-zinc-text tracking-tight uppercase">
-              {row.name}
-            </p>
-            <p className="text-[11px] font-mono text-zinc-muted font-bold tracking-tight">{row.sku || 'NO-SKU-ID'}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
       sortable: true,
       width: '40%'
     },
@@ -113,12 +127,12 @@ export const InventoryOverviewPage: React.FC = () => {
       key: 'stock',
       label: t('inventory.stock_level') || 'UNITS',
       render: (row) => {
-        const qty = row.inventory_quantity || row.stock || 0;
+        const qty = Number(row.stockQuantity ?? row.stock ?? 0);
         return (
           <div className="flex flex-col items-center">
             <span className={cn(
               "text-sm font-black tabular-nums tracking-tighter",
-              qty <= lowStockThreshold ? "text-danger" : "text-zinc-text"
+              row.stockStatus === 'low_stock' || row.stockStatus === 'out_of_stock' ? "text-danger" : "text-zinc-text"
             )}>
               {qty}
             </span>
@@ -132,11 +146,11 @@ export const InventoryOverviewPage: React.FC = () => {
         key: 'status',
         label: t('inventory.protocols'),
         render: (row) => {
-          const qty = row.inventory_quantity || row.stock || 0;
+          const status = row.stockStatus || 'in_stock';
           return (
-            <StatusBadge 
-              status={qty === 0 ? 'DEPLETED' : qty <= lowStockThreshold ? 'CRITICAL' : 'REPLENISHED'} 
-              variant={qty === 0 ? 'failed' : qty <= lowStockThreshold ? 'warning' : 'success'}
+            <StatusBadge
+              status={status === 'out_of_stock' ? 'DEPLETED' : status === 'low_stock' ? 'CRITICAL' : 'REPLENISHED'}
+              variant={status === 'out_of_stock' ? 'failed' : status === 'low_stock' ? 'warning' : 'success'}
               size="sm"
             />
           );
@@ -257,7 +271,7 @@ export const InventoryOverviewPage: React.FC = () => {
                 <div className="space-y-1">
                     <span className="text-[11px] font-black text-success uppercase tracking-widest">{t('inventory.aggregatedFiscalValue')}</span>
                     <StatValue
-                        value={formatCurrency(products.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.inventory_quantity || 0)), 0))}
+                        value={formatCurrency(products.reduce((sum: number, p: any) => sum + (Number(p.sellingPrice ?? p.price ?? 0) * Number(p.stockQuantity ?? p.inventory_quantity ?? 0)), 0))}
                         className="!text-success"
                     />
                 </div>
@@ -323,11 +337,11 @@ export const InventoryOverviewPage: React.FC = () => {
                         <div key={i} className="p-4 bg-obsidian-card border border-border rounded-xl hover:border-danger/30 transition-all group">
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
-                                    <p className="text-[13px] font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.name}</p>
+                                    <p className="text-[13px] font-black text-zinc-text uppercase tracking-tight group-hover:text-danger transition-colors">{item.listing?.title || item.name}</p>
                                     <p className="text-[11px] font-bold text-zinc-muted uppercase">{t('inventory.highUrgencyProcurement')}</p>
                                 </div>
                                 <div className="text-end">
-                                    <p className="text-sm font-black text-danger leading-none">{item.inventory_quantity || 0}</p>
+                                    <p className="text-sm font-black text-danger leading-none">{item.stockQuantity ?? item.inventory_quantity ?? 0}</p>
                                     <p className="text-[8px] font-black text-zinc-muted uppercase mt-1">{t('inventory.remaining')}</p>
                                 </div>
                             </div>

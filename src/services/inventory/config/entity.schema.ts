@@ -1,66 +1,12 @@
-/** Inventory Entity Schema */
-export interface Product {
-  id: string;
-  name: string;
-  nameAr?: string;
-  sku: string;
-  barcode?: string;
-  description?: string;
-  price: number;
-  cost?: number;
-  quantity: number;
-  minStock: number;
-  maxStock?: number;
-  categoryId?: string;
-  categoryName?: string;
-  status: 'active' | 'inactive' | 'discontinued';
-  imageUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateProductInput {
-  name: string;
-  nameAr?: string;
-  sku: string;
-  barcode?: string;
-  description?: string;
-  price: number;
-  cost?: number;
-  quantity: number;
-  minStock: number;
-  maxStock?: number;
-  categoryId?: string;
-  status?: 'active' | 'inactive' | 'discontinued';
-  imageUrl?: string;
-}
-
-export interface UpdateProductInput extends Partial<CreateProductInput> {
-  id: string;
-}
-
-export interface ProductFilters {
-  search?: string;
-  category?: string;
-  status?: 'active' | 'inactive' | 'discontinued' | 'all';
-  lowStock?: boolean;
-  outOfStock?: boolean;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-export interface InventoryStats {
-  totalProducts: number;
-  inStock: number;
-  lowStock: number;
-  outOfStock: number;
-  totalValue: number;
-  lowStockValue: number;
-  totalStock: number;
-  recentMovements: number;
-}
+/** Inventory Entity Schema - re-exports types from the main types module */
+export type {
+  Product,
+  CreateProductInput,
+  UpdateProductInput,
+  InventoryStats,
+  StockStatus,
+  ProductFilters,
+} from '../types';
 
 export const inventoryEntityMeta = {
   name: 'inventory',
@@ -69,9 +15,16 @@ export const inventoryEntityMeta = {
   endpoint: '/api/v1/inventory',
   basePath: '/inventory',
   i18nPrefix: 'inventory',
-  defaults: { status: 'active' as const, quantity: 0, minStock: 5 },
-  sortableFields: ['name', 'sku', 'price', 'quantity'] as const,
-  filterableFields: ['search', 'category', 'status', 'lowStock', 'outOfStock'] as const,
-  requiredFields: ['name', 'sku', 'price'] as const,
-  hiddenFields: ['categoryId', 'imageUrl', 'createdAt', 'updatedAt'] as const,
+  defaults: { stockQuantity: 0, lowStockThreshold: 5, currency: 'IQD', unit: 'piece' },
+  sortableFields: ['sku', 'costPrice', 'sellingPrice', 'stockQuantity', 'createdAt'] as const,
+  filterableFields: ['search', 'stockStatus', 'isActive'] as const,
+  requiredFields: ['listingId', 'sku', 'costPrice', 'sellingPrice'] as const,
+  hiddenFields: ['metadata', 'createdAt', 'updatedAt'] as const,
 };
+
+export const stockStatusOptions: Array<{ value: string; labelKey: string }> = [
+  { value: 'in_stock', labelKey: 'inventory.status.in_stock' },
+  { value: 'low_stock', labelKey: 'inventory.status.low_stock' },
+  { value: 'out_of_stock', labelKey: 'inventory.status.out_of_stock' },
+  { value: 'discontinued', labelKey: 'inventory.status.discontinued' },
+];
