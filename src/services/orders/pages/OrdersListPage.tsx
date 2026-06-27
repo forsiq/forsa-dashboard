@@ -37,7 +37,7 @@ import { dataTableLinkClass } from '@core/components/Data/DataTableEntityTitle';
 import { InvoiceDocument } from '../components/InvoiceDocument';
 import { useInvoicePrint } from '../hooks/useInvoicePrint';
 
-type StatusTab = 'all' | 'pending' | 'processing' | 'delivered' | 'cancelled';
+type StatusTab = 'all' | 'pending' | 'processing' | 'shipped' | 'in_transit' | 'delivered' | 'cancelled';
 
 const orderDetailHref = (order: Order) => `/orders/${order.id}`;
 
@@ -130,7 +130,10 @@ export const OrdersListPage = () => {
           variant: 'warning',
           onConfirm: () => {
             selectedIds.forEach(id => {
-              statusMutation.mutate({ id, status: 'processing' as OrderStatus });
+              // "Processing" is a UI concept only — the backend has no
+              // `processing` status. The equivalent real status is
+              // `confirmed` (order acknowledged, now being fulfilled).
+              statusMutation.mutate({ id, status: 'confirmed' });
             });
           },
         });
@@ -201,6 +204,7 @@ export const OrdersListPage = () => {
             labelKey={orderStatusLabelKey(order.status)}
             variant={
               order.status === 'delivered' ? 'success' :
+              order.status === 'in_transit' ? 'active' :
               order.status === 'shipped' ? 'info' :
               order.status === 'confirmed' || order.status === 'paid' || order.status === 'processing' ? 'warning' :
               order.status === 'cancelled' ? 'failed' :
@@ -267,15 +271,25 @@ export const OrdersListPage = () => {
       { status: 'confirmed', icon: Clock },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
+    // Payment is tracked independently (own endpoint / paymentStatus field),
+    // so there is no manual "paid" step here. From "confirmed" the next real
+    // action is sending the order to delivery → shipped.
     confirmed: [
-      { status: 'paid', icon: CheckCircle },
+      { status: 'shipped', icon: Truck },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
     paid: [
       { status: 'shipped', icon: Truck },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
+    // Once the shipment is created (provider accepted), the order can either be
+    // marked "in transit" (driver on the way) or jump straight to delivered.
     shipped: [
+      { status: 'in_transit', icon: Truck },
+      { status: 'delivered', icon: CheckCircle, variant: 'success' },
+      { status: 'cancelled', icon: XCircle, variant: 'danger' },
+    ],
+    in_transit: [
       { status: 'delivered', icon: CheckCircle, variant: 'success' },
       { status: 'cancelled', icon: XCircle, variant: 'danger' },
     ],
@@ -296,7 +310,7 @@ export const OrdersListPage = () => {
       icon: Printer,
       onClick: (order) => printInvoice(order),
     },
-    ...(['pending', 'confirmed', 'paid', 'shipped'] as OrderStatus[]).flatMap((fromStatus) =>
+    ...(['pending', 'confirmed', 'paid', 'shipped', 'in_transit'] as OrderStatus[]).flatMap((fromStatus) =>
       (statusTransitions[fromStatus] ?? []).map((transition) => ({
         label: (order: Order) =>
           order.status === fromStatus
@@ -313,12 +327,13 @@ export const OrdersListPage = () => {
     ),
   ], [router, t, statusTransitions, handleStatusChange, printInvoice]);
 
-  const handleRowClick = (order: Order) => {
+  const handleRowClick = useCallback((order: Order) => {
     router.push(`/orders/${order.id}`);
-  };
+  }, [router]);
 
   const getStatusVariant = useCallback((status: OrderStatus) => {
     if (status === 'delivered') return 'success' as const;
+    if (status === 'in_transit') return 'active' as const;
     if (status === 'shipped') return 'info' as const;
     if (status === 'confirmed' || status === 'paid' || status === 'processing') return 'warning' as const;
     if (status === 'cancelled') return 'failed' as const;
@@ -385,7 +400,7 @@ export const OrdersListPage = () => {
         </div>
       </div>
     ),
-    [formatOrderDate, getStatusVariant, t],
+    [formatOrderDate, getStatusVariant, handleRowClick, t],
   );
 
   const orders = ordersData?.data || [];
@@ -394,6 +409,8 @@ export const OrdersListPage = () => {
     { key: 'all', labelKey: 'common.all' },
     { key: 'pending', labelKey: 'orders.status.pending' },
     { key: 'processing', labelKey: 'orders.status.processing' },
+    { key: 'shipped', labelKey: 'orders.status.shipped' },
+    { key: 'in_transit', labelKey: 'orders.status.in_transit' },
     { key: 'delivered', labelKey: 'orders.status.delivered' },
     { key: 'cancelled', labelKey: 'orders.status.cancelled' },
   ];
@@ -473,34 +490,6 @@ export const OrdersListPage = () => {
             title={t('orders.empty') || 'No Orders'}
             description={t('orders.empty_description') || 'No orders found matching your criteria.'}
           />
-        ) : isMobile ? (
-          <div className="relative space-y-4">
-            {isFetching && <FetchingOverlay />}
-            <div className="grid grid-cols-2 gap-3">
-              {orders.map((order) => renderOrderCard(order))}
-            </div>
-            {(ordersData?.total || 0) > limit && (
-              <div className="flex items-center justify-center gap-3 pt-4">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page <= 1}
-                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
-                >
-                  {t('common.prev') || 'Prev'}
-                </button>
-                <span className="text-[11px] font-bold text-zinc-muted tabular-nums">
-                  {page} / {Math.ceil((ordersData?.total || 0) / limit)}
-                </span>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= Math.ceil((ordersData?.total || 0) / limit)}
-                  className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-obsidian-card border border-white/5 text-zinc-text disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
-                >
-                  {t('common.next') || 'Next'}
-                </button>
-              </div>
-            )}
-          </div>
         ) : (
           <div className="relative min-w-0 overflow-x-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-obsidian-card)] shadow-sm">
             {isFetching && <FetchingOverlay />}
@@ -520,6 +509,12 @@ export const OrdersListPage = () => {
               onSortChange={handleSortChange}
               sortBy={sortBy}
               sortOrder={sortOrder}
+              // Unified rendering for all viewports: mobile shows the grid view,
+              // desktop shows the table view — both driven by the same DataTable
+              // so the pagination/selection/look is consistent across pages.
+              viewMode={isMobile ? 'grid' : 'table'}
+              gridCols={2}
+              renderCard={renderOrderCard}
             />
           </div>
         )}

@@ -35,6 +35,7 @@ export const ar: Record<string, string> = {
   "orders.status.cancelled": "ملغي",
   "orders.status.confirmed": "مؤكد",
   "orders.status.delivered": "تم التسليم",
+  "orders.status.in_transit": "قيد التوصيل",
   "orders.status.paid": "مدفوع",
   "orders.status.pending": "معلق",
   "orders.status.processing": "قيد المعالجة",

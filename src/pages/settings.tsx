@@ -38,6 +38,7 @@ import { cn } from '@core/lib/utils/cn';
 import { useSidebarMode } from '@core/hooks/useSidebarMode';
 import { useToast } from '@core/contexts/ToastContext';
 import { FormSection } from '@core/components/FormSection';
+import { ShippingProvidersPage } from '@features/shipping/pages/ShippingProvidersPage';
 
 type Tab = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -508,47 +509,8 @@ function SettingsPageContent() {
             </div>
           )}
 
-          {/* Shipping Tab */}
-          {activeTab === 'shipping' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-end-4 duration-500">
-              <FormSection
-                icon={<TruckIcon className="w-5 h-5" />}
-                iconBgColor="info"
-                title={t('settings.shipping_config') || 'Shipping Configuration'}
-              >
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-obsidian-panel/30 border border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
-                        <Package className="w-4 h-4 text-info" />
-                      </div>
-                      <div>
-                        <span className="text-sm font-bold text-zinc-text">{t('settings.shipping_enabled') || 'Enable Shipping'}</span>
-                        <p className="text-[11px] text-zinc-muted">{t('settings.shipping_enabled_desc') || 'Allow shipping for auction items'}</p>
-                      </div>
-                    </div>
-                    <AmberToggle enabled={settings.shippingEnabled !== false} onChange={(v) => updateSetting('shippingEnabled', v)} label="Enable shipping" />
-                  </div>
-
-                  <AmberInput
-                    label={t('settings.default_shipping_cost') || 'Default Shipping Cost (IQD)'}
-                    type="number"
-                    placeholder="5000"
-                    value={settings.defaultShippingCost ?? ''}
-                    onChange={(e) => updateSetting('defaultShippingCost', e.target.value)}
-                  />
-
-                  <AmberInput
-                    label={t('settings.free_shipping_threshold') || 'Free Shipping Threshold (IQD)'}
-                    type="number"
-                    placeholder="50000"
-                    value={settings.freeShippingThreshold ?? ''}
-                    onChange={(e) => updateSetting('freeShippingThreshold', e.target.value)}
-                  />
-                </div>
-              </FormSection>
-            </div>
-          )}
+          {/* Shipping Tab — Al-Waseet (API-backed) */}
+          {activeTab === 'shipping' && <ShippingProvidersPage />}
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@core/contexts/LanguageContext';
 import { formatCurrency } from '@core/lib/utils/formatCurrency';
 import { StatsCard } from '@core/core/dashboard/StatsCard';
@@ -17,6 +18,7 @@ interface StatCardConfig {
   titleKey: string;
   getValue: (data: ReturnType<typeof useDashboardStats>['data']) => string;
   color: StatCardType['color'];
+  href: string;
 }
 
 const ROLE_STATS: Record<string, StatCardConfig[]> = {
@@ -26,24 +28,28 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
       titleKey: 'dash.admin.total_products',
       getValue: (d) => (d?.stats?.totalProducts || 0).toString(),
       color: 'brand',
+      href: '/auctions',
     },
     {
       id: 'pending-reviews',
       titleKey: 'dash.admin.pending_reviews',
       getValue: (d) => (d?.quickCounts?.pendingOrders || 0).toString(),
       color: 'warning',
+      href: '/orders',
     },
     {
       id: 'active-auctions',
       titleKey: 'dash.admin.active_auctions',
       getValue: (d) => (d?.quickCounts?.activeAuctions || 0).toString(),
       color: 'success',
+      href: '/auctions',
     },
     {
       id: 'total-revenue',
       titleKey: 'stats.revenue',
       getValue: (d) => formatCurrency(d?.stats?.totalRevenue),
       color: 'info',
+      href: '/reports/sales-overview',
     },
   ],
   merchant: [
@@ -52,24 +58,28 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
       titleKey: 'dash.merchant.my_products',
       getValue: (d) => (d?.stats?.totalProducts || 0).toString(),
       color: 'brand',
+      href: '/auctions',
     },
     {
       id: 'my-active-auctions',
       titleKey: 'dash.merchant.my_products_in_auctions',
       getValue: (d) => (d?.quickCounts?.activeAuctions || 0).toString(),
       color: 'success',
+      href: '/auctions',
     },
     {
       id: 'my-revenue',
       titleKey: 'dash.merchant.my_revenue',
       getValue: (d) => formatCurrency(d?.stats?.totalRevenue),
       color: 'info',
+      href: '/reports/sales-overview',
     },
     {
       id: 'pending-submissions',
       titleKey: 'dash.merchant.pending_submissions',
       getValue: (d) => (d?.quickCounts?.pendingOrders || 0).toString(),
       color: 'warning',
+      href: '/orders',
     },
   ],
   customer_support: [
@@ -78,24 +88,28 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
       titleKey: 'dash.support.total_orders',
       getValue: (d) => (d?.stats?.totalOrders || 0).toString(),
       color: 'brand',
+      href: '/orders',
     },
     {
       id: 'pending-orders',
       titleKey: 'dash.support.pending_orders',
       getValue: (d) => (d?.quickCounts?.pendingOrders || 0).toString(),
       color: 'warning',
+      href: '/orders',
     },
     {
       id: 'total-customers',
       titleKey: 'dash.support.total_customers',
       getValue: (d) => (d?.stats?.totalCustomers || 0).toString(),
       color: 'info',
+      href: '/customers',
     },
     {
       id: 'resolved-today',
       titleKey: 'dash.support.resolved_today',
       getValue: (d) => (d?.quickCounts?.activeDeals || 0).toString(),
       color: 'success',
+      href: '/reports/sales-overview',
     },
   ],
   product_analyst: [
@@ -104,24 +118,28 @@ const ROLE_STATS: Record<string, StatCardConfig[]> = {
       titleKey: 'dash.analyst.total_bids',
       getValue: (d) => (d?.stats?.totalOrders || 0).toString(),
       color: 'brand',
+      href: '/orders',
     },
     {
       id: 'most-viewed',
       titleKey: 'dash.analyst.most_viewed',
       getValue: () => '—',
       color: 'info',
+      href: '/reports/auction-performance',
     },
     {
       id: 'category-performance',
       titleKey: 'dash.analyst.category_perf',
       getValue: () => '—',
       color: 'success',
+      href: '/reports/sales-overview',
     },
     {
       id: 'engagement-trend',
       titleKey: 'dash.analyst.engagement',
       getValue: (d) => (d?.quickCounts?.totalAuctions || 0).toString(),
       color: 'warning',
+      href: '/reports/auction-performance',
     },
   ],
 };
@@ -177,11 +195,12 @@ export const RoleDashboardStats: React.FC = () => {
     );
   }
 
-  const cards: StatCardType[] = configs.map((cfg) => ({
+  const cards: (StatCardType & { href: string })[] = configs.map((cfg) => ({
     id: cfg.id,
     title: t(cfg.titleKey) || cfg.titleKey,
     value: cfg.getValue(stats),
     color: cfg.color,
+    href: cfg.href,
   }));
 
   return (
@@ -194,7 +213,13 @@ export const RoleDashboardStats: React.FC = () => {
         </div>
       )}
       {cards.map((stat) => (
-        <StatsCard key={stat.id} stat={stat} />
+        <Link
+          key={stat.id}
+          href={stat.href}
+          className="block rounded-xl transition-all hover:border-brand/40 hover:shadow-lg hover:shadow-brand/5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+        >
+          <StatsCard stat={stat} />
+        </Link>
       ))}
     </div>
   );

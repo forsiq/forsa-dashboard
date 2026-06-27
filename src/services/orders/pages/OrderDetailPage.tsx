@@ -17,14 +17,27 @@ import { useState, useMemo } from 'react';
 import { InvoiceDocument } from '../components/InvoiceDocument';
 import { useInvoicePrint } from '../hooks/useInvoicePrint';
 import { useOrderStatusLogs } from '@services/notifications';
+import {
+  useOrderShipment,
+  useSyncNow,
+} from '@features/shipping/hooks';
+import {
+  CreateShipmentDialog,
+  QrReceiptModal,
+  ShippingStatusBadge,
+} from '@features/shipping/components';
+import { RefreshCw, Truck as TruckIcon } from 'lucide-react';
 
 const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon: React.ElementType; variant: 'default' | 'danger' | 'success' }[]>> = {
   pending: [
     { status: 'confirmed', icon: Clock, variant: 'default' },
     { status: 'cancelled', icon: XCircle, variant: 'danger' },
   ],
+  // Payment is tracked independently (own endpoint / paymentStatus field),
+  // so there is no manual "paid" step. From "confirmed" the next real action
+  // is sending the order to delivery → shipped.
   confirmed: [
-    { status: 'paid', icon: CheckCircle, variant: 'default' },
+    { status: 'shipped', icon: Truck, variant: 'default' },
     { status: 'cancelled', icon: XCircle, variant: 'danger' },
   ],
   paid: [
@@ -32,6 +45,11 @@ const statusTransitions: Partial<Record<OrderStatus, { status: OrderStatus; icon
     { status: 'cancelled', icon: XCircle, variant: 'danger' },
   ],
   shipped: [
+    { status: 'in_transit', icon: Truck, variant: 'default' },
+    { status: 'delivered', icon: CheckCircle, variant: 'success' },
+    { status: 'cancelled', icon: XCircle, variant: 'danger' },
+  ],
+  in_transit: [
     { status: 'delivered', icon: CheckCircle, variant: 'success' },
     { status: 'cancelled', icon: XCircle, variant: 'danger' },
   ],
@@ -64,6 +82,19 @@ export const OrderDetailPage = () => {
     queryFn: () => getOrder(orderId || ''),
     enabled: !!orderId,
   });
+
+  // Shipping (Al-Waseet) — only fetched when the order is in a shippable state.
+  const isShippable =
+    order?.status === 'paid' ||
+    order?.status === 'shipped' ||
+    order?.status === 'in_transit' ||
+    order?.status === 'delivered';
+  const shippingOrderId = order?.id != null ? String(order.id) : '';
+
+  const shipment = useOrderShipment(isShippable ? shippingOrderId : undefined);
+  const syncMutation = useSyncNow();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   const { data: statusLogs } = useOrderStatusLogs(orderId || '');
 
@@ -110,6 +141,7 @@ export const OrderDetailPage = () => {
     paid: 'bg-cyan-500/20 text-cyan-400',
     processing: 'bg-blue-500/20 text-blue-400',
     shipped: 'bg-purple-500/20 text-purple-400',
+    in_transit: 'bg-indigo-500/20 text-indigo-400',
     delivered: 'bg-green-500/20 text-green-400',
     cancelled: 'bg-red-500/20 text-red-400',
     refunded: 'bg-orange-500/20 text-orange-400',
@@ -327,6 +359,77 @@ export const OrderDetailPage = () => {
             </AmberCard>
           )}
 
+          {/* Shipping via Al-Waseet — visible only in shippable states */}
+          {isShippable && (
+            <AmberCard className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <TruckIcon className="text-zinc-muted" size={18} />
+                <h2 className="text-lg font-semibold text-zinc-text">
+                  {t('shipping.order_card.title') || 'الشحن عبر الوسيط'}
+                </h2>
+              </div>
+
+              {shipment.isLoading ? (
+                <p className="text-sm text-zinc-muted">{t('common.loading') || 'Loading...'}</p>
+              ) : shipment.data && shipment.data.providerQrId ? (
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-muted">{t('shipping.qr_id')}</span>
+                    <span className="text-zinc-text font-mono font-medium">
+                      {shipment.data.providerQrId}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-muted">{t('shipping.provider_status')}</span>
+                    <ShippingStatusBadge shipment={shipment.data} />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-muted">{t('shipping.last_synced')}</span>
+                    <span className="text-zinc-text">
+                      {shipment.data.lastSyncedAt
+                        ? new Date(shipment.data.lastSyncedAt).toLocaleString()
+                        : t('shipping.never_synced')}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <AmberButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setQrModalOpen(true)}
+                    >
+                      <Printer size={14} />
+                      <span>{t('shipping.print_qr')}</span>
+                    </AmberButton>
+                    <AmberButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => syncMutation.mutate(order.id)}
+                      disabled={syncMutation.isPending}
+                    >
+                      <RefreshCw size={14} className={syncMutation.isPending ? 'animate-spin' : ''} />
+                      <span>{t('shipping.sync_now')}</span>
+                    </AmberButton>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-zinc-muted">{t('shipping.no_shipment')}</p>
+                  {order.status === 'paid' && (
+                    <AmberButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setCreateDialogOpen(true)}
+                    >
+                      <TruckIcon size={14} />
+                      <span>{t('shipping.create_shipment')}</span>
+                    </AmberButton>
+                  )}
+                </div>
+              )}
+            </AmberCard>
+          )}
+
           {/* Notes */}
           {order.notes && (
             <AmberCard className="p-6">
@@ -475,6 +578,43 @@ export const OrderDetailPage = () => {
       {isPrintOpen && printOrder && (
         <InvoiceDocument order={printOrder} t={t} dir={dir} onClose={closeInvoice} />
       )}
+
+      {/* Al-Waseet shipment flows */}
+      <CreateShipmentDialog
+        isOpen={createDialogOpen}
+        orderId={String(order.id)}
+        orderTotal={order.total}
+        orderItems={order.items.map((i) => ({
+          name: i.productName,
+          quantity: i.quantity,
+          price: i.totalPrice,
+        }))}
+        customerName={order.customerName}
+        customerPhone={order.customerPhone}
+        defaultLocation={[
+          order.shippingAddress?.street,
+          order.shippingAddress?.building,
+          order.shippingAddress?.floor
+            ? `Floor ${order.shippingAddress.floor}`
+            : undefined,
+          order.shippingAddress?.apartment
+            ? `Apt ${order.shippingAddress.apartment}`
+            : undefined,
+          order.shippingAddress?.city,
+          order.shippingAddress?.state,
+        ]
+          .filter(Boolean)
+          .join(', ')}
+        onClose={() => setCreateDialogOpen(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: orderKeys.all });
+        }}
+      />
+      <QrReceiptModal
+        isOpen={qrModalOpen}
+        shipment={shipment.data ?? null}
+        onClose={() => setQrModalOpen(false)}
+      />
     </div>
   );
 };

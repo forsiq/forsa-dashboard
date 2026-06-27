@@ -6,6 +6,7 @@ export type OrderStatus =
   | 'paid'
   | 'processing'
   | 'shipped'
+  | 'in_transit'
   | 'delivered'
   | 'cancelled'
   | 'refunded';

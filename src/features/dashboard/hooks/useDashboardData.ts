@@ -201,19 +201,19 @@ export const useDashboardStats = () => {
 
       return {
         stats: {
-          totalRevenue: orderStats.total_revenue || auctionStats.totalRevenue || 0,
-          revenueChange: orderStats.revenue_change || auctionStats.revenueChange || 0,
-          totalOrders: orderStats.total || 0,
-          ordersChange: orderStats.orders_change || 0,
+          totalRevenue: orderStats.thisMonthRevenue || 0,
+          revenueChange: 0,
+          totalOrders: orderStats.thisMonthOrders || 0,
+          ordersChange: 0,
           totalProducts: (auctionStats.totalAuctions || 0) + (groupStats.active_campaigns || 0),
-          productsChange: auctionStats.productsChange || 0,
+          productsChange: 0,
           totalCustomers: (groupStats.total_participants || 0) + (auctionStats.totalAuctions || 0),
           customersChange: 0,
         },
         quickCounts: {
           activeAuctions: auctionStats.activeAuctions || 0,
           totalAuctions: auctionStats.totalAuctions || 0,
-          activeDeals: groupStats.activeCampaigns || 0,
+          activeDeals: groupStats.active_campaigns || 0,
           pendingOrders: orderStats.pending || 0,
           totalParticipants: groupStats.total_participants || 0,
         },

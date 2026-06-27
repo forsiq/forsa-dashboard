@@ -35,6 +35,7 @@ export const en: Record<string, string> = {
   "orders.status.cancelled": "Cancelled",
   "orders.status.confirmed": "Confirmed",
   "orders.status.delivered": "Delivered",
+  "orders.status.in_transit": "In Transit",
   "orders.status.paid": "Paid",
   "orders.status.pending": "Pending",
   "orders.status.processing": "Processing",

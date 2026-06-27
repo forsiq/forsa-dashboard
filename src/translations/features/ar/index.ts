@@ -24,3 +24,4 @@ export { ar as support } from './support';
 export { ar as toasts } from './toasts';
 export { ar as feedback } from './feedback';
 export { ar as invoice } from './invoice';
+export { ar as shipping } from './shipping';
