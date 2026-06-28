@@ -25,6 +25,7 @@ export const ar: Record<string, string> = {
   "send_notification.subtitle": "أرسل إشعاراً مخصصاً لمستخدم محدد",
   "send_notification.target_user": "المستخدم المستهدف",
   "send_notification.search_user": "ابحث بالاسم أو الهاتف أو المعرف...",
+  "send_notification.search_min_chars": "اكتب حرفين على الأقل للبحث",
   "send_notification.no_user_selected": "لم يتم اختيار مستخدم",
   "send_notification.user_selected": "المختار: {{name}}",
   "send_notification.change_user": "تغيير",

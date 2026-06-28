@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Send, Search, Loader2, X, User as UserIcon, MessageSquare } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Send, Search, Loader2, X, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '@yousef2001/core-ui/contexts';
 import { cn } from '@core/lib/utils/cn';
 import { AmberCard } from '@core/components/AmberCard';
 import { AmberButton } from '@core/components/AmberButton';
 import { AmberInput } from '@core/components/AmberInput';
+import { AmberToggle } from '@core/components/AmberToggle';
 import { useGetUsers } from '@features/users/api/user-hooks';
 import { useSendNotification } from '../hooks';
 import type { NotificationType } from '../types';
+
+const MIN_SEARCH_CHARS = 2;
 
 interface UserOption {
   id: string;
@@ -38,23 +41,51 @@ export function SendNotificationPage() {
   const [orderId, setOrderId] = useState('');
   const [sendPush, setSendPush] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch users when searching
-  const { data: usersData, isLoading: usersLoading } = useGetUsers({
-    search: search || undefined,
-    limit: 10,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const canSearch = debouncedSearch.length >= MIN_SEARCH_CHARS;
+
+  const { data: usersData, isLoading: usersLoading } = useGetUsers(
+    {
+      search: debouncedSearch,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    },
+    { enabled: canSearch },
+  );
 
   const userOptions: UserOption[] = useMemo(() => {
+    if (!canSearch) return [];
     const list = usersData?.users ?? [];
     return list.map((u) => ({
       id: String(u.id),
       label: u.fullName || u.userName || u.phone || String(u.id),
       sub: [u.phone, u.email].filter(Boolean).join(' • ') || String(u.id),
     }));
-  }, [usersData]);
+  }, [usersData, canSearch]);
 
   const handleSelectUser = (user: UserOption) => {
     setSelectedUserId(user.id);
@@ -139,9 +170,9 @@ export function SendNotificationPage() {
               </button>
             </div>
           ) : (
-            <div className="relative">
+            <div ref={searchContainerRef} className="relative">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted pointer-events-none" />
+                <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted pointer-events-none" />
                 <input
                   type="text"
                   value={search}
@@ -149,39 +180,58 @@ export function SendNotificationPage() {
                     setSearch(e.target.value);
                     setShowDropdown(true);
                   }}
-                  onFocus={() => setShowDropdown(true)}
+                  onFocus={() => {
+                    if (search.trim().length >= MIN_SEARCH_CHARS) setShowDropdown(true);
+                  }}
                   placeholder={t('send_notification.search_user') || 'Search...'}
-                  className="w-full bg-white dark:bg-obsidian-card border border-[var(--color-border)] text-base font-medium text-zinc-text outline-none transition-all placeholder:text-zinc-muted/40 shadow-sm rounded-xl h-14 pl-11 pr-4 focus:border-brand/40"
+                  autoComplete="off"
+                  className={cn(
+                    'w-full bg-white dark:bg-obsidian-card border border-[var(--color-border)]',
+                    'text-base font-medium text-zinc-text outline-none transition-all',
+                    'placeholder:text-zinc-muted/40 shadow-sm rounded-xl h-14 ps-11 pe-4',
+                    'focus:border-brand/40 dark:focus:bg-obsidian-hover',
+                  )}
                 />
-                {usersLoading && (
-                  <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted animate-spin" />
+                {usersLoading && canSearch && (
+                  <Loader2 className="absolute end-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand animate-spin" />
                 )}
               </div>
 
-              {showDropdown && (search.length > 0 || userOptions.length > 0) && (
-                <ul className="absolute z-50 mt-1 w-full bg-[var(--color-obsidian-card)] border border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-                  {userOptions.length > 0 ? (
+              {showDropdown && search.trim().length >= MIN_SEARCH_CHARS && (
+                <div className="absolute top-full z-[210] mt-2 w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl shadow-xl max-h-60 overflow-y-auto p-1 animate-in fade-in zoom-in-95 duration-100">
+                  {usersLoading ? (
+                    <p className="px-4 py-3 text-sm text-zinc-muted select-none text-center">
+                      {t('notifications.loading') || 'Loading...'}
+                    </p>
+                  ) : userOptions.length > 0 ? (
                     userOptions.map((user) => (
-                      <li
+                      <button
                         key={user.id}
-                        className="px-4 py-3 cursor-pointer text-sm transition-colors text-zinc-text hover:bg-white/5 first:rounded-t-xl last:rounded-b-xl"
+                        type="button"
+                        className="w-full px-3 py-2.5 text-start rounded-lg transition-colors text-zinc-text hover:bg-white/5 focus-visible:bg-white/5 focus-visible:outline-none"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleSelectUser(user);
                         }}
                       >
-                        <div className="font-bold">{user.label}</div>
-                        <div className="text-[11px] text-zinc-muted">{user.sub}</div>
-                      </li>
+                        <div className="text-sm font-bold truncate">{user.label}</div>
+                        <div className="text-[11px] text-zinc-muted truncate">{user.sub}</div>
+                      </button>
                     ))
                   ) : (
-                    <li className="px-4 py-3 text-sm text-zinc-muted select-none">
-                      {search.length === 0
-                        ? (t('send_notification.search_user') || 'Type to search...')
-                        : (t('notifications.empty') || 'No results')}
-                    </li>
+                    <p className="px-4 py-3 text-sm text-zinc-muted select-none text-center">
+                      {t('notifications.empty') || 'No results'}
+                    </p>
                   )}
-                </ul>
+                </div>
+              )}
+
+              {showDropdown && search.trim().length > 0 && search.trim().length < MIN_SEARCH_CHARS && (
+                <div className="absolute top-full z-[210] mt-2 w-full bg-[var(--color-obsidian-card)] border border-[var(--color-border)] rounded-xl shadow-xl p-3 animate-in fade-in zoom-in-95 duration-100">
+                  <p className="text-xs text-zinc-muted text-center">
+                    {t('send_notification.search_min_chars') || `Type at least ${MIN_SEARCH_CHARS} characters to search`}
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -242,28 +292,17 @@ export function SendNotificationPage() {
             type="number"
           />
 
-          <label className="flex items-center gap-3 cursor-pointer select-none">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={sendPush}
-              onClick={() => setSendPush((v) => !v)}
-              className={cn(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                sendPush ? 'bg-brand' : 'bg-zinc-muted/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                  sendPush ? 'translate-x-6' : 'translate-x-1',
-                )}
-              />
-            </button>
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-white/5 px-4 py-3">
             <span className="text-sm font-bold text-zinc-text">
               {t('send_notification.send_push') || 'Also send push notification'}
             </span>
-          </label>
+            <AmberToggle
+              enabled={sendPush}
+              onChange={setSendPush}
+              inactiveColor="bg-zinc-muted/30"
+              aria-label={t('send_notification.send_push') || 'Also send push notification'}
+            />
+          </div>
         </AmberCard>
 
         {/* Submit */}

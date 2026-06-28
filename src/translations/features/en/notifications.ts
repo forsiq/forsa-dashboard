@@ -25,6 +25,7 @@ export const en: Record<string, string> = {
   "send_notification.subtitle": "Send a custom notification to a specific user",
   "send_notification.target_user": "Target User",
   "send_notification.search_user": "Search by name, phone, or ID...",
+  "send_notification.search_min_chars": "Type at least 2 characters to search",
   "send_notification.no_user_selected": "No user selected",
   "send_notification.user_selected": "Selected: {{name}}",
   "send_notification.change_user": "Change",

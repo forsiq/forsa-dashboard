@@ -15,11 +15,15 @@ export const userKeys = {
   stats: () => [...userKeys.all, 'stats'] as const,
 };
 
-export const useGetUsers = (filters: UserFilters = {}) => {
+export const useGetUsers = (
+  filters: UserFilters = {},
+  options?: { enabled?: boolean },
+) => {
   return useQuery<UsersResponse>({
     queryKey: userKeys.list(filters),
     queryFn: ({ signal }) => userApi.list(filters, signal),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   });
 };
 
