@@ -81,3 +81,52 @@ export const useSendNotification = () => {
     },
   });
 };
+
+export interface BulkSendResult {
+  succeeded: number;
+  failed: number;
+  total: number;
+}
+
+export const useSendBulkNotifications = () => {
+  const { queryClient, toast, t, getErrorDetail } = useMutationContext();
+  return useMutation({
+    mutationFn: async (inputs: SendNotificationInput[]): Promise<BulkSendResult> => {
+      if (inputs.length === 0) {
+        return { succeeded: 0, failed: 0, total: 0 };
+      }
+      const results = await Promise.allSettled(
+        inputs.map((input) => api.sendNotification(input)),
+      );
+      const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.length - succeeded;
+      if (succeeded === 0) {
+        const firstError = results.find((r) => r.status === 'rejected') as
+          | PromiseRejectedResult
+          | undefined;
+        throw firstError?.reason ?? new Error('Send failed');
+      }
+      return { succeeded, failed, total: results.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: api.notificationKeys.all });
+      if (data.failed > 0) {
+        toast.success(
+          t('send_notification.sent_partial', {
+            succeeded: data.succeeded,
+            total: data.total,
+          }),
+        );
+      } else if (data.total === 1) {
+        toast.success(t('send_notification.success'));
+      } else {
+        toast.success(
+          t('send_notification.sent_bulk', { count: data.succeeded }),
+        );
+      }
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorDetail(error), 6000);
+    },
+  });
+};

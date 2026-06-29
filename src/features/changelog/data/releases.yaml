@@ -1,3 +1,15 @@
+- version: "1.8.1"
+  date: "2026-06-28"
+  title:
+    en: "Multi-user notifications and send history"
+    ar: "إشعارات متعددة المستخدمين وسجل الإرسال"
+  entries:
+    - description:
+        en: "Send Notification page supports multiple target users, local send history, and one-click reuse of past messages."
+        ar: "صفحة إرسال الإشعار تدعم الآن عدة مستخدمين مستهدفين وسجل إرسال محلي وإعادة استخدام الرسائل السابقة بنقرة واحدة."
+      type: improved
+      sidebarPath: /notifications/send
+
 - version: "1.8.0"
   date: "2026-06-26"
   title:
