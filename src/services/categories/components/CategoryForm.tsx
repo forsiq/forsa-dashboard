@@ -187,6 +187,8 @@ export function CategoryForm({
           formErrors={formErrors}
           showSecondaryLang={showSecondaryLang}
           setShowSecondaryLang={setShowSecondaryLang}
+          nameValue={watchedValues.name}
+          nameArValue={watchedValues.nameAr}
         />
 
         <div className="mt-6">

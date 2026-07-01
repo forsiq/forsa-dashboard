@@ -10,6 +10,9 @@ export const ICON_MAX = 50;
 export const NAME_AR_MAX = 100;
 export const SLUG_MAX = 50;
 export const REJECTION_REASON_MAX = 500;
+/** Mobile home chip — keep titles short for clean UI */
+export const CATEGORY_CHIP_RECOMMENDED_MAX = 20;
+export const CATEGORY_MAX_WORDS_RECOMMENDED = 3;
 /** Backend MAX_CATEGORY_LEVEL = 1 (root + one child) */
 export const MAX_CATEGORY_LEVEL = 1;
 
@@ -34,6 +37,67 @@ export function isProductLikeName(name: string): boolean {
     /\b(dash\s*cam|instax|series|proffesional|professional|a800s|mini\s*\d|model\s*#?\d{2,})\b|\d{3,}[a-z]{2,}|[a-z]{2,}\d{3,}/i;
   if (PRODUCT_PATTERN.test(trimmed)) return true;
   return false;
+}
+
+export type CategoryNameWarningCode =
+  | 'name_too_long'
+  | 'name_too_many_words'
+  | 'name_ar_too_long'
+  | 'name_ar_too_many_words';
+
+export interface CategoryNameWarning {
+  code: CategoryNameWarningCode;
+  field: 'name' | 'nameAr';
+  /** i18n key under category.validation.* */
+  messageKey: string;
+}
+
+function wordCount(value: string): number {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function pushLengthWarnings(
+  value: string,
+  field: 'name' | 'nameAr',
+  warnings: CategoryNameWarning[],
+): void {
+  const trimmed = value.trim();
+  if (!trimmed) return;
+
+  const isAr = field === 'nameAr';
+  const tooLongKey = isAr
+    ? 'category.validation.name_ar_too_long_warning'
+    : 'category.validation.name_too_long_warning';
+  const tooManyWordsKey = isAr
+    ? 'category.validation.name_ar_too_many_words_warning'
+    : 'category.validation.name_too_many_words_warning';
+
+  if (trimmed.length > CATEGORY_CHIP_RECOMMENDED_MAX) {
+    warnings.push({
+      code: isAr ? 'name_ar_too_long' : 'name_too_long',
+      field,
+      messageKey: tooLongKey,
+    });
+  }
+
+  if (wordCount(trimmed) > CATEGORY_MAX_WORDS_RECOMMENDED) {
+    warnings.push({
+      code: isAr ? 'name_ar_too_many_words' : 'name_too_many_words',
+      field,
+      messageKey: tooManyWordsKey,
+    });
+  }
+}
+
+/** Non-blocking guidance while editing — aligned with auction-service warnings. */
+export function getCategoryNameWarnings(input: {
+  name?: string | null;
+  nameAr?: string | null;
+}): CategoryNameWarning[] {
+  const warnings: CategoryNameWarning[] = [];
+  pushLengthWarnings(input.name ?? '', 'name', warnings);
+  pushLengthWarnings(input.nameAr ?? '', 'nameAr', warnings);
+  return warnings;
 }
 
 // ---------------------------------------------------------------------------

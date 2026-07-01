@@ -1,5 +1,9 @@
 import type { Category } from '../types';
 import { getLocalizedName } from '../types';
+import {
+  CATEGORY_CHIP_RECOMMENDED_MAX,
+  CATEGORY_MAX_WORDS_RECOMMENDED,
+} from './category.validation';
 
 /** Detected quality / data issues on a category row. */
 export type CategoryIssueType =
@@ -8,6 +12,7 @@ export type CategoryIssueType =
   | 'duplicate_slug'
   | 'test_like'
   | 'product_like'
+  | 'name_too_long'
   | 'orphan_parent'
   | 'missing_icon'
   | 'unused_empty'
@@ -83,6 +88,22 @@ function isProductLike(category: Category): boolean {
   return false;
 }
 
+function isNameTooLongForChip(category: Category): boolean {
+  const name = category.name?.trim() ?? '';
+  const arName =
+    (category.nameAr ?? '').trim() ||
+    (category.translations?.ar?.name ?? '').trim();
+
+  const check = (value: string) => {
+    if (!value) return false;
+    if (value.length > CATEGORY_CHIP_RECOMMENDED_MAX) return true;
+    const words = value.split(/\s+/).filter(Boolean);
+    return words.length > CATEGORY_MAX_WORDS_RECOMMENDED;
+  };
+
+  return check(name) || check(arName);
+}
+
 function childCount(categoryId: string, categories: Category[]): number {
   return categories.filter((c) => String(c.parentId) === categoryId).length;
 }
@@ -102,6 +123,7 @@ export function analyzeCategoryHealth(
     duplicate_slug: 0,
     test_like: 0,
     product_like: 0,
+    name_too_long: 0,
     orphan_parent: 0,
     missing_icon: 0,
     unused_empty: 0,
@@ -189,6 +211,14 @@ export function analyzeCategoryHealth(
         type: 'product_like',
         severity: 'warning',
         labelKey: 'category.health.product_like',
+      });
+    }
+
+    if (isNameTooLongForChip(cat)) {
+      pushIssue(id, {
+        type: 'name_too_long',
+        severity: 'warning',
+        labelKey: 'category.health.name_too_long',
       });
     }
 

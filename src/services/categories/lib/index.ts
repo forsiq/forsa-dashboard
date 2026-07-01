@@ -27,6 +27,10 @@ export {
   resolveCategoryErrorMessage,
   suggestAlternativeCategoryName,
   classifyCategoryApiError,
+  getCategoryNameWarnings,
+  CATEGORY_CHIP_RECOMMENDED_MAX,
+  CATEGORY_MAX_WORDS_RECOMMENDED,
+  type CategoryNameWarning,
 } from './category.validation';
 
 export {
