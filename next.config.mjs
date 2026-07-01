@@ -17,6 +17,9 @@ const revision = isCI
 const withSerwist = withSerwistInit({
   swSrc: "src/sw.ts",
   swDest: "public/sw.js",
+  // Do not register a service worker in development. On localhost this
+  // triggers a SecurityError when the SW script isn't ready during rebuilds.
+  disable: process.env.NODE_ENV !== "production",
   additionalPrecacheEntries: [{ url: "/~offline", revision }],
 });
 

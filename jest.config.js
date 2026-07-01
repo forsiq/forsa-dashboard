@@ -13,7 +13,6 @@ module.exports = {
     '^@core/pages/(.*)$': '<rootDir>/src/core/pages/$1',
     '^@core/validation/(.*)$': '<rootDir>/src/core/validation/$1',
     '^@core/utils/(.*)$': '<rootDir>/src/core/utils/$1',
-    '^@core/contexts/LanguageContext$': '<rootDir>/src/core/contexts/LanguageContext',
     '^@core/contexts/TimerContext$': '<rootDir>/src/core/contexts/TimerContext',
     '^@core/lib/utils/(.*)$': '<rootDir>/src/core/lib/utils/$1',
     '^@core/services/serviceListFetch$': '<rootDir>/src/core/services/serviceListFetch',

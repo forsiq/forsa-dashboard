@@ -28,11 +28,38 @@ export function isSentryExampleTestEvent(event: ErrorEvent, hint?: EventHint): b
   return SENTRY_EXAMPLE_IGNORE.some((needle) => text.includes(needle));
 }
 
-export const sentryExampleIgnoreErrors = SENTRY_EXAMPLE_IGNORE;
+/** Build/HMR/service-worker noise that only occurs during local development. */
+const DEV_NOISE_PATTERNS = [
+  'ModuleBuildError',
+  'Failed to compile',
+  'ENOENT',
+  'SecurityError',
+  'ServiceWorker',
+];
+
+export const sentryExampleIgnoreErrors = [...SENTRY_EXAMPLE_IGNORE, ...DEV_NOISE_PATTERNS];
+
+function isLocalHost(url: string | undefined): boolean {
+  if (!url) return false;
+  return /localhost|127\.0\.0\.1/i.test(url);
+}
+
+function isDevNoiseEvent(event: ErrorEvent, hint?: EventHint): boolean {
+  const isDev =
+    process.env.NODE_ENV === 'development' ||
+    event.environment === 'development' ||
+    isLocalHost(event.request?.url);
+  if (!isDev) return false;
+
+  const text = getErrorText(event, hint);
+  return DEV_NOISE_PATTERNS.some((pattern) => text.includes(pattern));
+}
 
 export function dropSentryExampleTestEvents(
   event: ErrorEvent,
   hint?: EventHint,
 ): ErrorEvent | null {
-  return isSentryExampleTestEvent(event, hint) ? null : event;
+  if (isSentryExampleTestEvent(event, hint)) return null;
+  if (isDevNoiseEvent(event, hint)) return null;
+  return event;
 }

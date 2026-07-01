@@ -16,7 +16,7 @@ Sentry.init({
     }),
   ],
 
-  tracesSampleRate: process.env.NODE_ENV === 'development' ? 1 : 0.1,
+  tracesSampleRate: 0.1,
 
   enableLogs: true,
 
